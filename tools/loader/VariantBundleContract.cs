@@ -11,32 +11,30 @@ internal static partial class VariantBundleContract
     internal const string VariantAssemblyName = "NinjaSlayer.dll";
     internal const string CompatTargetMarkerName = "compat-target.txt";
 
-    internal static BundleVariant Select(string loaderDirectory, Guid hostModuleMvid)
+    internal static BundleVariant Select(string loaderDirectory, string hostGameApiVersion)
     {
         string root = Path.GetFullPath(loaderDirectory);
         string libRoot = Path.Combine(root, "lib");
         string manifestPath = Path.Combine(root, ManifestFileName);
         BundleManifest manifest = JsonSerializer.Deserialize<BundleManifest>(File.ReadAllText(manifestPath))
             ?? throw new InvalidDataException($"Invalid variant manifest: {manifestPath}");
-        if (manifest.SchemaVersion != 1 || manifest.Variants is not { Count: 2 })
+        if (manifest.SchemaVersion != 2 || manifest.Variants is not { Count: 2 })
         {
-            throw new InvalidDataException("Variant manifest must use schema 1 and contain stable and preview.");
+            throw new InvalidDataException("Variant manifest must use schema 2 and contain stable and preview. Update the complete NinjaSlayer package.");
         }
 
         var channels = new HashSet<string>(StringComparer.Ordinal);
         var versions = new HashSet<string>(StringComparer.Ordinal);
-        var mvids = new HashSet<Guid>();
         BundleVariant? selected = null;
         foreach (BundleVariantEntry entry in manifest.Variants)
         {
             BundleVariant candidate = ValidateEntry(root, libRoot, entry);
             if (!channels.Add(candidate.Channel) ||
-                !versions.Add(candidate.GameApiVersion) ||
-                !mvids.Add(candidate.ModuleMvid))
+                !versions.Add(candidate.GameApiVersion))
             {
-                throw new InvalidDataException("Variant manifest contains a duplicate channel, version, or MVID.");
+                throw new InvalidDataException("Variant manifest contains a duplicate channel or version.");
             }
-            if (candidate.ModuleMvid == hostModuleMvid)
+            if (candidate.GameApiVersion == hostGameApiVersion)
             {
                 selected = candidate;
             }
@@ -47,20 +45,18 @@ internal static partial class VariantBundleContract
             throw new InvalidDataException("Variant manifest must contain stable and preview exactly once.");
         }
         return selected ?? throw new InvalidDataException(
-            $"NinjaSlayer does not support STS2 host MVID {hostModuleMvid:D}.");
+            $"NinjaSlayer does not support STS2 version '{hostGameApiVersion}'. Supported versions: {string.Join(", ", versions)}.");
     }
 
     private static BundleVariant ValidateEntry(string root, string libRoot, BundleVariantEntry entry)
     {
         string channel = entry.Channel ?? string.Empty;
         string gameApiVersion = entry.GameApiVersion ?? string.Empty;
-        string moduleMvid = entry.ModuleMvid ?? string.Empty;
         string directory = entry.Directory ?? string.Empty;
         string assembly = entry.Assembly ?? string.Empty;
         string sha256 = entry.Sha256 ?? string.Empty;
         if (channel is not ("stable" or "preview") ||
             !VersionCore().IsMatch(gameApiVersion) ||
-            !Guid.TryParseExact(moduleMvid, "D", out Guid parsedMvid) ||
             directory != $"lib/{gameApiVersion}" ||
             assembly != VariantAssemblyName ||
             !Sha256().IsMatch(sha256))
@@ -89,7 +85,7 @@ internal static partial class VariantBundleContract
         {
             throw new InvalidDataException($"Variant SHA-256 mismatch: {assemblyPath}");
         }
-        return new BundleVariant(channel, gameApiVersion, parsedMvid, assemblyPath);
+        return new BundleVariant(channel, gameApiVersion, assemblyPath);
     }
 
     [GeneratedRegex("^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$", RegexOptions.CultureInvariant)]
@@ -115,9 +111,6 @@ internal static partial class VariantBundleContract
         [JsonPropertyName("gameApiVersion")]
         public string? GameApiVersion { get; init; }
 
-        [JsonPropertyName("moduleMvid")]
-        public string? ModuleMvid { get; init; }
-
         [JsonPropertyName("directory")]
         public string? Directory { get; init; }
 
@@ -132,5 +125,4 @@ internal static partial class VariantBundleContract
 internal sealed record BundleVariant(
     string Channel,
     string GameApiVersion,
-    Guid ModuleMvid,
     string AssemblyPath);

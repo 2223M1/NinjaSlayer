@@ -6,7 +6,7 @@ import { parseData, normalizeEvents } from './data.mjs';
 import { summarizePublic } from './public-data.mjs';
 import { readCatalog, readCurrentRelease, publishSnapshot, publicFeedback } from './publish.mjs';
 import { loadTelemetry, QUERY_HOSTS } from './posthog.mjs';
-import { loadFeedback, readCompletedFeedback, readFeedbackObject, loadFeedbackReview, saveFeedbackReview } from '../scripts/feedback-reader.js';
+import { loadFeedback, readCompletedFeedback, readFeedbackObject, loadFeedbackReview, saveFeedbackReview, loadFeedbackDetails } from '../scripts/feedback-reader.js';
 import { UUID_PATTERN } from '../src/validation.js';
 import { copyDefaults, readDraft, readCopy, saveCopy, draftCopyPath, copyModule } from './copy-store.mjs';
 import { publishCopy, continuePublication, readPublication } from './copy-publisher.mjs';
@@ -29,7 +29,7 @@ async function body(request) {
   return parseData(Buffer.concat(chunks).toString('utf8'));
 }
 
-export async function createDashboardServer({ feedbackReader = { loadFeedback, readCompletedFeedback, readFeedbackObject, loadFeedbackReview, saveFeedbackReview }, feedbackPublisher = { feedbackPublication, publishFeedback }, draftPath = draftCopyPath } = {}) {
+export async function createDashboardServer({ feedbackReader = { loadFeedback, readCompletedFeedback, readFeedbackObject, loadFeedbackReview, saveFeedbackReview, loadFeedbackDetails }, feedbackPublisher = { feedbackPublication, publishFeedback }, draftPath = draftCopyPath } = {}) {
   const catalog = await readCatalog();
   for (const name of await readdir(new URL('assets/', import.meta.url))) {
     const type = { png: 'image/png', jpg: 'image/jpeg', gif: 'image/gif' }[name.split('.').at(-1)];
@@ -143,6 +143,10 @@ export async function createDashboardServer({ feedbackReader = { loadFeedback, r
         publishingFeedback = true;
         try { send(200, await (request.method === 'POST' ? feedbackPublisher.publishFeedback() : feedbackPublisher.feedbackPublication())); }
         finally { publishingFeedback = false; }
+      } else if (request.method === 'GET' && /^\/api\/feedback\/[^/]+\/details$/.test(url.pathname)) {
+        const id = url.pathname.split('/')[3];
+        if (!UUID_PATTERN.test(id)) { send(404, { error: '反馈编号无效。' }); return; }
+        send(200, await feedbackReader.loadFeedbackDetails(id));
       } else if (/^\/api\/feedback\/[^/]+\/review$/.test(url.pathname) && ['GET', 'PUT'].includes(request.method)) {
         const id = url.pathname.split('/')[3];
         if (!UUID_PATTERN.test(id)) { send(404, { error: '反馈编号无效。' }); return; }

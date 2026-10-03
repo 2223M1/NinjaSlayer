@@ -1,6 +1,7 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "ninja-slayer-telemetry",
+	"account_id": "e0931b882c3ce3b031d6792597606326",
 	"main": "src/index.js",
 	"compatibility_date": "2026-07-15",
 	"workers_dev": false,

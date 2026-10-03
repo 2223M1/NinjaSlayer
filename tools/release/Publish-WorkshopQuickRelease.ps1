@@ -236,6 +236,12 @@ finally {
     Pop-Location
 }
 
+Invoke-Native -Command dotnet -Arguments @(
+    'run', '--project', (Join-Path $repositoryRoot 'tools/workshop-metadata/WorkshopMetadata.csproj'),
+    '--configuration', 'Release', "-p:Sts2DataDir=$stableDataDirectory", '--',
+    'apply', $pendingMetadataPath, (Join-Path $repositoryRoot 'eng/compatibility.json')
+)
+
 Copy-Item -LiteralPath $pendingMetadataPath -Destination $completedMetadataPath -Force
 [IO.File]::Delete($pendingMetadataPath)
 Write-Host ''

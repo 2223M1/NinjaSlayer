@@ -107,3 +107,79 @@ test('copy publishing changes one file, persists its PR and only merges the exac
   assert.equal(result.state, 'merged');
   assert.deepEqual(calls.at(-1).body, { sha: 'candidate', merge_method: 'squash', commit_title: 'Update Intel website copy (#123)', commit_message: '' });
 });
+
+// Exercise the actual admin script with a minimal DOM, without fetching private feedback.
+test('admin opens an unloaded inbox automatically and distinguishes failures from an empty inbox', async () => {
+  const { runInNewContext } = await import('node:vm');
+  const source = await readFile(new URL('../dashboard/admin.js', import.meta.url), 'utf8');
+  for (const outcome of ['mail', 'error', 'empty']) {
+    const nodes = new Map(), calls = [];
+    function node() {
+      return { value: '', textContent: '', children: [], disabled: false,
+        append(...items) { this.children.push(...items); },
+        replaceChildren(...items) { this.children = items; } };
+    }
+    const select = selector => { if (!nodes.has(selector)) nodes.set(selector, node()); return nodes.get(selector); };
+    let refreshed = false;
+    await runInNewContext(`(async () => { ${source}\n })()`, {
+      document: { querySelector: select, createElement: node },
+      window: { addEventListener() {}, confirm: () => true },
+      fetch: async (path, options) => {
+        calls.push([path, options.method]);
+        if (path === '/api/copy') return { ok: false, json: async () => ({ error: 'Copy unavailable' }) };
+        if (path === '/api/refresh') {
+          assert.match(select('#feedback-list').children[0].textContent, /正在读取/);
+          assert.equal(select('#refresh').disabled, true);
+          refreshed = true;
+          return { ok: true, json: async () => ({ ok: true }) };
+        }
+        assert.equal(path, '/api/view');
+        const state = !refreshed ? 'unloaded' : outcome === 'error' ? 'error' : 'ready';
+        return { ok: true, json: async () => ({
+          feedback: refreshed && outcome === 'mail' ? [{ id: 'test-feedback', description: 'A player letter' }] : [],
+          sources: { feedback: { state, message: state === 'error' ? 'Cloudflare failed' : undefined } }, feedbackWarnings: [],
+        }) };
+      },
+    });
+    assert.equal(calls.filter(([path]) => path === '/api/refresh').length, 1);
+    assert.equal(select('#refresh').disabled, false);
+    const first = select('#feedback-list').children[0];
+    if (outcome === 'mail') assert.equal(first.children[0].textContent, 'A player letter');
+    else assert.match(first.textContent, outcome === 'error' ? /读取失败/ : /没有符合条件/);
+  }
+});
+
+test('feedback text appears before details and saving shows pending, success or preserved-input failure', async () => {
+  const { runInNewContext } = await import('node:vm');
+  const source = await readFile(new URL('../dashboard/admin.js', import.meta.url), 'utf8');
+  const nodes = new Map();
+  function node() { return { value: '', textContent: '', children: [], disabled: false,
+    append(...items) { this.children.push(...items); }, replaceChildren(...items) { this.children = items; }, setAttribute() {} }; }
+  const select = selector => { if (!nodes.has(selector)) nodes.set(selector, node()); return nodes.get(selector); };
+  let finishDetails, finishSave;
+  const review = { status: 'unresolved', reply: '', updatedAt: null };
+  const item = { id: 'local-fixture', description: 'Visible immediately', review };
+  const response = (value, ok = true) => ({ ok, json: async () => value });
+  await runInNewContext(`(async () => { ${source}\n })()`, {
+    document: { querySelector: select, createElement: node }, window: { addEventListener() {}, confirm: () => true },
+    fetch: async (path, options) => {
+      if (path === '/api/copy') return response({ error: 'Copy unavailable' }, false);
+      if (path === '/api/view') return response({ feedback: [item], sources: { feedback: { state: 'ready' } }, feedbackWarnings: [] });
+      if (path.endsWith('/details')) return new Promise(resolve => { finishDetails = resolve; });
+      assert.equal(options.method, 'PUT'); assert.match(path, /\/review$/);
+      return new Promise(resolve => { finishSave = resolve; });
+    },
+  });
+  const opening = select('#feedback-list').children[0].onclick();
+  assert.equal(select('#feedback-detail').children[1].textContent, 'Visible immediately');
+  finishDetails(response({ metadata: { payload: { description: item.description } }, review })); await opening;
+  const form = select('#feedback-detail').children[2];
+  const reply = form.children[3], save = form.children[4], saved = form.children[5];
+  reply.value = 'Author reply'; reply.oninput();
+  const first = save.onclick();
+  assert.equal(save.disabled, true); assert.match(saved.textContent, /正在保存/);
+  finishSave(response({ error: 'network failure' }, false)); await first;
+  assert.equal(reply.value, 'Author reply'); assert.equal(save.disabled, false); assert.match(saved.textContent, /保存未获确认/);
+  const retry = save.onclick(); finishSave(response({ ...review, reply: 'Author reply', updatedAt: new Date().toISOString() })); await retry;
+  assert.match(saved.textContent, /已保存到 Cloudflare/); assert.equal(save.disabled, false);
+});

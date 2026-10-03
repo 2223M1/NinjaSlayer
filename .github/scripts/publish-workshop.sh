@@ -10,8 +10,8 @@ set -euo pipefail
 : "${WORKSHOP_VISIBILITY:?WORKSHOP_VISIBILITY is required}"
 
 [[ "$WORKSHOP_ITEM_ID" =~ ^[0-9]+$ ]] || { echo "WORKSHOP_ITEM_ID must be numeric"; exit 1; }
-[[ "$WORKSHOP_VISIBILITY" == "2" || "$WORKSHOP_VISIBILITY" == "3" ]] || {
-  echo "WORKSHOP_VISIBILITY must be private (2) or unlisted (3)"; exit 1;
+[[ "$WORKSHOP_VISIBILITY" == "0" || "$WORKSHOP_VISIBILITY" == "2" || "$WORKSHOP_VISIBILITY" == "3" ]] || {
+  echo "WORKSHOP_VISIBILITY must be public (0), private (2) or unlisted (3)"; exit 1;
 }
 
 for artifact in NinjaSlayer.dll NinjaSlayer.json NinjaSlayer.pck ninjaslayer-variants.manifest SHA256SUMS; do
@@ -31,6 +31,8 @@ printf '%s' "$STEAM_CONFIG_VDF" > "$steam_home/config/config.vdf"
 chmod 600 "$steam_home/config/config.vdf"
 
 manifest="$(mktemp --suffix=.vdf)"
+# Omit title/description: SteamCMD content uploads must preserve the language fields
+# maintained by tools/workshop-metadata. Detailed notes remain owner-authored.
 escaped_note=${CHANGE_NOTE//\"/\\\"}
 {
   printf '"workshopitem"\n{\n'

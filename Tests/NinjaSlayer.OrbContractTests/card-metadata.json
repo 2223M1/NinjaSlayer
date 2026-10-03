@@ -2833,7 +2833,8 @@
     "CanBeGeneratedInCombat": false,
     "CanBeGeneratedByModifiers": false,
     "Keywords": [
-      "Exhaust"
+      "Exhaust",
+      "Retain"
     ],
     "Tags": [
       "2000406097"
@@ -2854,7 +2855,8 @@
     "CanBeGeneratedInCombat": false,
     "CanBeGeneratedByModifiers": false,
     "Keywords": [
-      "Exhaust"
+      "Exhaust",
+      "Retain"
     ],
     "Tags": [
       "2000406097"

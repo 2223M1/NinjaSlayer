@@ -360,6 +360,22 @@ const localWorkshopManifest = readJson(join(root, 'Workshop', 'workshop.json'));
 if (localWorkshopManifest?.visibility !== compatibility?.workshop?.visibility) {
   errors.push('Workshop/workshop.json visibility must match the universal compatibility target');
 }
+const workshopDescriptions = {
+  english: localWorkshopManifest?.description,
+  ...localWorkshopManifest?.localizedDescriptions,
+};
+if (Object.keys(localWorkshopManifest?.localizedDescriptions ?? {}).sort().join(',') !== 'japanese,schinese') {
+  errors.push('Workshop descriptions must have separate schinese/japanese fields, with English as the default');
+}
+for (const [language, description] of Object.entries(workshopDescriptions)) {
+  if (typeof description !== 'string' || !description.trim()
+      || Buffer.byteLength(description, 'utf8') >= 8000) {
+    errors.push(`Workshop ${language} description must be nonempty and within Steam limits`);
+  }
+}
+if (localWorkshopManifest?.changeNote !== '我们修复了一些问题，增添了一些内容，调整了一些东西。') {
+  errors.push('Workshop automatic change notes must retain the owner-specified fixed sentence');
+}
 
 const retiredHostVersion = ['0', '109', '0'].join('.');
 for (const directory of ['.github', 'Code', 'Tests', 'tools', 'eng']) {
