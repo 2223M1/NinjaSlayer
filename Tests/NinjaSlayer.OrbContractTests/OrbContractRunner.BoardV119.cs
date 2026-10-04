@@ -75,6 +75,20 @@ public partial class OrbContractRunner
                 && !PileType.Draw.GetPile(combat.Player).Cards.OfType<BlackFlame>().Any(),
                 "Kindle must draw two/three cards before adding exactly one Black Flame to discard.");
         }
+        using (var combat = new OrbCombat())
+        {
+            using var selector = CardSelectCmd.UseSelector(new SelectCards(options => options.OfType<DefendIronclad>().Take(1)));
+            foreach (bool upgraded in new[] { false, true })
+            {
+                AddCard<DefendIronclad>(combat);
+                await CardCmd.AutoPlay(Choice, AddCard<Rekindle>(combat, upgraded: upgraded), null);
+                Require(!combat.Player.Creature.HasPower<NarakuLifePower>(),
+                    "Neither the first nor a subsequent Rekindle may trigger its own Skill reward.");
+            }
+            await CardCmd.AutoPlay(Choice, AddCard<DefendIronclad>(combat), null);
+            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 7,
+                "A subsequent Skill must receive both base and upgraded Rekindle rewards.");
+        }
         GD.Print("PASS v1.19: status generation, stacked Naraku Life, creator isolation, full hand, three-hit Vigor, unconditional Uppercut and Kindle destination.");
     }
 }

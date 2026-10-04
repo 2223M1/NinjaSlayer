@@ -136,8 +136,8 @@ internal sealed partial class SmokeController
             for (int visits = 0; visits < 9; visits++)
             {
                 var valid = architect.DialogueSet.GetValidDialogues(player.Character.Id, visits, visits, false).ToArray();
-                Require(valid.Length > 0 && valid.All(d => d.Lines.All(l => l.LineText.Exists()
-                    && !l.LineText.GetFormattedText().Contains("THE_ARCHITECT"))),
+                Require(valid.Length > 0 && valid.All(d => d.Lines.All(l => l.LineText is { } text && text.Exists()
+                    && !text.GetFormattedText().Contains("THE_ARCHITECT"))),
                     "Architect dialogue contains an unresolved key at a later/repeated visit.");
             }
             _checkpoints.Write("release111.architect-dialogue", data: new JsonObject { ["sequences"] = dialogues.Count, ["visitsChecked"] = 9 });

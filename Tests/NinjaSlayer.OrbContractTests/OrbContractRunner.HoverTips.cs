@@ -63,8 +63,8 @@ public partial class OrbContractRunner
                 {
                     Require(dialogue.Lines.Count == 2, "Each Architect sequence must retain two lines.");
                     foreach (var line in dialogue.Lines)
-                        Require(line.LineText.Exists() && !line.LineText.GetFormattedText().Contains("THE_ARCHITECT"),
-                            $"Unresolved Architect line: {language}, visit {visits}, {line.LineText.LocEntryKey}");
+                        Require(line.LineText is { } text && text.Exists() && !text.GetFormattedText().Contains("THE_ARCHITECT"),
+                            $"Unresolved Architect line: {language}, visit {visits}, {line.LineText?.LocEntryKey}");
                 }
             }
         }

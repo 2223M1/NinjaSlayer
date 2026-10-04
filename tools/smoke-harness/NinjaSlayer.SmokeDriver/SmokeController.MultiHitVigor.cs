@@ -48,6 +48,43 @@ internal sealed partial class SmokeController
         foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
         foreach (var card in player.Piles.Where(p => p.Type != PileType.Deck).SelectMany(p => p.Cards).ToArray())
             await CardPileCmd.RemoveFromCombat(card);
+        var statusChoice = new MegaCrit.Sts2.Core.GameActions.Multiplayer.BlockingPlayerChoiceContext();
+        await PowerCmd.Apply<NinjaSlayer.Powers.DevourFlamePower>(statusChoice, player.Creature, 5, player.Creature, null);
+        foreach (var pile in new[] { PileType.Hand, PileType.Draw, PileType.Discard })
+            await NinjaSlayer.Code.Commands.NinjaSlayerCardCmd.AddGeneratedCard<Wound>(player, pile);
+        Require(player.Creature.GetPowerAmount<NinjaSlayer.Powers.NarakuLifePower>() == 15,
+            "Rendered status generation must grant Naraku Life once per card.");
+        foreach (var old in player.Piles.Where(p => p.Type != PileType.Deck).SelectMany(p => p.Cards).ToArray())
+            await CardPileCmd.RemoveFromCombat(old);
+        foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
+        var selected = combat.CreateCard<DefendIronclad>(player);
+        var rekindle = combat.CreateCard<Rekindle>(player);
+        await CardPileCmd.Add(selected, PileType.Hand);
+        await CardPileCmd.Add(rekindle, PileType.Hand);
+        player.PlayerCombatState!.GainEnergy(3);
+        var statusSelector = new MegaCrit.Sts2.Core.TestSupport.TestCardSelector();
+        statusSelector.PrepareToSelect([0]);
+        using (CardSelectCmd.UseSelector(statusSelector))
+        {
+            var action = new PlayCardAction(rekindle, null);
+            RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(action);
+            await action.CompletionTask.WaitAsync(TimeSpan.FromSeconds(20));
+            if (action.Exception != null) throw action.Exception;
+        }
+        Require(!player.Creature.HasPower<NinjaSlayer.Powers.NarakuLifePower>(), "Rekindle must not reward itself.");
+        var followupSkill = combat.CreateCard<DefendIronclad>(player);
+        await CardPileCmd.Add(followupSkill, PileType.Hand);
+        var followup = new PlayCardAction(followupSkill, null);
+        RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(followup);
+        await followup.CompletionTask.WaitAsync(TimeSpan.FromSeconds(20));
+        if (followup.Exception != null) throw followup.Exception;
+        Require(player.Creature.GetPowerAmount<NinjaSlayer.Powers.NarakuLifePower>() == 3,
+            "A subsequent rendered Skill must grant Rekindle Naraku Life.");
+        _checkpoints.Write("release111.status-life", data: new JsonObject { ["generatedStatuses"] = 3,
+            ["narakuFromGeneration"] = 15, ["rekindleSelfReward"] = 0, ["followingSkillReward"] = 3 });
+        foreach (var old in player.Piles.Where(p => p.Type != PileType.Deck).SelectMany(p => p.Cards).ToArray())
+            await CardPileCmd.RemoveFromCombat(old);
+        foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
         await CardPileCmd.Add(combat.CreateCard<Chado>(player), PileType.Exhaust);
         await CardPileCmd.Add(combat.CreateCard<Chado>(player), PileType.Exhaust);
         await PowerCmd.Apply<StrengthPower>(new MegaCrit.Sts2.Core.GameActions.Multiplayer.BlockingPlayerChoiceContext(),
