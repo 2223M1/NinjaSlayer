@@ -53,7 +53,7 @@ public sealed class TornadoFist : NinjaSlayerUncommonCard
         try
         {
             XAttackComboMovement.BeginCombo(Owner.Creature, TornadoFistSpinAnimation.TurnSeconds);
-            float duration = SpinComboAudio.RemainingSeconds(Owner.Creature, hits);
+            float duration = TornadoSpinTiming.SecondsToFinalHit(hits, CombatActionTimingRuntime.CurrentSpeed);
             if (MegaCrit.Sts2.Core.TestSupport.TestMode.IsOff && TornadoSpinTiming.Select(hits, duration,
                 NinjaSlayerFormState.GetPresentation(Owner.Creature).ForcePerHitComboAudio) != TornadoAudioMode.PerHit)
                 spin = SpinComboAudio.Start(Owner.Creature);

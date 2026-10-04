@@ -1,5 +1,11 @@
 # FMOD Bank Output
 
+Spin eligibility was corrected on 2026-10-04: the final-hit policy only requires
+the 1.369977-second Intro to fit before impact, not Intro plus Outro before return.
+Normal now starts Spin at 5 hits and Fast at 9; fewer than four hits, Instant and
+fully released Naraku retain per-hit audio. Post-hit finisher holds cannot qualify
+an otherwise too-short Intro. Banks, source audio and the -3.356 dB gain are unchanged.
+
 FMOD Studio builds `desktop/NinjaSlayer.bank` and `desktop/NinjaSlayerEventMusic.bank`
 (see `STS2_FModProject_Minimal-main/Metadata/Workspace.xml`).
 

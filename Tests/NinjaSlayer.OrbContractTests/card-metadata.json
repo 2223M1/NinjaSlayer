@@ -1136,7 +1136,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_GATHER_KI",
     "Upgraded": false,
-    "Cost": 1,
+    "Cost": 0,
     "X": false,
     "Type": "Skill",
     "Rarity": "Uncommon",
@@ -1151,7 +1151,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_GATHER_KI",
     "Upgraded": true,
-    "Cost": 1,
+    "Cost": 0,
     "X": false,
     "Type": "Skill",
     "Rarity": "Uncommon",
@@ -2571,7 +2571,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_SIP",
     "Upgraded": false,
-    "Cost": 1,
+    "Cost": 0,
     "X": false,
     "Type": "Skill",
     "Rarity": "Uncommon",
@@ -2586,7 +2586,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_SIP",
     "Upgraded": true,
-    "Cost": 1,
+    "Cost": 0,
     "X": false,
     "Type": "Skill",
     "Rarity": "Uncommon",

@@ -8,6 +8,8 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Cards.Standard;
 using System.Text.Json.Nodes;
+using MegaCrit.Sts2.Core.Saves;
+using MegaCrit.Sts2.Core.Settings;
 
 namespace NinjaSlayer.SmokeDriver;
 
@@ -66,5 +68,43 @@ internal sealed partial class SmokeController
         _checkpoints.Write("release039.spin-audio", data: new JsonObject
         { ["loopWraps"] = wraps, ["pauseDriftMs"] = pauseDrift, ["outro"] = outro,
           ["nativeStateAtRelease"] = release.State, ["released"] = Released() });
+
+        // X >= 4 doubles hits. Fast X=5 now fits Intro but not Intro+Outro;
+        // Fast X=4 must still use per-hit audio. Verify the actual bank ownership.
+        FastModeType previousSpeed = SaveManager.Instance.PrefsSave.FastMode;
+        try
+        {
+            foreach (var scenario in new[] {
+                (FastModeType.Normal, 3, false), (FastModeType.Fast, 4, false),
+                (FastModeType.Fast, 5, true), (FastModeType.Instant, 5, false) })
+            {
+                SaveManager.Instance.PrefsSave.FastMode = scenario.Item1;
+                await PlayerCmd.SetEnergy(scenario.Item2, player);
+                var next = combat.CreateCard<TornadoFist>(player);
+                await CardPileCmd.Add(next, PileType.Hand);
+                Task action = CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), next, target);
+                Node? observed = null;
+                var deadline = System.Diagnostics.Stopwatch.StartNew();
+                while (!action.IsCompleted && deadline.Elapsed.TotalSeconds < 40)
+                {
+                    observed ??= room.GetChildren().FirstOrDefault(n => n.GetType().Name == "SpinComboAudio");
+                    await WaitFrames(1);
+                }
+                Require(action.IsCompleted, "Short Tornado action did not complete.");
+                await action;
+                Require((observed != null) == scenario.Item3, "Tornado selected the wrong audio for the actual hit count and speed.");
+                if (observed != null)
+                {
+                    ulong audioId = observed.GetInstanceId();
+                    await WaitUntilAsync(() => !GodotObject.IsInstanceValid(observed), "Short Tornado outro did not finish.");
+                    Require(TornadoAudioReleaseObserver.States.Remove(audioId, out var shortRelease) && shortRelease.State == 2,
+                        "Short Tornado cut off its natural outro.");
+                }
+                _checkpoints.Write("release109.spin-threshold", data: new JsonObject
+                { ["speed"] = scenario.Item1.ToString(), ["energy"] = scenario.Item2, ["spin"] = scenario.Item3 });
+            }
+        }
+        finally { SaveManager.Instance.PrefsSave.FastMode = previousSpeed; }
+
     }
 }
