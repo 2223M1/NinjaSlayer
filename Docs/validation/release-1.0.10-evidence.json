@@ -1,0 +1,1833 @@
+{
+  "version": "1.0.10",
+  "sourceRevision": "898a306c149502a453304e6d963cbfe2ddeb72cc",
+  "verifiedAtUtc": "2026-10-04T06:14:10.5681542+00:00",
+  "pullRequest": "https://github.com/2223M1/NinjaSlayer/pull/172",
+  "includedPullRequests": [
+    "https://github.com/2223M1/NinjaSlayer/pull/171",
+    "https://github.com/2223M1/NinjaSlayer/pull/172"
+  ],
+  "ci": {
+    "conclusion": "success",
+    "databaseId": 37181353822,
+    "headSha": "898a306c149502a453304e6d963cbfe2ddeb72cc",
+    "status": "completed"
+  },
+  "contributors": [
+    "2223M1"
+  ],
+  "author": "2223M1 <104559061+2223M1@users.noreply.github.com>",
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "0cefdf3231ae6cd523540cda62392e060280e85f2320fdff496bf597b98da137",
+    "b09038ce04ade9ef6c8871fd4d0ed443d248e4070eb8654a8e436458cc4b79b7",
+    "dc24a58850840fbad5916ceafe13718365144f08e0d150fcfa611ff77ecc354f",
+    "694f18dce675e52a6cb6dfd24a54c1b85cc4105ee3427d23f0055c2744d7cfb5",
+    "c7477707663acb4a50c87046a0887710ac0af115152c1f4094e9617364161ed7",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "ebf4f8d3a873aada3779a0e82f2cbfd708a983f4d1ed0088bf24d8eedcf5ece8",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "9e16b1b4d048b4aa1a8e10c70b2dfd1149da7c5b47fb0bc11614abc98f938d9b",
+    "c495c15882ef5a138f12d1547e50ccd2f536c13a4fbd84c76b83a0e42a505c17"
+  ],
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+      "bytes": 317440
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+      "bytes": 1097
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "sha256": "0cefdf3231ae6cd523540cda62392e060280e85f2320fdff496bf597b98da137",
+      "bytes": 522
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "sha256": "b09038ce04ade9ef6c8871fd4d0ed443d248e4070eb8654a8e436458cc4b79b7",
+      "bytes": 24576
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "sha256": "dc24a58850840fbad5916ceafe13718365144f08e0d150fcfa611ff77ecc354f",
+      "bytes": 363
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "sha256": "694f18dce675e52a6cb6dfd24a54c1b85cc4105ee3427d23f0055c2744d7cfb5",
+      "bytes": 209292248
+    },
+    {
+      "path": "SHA256SUMS",
+      "sha256": "c7477707663acb4a50c87046a0887710ac0af115152c1f4094e9617364161ed7",
+      "bytes": 1008
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "sha256": "ebf4f8d3a873aada3779a0e82f2cbfd708a983f4d1ed0088bf24d8eedcf5ece8",
+      "bytes": 2227200
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "sha256": "9e16b1b4d048b4aa1a8e10c70b2dfd1149da7c5b47fb0bc11614abc98f938d9b",
+      "bytes": 125952
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "sha256": "c495c15882ef5a138f12d1547e50ccd2f536c13a4fbd84c76b83a0e42a505c17",
+      "bytes": 2230784
+    }
+  ],
+  "live": [
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "898a306c149502a453304e6d963cbfe2ddeb72cc",
+        "bundleVersion": "1.0.10",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.5",
+        "additionalMods": [],
+        "bundleSha256": "c7477707663acb4a50c87046a0887710ac0af115152c1f4094e9617364161ed7",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "singleplayer-first-combat-restart",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-04T14:06:34.4685574+08:00"
+      },
+      "checkpoints": [
+        {
+          "Phase": "fresh",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "telemetry.notice-dismissed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "fresh.autoslay-starting",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "character.selected",
+          "Status": "passed",
+          "Data": {
+            "characterId": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "character.selected",
+          "Status": "passed",
+          "Data": {
+            "characterId": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "transition.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "combat.started",
+          "Status": "passed",
+          "Data": {
+            "enemyCount": 1
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed",
+          "Data": {
+            "speed": "None",
+            "count": 1
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "count": 2
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "count": 3
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "count": 4
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "tooltip.rendered",
+          "Status": "passed",
+          "Data": {
+            "name": "irc"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "tooltip.rendered",
+          "Status": "passed",
+          "Data": {
+            "name": "starter-tea"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "tooltip.rendered",
+          "Status": "passed",
+          "Data": {
+            "name": "karate"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed",
+          "Data": {
+            "speed": "None",
+            "whiteOverlayRemaining": false,
+            "completedTransformUpgradedAndExhausted": true
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "whiteOverlayRemaining": false,
+            "completedTransformUpgradedAndExhausted": true
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "whiteOverlayRemaining": false,
+            "completedTransformUpgradedAndExhausted": true
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "whiteOverlayRemaining": false,
+            "completedTransformUpgradedAndExhausted": true
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "naraku.lethal-hit-absorption",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "shuriken.created",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "shuriken.lifecycle-cleared",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "redesign.runtime-contracts-validated",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "cards.presentation-validated",
+          "Status": "passed",
+          "Data": {
+            "count": 93
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "black-flame.native-flash-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_ALABAMA_DROP",
+            "rootShift": 0,
+            "uiShift": 6.823938E-05
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_STRAIGHT_PUNCH",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_BS1260_KICK",
+            "rootShift": 0,
+            "uiShift": 3.0517578E-05
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_SOMERSAULT_KICK",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_HALF_MOON_COMPASS_KICK",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_DRAGON_FLYING_KICK",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "combat-fixes.presentation-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "hell-tornado.presentation-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "naraku.presentation-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "x-attack.nonlethal-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "evasion.cardplay-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "evasion.move-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "spine.platform-extension-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "dark-strike.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.card-returned",
+          "Status": "passed",
+          "Data": {
+            "combatInProgress": true,
+            "focusAlive": false,
+            "focusCurrentHp": 0,
+            "focusBlock": 0,
+            "hittableEnemyCount": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.multi-hit.completed",
+          "Status": "passed",
+          "Data": {
+            "sessionId": 1,
+            "resolvedHits": 3,
+            "killAttempts": 1,
+            "successfulKills": 1
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.stationary-ui.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.presentation-fallback.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.completed",
+          "Status": "passed",
+          "Data": {
+            "combatInProgress": false,
+            "focusAlive": false,
+            "focusCurrentHp": 0,
+            "hittableEnemyCount": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "fresh.saved",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "fresh.restart-requested",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "resume",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "resume",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "resume",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "resume",
+          "Name": "resume.loaded",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "resume",
+          "Name": "resume.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.starting",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "character.selected",
+          "Status": "passed",
+          "Data": {
+            "characterId": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "character.selected",
+          "Status": "passed",
+          "Data": {
+            "characterId": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.before",
+          "Status": "passed",
+          "Data": {
+            "path": "/root/Game/RootSceneContainer/Run/RoomContainer/CombatRoom/CombatSceneContainer/EnemyContainer/@Control@1300/Nibbit/Visuals",
+            "global": "(1254, 723)"
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.actor-return",
+          "Status": "passed",
+          "Data": {
+            "beforePixels": 2461,
+            "afterPixels": 1804,
+            "otherPixels": 1823,
+            "globalPosition": "(1254, 723)",
+            "path": "/root/Game/RootSceneContainer/Run/GlobalUi/OverlayScreensContainer/GameOverScreen/ScreenshakeContainer/CreatureContainer/Nibbit/Visuals",
+            "rootPosition": "(310, 200)",
+            "rootBaseline": "(310, 200)",
+            "visible": true,
+            "visualPosition": "(1270, 740)"
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.completed",
+          "Status": "passed",
+          "Data": {
+            "sessionId": 1,
+            "resolvedHits": 1,
+            "killAttempts": 1,
+            "successfulKills": 1,
+            "targetHp": 0
+          }
+        }
+      ],
+      "contractSha256": "2e0493444e5527f489d7c239c9caa89c4f790a366cbef9c694bfafb99b5141f9"
+    },
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "898a306c149502a453304e6d963cbfe2ddeb72cc",
+        "bundleVersion": "1.0.10",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.5",
+        "additionalMods": [],
+        "bundleSha256": "c7477707663acb4a50c87046a0887710ac0af115152c1f4094e9617364161ed7",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "release038",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-04T14:08:28.0187636+08:00"
+      },
+      "checkpoints": [
+        {
+          "Phase": "release038",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "release038",
+          "Name": "telemetry.notice-dismissed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "release038",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release039.spin-audio",
+          "Status": "passed",
+          "Data": {
+            "loopWraps": 17,
+            "pauseDriftMs": 0,
+            "outro": true,
+            "nativeStateAtRelease": 2,
+            "released": true
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release109.spin-threshold",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "energy": 3,
+            "spin": false
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release109.spin-threshold",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "energy": 4,
+            "spin": false
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release109.spin-threshold",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "energy": 5,
+            "spin": true
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release109.spin-threshold",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "energy": 5,
+            "spin": false
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.head-contact",
+          "Status": "passed",
+          "Data": {
+            "form": 0,
+            "scale": 0.8,
+            "gap": -0.00012207031
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.head-contact",
+          "Status": "passed",
+          "Data": {
+            "form": 0,
+            "scale": 1.3,
+            "gap": 0
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.head-contact",
+          "Status": "passed",
+          "Data": {
+            "form": 1,
+            "scale": 0.8,
+            "gap": -0.00012207031
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.head-contact",
+          "Status": "passed",
+          "Data": {
+            "form": 1,
+            "scale": 1.3,
+            "gap": 0
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.head-contact",
+          "Status": "passed",
+          "Data": {
+            "form": 2,
+            "scale": 0.8,
+            "gap": 0
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.head-contact",
+          "Status": "passed",
+          "Data": {
+            "form": 2,
+            "scale": 1.3,
+            "gap": 0.00012207031
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.head-contact",
+          "Status": "passed",
+          "Data": {
+            "form": 3,
+            "scale": 0.8,
+            "gap": -6.1035156E-05
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.head-contact",
+          "Status": "passed",
+          "Data": {
+            "form": 3,
+            "scale": 1.3,
+            "gap": 0.00018310547
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.dark-move",
+          "Status": "passed",
+          "Data": {
+            "move": "DARK_COUNTER_STANCE",
+            "hp": 5000
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.dark-move",
+          "Status": "passed",
+          "Data": {
+            "move": "DARK_STRIKE",
+            "hp": 4976
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.dark-move",
+          "Status": "passed",
+          "Data": {
+            "move": "DEATH_SLASH",
+            "hp": 4941
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.dark-move",
+          "Status": "passed",
+          "Data": {
+            "move": "DARK_ROBE",
+            "hp": 4941
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.dark-move",
+          "Status": "passed",
+          "Data": {
+            "move": "DARK_STRIKE",
+            "hp": 4909
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.dark-move",
+          "Status": "passed",
+          "Data": {
+            "move": "DEATH_SLASH",
+            "hp": 4874
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.dark-move",
+          "Status": "passed",
+          "Data": {
+            "move": "DARK_ROBE",
+            "hp": 4874
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.dark-evaded-with-ally",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "release038",
+          "Name": "finisher.architect-stationary-ui.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.architect-continue-victory",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "release038",
+          "Name": "release109.press-pass-architect-victory",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.completed",
+          "Status": "passed",
+          "Data": null
+        }
+      ],
+      "contractSha256": "2e0493444e5527f489d7c239c9caa89c4f790a366cbef9c694bfafb99b5141f9"
+    },
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "898a306c149502a453304e6d963cbfe2ddeb72cc",
+        "bundleVersion": "1.0.10",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.5",
+        "additionalMods": [],
+        "bundleSha256": "c7477707663acb4a50c87046a0887710ac0af115152c1f4094e9617364161ed7",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "singleplayer-first-combat-restart",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-04T14:02:13.4975694+08:00"
+      },
+      "checkpoints": [
+        {
+          "Phase": "fresh",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "telemetry.notice-dismissed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "fresh.autoslay-starting",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "character.selected",
+          "Status": "passed",
+          "Data": {
+            "characterId": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "character.selected",
+          "Status": "passed",
+          "Data": {
+            "characterId": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "transition.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "combat.started",
+          "Status": "passed",
+          "Data": {
+            "enemyCount": 1
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed",
+          "Data": {
+            "speed": "None",
+            "count": 1
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "count": 2
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "count": 3
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "count": 4
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "tooltip.rendered",
+          "Status": "passed",
+          "Data": {
+            "name": "irc"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "tooltip.rendered",
+          "Status": "passed",
+          "Data": {
+            "name": "starter-tea"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "tooltip.rendered",
+          "Status": "passed",
+          "Data": {
+            "name": "karate"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed",
+          "Data": {
+            "speed": "None",
+            "whiteOverlayRemaining": false,
+            "completedTransformUpgradedAndExhausted": true
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "whiteOverlayRemaining": false,
+            "completedTransformUpgradedAndExhausted": true
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "whiteOverlayRemaining": false,
+            "completedTransformUpgradedAndExhausted": true
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "whiteOverlayRemaining": false,
+            "completedTransformUpgradedAndExhausted": true
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "naraku.lethal-hit-absorption",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "shuriken.created",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "shuriken.lifecycle-cleared",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "redesign.runtime-contracts-validated",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "cards.presentation-validated",
+          "Status": "passed",
+          "Data": {
+            "count": 93
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "black-flame.native-flash-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_ALABAMA_DROP",
+            "rootShift": 0,
+            "uiShift": 6.1035156E-05
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_STRAIGHT_PUNCH",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_BS1260_KICK",
+            "rootShift": 0,
+            "uiShift": 3.0517578E-05
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_SOMERSAULT_KICK",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_HALF_MOON_COMPASS_KICK",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_DRAGON_FLYING_KICK",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "combat-fixes.presentation-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "hell-tornado.presentation-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "naraku.presentation-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "x-attack.nonlethal-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "evasion.cardplay-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "evasion.move-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "spine.platform-extension-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "dark-strike.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.card-returned",
+          "Status": "passed",
+          "Data": {
+            "combatInProgress": true,
+            "focusAlive": false,
+            "focusCurrentHp": 0,
+            "focusBlock": 0,
+            "hittableEnemyCount": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.multi-hit.completed",
+          "Status": "passed",
+          "Data": {
+            "sessionId": 1,
+            "resolvedHits": 3,
+            "killAttempts": 1,
+            "successfulKills": 1
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.stationary-ui.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.presentation-fallback.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.completed",
+          "Status": "passed",
+          "Data": {
+            "combatInProgress": false,
+            "focusAlive": false,
+            "focusCurrentHp": 0,
+            "hittableEnemyCount": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "fresh.saved",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "fresh.restart-requested",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "resume",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "resume",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "resume",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "resume",
+          "Name": "resume.loaded",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "resume",
+          "Name": "resume.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.starting",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "character.selected",
+          "Status": "passed",
+          "Data": {
+            "characterId": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "character.selected",
+          "Status": "passed",
+          "Data": {
+            "characterId": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.before",
+          "Status": "passed",
+          "Data": {
+            "path": "/root/Game/RootSceneContainer/Run/RoomContainer/CombatRoom/CombatSceneContainer/EnemyContainer/@Control@1397/Nibbit/Visuals",
+            "global": "(1254, 723)"
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.actor-return",
+          "Status": "passed",
+          "Data": {
+            "beforePixels": 2423,
+            "afterPixels": 1820,
+            "otherPixels": 1810,
+            "globalPosition": "(1254, 723)",
+            "path": "/root/Game/RootSceneContainer/Run/GlobalUi/OverlayScreensContainer/GameOverScreen/ScreenshakeContainer/CreatureContainer/Nibbit/Visuals",
+            "rootPosition": "(310, 200)",
+            "rootBaseline": "(310, 200)",
+            "visible": true,
+            "visualPosition": "(1270, 740)"
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.completed",
+          "Status": "passed",
+          "Data": {
+            "sessionId": 1,
+            "resolvedHits": 1,
+            "killAttempts": 1,
+            "successfulKills": 1,
+            "targetHp": 0
+          }
+        }
+      ],
+      "contractSha256": "ac3a962c4d73823af5a9210672a8eb522d77c5368d383c8bc604d94b68956ddc"
+    },
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "898a306c149502a453304e6d963cbfe2ddeb72cc",
+        "bundleVersion": "1.0.10",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.5",
+        "additionalMods": [],
+        "bundleSha256": "c7477707663acb4a50c87046a0887710ac0af115152c1f4094e9617364161ed7",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "release038",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-04T14:04:04.7928314+08:00"
+      },
+      "checkpoints": [
+        {
+          "Phase": "release038",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "release038",
+          "Name": "telemetry.notice-dismissed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "release038",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release039.spin-audio",
+          "Status": "passed",
+          "Data": {
+            "loopWraps": 17,
+            "pauseDriftMs": 0,
+            "outro": true,
+            "nativeStateAtRelease": 2,
+            "released": true
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release109.spin-threshold",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "energy": 3,
+            "spin": false
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release109.spin-threshold",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "energy": 4,
+            "spin": false
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release109.spin-threshold",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "energy": 5,
+            "spin": true
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release109.spin-threshold",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "energy": 5,
+            "spin": false
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.head-contact",
+          "Status": "passed",
+          "Data": {
+            "form": 0,
+            "scale": 0.8,
+            "gap": -0.00012207031
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.head-contact",
+          "Status": "passed",
+          "Data": {
+            "form": 0,
+            "scale": 1.3,
+            "gap": 0.00012207031
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.head-contact",
+          "Status": "passed",
+          "Data": {
+            "form": 1,
+            "scale": 0.8,
+            "gap": -0.00012207031
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.head-contact",
+          "Status": "passed",
+          "Data": {
+            "form": 1,
+            "scale": 1.3,
+            "gap": 0.00012207031
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.head-contact",
+          "Status": "passed",
+          "Data": {
+            "form": 2,
+            "scale": 0.8,
+            "gap": -6.1035156E-05
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.head-contact",
+          "Status": "passed",
+          "Data": {
+            "form": 2,
+            "scale": 1.3,
+            "gap": 0.00012207031
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.head-contact",
+          "Status": "passed",
+          "Data": {
+            "form": 3,
+            "scale": 0.8,
+            "gap": -6.1035156E-05
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.head-contact",
+          "Status": "passed",
+          "Data": {
+            "form": 3,
+            "scale": 1.3,
+            "gap": 6.1035156E-05
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.dark-move",
+          "Status": "passed",
+          "Data": {
+            "move": "DARK_COUNTER_STANCE",
+            "hp": 5000
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.dark-move",
+          "Status": "passed",
+          "Data": {
+            "move": "DARK_STRIKE",
+            "hp": 4976
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.dark-move",
+          "Status": "passed",
+          "Data": {
+            "move": "DEATH_SLASH",
+            "hp": 4941
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.dark-move",
+          "Status": "passed",
+          "Data": {
+            "move": "DARK_ROBE",
+            "hp": 4941
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.dark-move",
+          "Status": "passed",
+          "Data": {
+            "move": "DARK_STRIKE",
+            "hp": 4909
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.dark-move",
+          "Status": "passed",
+          "Data": {
+            "move": "DEATH_SLASH",
+            "hp": 4874
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.dark-move",
+          "Status": "passed",
+          "Data": {
+            "move": "DARK_ROBE",
+            "hp": 4874
+          }
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.dark-evaded-with-ally",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "release038",
+          "Name": "finisher.architect-stationary-ui.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.architect-continue-victory",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "release038",
+          "Name": "release109.press-pass-architect-victory",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "release038",
+          "Name": "release038.completed",
+          "Status": "passed",
+          "Data": null
+        }
+      ],
+      "contractSha256": "ac3a962c4d73823af5a9210672a8eb522d77c5368d383c8bc604d94b68956ddc"
+    }
+  ],
+  "ritsuLib": {
+    "runtimeVersion": "0.6.5",
+    "compileVersion": "0.5.12",
+    "dlls": [
+      {
+        "sha256": "b82ce613a2811b169f9dd05669c1503d7928a209eab22ba85222abddb05ce9ec",
+        "name": "STS2-RitsuLib.dll"
+      }
+    ]
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "tags": "Characters,Simplified Chinese,english,japanese",
+    "remoteTagsVerified": true,
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "remoteDescriptionVerified": true,
+    "localizedLanguages": [
+      "english",
+      "schinese",
+      "japanese"
+    ],
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "mainPreview": "https://images.steamusercontent.com/ugc/13765530479187689089/F5A5A0550ED077F95747BF804BDCBE2119369C6A/",
+    "wideCoverUrl": "https://images.steamusercontent.com/ugc/17052177617860221983/48CBDACC20B6622E2B43A6CD6FE9AC8918DF6386/",
+    "previewUrlsUnchanged": true,
+    "downloadBytes": 214221206
+  },
+  "validation": {
+    "logicTests": 379,
+    "repository": true,
+    "buildBoundaries": true,
+    "dualHostProducts": true,
+    "dualHostContracts": true,
+    "dualHostSmokeDrivers": true,
+    "gatherKiCost": 0,
+    "sipCost": 0,
+    "tornadoIntroThreshold": true,
+    "pressPassArchitectExclusion": true
+  },
+  "autoAnthony": {
+    "runtimeVersion": "0.3.119",
+    "channel": "preview",
+    "dllSha256": "4fc1dd972fcf3f88bc025d84eaf16765ed93abcd22552287aef4a1a123f415e3",
+    "contractSha256": "0bc9ff4976e95ca6bfa33e4c15f49b052fefabb0f7a74764cb7b17b40352bbb8"
+  },
+  "supersededUpload": {
+    "files": [
+      {
+        "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+        "path": "Box2D.NET.dll"
+      },
+      {
+        "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+        "path": "LICENSE.Box2D.NET.txt"
+      },
+      {
+        "sha256": "2f3fb2664590b18b699608a0d79ce062b9af77d910ef55ef056aa2f6028c642a",
+        "path": "ninjaslayer-variants.manifest"
+      },
+      {
+        "sha256": "112bc95b04f7a3f51b11aa0d70aea67b64cd6760a1da2938ff9f7a7508b2be0f",
+        "path": "NinjaSlayer.dll"
+      },
+      {
+        "sha256": "8a4a506c9a028785edcdc0dea67eae9ade8ad28fe6614accf5294d4da5663d56",
+        "path": "NinjaSlayer.json"
+      },
+      {
+        "sha256": "b813a67d508c3030a5042a4eee02ea063f5262e62f8c18dc081ac9547bb4fd34",
+        "path": "NinjaSlayer.pck"
+      },
+      {
+        "sha256": "1b015291ce37c56aa76aa9273c8e0c51e1d9a84bc788338e66df6046bfd1d521",
+        "path": "SHA256SUMS"
+      },
+      {
+        "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+        "path": "lib\\0.107.1\\compat-target.txt"
+      },
+      {
+        "sha256": "c53160bce10a807aebaa5525143a43cdf3c846384f5a97d88ede23a71c141c6d",
+        "path": "lib\\0.107.1\\NinjaSlayer.dll"
+      },
+      {
+        "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+        "path": "lib\\0.111.0\\compat-target.txt"
+      },
+      {
+        "sha256": "61fc0c927e1679f6d4bb3e54df28caf803dc869b7c55df7547a8b8dfb258d009",
+        "path": "lib\\0.111.0\\NinjaSlayer.AutoAnthony.dll"
+      },
+      {
+        "sha256": "435ce4c2000bf965fca933001b05d94578a94822f48cd5fba1ebf58d6e42faf9",
+        "path": "lib\\0.111.0\\NinjaSlayer.dll"
+      }
+    ],
+    "note": "Steam finished the upload asynchronously after the uploader process stopped; superseded by 1.0.10 with Press Pass correction.",
+    "version": "1.0.9",
+    "sourceRevision": "a9f479ba621155ba4ae25cca08635f25d98de757"
+  },
+  "notRun": [
+    "macOS/Linux live gameplay",
+    "Independent multiplayer clients and transport",
+    "Live-run telemetry save reload (no same-host fixture supplied)",
+    "Reported Naraku-life multiplayer black-screen freeze: awaiting player logs; deferred by user, no fix claimed"
+  ]
+}
