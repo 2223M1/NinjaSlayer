@@ -1,5 +1,5 @@
 {
-  "NINJA_SLAYER_KEYWORD_SCRY.description": "[gold]山札[/gold]の上から指定枚数のカードを見て、その中から任意の枚数を捨てる。山札が空なら、先に捨て札をシャッフルして山札に戻す。",
+  "NINJA_SLAYER_KEYWORD_SCRY.description": "[gold]山札[/gold]の上から指定枚数のカードを見て、その中から任意の枚数を捨てる。",
   "NINJA_SLAYER_KEYWORD_SCRY.title": "占術",
   "NINJA_SLAYER_KEYWORD_JUDGMENT.description": "敵のHPが指定の条件を満たす場合、[gold]ブロック[/gold]を無視して倒す。",
   "NINJA_SLAYER_KEYWORD_JUDGMENT.title": "審判"
