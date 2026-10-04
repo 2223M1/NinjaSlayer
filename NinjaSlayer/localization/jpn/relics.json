@@ -21,7 +21,7 @@
   "NINJA_SLAYER_RELIC_MOTHER_UNIX_ACCESS_KEY_RELIC.description": "ターン開始時、カードを引く前に[gold]占術[/gold]{Cards:diff()}。",
   "NINJA_SLAYER_RELIC_MOTHER_UNIX_ACCESS_KEY_RELIC.flavor": "彼女は気を失ってなどいなかった。全速のタイピングが自爆命令を解除する。",
   "NINJA_SLAYER_RELIC_NSTV_PRESS_PASS_RELIC.title": "NSTV記者証",
-  "NINJA_SLAYER_RELIC_NSTV_PRESS_PASS_RELIC.description": "イベントで「取材」を選べる。ランダムなカード3枚をアップグレードし、イベントを終了する。",
+  "NINJA_SLAYER_RELIC_NSTV_PRESS_PASS_RELIC.description": "アーキテクト以外のイベントで「取材」を選べる。ランダムなカード3枚をアップグレードし、イベントを終了する。",
   "NINJA_SLAYER_RELIC_NSTV_PRESS_PASS_RELIC.flavor": "「私のジャーナリスト精神にかけて、見過ごすわけにはいかないわ」",
   "NINJA_SLAYER_RELIC_NSTV_PRESS_PASS_RELIC.record.title": "取材",
   "NINJA_SLAYER_RELIC_NSTV_PRESS_PASS_RELIC.record.description": "ランダムなカード3枚をアップグレードし、立ち去る。",

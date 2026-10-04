@@ -15,7 +15,7 @@
   "NINJA_SLAYER_RELIC_MOTHER_UNIX_ACCESS_KEY_RELIC.description": "At the start of your turn, [gold]Scry[/gold] {Cards:diff()} before drawing.",
   "NINJA_SLAYER_RELIC_MOTHER_UNIX_ACCESS_KEY_RELIC.flavor": "She had not fainted, of course. Full-speed typing cancelled the self-destruct command.",
   "NINJA_SLAYER_RELIC_NSTV_PRESS_PASS_RELIC.title": "NSTV Press Pass",
-  "NINJA_SLAYER_RELIC_NSTV_PRESS_PASS_RELIC.description": "In events, you may choose to Report: Upgrade 3 random cards, then end the event.",
+  "NINJA_SLAYER_RELIC_NSTV_PRESS_PASS_RELIC.description": "In events other than the Architect encounter, you may choose to Report: Upgrade 3 random cards, then end the event.",
   "NINJA_SLAYER_RELIC_NSTV_PRESS_PASS_RELIC.flavor": "As a journalist, I swear I cannot turn a blind eye.",
   "NINJA_SLAYER_RELIC_NSTV_PRESS_PASS_RELIC.record.title": "Report",
   "NINJA_SLAYER_RELIC_NSTV_PRESS_PASS_RELIC.record.description": "Upgrade 3 random cards, then leave.",

@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Extensions;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Events;
 using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using NinjaSlayer.Relics;
 using STS2RitsuLib.Patching.Models;
@@ -33,7 +34,7 @@ public sealed class ReporterPassEventOptionPatch : IPatchMethod
 
     public static void Prefix(EventModel __instance, ref IEnumerable<EventOption> eventOptions)
     {
-        if (__instance.Owner?.GetRelic<NSTVPressPassRelic>() == null ||
+        if (__instance is TheArchitect || __instance.Owner?.GetRelic<NSTVPressPassRelic>() == null ||
             __instance.IsFinished || eventOptions == null)
         {
             return;

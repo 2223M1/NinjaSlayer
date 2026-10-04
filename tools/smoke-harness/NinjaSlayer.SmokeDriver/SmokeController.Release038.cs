@@ -126,11 +126,14 @@ internal sealed partial class SmokeController
             await CardPileCmd.RemoveFromDeck(player.Deck.Cards.ToArray(), showPreview: false);
             await CardPileCmd.Add(run.CreateCard(ModelDb.Card<NinjaSlayer.Cards.Standard.AlabamaDrop>(), player),
                 MegaCrit.Sts2.Core.Entities.Cards.PileType.Deck);
+            await RelicCmd.Obtain<NSTVPressPassRelic>(player);
             await RunManager.Instance.EnterRoomDebug(RoomType.Event, model: ModelDb.Event<TheArchitect>());
             var model = ((EventRoom)run.CurrentRoom!).LocalMutableEvent;
             await WaitUntilAsync(() => model.CurrentOptions.Count > 0, "Architect options missing.");
             Require(NCombatRoom.Instance!.GetNodeOrNull("NinjaSlayerArchitectExecution") == null,
                 "Architect executed during opening dialogue.");
+            Require(model.CurrentOptions.All(option => option.TextKey != "NINJA_SLAYER_REPORTER_PASS_RECORD"),
+                "Press Pass must not bypass the Architect victory dialogue.");
             await model.CurrentOptions.Single().Chosen();
             // Native options appear before the separate room entrance finishes.
             // Sample execution UI from its standing layout, not the entrance slide.
@@ -149,6 +152,8 @@ internal sealed partial class SmokeController
                         "Architect Alabama recovery snapped the body back to its layout root before walking off.");
                 };
                 using var architectUi = new FinisherUiProbe(player.Creature.GetCreatureNode()!);
+                Require(model.CurrentOptions.All(option => option.TextKey != "NINJA_SLAYER_REPORTER_PASS_RECORD"),
+                    "Press Pass reappeared on the final Architect Continue.");
                 await model.CurrentOptions.Single().Chosen();
                 await WaitUntilAsync(() => SaveManager.Instance.Progress.Wins > wins,
                     "Architect Continue did not finish the run.");
@@ -159,6 +164,7 @@ internal sealed partial class SmokeController
             finally { NonInteractiveMode.AutoSlayerCheck = autoslay; }
             Require(SaveManager.Instance.Progress.Wins == wins + 1, "Architect victory did not complete exactly once.");
             _checkpoints.Write("release038.architect-continue-victory");
+            _checkpoints.Write("release109.press-pass-architect-victory");
         }
         finally
         {
