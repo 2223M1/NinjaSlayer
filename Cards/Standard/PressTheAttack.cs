@@ -13,10 +13,11 @@ namespace NinjaSlayer.Cards.Standard;
 public sealed class PressTheAttack : NinjaSlayerUncommonCard
 {
     public PressTheAttack() : base(nameof(PressTheAttack), 2, CardType.Attack, TargetType.AnyEnemy) { }
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(16, ValueProp.Move), new CardsVar(4)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(5, ValueProp.Move), new RepeatVar(3), new CardsVar(4)];
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         var attack = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+            .WithHitCount(DynamicVars.Repeat.IntValue)
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
             .FromCard(this)
 #else
@@ -31,7 +32,7 @@ public sealed class PressTheAttack : NinjaSlayerUncommonCard
     }
     protected override void OnUpgrade()
     {
-        DynamicVars.Damage.UpgradeValueBy(4);
+        DynamicVars.Damage.UpgradeValueBy(1);
         DynamicVars.Cards.UpgradeValueBy(1);
     }
 }

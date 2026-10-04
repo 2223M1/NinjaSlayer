@@ -11,7 +11,7 @@ namespace NinjaSlayer.Cards.Standard;
 public sealed class FlameGuard : NinjaSlayerCommonCard
 {
     public override bool GainsBlock => true;
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(12, ValueProp.Move)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(15, ValueProp.Move)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromCard<BlackFlame>()];
 

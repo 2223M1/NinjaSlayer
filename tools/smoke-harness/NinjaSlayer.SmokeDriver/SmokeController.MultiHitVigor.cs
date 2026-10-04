@@ -68,7 +68,7 @@ internal sealed partial class SmokeController
             foreach (bool upgraded in new[] { false, true })
             foreach (var speed in new[] { FastModeType.Normal, FastModeType.Fast })
             foreach (var model in new CardModel[] { ModelDb.Card<StormFist>(), ModelDb.Card<DragonRoundhouseKick>(),
-                         ModelDb.Card<PalmThrust>(), ModelDb.Card<AntiAirBangBangFist>(), ModelDb.Card<TornadoFist>() })
+                         ModelDb.Card<PalmThrust>(), ModelDb.Card<PressTheAttack>(), ModelDb.Card<AntiAirBangBangFist>(), ModelDb.Card<TornadoFist>() })
             {
                 SaveManager.Instance.PrefsSave.FastMode = speed;
                 CardModel card = combat.CreateCard(model, player);
@@ -88,9 +88,9 @@ internal sealed partial class SmokeController
                 if (action.Exception != null) throw action.Exception;
                 var hits = MultiHitVigorProbe.Commands.SelectMany(a => a.Results).ToArray();
                 int expectedHits = card switch { StormFist => 4, DragonRoundhouseKick => 2,
-                    PalmThrust => upgraded ? 3 : 2, AntiAirBangBangFist => 3, TornadoFist => 8, _ => throw new InvalidOperationException() };
+                    PalmThrust => upgraded ? 3 : 2, PressTheAttack => 3, AntiAirBangBangFist => 3, TornadoFist => 8, _ => throw new InvalidOperationException() };
                 int damage = 10 + (card switch { StormFist => upgraded ? 14 : 10, DragonRoundhouseKick => upgraded ? 9 : 7,
-                    PalmThrust => 5, AntiAirBangBangFist => upgraded ? 11 : 8, TornadoFist => upgraded ? 6 : 4,
+                    PalmThrust => 6, PressTheAttack => upgraded ? 6 : 5, AntiAirBangBangFist => upgraded ? 11 : 8, TornadoFist => upgraded ? 6 : 4,
                     _ => throw new InvalidOperationException() });
                 int targets = card.TargetType == TargetType.AllEnemies ? combat.HittableEnemies.Count : 1;
                 Require(MultiHitVigorProbe.Commands.Count == 1 && hits.Length == expectedHits

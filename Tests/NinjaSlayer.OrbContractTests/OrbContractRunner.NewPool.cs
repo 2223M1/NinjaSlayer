@@ -70,6 +70,7 @@ public partial class OrbContractRunner
             }
             await VerifyDynamicCardNumbers();
         }
+        VerifyArchitectDialogueText();
         GD.Print("PASS bilingual base/upgraded card descriptions");
         if (_hasPresentationResources)
             GD.Print("PASS mechanism tips, generated previews and native event text");
@@ -99,14 +100,14 @@ public partial class OrbContractRunner
 
             await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
             await PowerCmd.Apply<DexterityPower>(Choice, combat.Player.Creature, 2, combat.Player.Creature, null);
-            Expect(palm, 8);
+            Expect(palm, 9);
             Expect(adjustment, upgraded ? 14 : 10);
             Expect(judge, 6, block: true);
             Expect(storm, upgraded ? 13 : 10);
 
             await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, -5, combat.Player.Creature, null);
             await PowerCmd.Apply<DexterityPower>(Choice, combat.Player.Creature, -4, combat.Player.Creature, null);
-            Expect(palm, 3);
+            Expect(palm, 4);
             Expect(adjustment, upgraded ? 9 : 5);
             Expect(judge, 2, block: true);
             Expect(storm, upgraded ? 8 : 5);
@@ -114,7 +115,7 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<WeakPower>(Choice, combat.Player.Creature, 1, combat.Enemy, null);
             await PowerCmd.Apply<FrailPower>(Choice, combat.Player.Creature, 1, combat.Enemy, null);
             await PowerCmd.Apply<VulnerablePower>(Choice, combat.Enemy, 1, combat.Player.Creature, null);
-            Expect(palm, 3);
+            Expect(palm, 4);
             Expect(adjustment, upgraded ? 10 : 5);
             Expect(judge, 1, block: true);
             Expect(storm, upgraded ? 9 : 5);
@@ -270,8 +271,8 @@ public partial class OrbContractRunner
                 "Great Uke must exhaust Status cards from all three piles and itself.");
             Require(combat.Player.PlayerCombatState.Energy == before + 4
                 && combat.Player.Creature.GetPowerAmount<BufferPower>() == 1
-                && combat.Player.Creature.GetPowerAmount<StrengthPower>() == 4,
-                "Great Uke must play Chado, skip Wound and trigger Black Flame exhaust once.");
+                && combat.Player.Creature.GetPowerAmount<StrengthPower>() == 0,
+                "Great Uke must play Chado, skip Wound and exhaust Black Flame without the retired Strength reward.");
         }
         using (var combat = new OrbCombat())
         {
@@ -289,8 +290,11 @@ public partial class OrbContractRunner
                 && PileType.Hand.GetPile(combat.Player).Cards.OfType<BlackFlame>().Count() == 1,
                 "Recovery must transform exactly one selected card.");
             await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
+            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 0,
+                "Recovery must ignore itself and attacks.");
+            await CardCmd.AutoPlay(Choice, second, null);
             Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 3,
-                "Recovery must grant Naraku Life once per attack played.");
+                "Recovery must grant Naraku Life for a subsequent Skill.");
 #if NINJASLAYER_CHANNEL_STABLE
             await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
 #else
@@ -473,8 +477,8 @@ public partial class OrbContractRunner
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [tea]));
             await CardCmd.AutoPlay(Choice, AddCard<TomoeThrow>(combat, upgraded: true), combat.Enemy);
             Require(combat.Enemy.GetPowerAmount<WeakPower>() == 3 && !second.HasPower<WeakPower>()
-                && combat.Player.Creature.Block == 7 && tea.Pile?.Type == PileType.Exhaust,
-                "Sudden Guard must consume tea, grant seven Block and weaken only its selected target.");
+                && combat.Player.Creature.Block == 11 && tea.Pile?.Type == PileType.Exhaust,
+                "Sudden Guard must consume tea, grant eleven Block and weaken only its selected target.");
         }
         GD.Print("PASS Endurance turn history, Strong Chop attack counter, two-card copying, retention, Shuriken Storm and selected-target Weak");
     }

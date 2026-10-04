@@ -187,6 +187,10 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                 context.RecordDamageDealt((int)kick.Results.SelectMany(r => r).Sum(r => r.UnblockedDamage));
                 NinjaComponentCardPatches.DoubleDamageThisTurn(card);
                 break;
+            case "target_multi":
+                await DamageCmd.Attack(amount).FromCard(card, context.CardPlay).WithHitCount(Value("hits"))
+                    .Targeting(context.Target!).ExecuteWithFinisher(choice, card, context.CardPlay);
+                break;
             case "area_multi":
                 var multi = DamageCmd.Attack(amount).FromCard(card, context.CardPlay).WithHitCount(Value("hits"))
                     .TargetingAllOpponents(card.CombatState!);
@@ -281,9 +285,11 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                 break;
             case "blackflame_hand":
             case "blackflame_draw":
+            case "blackflame_discard":
                 for (int i = 0; i < amount; i++)
                     await NinjaSlayerCardCmd.AddGeneratedCard<BlackFlame>(owner,
-                        context.RuntimeSpec.Variant == "blackflame_hand" ? PileType.Hand : PileType.Draw,
+                        context.RuntimeSpec.Variant == "blackflame_hand" ? PileType.Hand
+                            : context.RuntimeSpec.Variant == "blackflame_discard" ? PileType.Discard : PileType.Draw,
                         CardPilePosition.Random);
                 break;
             default:

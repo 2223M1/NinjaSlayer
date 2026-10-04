@@ -1136,14 +1136,16 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_GATHER_KI",
     "Upgraded": false,
-    "Cost": 0,
+    "Cost": 1,
     "X": false,
     "Type": "Skill",
     "Rarity": "Uncommon",
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Retain"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/GatherKi.png",
     "Vars": {}
@@ -1245,7 +1247,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/FlameGuard.png",
     "Vars": {
-      "Block": 12
+      "Block": 15
     }
   },
   {
@@ -1262,7 +1264,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/FlameGuard.png",
     "Vars": {
-      "Block": 15
+      "Block": 18
     }
   },
   {
@@ -1778,7 +1780,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/TomoeThrow.png",
     "Vars": {
-      "Block": 6,
+      "Block": 9,
       "WeakPower": 2
     }
   },
@@ -1796,7 +1798,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/TomoeThrow.png",
     "Vars": {
-      "Block": 7,
+      "Block": 11,
       "WeakPower": 3
     }
   },
@@ -1911,7 +1913,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_MOONSAULT",
     "Upgraded": false,
-    "Cost": 1,
+    "Cost": 0,
     "X": false,
     "Type": "Skill",
     "Rarity": "Uncommon",
@@ -1926,7 +1928,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_MOONSAULT",
     "Upgraded": true,
-    "Cost": 1,
+    "Cost": 0,
     "X": false,
     "Type": "Skill",
     "Rarity": "Uncommon",
@@ -1954,7 +1956,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/PalmThrust.png",
     "Vars": {
-      "Damage": 5,
+      "Damage": 6,
       "Repeat": 2
     }
   },
@@ -1972,7 +1974,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/PalmThrust.png",
     "Vars": {
-      "Damage": 5,
+      "Damage": 6,
       "Repeat": 3
     }
   },
@@ -2193,7 +2195,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_KINDLE",
     "Upgraded": false,
-    "Cost": 1,
+    "Cost": 0,
     "X": false,
     "Type": "Skill",
     "Rarity": "Uncommon",
@@ -2204,14 +2206,14 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Kindle.png",
     "Vars": {
-      "BlackFlames": 2,
-      "Cards": 3
+      "BlackFlames": 1,
+      "Cards": 2
     }
   },
   {
     "Id": "CARD.NINJA_SLAYER_CARD_KINDLE",
     "Upgraded": true,
-    "Cost": 1,
+    "Cost": 0,
     "X": false,
     "Type": "Skill",
     "Rarity": "Uncommon",
@@ -2222,8 +2224,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Kindle.png",
     "Vars": {
-      "BlackFlames": 2,
-      "Cards": 4
+      "BlackFlames": 1,
+      "Cards": 3
     }
   },
   {
@@ -2240,7 +2242,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/DevourFlame.png",
     "Vars": {
-      "StrengthPower": 2
+      "NarakuLife": 2
     }
   },
   {
@@ -2257,7 +2259,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/DevourFlame.png",
     "Vars": {
-      "StrengthPower": 3
+      "NarakuLife": 3
     }
   },
   {
@@ -2371,7 +2373,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_BS1260_KICK",
     "Upgraded": false,
-    "Cost": 3,
+    "Cost": 2,
     "X": false,
     "Type": "Attack",
     "Rarity": "Common",
@@ -2382,13 +2384,13 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BS1260Kick.png",
     "Vars": {
-      "Damage": 27
+      "Damage": 18
     }
   },
   {
     "Id": "CARD.NINJA_SLAYER_CARD_BS1260_KICK",
     "Upgraded": true,
-    "Cost": 3,
+    "Cost": 2,
     "X": false,
     "Type": "Attack",
     "Rarity": "Common",
@@ -2399,7 +2401,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BS1260Kick.png",
     "Vars": {
-      "Damage": 33
+      "Damage": 24
     }
   },
   {
@@ -2612,8 +2614,9 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/PressTheAttack.png",
     "Vars": {
-      "Damage": 16,
-      "Cards": 4
+      "Damage": 5,
+      "Cards": 4,
+      "Repeat": 3
     }
   },
   {
@@ -2630,8 +2633,9 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/PressTheAttack.png",
     "Vars": {
-      "Damage": 20,
-      "Cards": 5
+      "Damage": 6,
+      "Cards": 5,
+      "Repeat": 3
     }
   },
   {

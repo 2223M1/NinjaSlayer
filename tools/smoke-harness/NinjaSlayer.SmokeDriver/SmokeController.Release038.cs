@@ -130,6 +130,18 @@ internal sealed partial class SmokeController
             await RunManager.Instance.EnterRoomDebug(RoomType.Event, model: ModelDb.Event<TheArchitect>());
             var model = ((EventRoom)run.CurrentRoom!).LocalMutableEvent;
             await WaitUntilAsync(() => model.CurrentOptions.Count > 0, "Architect options missing.");
+            var architect = (TheArchitect)model;
+            var dialogues = architect.DialogueSet.CharacterDialogues[player.Character.Id.Entry];
+            Require(dialogues.Count == 4, "Architect dialogue was registered more than once.");
+            for (int visits = 0; visits < 9; visits++)
+            {
+                var valid = architect.DialogueSet.GetValidDialogues(player.Character.Id, visits, visits, false).ToArray();
+                Require(valid.Length > 0 && valid.All(d => d.Lines.All(l => l.LineText.Exists()
+                    && !l.LineText.GetFormattedText().Contains("THE_ARCHITECT"))),
+                    "Architect dialogue contains an unresolved key at a later/repeated visit.");
+            }
+            _checkpoints.Write("release111.architect-dialogue", data: new JsonObject { ["sequences"] = dialogues.Count, ["visitsChecked"] = 9 });
+
             Require(NCombatRoom.Instance!.GetNodeOrNull("NinjaSlayerArchitectExecution") == null,
                 "Architect executed during opening dialogue.");
             Require(model.CurrentOptions.All(option => option.TextKey != "NINJA_SLAYER_REPORTER_PASS_RECORD"),

@@ -15,7 +15,8 @@ public sealed class GatherKi : NinjaSlayerUncommonCard
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromPower<NinjaSlayer.Powers.KaratePower>(), .. HoverTipFactory.FromCardWithCardHoverTips<Chado>()];
 
-    public GatherKi() : base(nameof(GatherKi), 0, CardType.Skill, TargetType.Self) { }
+    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Retain];
+    public GatherKi() : base(nameof(GatherKi), 1, CardType.Skill, TargetType.Self) { }
     protected override bool IsPlayable => PileType.Hand.GetPile(Owner).Cards.OfType<Chado>().Any();
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
@@ -28,5 +29,5 @@ public sealed class GatherKi : NinjaSlayerUncommonCard
         if (selected.Pile?.Type == PileType.Exhaust)
             await PowerCmd.Apply<KaratePower>(choiceContext, Owner.Creature, karate, Owner.Creature, this);
     }
-    protected override void OnUpgrade() => AddKeyword(CardKeyword.Retain);
+    protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
 }

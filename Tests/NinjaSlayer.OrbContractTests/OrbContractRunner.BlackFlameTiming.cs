@@ -54,7 +54,7 @@ public partial class OrbContractRunner
             BurnSounds.Clear();
             await CardCmd.AutoPlay(Choice, AddCard<BS1260Kick>(combat, upgraded: upgraded), combat.Enemy);
             int burnDamage = held * 7;
-            Require(combat.Enemy.CurrentHp == 1000 - (upgraded ? 33 : 27) - burnDamage
+            Require(combat.Enemy.CurrentHp == 1000 - (upgraded ? 24 : 18) - burnDamage
                 && BurnSounds.Count == held,
                 "BS1260 must burn only pre-existing held flames, with one sound and one amplification per flame.");
             CombatManager.Instance.History.Clear();

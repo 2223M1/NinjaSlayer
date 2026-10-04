@@ -20,7 +20,7 @@ public partial class OrbContractRunner
             using var combat = new OrbCombat();
             await PowerCmd.Apply<VigorPower>(Choice, combat.Player.Creature, 7, combat.Player.Creature, null);
             await CardCmd.AutoPlay(Choice, AddCard<PalmThrust>(combat, upgraded: upgraded), null);
-            Require(combat.Enemy.CurrentHp == 1000 - 12 * (upgraded ? 3 : 2)
+            Require(combat.Enemy.CurrentHp == 1000 - 13 * (upgraded ? 3 : 2)
                 && !combat.Player.Creature.HasPower<VigorPower>(), "Palm Thrust must spend Vigor after all random hits.");
         }
         using (var combat = new OrbCombat())
