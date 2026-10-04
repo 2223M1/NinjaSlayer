@@ -21,7 +21,7 @@
   "NINJA_SLAYER_RELIC_MOTHER_UNIX_ACCESS_KEY_RELIC.description": "在你的回合开始时，抽牌前[gold]预见[/gold]{Cards:diff()}。",
   "NINJA_SLAYER_RELIC_MOTHER_UNIX_ACCESS_KEY_RELIC.flavor": "她当然没有昏厥。全Type速度的输入解除了自爆指令。",
   "NINJA_SLAYER_RELIC_NSTV_PRESS_PASS_RELIC.title": "NSTV记者证",
-  "NINJA_SLAYER_RELIC_NSTV_PRESS_PASS_RELIC.description": "在事件中可以选择“取材”：随机升级3张牌，然后结束该事件。",
+  "NINJA_SLAYER_RELIC_NSTV_PRESS_PASS_RELIC.description": "在建筑师以外的事件中可以选择“取材”：随机升级3张牌，然后结束该事件。",
   "NINJA_SLAYER_RELIC_NSTV_PRESS_PASS_RELIC.flavor": "“以我的记者精神起誓，绝对无法视而不见。”",
   "NINJA_SLAYER_RELIC_NSTV_PRESS_PASS_RELIC.record.title": "取材",
   "NINJA_SLAYER_RELIC_NSTV_PRESS_PASS_RELIC.record.description": "随机升级3张牌，然后离开。",
