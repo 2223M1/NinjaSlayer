@@ -45,7 +45,9 @@ public partial class OrbContractRunner
         foreach (bool upgraded in new[] { false, true })
         foreach (int teaCount in new[] { 0, 1, 2 })
         {
-            using var combat = new OrbCombat();
+            using var combat = new OrbCombat(ninjaSlayer: true);
+            Require(combat.Player.Creature.CurrentHp == 80 && combat.Player.Creature.MaxHp == 80,
+                "A new NinjaSlayer run must start at 80/80 HP.");
             var source = AddCard<HissAndHuff>(combat, upgraded: upgraded);
             combat.Player.Creature.SetCurrentHpInternal(30);
             var teas = Enumerable.Range(0, teaCount).Select(_ => AddCard<Chado>(combat)).ToArray();
@@ -58,7 +60,7 @@ public partial class OrbContractRunner
                 return [teas.Last()];
             }));
             await CardCmd.AutoPlay(Choice, source, null);
-            Require(combat.Player.Creature.CurrentHp == 30 + (teaCount > 0 ? upgraded ? 9 : 6 : 0),
+            Require(combat.Player.Creature.CurrentHp == 30 + (teaCount > 0 ? upgraded ? 12 : 8 : 0),
                 "Healing must require one successfully selected hand tea, including autoplay without tea.");
             Require(teas.Count(card => card.Pile?.Type == PileType.Exhaust) == Math.Min(teaCount, 1)
                 && drawTea.Pile?.Type == PileType.Draw && discardTea.Pile?.Type == PileType.Discard

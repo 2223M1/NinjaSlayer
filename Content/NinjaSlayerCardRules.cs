@@ -2,7 +2,7 @@ namespace NinjaSlayer.Content;
 
 public static class NinjaSlayerCardRules
 {
-    public const int StartingHp = 72;
+    public const int StartingHp = 80;
     public const int StartingStrikeCount = 4;
     public const int StartingDefendCount = 4;
     public const int StartingSignatureCardCount = 1;

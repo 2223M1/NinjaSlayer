@@ -13,7 +13,7 @@ public sealed class HissAndHuff : NinjaSlayerUncommonCard
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
     protected override bool IsPlayable => PileType.Hand.GetPile(Owner).Cards.OfType<Chado>().Any();
     protected override bool ShouldGlowGoldInternal => CombatState != null && IsPlayable;
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("Heal", 6)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("Heal", 8)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromCard<Chado>()];
 
     public HissAndHuff()
@@ -34,5 +34,5 @@ public sealed class HissAndHuff : NinjaSlayerUncommonCard
         await CreatureCmd.Heal(Owner.Creature, DynamicVars["Heal"].BaseValue);
     }
 
-    protected override void OnUpgrade() => DynamicVars["Heal"].UpgradeValueBy(3);
+    protected override void OnUpgrade() => DynamicVars["Heal"].UpgradeValueBy(4);
 }

@@ -1710,7 +1710,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/HissAndHuff.png",
     "Vars": {
-      "Heal": 6
+      "Heal": 8
     }
   },
   {
@@ -1729,7 +1729,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/HissAndHuff.png",
     "Vars": {
-      "Heal": 9
+      "Heal": 12
     }
   },
   {
