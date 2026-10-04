@@ -1,0 +1,1058 @@
+{
+  "version": "1.0.12",
+  "sourceRevision": "2e7705cd6bd202d0bcee35bd2a33fb297181fd78",
+  "verifiedAtUtc": "2026-10-04T12:43:36.6143938+00:00",
+  "pullRequest": "https://github.com/2223M1/NinjaSlayer/pull/177",
+  "includedPullRequests": [
+    "https://github.com/2223M1/NinjaSlayer/pull/176",
+    "https://github.com/2223M1/NinjaSlayer/pull/177"
+  ],
+  "ci": {
+    "conclusion": "success",
+    "databaseId": 37202423144,
+    "headSha": "2e7705cd6bd202d0bcee35bd2a33fb297181fd78",
+    "status": "completed"
+  },
+  "contributors": [
+    "2223M1"
+  ],
+  "author": "2223M1 <104559061+2223M1@users.noreply.github.com>",
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "804960bfbe93f81480ffee5b25dac5467f27fd8da2b29cfb518fe1b9d3aaeee6",
+    "1b77dab3b8b454d4103e9ed8d6f3d6b3850e05928dc13ae802a972a764f14901",
+    "3a5018fc6fdb8045bf4c49ac685a185792c797e1b3fab1fa48b40d5d00fa5398",
+    "32c9cabe01700c849575306c0dc9310461e1110ddd15c1f4c6a1a11f39d38128",
+    "aafa7057a4eafe9b88175f6785225b1660fe5401c8633b7033d0b1f76f7b94f3",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "ed2f84686f016c4b6b566d66529cae2f75c6aeb60179c8a19585901b01145ad1",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "e28d13935300a68f5c2854e18b26e1fe33579d3b10ee71b77af46bb6770a25d5",
+    "a33d3582c43363edbe214e882fc4e6678b983d022b0e689d86522085a2cc3015"
+  ],
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+      "bytes": 317440
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+      "bytes": 1097
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "sha256": "804960bfbe93f81480ffee5b25dac5467f27fd8da2b29cfb518fe1b9d3aaeee6",
+      "bytes": 522
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "sha256": "1b77dab3b8b454d4103e9ed8d6f3d6b3850e05928dc13ae802a972a764f14901",
+      "bytes": 24576
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "sha256": "3a5018fc6fdb8045bf4c49ac685a185792c797e1b3fab1fa48b40d5d00fa5398",
+      "bytes": 363
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "sha256": "32c9cabe01700c849575306c0dc9310461e1110ddd15c1f4c6a1a11f39d38128",
+      "bytes": 209293112
+    },
+    {
+      "path": "SHA256SUMS",
+      "sha256": "aafa7057a4eafe9b88175f6785225b1660fe5401c8633b7033d0b1f76f7b94f3",
+      "bytes": 1008
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "sha256": "ed2f84686f016c4b6b566d66529cae2f75c6aeb60179c8a19585901b01145ad1",
+      "bytes": 2227200
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "sha256": "e28d13935300a68f5c2854e18b26e1fe33579d3b10ee71b77af46bb6770a25d5",
+      "bytes": 126976
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "sha256": "a33d3582c43363edbe214e882fc4e6678b983d022b0e689d86522085a2cc3015",
+      "bytes": 2230784
+    }
+  ],
+  "live": [
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "2e7705cd6bd202d0bcee35bd2a33fb297181fd78",
+        "bundleVersion": "1.0.12",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.5",
+        "additionalMods": [],
+        "bundleSha256": "aafa7057a4eafe9b88175f6785225b1660fe5401c8633b7033d0b1f76f7b94f3",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "release100",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-04T20:39:30.5598952+08:00"
+      },
+      "checkpoints": [
+        {
+          "Phase": "release100",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "release100",
+          "Name": "telemetry.notice-dismissed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "release100",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "clicks": 1,
+            "confirm": "(1860.0001, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "clicks": 1,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "clicks": 1,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "clicks": 2,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "clicks": 2,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "clicks": 2,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "clicks": 1,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "clicks": 1,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "clicks": 1,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "clicks": 2,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "clicks": 2,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "clicks": 2,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "clicks": 1,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "clicks": 1,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "clicks": 1,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "clicks": 2,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "clicks": 2,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "clicks": 2,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-count-variants",
+          "Status": "passed",
+          "Data": {
+            "selected": 0,
+            "exhaustSelection": false,
+            "shuffle": false,
+            "Draw": {
+              "actual": 3,
+              "displayed": "3"
+            },
+            "Discard": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Exhaust": {
+              "actual": 1,
+              "displayed": "1"
+            }
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-count-variants",
+          "Status": "passed",
+          "Data": {
+            "selected": 1,
+            "exhaustSelection": false,
+            "shuffle": false,
+            "Draw": {
+              "actual": 2,
+              "displayed": "2"
+            },
+            "Discard": {
+              "actual": 1,
+              "displayed": "1"
+            },
+            "Exhaust": {
+              "actual": 1,
+              "displayed": "1"
+            }
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-count-variants",
+          "Status": "passed",
+          "Data": {
+            "selected": 3,
+            "exhaustSelection": false,
+            "shuffle": false,
+            "Draw": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Discard": {
+              "actual": 3,
+              "displayed": "3"
+            },
+            "Exhaust": {
+              "actual": 1,
+              "displayed": "1"
+            }
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-count-variants",
+          "Status": "passed",
+          "Data": {
+            "selected": 3,
+            "exhaustSelection": true,
+            "shuffle": false,
+            "Draw": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Discard": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Exhaust": {
+              "actual": 4,
+              "displayed": "4"
+            }
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release112.scry-shuffle",
+          "Status": "passed",
+          "Data": {
+            "selected": 0,
+            "exhaustSelection": false,
+            "shuffle": true,
+            "Draw": {
+              "actual": 3,
+              "displayed": "3"
+            },
+            "Discard": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Exhaust": {
+              "actual": 4,
+              "displayed": "4"
+            }
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release112.scry-shuffle",
+          "Status": "passed",
+          "Data": {
+            "selected": 1,
+            "exhaustSelection": false,
+            "shuffle": true,
+            "Draw": {
+              "actual": 2,
+              "displayed": "2"
+            },
+            "Discard": {
+              "actual": 1,
+              "displayed": "1"
+            },
+            "Exhaust": {
+              "actual": 4,
+              "displayed": "4"
+            }
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release112.scry-shuffle",
+          "Status": "passed",
+          "Data": {
+            "selected": 3,
+            "exhaustSelection": false,
+            "shuffle": true,
+            "Draw": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Discard": {
+              "actual": 3,
+              "displayed": "3"
+            },
+            "Exhaust": {
+              "actual": 4,
+              "displayed": "4"
+            }
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release112.scry-shuffle",
+          "Status": "passed",
+          "Data": {
+            "selected": 3,
+            "exhaustSelection": true,
+            "shuffle": true,
+            "Draw": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Discard": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Exhaust": {
+              "actual": 7,
+              "displayed": "7"
+            }
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.fake-merchant",
+          "Status": "passed",
+          "Data": {
+            "containerScale": "(1.75, 1.75)",
+            "portraitScale": "(0.5714286, 0.5714286)"
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.completed",
+          "Status": "passed",
+          "Data": null
+        }
+      ],
+      "contractSha256": "9753263b29dfc4a001813b1f192d9d20b16cfdf51ee0027e3cc3a7a524d59dae"
+    },
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "2e7705cd6bd202d0bcee35bd2a33fb297181fd78",
+        "bundleVersion": "1.0.12",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.5",
+        "additionalMods": [],
+        "bundleSha256": "aafa7057a4eafe9b88175f6785225b1660fe5401c8633b7033d0b1f76f7b94f3",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "release100",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-04T20:36:48.6988119+08:00"
+      },
+      "checkpoints": [
+        {
+          "Phase": "release100",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "release100",
+          "Name": "telemetry.notice-dismissed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "release100",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "clicks": 1,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "clicks": 1,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "clicks": 1,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "clicks": 2,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "clicks": 2,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "clicks": 2,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "clicks": 1,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "clicks": 1,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "clicks": 1,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "clicks": 2,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "clicks": 2,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "clicks": 2,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "clicks": 1,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "clicks": 1,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "clicks": 1,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "clicks": 2,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "clicks": 2,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "clicks": 2,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-count-variants",
+          "Status": "passed",
+          "Data": {
+            "selected": 0,
+            "exhaustSelection": false,
+            "shuffle": false,
+            "Draw": {
+              "actual": 3,
+              "displayed": "3"
+            },
+            "Discard": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Exhaust": {
+              "actual": 1,
+              "displayed": "1"
+            }
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-count-variants",
+          "Status": "passed",
+          "Data": {
+            "selected": 1,
+            "exhaustSelection": false,
+            "shuffle": false,
+            "Draw": {
+              "actual": 2,
+              "displayed": "2"
+            },
+            "Discard": {
+              "actual": 1,
+              "displayed": "1"
+            },
+            "Exhaust": {
+              "actual": 1,
+              "displayed": "1"
+            }
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-count-variants",
+          "Status": "passed",
+          "Data": {
+            "selected": 3,
+            "exhaustSelection": false,
+            "shuffle": false,
+            "Draw": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Discard": {
+              "actual": 3,
+              "displayed": "3"
+            },
+            "Exhaust": {
+              "actual": 1,
+              "displayed": "1"
+            }
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.scry-count-variants",
+          "Status": "passed",
+          "Data": {
+            "selected": 3,
+            "exhaustSelection": true,
+            "shuffle": false,
+            "Draw": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Discard": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Exhaust": {
+              "actual": 4,
+              "displayed": "4"
+            }
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release112.scry-shuffle",
+          "Status": "passed",
+          "Data": {
+            "selected": 0,
+            "exhaustSelection": false,
+            "shuffle": true,
+            "Draw": {
+              "actual": 3,
+              "displayed": "3"
+            },
+            "Discard": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Exhaust": {
+              "actual": 4,
+              "displayed": "4"
+            }
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release112.scry-shuffle",
+          "Status": "passed",
+          "Data": {
+            "selected": 1,
+            "exhaustSelection": false,
+            "shuffle": true,
+            "Draw": {
+              "actual": 2,
+              "displayed": "2"
+            },
+            "Discard": {
+              "actual": 1,
+              "displayed": "1"
+            },
+            "Exhaust": {
+              "actual": 4,
+              "displayed": "4"
+            }
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release112.scry-shuffle",
+          "Status": "passed",
+          "Data": {
+            "selected": 3,
+            "exhaustSelection": false,
+            "shuffle": true,
+            "Draw": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Discard": {
+              "actual": 3,
+              "displayed": "3"
+            },
+            "Exhaust": {
+              "actual": 4,
+              "displayed": "4"
+            }
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release112.scry-shuffle",
+          "Status": "passed",
+          "Data": {
+            "selected": 3,
+            "exhaustSelection": true,
+            "shuffle": true,
+            "Draw": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Discard": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Exhaust": {
+              "actual": 7,
+              "displayed": "7"
+            }
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.fake-merchant",
+          "Status": "passed",
+          "Data": {
+            "containerScale": "(1.75, 1.75)",
+            "portraitScale": "(0.5714286, 0.5714286)"
+          }
+        },
+        {
+          "Phase": "release100",
+          "Name": "release100.completed",
+          "Status": "passed",
+          "Data": null
+        }
+      ],
+      "contractSha256": "8df337643cbb272cc6c912ee41b9732f4eee82c0d8ebb0e71d27986358ab0f87"
+    }
+  ],
+  "ritsuLib": {
+    "runtimeVersion": "0.6.5",
+    "compileVersion": "0.5.12",
+    "dlls": [
+      {
+        "name": "STS2-RitsuLib.dll",
+        "sha256": "b82ce613a2811b169f9dd05669c1503d7928a209eab22ba85222abddb05ce9ec"
+      }
+    ]
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "tags": "Characters,Simplified Chinese,english,japanese",
+    "remoteTagsVerified": true,
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "remoteDescriptionVerified": true,
+    "localizedLanguages": [
+      "english",
+      "schinese",
+      "japanese"
+    ],
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "mainPreview": "https://images.steamusercontent.com/ugc/13765530479187689089/F5A5A0550ED077F95747BF804BDCBE2119369C6A/",
+    "wideCoverUrl": "https://images.steamusercontent.com/ugc/17052177617860221983/48CBDACC20B6622E2B43A6CD6FE9AC8918DF6386/",
+    "previewUrlsUnchanged": true,
+    "downloadBytes": 214223094
+  },
+  "validation": {
+    "logicTests": 379,
+    "repository": true,
+    "buildBoundaries": true,
+    "dualHostProducts": true,
+    "dualHostContracts": true,
+    "dualHostSmokeDrivers": true,
+    "emptyScryNativeShuffle": true,
+    "shortPileNoShuffle": true,
+    "shuffleEffectsBeforeSelection": true,
+    "nestedScry": true,
+    "nativePileCounters": true
+  },
+  "autoAnthony": {
+    "runtimeVersion": "0.3.119",
+    "channel": "preview",
+    "dllSha256": "4fc1dd972fcf3f88bc025d84eaf16765ed93abcd22552287aef4a1a123f415e3",
+    "contractSha256": "5cafa2e740b9c70a44b9d15de8214f9bf8d1513655be8289a33aa83c1ade1017"
+  },
+  "notRun": [
+    "macOS/Linux live gameplay",
+    "Independent multiplayer clients and transport",
+    "Reported Naraku-life multiplayer black-screen freeze: awaiting player logs; deferred by user, no fix claimed"
+  ]
+}
