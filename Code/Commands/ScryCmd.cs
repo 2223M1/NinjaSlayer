@@ -27,6 +27,8 @@ public static class ScryCmd
             return default;
         }
 
+        await CardPileCmd.ShuffleIfNecessary(choiceContext, player);
+        if (CombatManager.Instance.IsOverOrEnding) return default;
         CardPile drawPile = PileType.Draw.GetPile(player);
         List<CardModel> cardsToScry = drawPile.Cards
             .Take(amount)
