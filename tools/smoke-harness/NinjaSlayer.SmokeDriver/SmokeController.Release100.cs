@@ -114,16 +114,19 @@ internal sealed partial class SmokeController
                 Require(displayedDrawCount == drawCount.ToString(),
                     $"Scry left draw-pile count stale: displayed {displayedDrawCount}, actual {drawCount}.");
             }
+            foreach (bool shuffle in new[] { false, true })
             foreach (var (selected, exhaustSelection) in new[] { (0, false), (1, false), (3, false), (3, true) })
             {
-                await CardPileCmd.Add(PileType.Draw.GetPile(player).Cards.ToArray(), PileType.Discard);
+                foreach (var old in player.Piles.Where(p => p.Type is PileType.Draw or PileType.Discard)
+                             .SelectMany(p => p.Cards).ToArray())
+                    await CardPileCmd.RemoveFromCombat(old);
                 var cards = Enumerable.Range(0, 3).Select(_ => combat.CreateCard<DefendNinjaSlayer>(player)).ToArray();
                 await CardPileCmd.Add(cards, PileType.Hand);
                 await WaitFrames(120);
-                await CardPileCmd.Add(cards, PileType.Draw, CardPilePosition.Top);
+                await CardPileCmd.Add(cards, shuffle ? PileType.Discard : PileType.Draw, CardPilePosition.Top);
                 await WaitFrames(120);
-                Require(NCombatRoom.Instance!.Ui.DrawPile.GetNode<Label>("CountContainer/Count").Text == "3",
-                    "Fixture must show three cards before the selection-count scenarios.");
+                Require(NCombatRoom.Instance!.Ui.DrawPile.GetNode<Label>("CountContainer/Count").Text == (shuffle ? "0" : "3"),
+                    "Fixture must show the actual initial draw count before Scry.");
                 Task<ScryResult> scry = ScryCmd.Execute(choice, player, 3, exhaustSelection);
                 NSimpleCardSelectScreen? screen = null;
                 await WaitUntilAsync(() => (screen = FindDescendant<NSimpleCardSelectScreen>(_tree.Root)) != null,
@@ -135,7 +138,7 @@ internal sealed partial class SmokeController
                 await scry;
                 await WaitFrames(120);
                 var ui = NCombatRoom.Instance!.Ui;
-                var counts = new JsonObject { ["selected"] = selected, ["exhaustSelection"] = exhaustSelection };
+                var counts = new JsonObject { ["selected"] = selected, ["exhaustSelection"] = exhaustSelection, ["shuffle"] = shuffle };
                 foreach (var (pileType, node) in new (PileType, Control)[]
                     { (PileType.Draw, ui.DrawPile), (PileType.Discard, ui.DiscardPile), (PileType.Exhaust, ui.ExhaustPile) })
                 {
@@ -145,7 +148,8 @@ internal sealed partial class SmokeController
                     Require(displayed == actual.ToString(), $"{pileType} count differs after Scry: {displayed} vs {actual}.");
                 }
                 Require(PileType.Draw.GetPile(player).Cards.Count == 3 - selected, "Scry selection removed the wrong number of cards.");
-                _checkpoints.Write("release100.scry-count-variants", data: counts);
+                Require(scry.Result.Viewed == 3, "Scry must inspect three real cards, including after reshuffling.");
+                _checkpoints.Write(shuffle ? "release112.scry-shuffle" : "release100.scry-count-variants", data: counts);
             }
             await MouseClickAtAsync(exhaustButton.GetGlobalRect().GetCenter());
             await WaitFrames(3);

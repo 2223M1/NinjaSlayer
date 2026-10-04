@@ -133,6 +133,44 @@ public partial class OrbContractRunner
 
     private static async Task VerifyScryAndSly()
     {
+        foreach (var (drawCount, discardCount, amount) in new[] { (0, 3, 2), (1, 3, 4), (0, 0, 2), (0, 3, 0) })
+        {
+            using var combat = new OrbCombat();
+            var drawCards = Enumerable.Range(0, drawCount).Select(_ => AddCard<DefendIronclad>(combat, PileType.Draw)).ToArray();
+            var discardCards = Enumerable.Range(0, discardCount).Select(_ => AddCard<DefendIronclad>(combat, PileType.Discard)).ToArray();
+            int selections = 0;
+            using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
+            {
+                selections++;
+                Require(options.SequenceEqual(PileType.Draw.GetPile(combat.Player).Cards.Take(amount)),
+                    "Scry must read the actual post-shuffle top cards.");
+                Require(options.All(c => (drawCount > 0 ? drawCards : discardCards).Contains(c)),
+                    "Scry must only shuffle when the draw pile starts empty.");
+                return [];
+            }));
+            var result = await ScryCmd.Execute(Choice, combat.Player, amount);
+            int expected = amount > 0 ? Math.Min(amount, drawCount > 0 ? drawCount : discardCount) : 0;
+            Require(result.Viewed == expected && selections == (expected > 0 ? 1 : 0)
+                && PileType.Hand.GetPile(combat.Player).IsEmpty
+                && PileType.Discard.GetPile(combat.Player).Cards.Count == (amount > 0 && drawCount == 0 ? 0 : discardCount),
+                "Empty Scry must shuffle once without drawing; short/nonpositive/fully empty Scry must not refill.");
+        }
+        using (var combat = new OrbCombat())
+        {
+            AddCard<DefendIronclad>(combat, PileType.Discard);
+            await AddStock(combat.Player, 3);
+            await PowerCmd.Apply<BladeCyclePower>(Choice, combat.Player.Creature, 2, combat.Player.Creature, null);
+            int hp = combat.Enemy.CurrentHp;
+            int evoked = _evoked;
+            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ =>
+            {
+                Require(_evoked == evoked + 3 && combat.Enemy.CurrentHp == hp - 18 && combat.Stock == 1,
+                    "Scry must await native shuffle attacks and stock loss before selecting.");
+                return [];
+            }));
+            Require((await ScryCmd.Execute(Choice, combat.Player, 2)).Viewed == 1, "Shuffled Scry lost its card.");
+        }
+        GD.Print("PASS empty-draw Scry: native reshuffle, post-shuffle order/effects, no actual draw, short pile and empty/nonpositive boundaries.");
         foreach (var (selected, exhaust) in new[] { (0, false), (1, false), (3, false), (3, true) })
         {
             using var combat = new OrbCombat();
@@ -180,11 +218,18 @@ public partial class OrbContractRunner
         {
             var sly = AddCard<ShurikenCreation>(combat, PileType.Draw);
             var second = AddCard<DefendIronclad>(combat, PileType.Draw);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [sly, second]));
+            int selections = 0;
+            using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
+            {
+                selections++;
+                Require(options.SequenceEqual(selections == 1 ? [sly, second] : new CardModel[] { second }),
+                    "Nested empty-pile Scry must reshuffle the completed outer discard, excluding the playing Sly card.");
+                return options.ToArray();
+            }));
             await PowerCmd.Apply<WatchfulBladesPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await ScryCmd.Execute(Choice, combat.Player, 2);
-            Require(combat.Stock == 4 && second.Pile?.Type == PileType.Discard && sly.Pile?.Type == PileType.Discard,
-                "Scry must dispatch both discards before Sly generates new stock.");
+            Require(selections == 2 && combat.Stock == 5 && second.Pile?.Type == PileType.Discard && sly.Pile?.Type == PileType.Discard,
+                "Both outer and shuffled nested Scry must finish their discards before rewarding stock.");
         }
         using (var combat = new OrbCombat())
         {
