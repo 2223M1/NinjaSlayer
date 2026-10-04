@@ -14,7 +14,7 @@ public static class NinjaSlayerCharacterStats
     public static readonly Color RemoteTargetingLineOutlineColor = new("691A1BFF");
 
     public const CharacterGender Gender = CharacterGender.Masculine;
-    public const int StartingHp = 72;
+    public const int StartingHp = 80;
     public const int StartingGold = 99;
     public const float AttackAnimDelay = 0.15f;
     public const float CastAnimDelay = 0.25f;

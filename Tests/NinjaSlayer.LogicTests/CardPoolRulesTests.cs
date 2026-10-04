@@ -7,7 +7,7 @@ public sealed class CardPoolRulesTests
     [Fact]
     public void CharacterStartsAtSeventyTwoHpWithTenCards()
     {
-        Assert.Equal(72, NinjaSlayerCardRules.StartingHp);
+        Assert.Equal(80, NinjaSlayerCardRules.StartingHp);
         Assert.Equal(
             10,
             NinjaSlayerCardRules.StartingStrikeCount
