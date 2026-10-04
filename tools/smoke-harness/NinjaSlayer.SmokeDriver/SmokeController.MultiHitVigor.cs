@@ -48,6 +48,43 @@ internal sealed partial class SmokeController
         foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
         foreach (var card in player.Piles.Where(p => p.Type != PileType.Deck).SelectMany(p => p.Cards).ToArray())
             await CardPileCmd.RemoveFromCombat(card);
+        var statusChoice = new MegaCrit.Sts2.Core.GameActions.Multiplayer.BlockingPlayerChoiceContext();
+        await PowerCmd.Apply<NinjaSlayer.Powers.DevourFlamePower>(statusChoice, player.Creature, 5, player.Creature, null);
+        foreach (var pile in new[] { PileType.Hand, PileType.Draw, PileType.Discard })
+            await NinjaSlayer.Code.Commands.NinjaSlayerCardCmd.AddGeneratedCard<Wound>(player, pile);
+        Require(player.Creature.GetPowerAmount<NinjaSlayer.Powers.NarakuLifePower>() == 15,
+            "Rendered status generation must grant Naraku Life once per card.");
+        foreach (var old in player.Piles.Where(p => p.Type != PileType.Deck).SelectMany(p => p.Cards).ToArray())
+            await CardPileCmd.RemoveFromCombat(old);
+        foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
+        var selected = combat.CreateCard<DefendIronclad>(player);
+        var rekindle = combat.CreateCard<Rekindle>(player);
+        await CardPileCmd.Add(selected, PileType.Hand);
+        await CardPileCmd.Add(rekindle, PileType.Hand);
+        player.PlayerCombatState!.GainEnergy(3);
+        var statusSelector = new MegaCrit.Sts2.Core.TestSupport.TestCardSelector();
+        statusSelector.PrepareToSelect([0]);
+        using (CardSelectCmd.UseSelector(statusSelector))
+        {
+            var action = new PlayCardAction(rekindle, null);
+            RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(action);
+            await action.CompletionTask.WaitAsync(TimeSpan.FromSeconds(20));
+            if (action.Exception != null) throw action.Exception;
+        }
+        Require(!player.Creature.HasPower<NinjaSlayer.Powers.NarakuLifePower>(), "Rekindle must not reward itself.");
+        var followupSkill = combat.CreateCard<DefendIronclad>(player);
+        await CardPileCmd.Add(followupSkill, PileType.Hand);
+        var followup = new PlayCardAction(followupSkill, null);
+        RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(followup);
+        await followup.CompletionTask.WaitAsync(TimeSpan.FromSeconds(20));
+        if (followup.Exception != null) throw followup.Exception;
+        Require(player.Creature.GetPowerAmount<NinjaSlayer.Powers.NarakuLifePower>() == 3,
+            "A subsequent rendered Skill must grant Rekindle Naraku Life.");
+        _checkpoints.Write("release111.status-life", data: new JsonObject { ["generatedStatuses"] = 3,
+            ["narakuFromGeneration"] = 15, ["rekindleSelfReward"] = 0, ["followingSkillReward"] = 3 });
+        foreach (var old in player.Piles.Where(p => p.Type != PileType.Deck).SelectMany(p => p.Cards).ToArray())
+            await CardPileCmd.RemoveFromCombat(old);
+        foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
         await CardPileCmd.Add(combat.CreateCard<Chado>(player), PileType.Exhaust);
         await CardPileCmd.Add(combat.CreateCard<Chado>(player), PileType.Exhaust);
         await PowerCmd.Apply<StrengthPower>(new MegaCrit.Sts2.Core.GameActions.Multiplayer.BlockingPlayerChoiceContext(),
@@ -68,9 +105,12 @@ internal sealed partial class SmokeController
             foreach (bool upgraded in new[] { false, true })
             foreach (var speed in new[] { FastModeType.Normal, FastModeType.Fast })
             foreach (var model in new CardModel[] { ModelDb.Card<StormFist>(), ModelDb.Card<DragonRoundhouseKick>(),
-                         ModelDb.Card<PalmThrust>(), ModelDb.Card<AntiAirBangBangFist>(), ModelDb.Card<TornadoFist>() })
+                         ModelDb.Card<PalmThrust>(), ModelDb.Card<PressTheAttack>(), ModelDb.Card<AntiAirBangBangFist>(), ModelDb.Card<TornadoFist>() })
             {
                 SaveManager.Instance.PrefsSave.FastMode = speed;
+                foreach (var old in player.Piles.Where(p => p.Type is PileType.Hand or PileType.Draw or PileType.Discard)
+                             .SelectMany(p => p.Cards).ToArray())
+                    await CardPileCmd.RemoveFromCombat(old);
                 CardModel card = combat.CreateCard(model, player);
                 if (upgraded) card.UpgradeInternal();
                 await CardPileCmd.Add(card, PileType.Hand);
@@ -88,14 +128,14 @@ internal sealed partial class SmokeController
                 if (action.Exception != null) throw action.Exception;
                 var hits = MultiHitVigorProbe.Commands.SelectMany(a => a.Results).ToArray();
                 int expectedHits = card switch { StormFist => 4, DragonRoundhouseKick => 2,
-                    PalmThrust => upgraded ? 3 : 2, AntiAirBangBangFist => 3, TornadoFist => 8, _ => throw new InvalidOperationException() };
+                    PalmThrust => upgraded ? 3 : 2, PressTheAttack => 3, AntiAirBangBangFist => 3, TornadoFist => 8, _ => throw new InvalidOperationException() };
                 int damage = 10 + (card switch { StormFist => upgraded ? 14 : 10, DragonRoundhouseKick => upgraded ? 9 : 7,
-                    PalmThrust => 5, AntiAirBangBangFist => upgraded ? 11 : 8, TornadoFist => upgraded ? 6 : 4,
+                    PalmThrust => 6, PressTheAttack => upgraded ? 6 : 5, AntiAirBangBangFist => upgraded ? 11 : 8, TornadoFist => upgraded ? 6 : 4,
                     _ => throw new InvalidOperationException() });
                 int targets = card.TargetType == TargetType.AllEnemies ? combat.HittableEnemies.Count : 1;
                 Require(MultiHitVigorProbe.Commands.Count == 1 && hits.Length == expectedHits
                     && hits.All(h => h.Count == targets && h.All(r => r.TotalDamage == damage))
-                    && !player.Creature.HasPower<VigorPower>(), "Rendered multi-hit damage/Vigor differs from native semantics.");
+                    && !player.Creature.HasPower<VigorPower>(), $"Rendered multi-hit damage/Vigor differs: {card.Id}, upgraded={upgraded}, speed={speed}, commands={MultiHitVigorProbe.Commands.Count}, hits={hits.Length}/{expectedHits}, damage={string.Join(";", hits.Select(h => string.Join(",", h.Select(r => r.TotalDamage))))}/{damage}, vigor={player.Creature.GetPowerAmount<VigorPower>()}, hand={PileType.Hand.GetPile(player).Cards.Count}.");
                 Require(MultiHitVigorProbe.AnimationGates == expectedHits
                     && MultiHitVigorProbe.DamageGates.SequenceEqual(Enumerable.Range(1, expectedHits).SelectMany(i => Enumerable.Repeat(i, targets))),
                     "Damage did not follow exactly one completed animation hit gate per native hit.");

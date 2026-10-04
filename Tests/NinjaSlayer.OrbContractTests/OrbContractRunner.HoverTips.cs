@@ -42,6 +42,36 @@ public partial class OrbContractRunner
         }
     }
 
+    private static void VerifyArchitectDialogueText()
+    {
+        string root = Path.GetFullPath(Path.Combine(Godot.ProjectSettings.GlobalizePath("res://"), "../../NinjaSlayer/localization"));
+        foreach (string language in new[] { "eng", "zhs", "jpn" })
+        {
+            LocManager.Instance.SetLanguage(language);
+            LocManager.Instance.GetTable("ancients").MergeWith(
+                System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(
+                    File.ReadAllText(Path.Combine(root, language, "ancients.json")))!);
+            var architect = (MegaCrit.Sts2.Core.Models.Events.TheArchitect)ModelDb.Event<MegaCrit.Sts2.Core.Models.Events.TheArchitect>().ToMutable();
+            var set = architect.DialogueSet;
+            var id = ModelDb.Character<NinjaSlayerCharacter>().Id;
+            Require(set.CharacterDialogues[id.Entry].Count == 4, "Architect must register exactly four native dialogue sequences.");
+            for (int visits = 0; visits < 9; visits++)
+            {
+                var valid = set.GetValidDialogues(id, visits, visits, false).ToArray();
+                Require(valid.Length > 0, "Architect must have dialogue for initial and repeated visits.");
+                foreach (var dialogue in valid)
+                {
+                    Require(dialogue.Lines.Count == 2, "Each Architect sequence must retain two lines.");
+                    foreach (var line in dialogue.Lines)
+                        Require(line.LineText is { } text && text.Exists() && !text.GetFormattedText().Contains("THE_ARCHITECT"),
+                            $"Unresolved Architect line: {language}, visit {visits}, {line.LineText?.LocEntryKey}");
+                }
+            }
+        }
+        LocManager.Instance.SetLanguage("zhs");
+        Godot.GD.Print("PASS Architect dialogue: three languages, four sequences, first/later/repeat visits, no unresolved keys.");
+    }
+
     private static void VerifyHoverTips(OrbCombat combat)
     {
         foreach (bool upgraded in new[] { false, true })
@@ -50,9 +80,8 @@ public partial class OrbContractRunner
             Require(karate.HoverTips.Any(tip => tip.Id == HoverTipFactory.FromPower<KaratePower>().Id),
                 "Karate must expose its native side tooltip on mutable base/upgraded cards.");
             var flame = AddCard<DevourFlame>(combat, upgraded: upgraded);
-            Require(flame.HoverTips.OfType<CardHoverTip>().Any(tip => tip.Card is BlackFlame)
-                && flame.HoverTips.Any(tip => tip.Id == HoverTipFactory.FromPower<MegaCrit.Sts2.Core.Models.Powers.StrengthPower>().Id),
-                "Return Return Return must preview Black Flame and explain Naraku Life.");
+            Require(flame.HoverTips.Any(tip => tip.Id == HoverTipFactory.FromPower<NarakuLifePower>().Id),
+                "Devour Flame must explain its Naraku Life reward.");
             var starless = AddCard<StarlessNight>(combat, upgraded: upgraded);
             Require(!starless.HoverTips.OfType<CardHoverTip>().Single().Card.IsUpgraded,
                 "Starless Night must preview an unupgraded token even when the power card is upgraded.");

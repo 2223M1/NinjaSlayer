@@ -7,7 +7,6 @@ using Godot;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Monsters;
-using MegaCrit.Sts2.Core.Entities.Ancients;
 using HarmonyLib;
 
 namespace NinjaSlayer.Code.Patches;
@@ -31,28 +30,6 @@ internal sealed class ArchitectDeathResourcePatch : IPatchMethod
     }
 }
 
-internal sealed class ArchitectDialoguePatch : IPatchMethod
-{
-    public static string PatchId => "ninjaslayer_architect_dialogue";
-    public static string Description => "Use native Architect dialogue and Continue options for NinjaSlayer's greeting.";
-    public static bool IsCritical => false;
-
-    public static ModPatchTarget[] GetTargets() =>
-    [
-        new(typeof(TheArchitect), "DefineDialogues")
-    ];
-
-    public static void Postfix(AncientDialogueSet __result)
-    {
-        __result.CharacterDialogues.Add(ModelDb.Character<NinjaSlayerCharacter>().Id.Entry,
-            [new AncientDialogue("", "") { IsRepeating = true }]);
-    }
-
-    internal static bool ShouldReplace(TheArchitect eventModel) =>
-        eventModel.Owner?.Character is INinjaSlayerCharacter
-        && LocalContext.IsMe(eventModel.Owner);
-}
-
 internal sealed class ArchitectExecutionStartPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_architect_execution_start";
@@ -64,9 +41,13 @@ internal sealed class ArchitectExecutionStartPatch : IPatchMethod
         new(typeof(TheArchitect), "WinRun")
     ];
 
+    internal static bool ShouldReplace(TheArchitect eventModel) =>
+        eventModel.Owner?.Character is INinjaSlayerCharacter
+        && LocalContext.IsMe(eventModel.Owner);
+
     public static bool Prefix(TheArchitect __instance, ref Task __result)
     {
-        if (!ArchitectDialoguePatch.ShouldReplace(__instance)) return true;
+        if (!ArchitectExecutionStartPatch.ShouldReplace(__instance)) return true;
         AccessTools.Method(typeof(EventModel), "ClearCurrentOptions").Invoke(__instance, null);
         __result = ArchitectExecutionCinematic.Play(__instance);
         return false;
@@ -82,7 +63,7 @@ internal sealed class ArchitectEntrancePatch : IPatchMethod
 
     public static void Postfix(TheArchitect __instance, int ____currentLineIndex, ref Task __result)
     {
-        if (____currentLineIndex == 0 && ArchitectDialoguePatch.ShouldReplace(__instance))
+        if (____currentLineIndex == 0 && ArchitectExecutionStartPatch.ShouldReplace(__instance))
             __result = EnterAfterLine(__result, __instance);
     }
 

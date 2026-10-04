@@ -77,7 +77,6 @@ public class Entry
             requiredPatcher.RegisterPatch<NarakuCentennialPuzzlePatch>();
             requiredPatcher.RegisterPatch<CardTransformShineCleanupPatch>();
             requiredPatcher.RegisterPatch<ArchitectDeathResourcePatch>();
-            requiredPatcher.RegisterPatch<ArchitectDialoguePatch>();
             requiredPatcher.RegisterPatch<ArchitectExecutionStartPatch>();
             requiredPatcher.RegisterPatch<ArchitectEntrancePatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerReviveAnimPatch>();

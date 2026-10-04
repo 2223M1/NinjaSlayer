@@ -11,7 +11,7 @@ namespace NinjaSlayer.Cards.Standard;
 
 public sealed class Moonsault : NinjaSlayerUncommonCard
 {
-    public Moonsault() : base(nameof(Moonsault), 1, CardType.Skill, TargetType.Self) { }
+    public Moonsault() : base(nameof(Moonsault), 0, CardType.Skill, TargetType.Self) { }
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromOrb<ShurikenOrb>()];
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

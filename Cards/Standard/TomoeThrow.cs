@@ -17,7 +17,7 @@ public sealed class TomoeThrow : NinjaSlayerUncommonCard
     public TomoeThrow() : base(nameof(TomoeThrow), 0, CardType.Skill, TargetType.AnyEnemy) { }
     public override bool GainsBlock => true;
     protected override bool IsPlayable => PileType.Hand.GetPile(Owner).Cards.OfType<Chado>().Any();
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(6, ValueProp.Move), new PowerVar<WeakPower>(2)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(9, ValueProp.Move), new PowerVar<WeakPower>(2)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromPower<WeakPower>(), .. HoverTipFactory.FromCardWithCardHoverTips<Chado>()];
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
@@ -36,7 +36,7 @@ public sealed class TomoeThrow : NinjaSlayerUncommonCard
     }
     protected override void OnUpgrade()
     {
-        DynamicVars.Block.UpgradeValueBy(1);
+        DynamicVars.Block.UpgradeValueBy(2);
         DynamicVars[nameof(WeakPower)].UpgradeValueBy(1);
     }
 }

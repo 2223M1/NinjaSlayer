@@ -40,6 +40,7 @@ public partial class OrbContractRunner
         }
         GD.Print("PASS all current upgrades: no simultaneous cost reduction and added Retain/Innate");
         await VerifyBoardV118();
+        await VerifyBoardV119();
         await VerifyMultiHitVigor();
         await VerifyNewCardInteractions();
         await VerifyAncientCardSources();
@@ -171,10 +172,10 @@ public partial class OrbContractRunner
                 .Invoke(CombatManager.Instance, [flame, Choice, Task.CompletedTask])!;
 #endif
         }
-        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 12
+        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 0
             && PileType.Exhaust.GetPile(combat.Player).Cards.Count == 2,
-            "Native end-turn must exhaust each Black Flame once and trigger Return Return Return once per card.");
-        GD.Print("PASS native Black Flame end-turn and stacked Return Return Return without duplicate exhaust");
+            "Native end-turn must exhaust each Black Flame once without the retired Strength reward.");
+        GD.Print("PASS native Black Flame end-turn: one exhaust per flame, no obsolete Devour Flame reward");
     }
 
     private static async Task VerifyNarakuForms()

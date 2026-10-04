@@ -22,9 +22,6 @@ namespace NinjaSlayer.Cards.Standard;
 
 public sealed class LeftUppercut : NinjaSlayerCommonCard
 {
-    private bool MeetsBonusCondition => NinjaSlayerCombatMetrics.PreviousFinishedCardWasAttack(Owner);
-    protected override bool ShouldGlowGoldInternal => CombatState != null && MeetsBonusCondition;
-
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new DamageVar(10, ValueProp.Move), new PowerVar<VulnerablePower>(1)];
 
@@ -43,8 +40,7 @@ public sealed class LeftUppercut : NinjaSlayerCommonCard
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
-        if (MeetsBonusCondition
-            && cardPlay.Target is { IsAlive: true } target)
+        if (cardPlay.Target is { IsAlive: true } target)
         {
             await PowerCmd.Apply<VulnerablePower>(
                 choiceContext,

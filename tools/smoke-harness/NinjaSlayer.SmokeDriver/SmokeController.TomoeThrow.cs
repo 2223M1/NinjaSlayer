@@ -91,7 +91,7 @@ internal sealed partial class SmokeController
                 await WaitFrames(30);
                 Require(tea.Pile?.Type == PileType.Exhaust && card.Pile?.Type == PileType.Discard,
                     "Tomoe did not finish tea exhaustion and leave the play pile.");
-                Require(player.Creature.Block - beforeBlock == (upgraded ? 7 : 6)
+                Require(player.Creature.Block - beforeBlock == (upgraded ? 11 : 9)
                     && target.GetPowerAmount<WeakPower>() - beforeWeak == (upgraded ? 3 : 2),
                     "Tomoe must apply its block and selected-target Weak exactly once.");
                 Require(node.GetGlobalTransform().IsEqualApprox(root) && body.Transform.IsEqualApprox(bodyBefore)

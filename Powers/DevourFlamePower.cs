@@ -1,8 +1,8 @@
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.Models.Powers;
-using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Scaffolding.Content;
 
@@ -11,8 +11,11 @@ namespace NinjaSlayer.Powers;
 public sealed class DevourFlamePower : NinjaSlayerCounterPower
 {
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(DevourFlamePower));
-    public override Task AfterCardExhausted(PlayerChoiceContext choiceContext, CardModel card, bool causedByEthereal) =>
-        card.Owner.Creature == Owner && card is BlackFlame
-            ? PowerCmd.Apply<StrengthPower>(choiceContext, Owner, Amount, Owner, card)
-            : Task.CompletedTask;
+
+    public override async Task AfterCardGeneratedForCombat(CardModel card, Player? creator)
+    {
+        if (creator?.Creature != Owner || card.Type != CardType.Status) return;
+        Flash();
+        await PowerCmd.Apply<NarakuLifePower>(new ThrowingPlayerChoiceContext(), Owner, Amount, Owner, card);
+    }
 }

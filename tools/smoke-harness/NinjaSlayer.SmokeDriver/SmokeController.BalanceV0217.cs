@@ -46,7 +46,7 @@ internal sealed partial class SmokeController
         var palm = await Add<PalmThrust>();
         CardCmd.Upgrade(palm);
         await CardCmd.AutoPlay(choice, palm, null);
-        Require(combat.HittableEnemies.Sum(enemy => 1000 - enemy.CurrentHp) == 36
+        Require(combat.HittableEnemies.Sum(enemy => 1000 - enemy.CurrentHp) == 39
             && !player.Creature.HasPower<VigorPower>(), "Palm must use Vigor on all three hits.");
         _checkpoints.Write("v0217.live-palm-vigor");
 

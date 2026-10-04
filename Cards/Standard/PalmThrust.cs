@@ -23,7 +23,7 @@ namespace NinjaSlayer.Cards.Standard;
 public sealed class PalmThrust : NinjaSlayerCommonCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(5, ValueProp.Move), new RepeatVar(2)];
+        [new DamageVar(6, ValueProp.Move), new RepeatVar(2)];
 
     public PalmThrust()
         : base(nameof(PalmThrust), 1, CardType.Attack, TargetType.RandomEnemy) { }
