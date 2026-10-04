@@ -108,6 +108,9 @@ internal sealed partial class SmokeController
                          ModelDb.Card<PalmThrust>(), ModelDb.Card<PressTheAttack>(), ModelDb.Card<AntiAirBangBangFist>(), ModelDb.Card<TornadoFist>() })
             {
                 SaveManager.Instance.PrefsSave.FastMode = speed;
+                foreach (var old in player.Piles.Where(p => p.Type is PileType.Hand or PileType.Draw or PileType.Discard)
+                             .SelectMany(p => p.Cards).ToArray())
+                    await CardPileCmd.RemoveFromCombat(old);
                 CardModel card = combat.CreateCard(model, player);
                 if (upgraded) card.UpgradeInternal();
                 await CardPileCmd.Add(card, PileType.Hand);
@@ -132,7 +135,7 @@ internal sealed partial class SmokeController
                 int targets = card.TargetType == TargetType.AllEnemies ? combat.HittableEnemies.Count : 1;
                 Require(MultiHitVigorProbe.Commands.Count == 1 && hits.Length == expectedHits
                     && hits.All(h => h.Count == targets && h.All(r => r.TotalDamage == damage))
-                    && !player.Creature.HasPower<VigorPower>(), "Rendered multi-hit damage/Vigor differs from native semantics.");
+                    && !player.Creature.HasPower<VigorPower>(), $"Rendered multi-hit damage/Vigor differs: {card.Id}, upgraded={upgraded}, speed={speed}, commands={MultiHitVigorProbe.Commands.Count}, hits={hits.Length}/{expectedHits}, damage={string.Join(";", hits.Select(h => string.Join(",", h.Select(r => r.TotalDamage))))}/{damage}, vigor={player.Creature.GetPowerAmount<VigorPower>()}, hand={PileType.Hand.GetPile(player).Cards.Count}.");
                 Require(MultiHitVigorProbe.AnimationGates == expectedHits
                     && MultiHitVigorProbe.DamageGates.SequenceEqual(Enumerable.Range(1, expectedHits).SelectMany(i => Enumerable.Repeat(i, targets))),
                     "Damage did not follow exactly one completed animation hit gate per native hit.");

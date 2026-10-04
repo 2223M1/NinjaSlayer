@@ -188,8 +188,10 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                 NinjaComponentCardPatches.DoubleDamageThisTurn(card);
                 break;
             case "target_multi":
-                await DamageCmd.Attack(amount).FromCard(card, context.CardPlay).WithHitCount(Value("hits"))
-                    .Targeting(context.Target!).ExecuteWithFinisher(choice, card, context.CardPlay);
+                var targeted = DamageCmd.Attack(amount).FromCard(card, context.CardPlay).WithHitCount(Value("hits"))
+                    .Targeting(context.Target!);
+                await targeted.Execute(choice);
+                context.RecordDamageDealt((int)targeted.Results.SelectMany(r => r).Sum(r => r.UnblockedDamage));
                 break;
             case "area_multi":
                 var multi = DamageCmd.Attack(amount).FromCard(card, context.CardPlay).WithHitCount(Value("hits"))

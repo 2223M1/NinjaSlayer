@@ -196,6 +196,21 @@ public partial class OrbContractRunner
         }
         GD.Print("PASS generated Storm/Dragon base+upgrade: native multihit Vigor, Strength, Chado and target scope.");
         foreach (bool upgraded in new[] { false, true })
+        {
+            using var arena = new OrbCombat();
+            await PowerCmd.Apply<StrengthPower>(Choice, arena.Player.Creature, 3, arena.Player.Creature, null);
+            await PowerCmd.Apply<VigorPower>(Choice, arena.Player.Creature, 7, arena.Player.Creature, null);
+            await Play(arena, Create(arena, ModelDb.Card<PressTheAttack>(), upgraded));
+            Require(arena.Enemy.CurrentHp == 1000 - 3 * (10 + (upgraded ? 6 : 5))
+                && !arena.Player.Creature.HasPower<VigorPower>(), "Generated Press the Attack must share Vigor across three hits.");
+            await Play(arena, Create(arena, ModelDb.Card<DevourFlame>(), upgraded));
+            await Play(arena, Create(arena, ModelDb.Card<Kindle>(), upgraded));
+            Require(PileType.Discard.GetPile(arena.Player).Cards.OfType<BlackFlame>().Count() == 1
+                && arena.Player.Creature.GetPowerAmount<NarakuLifePower>() == (upgraded ? 3 : 2),
+                "Generated Kindle must generate Black Flame in discard and trigger Devour Flame Naraku Life.");
+        }
+        GD.Print("PASS v1.19 generated Press the Attack three-hit Vigor and Kindle discard/status Naraku Life.");
+        foreach (bool upgraded in new[] { false, true })
         foreach (bool hasTea in new[] { false, true })
         {
             using var arena = new OrbCombat();

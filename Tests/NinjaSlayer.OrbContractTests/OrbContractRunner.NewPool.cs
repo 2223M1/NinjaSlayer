@@ -284,16 +284,16 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<DevourFlamePower>(Choice, combat.Player.Creature, 4, combat.Player.Creature, null);
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [first]));
             await CardCmd.AutoPlay(Choice, recovery, null);
-            Require(combat.Player.Creature.CurrentHp == 30 && combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 0,
-                "Recovery must not heal or exhaust hand statuses.");
+            Require(combat.Player.Creature.CurrentHp == 30 && combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 4,
+                "Transforming into Black Flame must trigger Devour Flame once without healing or a Rekindle self-reward.");
             Require(wound.Pile?.Type == PileType.Hand && second.Pile?.Type == PileType.Hand
                 && PileType.Hand.GetPile(combat.Player).Cards.OfType<BlackFlame>().Count() == 1,
                 "Recovery must transform exactly one selected card.");
             await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
-            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 0,
+            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 4,
                 "Recovery must ignore itself and attacks.");
             await CardCmd.AutoPlay(Choice, second, null);
-            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 3,
+            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 7,
                 "Recovery must grant Naraku Life for a subsequent Skill.");
 #if NINJASLAYER_CHANNEL_STABLE
             await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
