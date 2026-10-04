@@ -339,13 +339,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             : Cmd.Wait(Math.Max(0f, repeatWaitSeconds));
     }
 
-    // Include the real impact hold and replace the ordinary return with this session's return.
-    internal float TornadoAudioExtraSeconds => (_impactCamera
-        ? ImpactReleaseSeconds(_previewProfile)
-        : DoomPoseSeconds + DeathKickSettleSeconds)
-        + (_continuousPlayerApproach ? CombatActionTimingRuntime.ReturnSeconds : ReturnSeconds)
-        - CombatActionTimingRuntime.ReturnSeconds;
-
     private async Task PlayAimedAction(float seconds, float attackDistance)
     {
         if (_continuousPlayerApproach && !_actionStarted)

@@ -2,7 +2,6 @@ using Godot;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
-using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
@@ -49,13 +48,6 @@ internal sealed partial class SpinComboAudio : Node
         }
         Entry.Logger.Info("Tornado audio: sustain until the final hit.");
         return owner;
-    }
-
-    internal static float RemainingSeconds(Creature actor, int hits)
-    {
-        FinisherSession? session = FinisherSessionRegistry.GetActiveSession();
-        float extra = session?.Actor == actor && !session.IsRanged ? session.TornadoAudioExtraSeconds : 0f;
-        return TornadoSpinTiming.RemainingSeconds(hits, CombatActionTimingRuntime.CurrentSpeed) + extra;
     }
 
     internal void Finish()

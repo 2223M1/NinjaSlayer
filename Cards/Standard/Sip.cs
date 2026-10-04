@@ -13,7 +13,7 @@ public sealed class Sip : NinjaSlayerUncommonCard
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [NinjaSlayerHoverTips.ChadoBreathing, .. HoverTipFactory.FromCardWithCardHoverTips<Chado>()];
 
-    public Sip() : base(nameof(Sip), 1, CardType.Skill, TargetType.Self) { }
+    public Sip() : base(nameof(Sip), 0, CardType.Skill, TargetType.Self) { }
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         if (IsUpgraded) await ChadoBreathCmd.Apply(choiceContext, Owner, 1);
