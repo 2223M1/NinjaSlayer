@@ -17,7 +17,7 @@ param(
     [Parameter(Mandatory)][string] $GameRootDirectory,
     [Parameter(Mandatory)][string] $RitsuLibModDirectory,
     [ValidateSet('stable', 'preview')][string] $ValidationChannel = 'stable',
-    [ValidateSet('Release113', 'Release100')][string[]] $PreUploadValidationModes = @(),
+    [ValidateSet('Release113', 'Release114', 'Release100')][string[]] $PreUploadValidationModes = @(),
     [switch] $Confirm
 )
 

@@ -180,7 +180,7 @@
   "NINJA_SLAYER_CARD_PRESS_THE_ATTACK.description": "造成{Damage:diff()}点伤害{Repeat}次。\n抽{Cards:diff()}张牌，丢弃其中所有非攻击牌。",
   "NINJA_SLAYER_CARD_PRESS_THE_ATTACK.title": "强攻",
   "NINJA_SLAYER_CARD_MACHETE.title": "砍刀",
-  "NINJA_SLAYER_CARD_MACHETE.description": "造成{Damage:diff()}点伤害。\n若目标为泽渡，归还一把砍刀。",
+  "NINJA_SLAYER_CARD_MACHETE.description": "造成{Damage:diff()}点伤害。\n若目标为沢渡，归还一把砍刀。",
   "NINJA_SLAYER_CARD_ZANSHIN.description": "如果你在一回合内打出了至少3张攻击牌，在下个回合开始时额外抽{Cards:diff()}张牌。",
   "NINJA_SLAYER_CARD_RECOVER.description": "将[gold]消耗堆[/gold]中的1张牌放到你的[gold]抽牌堆[/gold]顶部。",
   "NINJA_SLAYER_CARD_ZANSHIN.title": "残心",

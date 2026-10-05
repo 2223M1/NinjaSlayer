@@ -76,6 +76,8 @@ internal sealed class SawatariEventSession
         SawatariWeaponVisuals.Create((ForestSawatariMonster)_companion.Monster!);
         YamotoKokiAllyLayoutPatch.Reflow(_room);
         SawatariMusicSession.Begin(eventRoom);
+        if (_ninjaSlayer.Creature.GetCreatureNode() is { } ninjaNode)
+            ninjaNode.Visuals.Visible = false;
     }
 
     public SawatariEventPhase Phase => _phases.Current;
