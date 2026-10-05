@@ -99,21 +99,35 @@ internal static class FinisherAttackCommandAdapter
             return false;
         }
 
+        var singleTarget = (Creature?)SingleTarget.GetValue(command);
+        if (!command.IsSingleTargeted && !command.IsMultiTargeted
+            || command.IsSingleTargeted && singleTarget == null)
+        {
+            return false;
+        }
+
+        spec = CreateSpec(command, card, cardPlay);
+        return true;
+    }
+
+    internal static FinisherAttackSpec CreateSpec(
+        AttackCommand command,
+        CardModel card,
+        CardPlay cardPlay,
+        decimal? damageOverride = null,
+        int? hitCountOverride = null)
+    {
         decimal damagePerHit = (decimal)DamagePerHit.GetValue(command)!;
         var calculatedDamage = (CalculatedDamageVar?)CalculatedDamage.GetValue(command);
-        int hitCount = (int)HitCount.GetValue(command)!;
+        int hitCount = hitCountOverride ?? (int)HitCount.GetValue(command)!;
         var singleTarget = (Creature?)SingleTarget.GetValue(command);
-        FinisherTargeting? targeting = command.IsRandomlyTargeted
+        FinisherTargeting targeting = command.IsRandomlyTargeted
             ? FinisherTargeting.Random
             : command.IsSingleTargeted
                 ? FinisherTargeting.Single
                 : command.IsMultiTargeted
                     ? FinisherTargeting.All
-                    : null;
-        if (targeting == null || targeting == FinisherTargeting.Single && singleTarget == null)
-        {
-            return false;
-        }
+                    : throw new InvalidOperationException("Finisher attack command has no targets.");
 
         Func<Creature, decimal> damage = calculatedDamage switch
         {
@@ -121,15 +135,15 @@ internal static class FinisherAttackCommandAdapter
             _ when command.IsMultiTargeted && !command.IsRandomlyTargeted => _ => calculatedDamage.Calculate(null),
             _ => target => calculatedDamage.Calculate(target)
         };
-        spec = new FinisherAttackSpec(
+        if (damageOverride.HasValue) damage = _ => damageOverride.Value;
+        return new FinisherAttackSpec(
             card,
             cardPlay,
             new FinisherForecastDescriptor(
                 damage,
                 command.DamageProps,
-                Math.Max(1, hitCount),
-                targeting.Value,
+                hitCount,
+                targeting,
                 singleTarget));
-        return true;
     }
 }

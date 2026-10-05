@@ -107,6 +107,7 @@ internal sealed partial class SmokeController
             }
         }
         finally { probe.UnpatchAll(probe.Id); }
+        await RunRelease114FinishersAsync();
         _checkpoints.Write("release114.completed");
         NGame.Instance!.Quit();
     }

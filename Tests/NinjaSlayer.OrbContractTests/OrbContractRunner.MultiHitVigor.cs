@@ -17,6 +17,7 @@ public partial class OrbContractRunner
 
     private static async Task VerifyMultiHitVigor()
     {
+        await VerifyMultiHitFinisherForecast();
         var harmony = new Harmony("NinjaSlayer.OrbContracts.MultiHitVigor");
         harmony.Patch(AccessTools.Method(typeof(Hook), nameof(Hook.BeforeAttack)),
             prefix: new HarmonyMethod(typeof(OrbContractRunner), nameof(RecordVigorAttack)));
@@ -99,4 +100,63 @@ public partial class OrbContractRunner
     private static void RecordVigorAttack(AttackCommand __1) => VigorAttacks.Add(__1);
     private static void RecordVigorAfterAttack() => _vigorAfterAttacks++;
     private static void AddVigorHit(ref decimal __result) => __result += _vigorExtraHits;
+
+    private static async Task VerifyMultiHitFinisherForecast()
+    {
+        var product = typeof(StormFist).Assembly;
+        Type adapter = product.GetType("NinjaSlayer.Code.ExternalAnimations.FinisherAttackCommandAdapter", true)!;
+        Type forecast = product.GetType("NinjaSlayer.Code.ExternalAnimations.FinisherForecast", true)!;
+        var create = AccessTools.Method(adapter, "CreateSpec");
+        foreach (bool upgraded in new[] { false, true })
+        foreach (var canonical in new MegaCrit.Sts2.Core.Models.CardModel[]
+                 { MegaCrit.Sts2.Core.Models.ModelDb.Card<StormFist>(), MegaCrit.Sts2.Core.Models.ModelDb.Card<DragonRoundhouseKick>(),
+                     MegaCrit.Sts2.Core.Models.ModelDb.Card<PalmThrust>(), MegaCrit.Sts2.Core.Models.ModelDb.Card<AntiAirBangBangFist>() })
+        {
+            using var combat = new OrbCombat(ninjaSlayer: true);
+            var run = MegaCrit.Sts2.Core.Runs.RunState.CreateForTest([combat.Player]);
+            AccessTools.Field(combat.State.GetType(), "<RunState>k__BackingField").SetValue(combat.State, run);
+            var card = combat.State.CreateCard(canonical, combat.Player);
+            if (upgraded) card.UpgradeInternal();
+            var play = new CardPlay { Card = card,
+#if !NINJASLAYER_CHANNEL_STABLE
+                Player = combat.Player,
+#endif
+                Target = combat.Enemy, ResultPile = PileType.Discard,
+                Resources = new ResourceInfo { EnergySpent = 0, EnergyValue = 0, StarsSpent = 0, StarValue = 0 },
+                IsAutoPlay = false, PlayIndex = 0, PlayCount = 1 };
+            await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
+            await PowerCmd.Apply<VigorPower>(Choice, combat.Player.Creature, 7, combat.Player.Creature, null);
+            int hits = card is AntiAirBangBangFist ? 3 : card.DynamicVars.Repeat.IntValue;
+            decimal raw = card is StormFist ? card.DynamicVars.CalculatedDamage.Calculate(combat.Enemy) : card.DynamicVars.Damage.BaseValue;
+            var command = DamageCmd.Attack(raw).WithHitCount(hits)
+#if NINJASLAYER_CHANNEL_STABLE
+                .FromCard(card)
+#else
+                .FromCard(card, play)
+#endif
+                ;
+            if (card is DragonRoundhouseKick) command.TargetingAllOpponents(combat.State);
+            else if (card is AntiAirBangBangFist) command.TargetingRandomOpponents(combat.State);
+            else command.Targeting(combat.Enemy);
+            // Baseline uses the old explicit-card producer, not a mock predictor.
+            object spec = create != null ? create.Invoke(null, [command, card, play, null, null])!
+                : AccessTools.Method(product.GetType("NinjaSlayer.Code.ExternalAnimations.FinisherAttackSpec", true)!, "FromCard")
+                    .Invoke(null, [card, play, null, null, null])!;
+            int hp = (int)(raw + 10m) * hits - 2;
+            combat.Enemy.SetCurrentHpInternal(hp);
+            await CreatureCmd.GainBlock(combat.Enemy, 2, MegaCrit.Sts2.Core.ValueProps.ValueProp.Unpowered, null);
+            object?[] args = [combat.Player.Creature, new[] { combat.Enemy }, spec, command, null];
+            string outcome = AccessTools.Method(forecast, "Evaluate").Invoke(null, args)!.ToString()!;
+            int resolved = (int)AccessTools.Property(args[4]!.GetType(), "ResolvedHits").GetValue(args[4])!;
+            Require(outcome == "Guaranteed" && resolved == hits,
+                $"{card.Id} upgraded={upgraded}: explicit finisher predicted {resolved} hits/{outcome}, expected {hits}/Guaranteed with Strength+Vigor+Block.");
+            Require(combat.Player.Creature.GetPowerAmount<VigorPower>() == 7 && combat.Enemy.CurrentHp == hp,
+                "Forecast consumed Vigor or changed real HP.");
+            combat.Enemy.SetCurrentHpInternal(hp + 1);
+            Require(AccessTools.Method(forecast, "Evaluate").Invoke(null,
+                    new object?[] { combat.Player.Creature, new[] { combat.Enemy }, spec, command, null })!.ToString() == "NotGuaranteed",
+                "A nonlethal combo was incorrectly predicted as an early finisher.");
+        }
+        GD.Print("PASS explicit multi-hit finisher: Storm/Dragon/Palm/AntiAir base+upgrade, native command hits/targeting, Strength+Vigor, Block, nonlethal boundary and read-only prediction.");
+    }
 }
