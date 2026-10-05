@@ -39,3 +39,9 @@
 修改 `SpiralJump`、`Moonsault`、`Adapt`、`Zanshin` 的数值／升级／出牌效果，`ResiliencePower` 改用原生生成钩子，新增 `FriendlyCompanionPersonalHivePatch` 并在 `Entry` 必需事务注册。同步三语cards与powers、卡牌目录和东尼 `NinjaComponentSources`／`NinjaComponentRuntime`；删除东尼无人消费的 `draw_sly` 分支。调整既有行为断言和元数据，新增友军蜂群与1.0.13卡牌契约、真实 `Release113` SmokeDriver 场景及对应模式接线。
 
 生产C#范围（Cards、Code、Content、Ancients、Enchantments、Encounters、Events、Monsters、Orbs、Potions、Powers、Relics、Scripts）由520文件／900类型声明／64323物理行变为521／901／64354。未新增生产反射、动态Patch、同步、缓存、GC控制、静默回退、能力图或历史兼容；现有手里剑库存、原生回弹与原生生成者归属直接复用。唯一新增宿主分支位于测试场景，隔离正式版不存在的富足类型。
+
+## 已发布
+
+游戏提交 `0762d6ee02282be8c9437e01af58be99b0b0da72`（PR #179）及其主分支CI通过。最终统一包在完整预览0.111.0客户端通过Release113普通／快速蜂群牌序、应变／韧性及Release100预见回归，RitsuLib实际0.6.5；双宿主DLL和Patch事务契约、东尼0.3.136及379项逻辑测试通过。
+
+工坊3776911445的1.0.13重新下载，12个文件逐项SHA256与最终上传包一致；三语介绍、公开状态、依赖、标签、图库和固定更新说明核验通过。官网从同包运行导出后提升至1.0.13，不部署Worker；原格式编辑板保留284条目、20条备注和内嵌卡图，交互QA通过。散列、CI及真实客户端范围见 `release-1.0.13-evidence.json`。后续新增奈落血条及沢渡反馈单独进入下一补丁，不回写本版不可变包和目录。
