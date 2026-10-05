@@ -157,6 +157,7 @@ internal sealed partial class SmokeController
             await NGame.Instance!.ReturnToMainMenuAfterRun();
             await WaitFrames(30);
         }
+        await RunFourthBoardEditsAsync();
         _checkpoints.Write("release113.completed");
         NGame.Instance!.Quit();
     }
