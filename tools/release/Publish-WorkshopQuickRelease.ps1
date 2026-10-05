@@ -17,6 +17,7 @@ param(
     [Parameter(Mandatory)][string] $GameRootDirectory,
     [Parameter(Mandatory)][string] $RitsuLibModDirectory,
     [ValidateSet('stable', 'preview')][string] $ValidationChannel = 'stable',
+    [ValidateSet('Release113', 'Release100')][string[]] $PreUploadValidationModes = @(),
     [switch] $Confirm
 )
 
@@ -197,6 +198,15 @@ $bundleDirectory = Join-Path $repositoryRoot 'build\workshop-bundle\NinjaSlayer'
     -Version $Version `
     -SourceRevision $SourceRevision
 
+foreach ($validationMode in $PreUploadValidationModes) {
+    & (Join-Path $repositoryRoot 'tools\smoke-harness\Invoke-NinjaSlayerSmoke.ps1') `
+        -CandidateSha $SourceRevision -BundleVersion $Version -CandidateRoot $repositoryRoot `
+        -BundleDirectory $bundleDirectory -TrustedRoot $repositoryRoot `
+        -GameRootDirectory $GameRootDirectory -RitsuLibModDirectory $RitsuLibModDirectory `
+        -OutputDirectory (Join-Path $releaseDirectory "verify-$tag-$($SourceRevision.Substring(0, 12))-$validationMode") `
+        -Channel $ValidationChannel -Mode $validationMode -Seed '9NWJ1TS9WC2V' `
+        -PhaseTimeoutSeconds 600 -NoScreenshots -BackgroundDesktop
+}
 $catalogDirectory = Join-Path $releaseDirectory "website-$tag-$($SourceRevision.Substring(0, 12))"
 & (Join-Path $repositoryRoot 'tools\smoke-harness\Invoke-NinjaSlayerSmoke.ps1') `
     -CandidateSha $SourceRevision -BundleVersion $Version -CandidateRoot $repositoryRoot `
