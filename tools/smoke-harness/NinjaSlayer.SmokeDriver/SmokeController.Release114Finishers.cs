@@ -119,8 +119,8 @@ internal sealed partial class SmokeController
             Require(early && observed.ResolvedHits == hits && observed.CompletionObserved && observed.ResourcesReleased
                 && observed.CompletionFailure == null, "Combo only entered finisher on its last hit or failed to release.");
             Require(preZoom > 1.01f && preZoom <= 1.3501f, "Combo lost its early 1.35x stage.");
-            float distance = card is AntiAirBangBangFist ? NinjaSlayerCombatVisuals.AttackLungeDistance
-                : NinjaSlayerCombatVisuals.SlowAttackLungeDistance;
+            float distance = card is StormFist or DragonRoundhouseKick ? NinjaSlayerCombatVisuals.SlowAttackLungeDistance
+                : NinjaSlayerCombatVisuals.AttackLungeDistance;
             for (int hit = 1; hit < hits; hit++)
                 Require(retreats[hit] >= distance * .8f && shownRetreats[hit] >= distance * .5f,
                     $"{card.Id} {speed} upgraded={upgraded} hit={hit}: combo remained attached, travel={retreats[hit]}, rendered={shownRetreats[hit]}, distance={distance}.");
