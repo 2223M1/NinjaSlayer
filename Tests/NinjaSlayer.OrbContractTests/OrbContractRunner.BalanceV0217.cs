@@ -145,8 +145,8 @@ public partial class OrbContractRunner
             await CardCmd.AutoPlay(Choice, AddCard<Zanshin>(combat, upgraded: true), null);
             combat.State.RoundNumber++;
             combat.Player.PlayerCombatState!.IncrementTurnNumber();
-            Require(combat.Player.Creature.GetPower<ZanshinPower>()!.ModifyHandDraw(combat.Player, 5) == 8,
-                "Stacked Zanshin counts attacks played before the powers and adds three to the next normal draw.");
+            Require(combat.Player.Creature.GetPower<ZanshinPower>()!.ModifyHandDraw(combat.Player, 5) == 10,
+                "Stacked Zanshin counts attacks played before the powers and adds five to the next normal draw.");
             combat.State.RoundNumber++;
             combat.Player.PlayerCombatState.IncrementTurnNumber();
             Require(combat.Player.Creature.GetPower<ZanshinPower>()!.ModifyHandDraw(combat.Player, 5) == 5,

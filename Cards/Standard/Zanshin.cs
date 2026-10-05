@@ -9,7 +9,7 @@ namespace NinjaSlayer.Cards.Standard;
 public sealed class Zanshin : NinjaSlayerRareCard
 {
     public Zanshin() : base(nameof(Zanshin), 1, CardType.Power, TargetType.Self) { }
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new CardsVar(1)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new CardsVar(2)];
 
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
         PowerCmd.Apply<ZanshinPower>(choiceContext, Owner.Creature, DynamicVars.Cards.BaseValue, Owner.Creature, this);

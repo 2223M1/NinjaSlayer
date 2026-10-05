@@ -438,8 +438,8 @@ public partial class OrbContractRunner
             AddCard<StrikeIronclad>(combat, PileType.Draw);
             AddCard<StrikeIronclad>(combat, PileType.Draw);
             await CardPileCmd.Draw(Choice, 1, combat.Player);
-            Require(PileType.Hand.GetPile(combat.Player).Cards.Count == 3 && _drawFlipCalls == 1,
-                "Nested status-triggered draws were not grouped with the outer batch.");
+            Require(PileType.Hand.GetPile(combat.Player).Cards.Count == 1 && _drawFlipCalls == 1,
+                "Drawing an existing Status must not add Resilience draws or duplicate the native flip.");
             await PowerCmd.Remove(combat.Player.Creature.GetPower<ResiliencePower>()!);
             ResetBatch();
             Type batches = product.GetType("NinjaSlayer.Code.Lifecycle.NinjaSlayerDrawAnimationBatch", true)!;

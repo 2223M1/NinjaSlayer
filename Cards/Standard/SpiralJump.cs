@@ -1,22 +1,14 @@
-using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
-using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
-using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.Models.Cards;
-using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using NinjaSlayer.Orbs;
-using NinjaSlayer.Powers;
-using STS2RitsuLib.Interop.AutoRegistration;
 
 namespace NinjaSlayer.Cards.Standard;
 
@@ -26,7 +18,7 @@ public sealed class SpiralJump : NinjaSlayerCommonCard
         [HoverTipFactory.FromOrb<NinjaSlayer.Orbs.ShurikenOrb>()];
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(7, ValueProp.Move), new DynamicVar("Stock", 2)];
+        [new DamageVar(8, ValueProp.Move)];
 
     public SpiralJump()
         : base(nameof(SpiralJump), 1, CardType.Attack, TargetType.AllEnemies) { }
@@ -43,7 +35,8 @@ public sealed class SpiralJump : NinjaSlayerCommonCard
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .TargetingAllOpponents(CombatState!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
-        await ShurikenOrb.AddStock(choiceContext, Owner, DynamicVars["Stock"].IntValue);
+        if (!CombatManager.Instance.IsOverOrEnding && ShurikenOrb.Find(Owner) is { } orb)
+            await orb.FireConsumedVolley(choiceContext, 1, this);
     }
 
     protected override void OnUpgrade()

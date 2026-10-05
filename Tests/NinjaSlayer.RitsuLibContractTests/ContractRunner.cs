@@ -45,11 +45,11 @@ namespace NinjaSlayer.RitsuLibContractTests;
 public partial class ContractRunner : Node
 {
 #if NINJASLAYER_CHANNEL_STABLE
-    private const int ExpectedRequiredPatchTargetCount = 141;
-    private const int ExpectedCriticalRequiredPatchTargetCount = 107;
+    private const int ExpectedRequiredPatchTargetCount = 145;
+    private const int ExpectedCriticalRequiredPatchTargetCount = 112;
 #else
-    private const int ExpectedRequiredPatchTargetCount = 142;
-    private const int ExpectedCriticalRequiredPatchTargetCount = 108;
+    private const int ExpectedRequiredPatchTargetCount = 146;
+    private const int ExpectedCriticalRequiredPatchTargetCount = 113;
 #endif
     private static readonly List<ModPatcher> CapturedPatchers = [];
     private static Assembly? _productAssembly;
@@ -377,13 +377,6 @@ public partial class ContractRunner : Node
         Assembly product,
         IReadOnlyList<ModPatchInfo> requiredPatches)
     {
-        Require(requiredPatches.Count == ExpectedRequiredPatchTargetCount,
-            $"The required Patch transaction registered {requiredPatches.Count} targets; " +
-            $"expected {ExpectedRequiredPatchTargetCount}.");
-        int criticalPatchCount = requiredPatches.Count(patch => patch.IsCritical);
-        Require(criticalPatchCount == ExpectedCriticalRequiredPatchTargetCount,
-            $"The required Patch transaction registered {criticalPatchCount} critical targets; " +
-            $"expected {ExpectedCriticalRequiredPatchTargetCount}.");
         Require(requiredPatches.Select(patch => patch.Id).Distinct().Count() == requiredPatches.Count,
             "The required Patch transaction contains duplicate target IDs.");
         foreach (ModPatchInfo patch in requiredPatches)
@@ -410,6 +403,13 @@ public partial class ContractRunner : Node
             ];
             System.IO.File.WriteAllLines(fullPath, lines);
         }
+        Require(requiredPatches.Count == ExpectedRequiredPatchTargetCount,
+            $"The required Patch transaction registered {requiredPatches.Count} targets; " +
+            $"expected {ExpectedRequiredPatchTargetCount}.");
+        int criticalPatchCount = requiredPatches.Count(patch => patch.IsCritical);
+        Require(criticalPatchCount == ExpectedCriticalRequiredPatchTargetCount,
+            $"The required Patch transaction registered {criticalPatchCount} critical targets; " +
+            $"expected {ExpectedCriticalRequiredPatchTargetCount}.");
     }
 
     private static string FormatPatchTarget(ModPatchInfo patch)

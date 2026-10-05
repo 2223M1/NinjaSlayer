@@ -124,6 +124,7 @@ public class Entry
             requiredPatcher.RegisterPatch<SawatariWinCheckPatch>();
             requiredPatcher.RegisterPatch<SawatariTurnEndPatch>();
             requiredPatcher.RegisterPatch<FriendlyCompanionInteractionPatch>();
+            requiredPatcher.RegisterPatch<FriendlyCompanionPersonalHivePatch>();
             requiredPatcher.RegisterPatch<FriendlyCompanionCardSelectedPatch>();
             requiredPatcher.RegisterPatch<FriendlyCompanionCardDeselectedPatch>();
             requiredPatcher.RegisterPatch<FriendlyCompanionPotionSelectedPatch>();

@@ -81,16 +81,17 @@ public partial class OrbContractRunner
         {
             using var combat = new OrbCombat();
             var existing = AddCard<DefendIronclad>(combat);
-            var drawn = Enumerable.Range(0, upgraded ? 3 : 2).Select(_ => AddCard<DefendIronclad>(combat, PileType.Draw)).ToArray();
+            var drawn = Enumerable.Range(0, upgraded ? 4 : 3).Select(_ => AddCard<DefendIronclad>(combat, PileType.Draw)).ToArray();
             var untouched = AddCard<Wound>(combat, PileType.Draw);
             await CardCmd.AutoPlay(Choice, AddCard<Adapt>(combat, upgraded: upgraded), null);
-            Require(drawn.All(card => card.Pile?.Type == PileType.Hand && card.Keywords.Contains(CardKeyword.Sly))
+            Require(drawn.All(card => card.Pile?.Type == PileType.Hand && !card.Keywords.Contains(CardKeyword.Sly))
                 && !existing.Keywords.Contains(CardKeyword.Sly) && !untouched.Keywords.Contains(CardKeyword.Sly),
-                "Insight grants Sly only to directly drawn cards.");
-            drawn[0].EndOfTurnCleanup();
-            Require(((CardModel)drawn[0].MutableClone()).Keywords.Contains(CardKeyword.Sly), "Granted Sly survives turn cleanup and native copy.");
-            await CardCmd.Discard(Choice, drawn);
-            Require(combat.Player.Creature.Block == drawn.Length * 5, "Insight's native Sly cards play on discard.");
+                "Adapt draws three/four cards without granting Sly.");
+            await CardCmd.AutoPlay(Choice, drawn[0], null);
+            Require(drawn[0].Pile?.Type == PileType.Draw && PileType.Draw.GetPile(combat.Player).Cards[0] == drawn[0]
+                && !combat.Player.Creature.HasPower<ReboundPower>(), "Adapt rebounds the next played card exactly once.");
+            await CardCmd.AutoPlay(Choice, existing, null);
+            Require(existing.Pile?.Type == PileType.Discard, "Adapt must not rebound a second card.");
         }
         using (var combat = new OrbCombat())
         {
@@ -99,9 +100,9 @@ public partial class OrbContractRunner
             var bonus = AddCard<DefendIronclad>(combat, PileType.Draw);
             var directSecond = AddCard<StrikeIronclad>(combat, PileType.Draw);
             await CardCmd.AutoPlay(Choice, AddCard<Adapt>(combat), null);
-            Require(directStatus.Keywords.Contains(CardKeyword.Sly) && directSecond.Keywords.Contains(CardKeyword.Sly)
-                && bonus.Pile?.Type == PileType.Hand && !bonus.Keywords.Contains(CardKeyword.Sly),
-                "Insight excludes cards drawn by a status-draw callback from its granted Sly.");
+            Require(new CardModel[] { directStatus, directSecond, bonus }.All(card =>
+                    card.Pile?.Type == PileType.Hand && !card.Keywords.Contains(CardKeyword.Sly)),
+                "Drawing an existing Status does not trigger Resilience or grant Sly through Adapt.");
         }
         foreach (bool starlessFirst in new[] { false, true })
         {
