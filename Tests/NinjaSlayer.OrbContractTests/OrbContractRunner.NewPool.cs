@@ -502,9 +502,9 @@ public partial class OrbContractRunner
             var card = AddCard<Assess>(combat);
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
             await CardCmd.AutoPlay(Choice, card, null);
-            Require(!retained.ShouldRetainThisTurn && combat.Player.Creature.Block == 3, "Macaco grants block without Retain.");
+            Require(!retained.ShouldRetainThisTurn && combat.Player.Creature.Block == 4, "Assess grants block without Retain.");
             retained.EndOfTurnCleanup();
-            Require(!retained.ShouldRetainThisTurn, "Macaco must not add Retain after cleanup.");
+            Require(!retained.ShouldRetainThisTurn, "Assess must not add Retain after cleanup.");
         }
         using (var combat = new OrbCombat())
         {

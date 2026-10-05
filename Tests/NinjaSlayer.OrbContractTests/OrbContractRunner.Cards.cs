@@ -41,6 +41,7 @@ public partial class OrbContractRunner
         GD.Print("PASS all current upgrades: no simultaneous cost reduction and added Retain/Innate");
         await VerifyBoardV118();
         await VerifyBoardV119();
+        await VerifyBoardFourthEdit();
         await VerifyMultiHitVigor();
         await VerifyNewCardInteractions();
         await VerifyAncientCardSources();

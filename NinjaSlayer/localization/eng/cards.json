@@ -48,7 +48,7 @@
   "NINJA_SLAYER_CARD_CHOP.title": "Chop",
   "NINJA_SLAYER_CARD_CHOP.description": "Deal {Damage:diff()} damage.\nGain {Karate:diff()} [gold]Karate[/gold].\nPut this card on top of your [gold]Draw Pile[/gold].",
   "NINJA_SLAYER_CARD_NINJA_TAUNT.title": "Ninja Taunt",
-  "NINJA_SLAYER_CARD_NINJA_TAUNT.description": "Gain {Block:diff()} [gold]Block[/gold].\nApply {Karate} [gold]Karate[/gold] to a random enemy.",
+  "NINJA_SLAYER_CARD_NINJA_TAUNT.description": "Gain {Block:diff()} [gold]Block[/gold].\nApply {Karate} [gold]Karate[/gold].",
   "NINJA_SLAYER_CARD_CATAPULT_THROW.title": "Catapult Throw",
   "NINJA_SLAYER_CARD_CATAPULT_THROW.description": "Deal {Damage:diff()} damage.\nIf you have [gold]Chado[/gold] in your [gold]Hand[/gold], draw {Cards:diff()} {Cards:plural:card|cards}.",
   "NINJA_SLAYER_CARD_SOMERSAULT_KICK.title": "Somersault Kick",

@@ -48,7 +48,7 @@
   "NINJA_SLAYER_CARD_CHOP.title": "チョップ",
   "NINJA_SLAYER_CARD_CHOP.description": "{Damage:diff()}ダメージを与える。\n{Karate:diff()}[gold]カラテ[/gold]を得る。\nこのカードを[gold]山札[/gold]の一番上に置く。",
   "NINJA_SLAYER_CARD_NINJA_TAUNT.title": "ニンジャ挑発",
-  "NINJA_SLAYER_CARD_NINJA_TAUNT.description": "{Block:diff()}[gold]ブロック[/gold]を得る。\nランダムな敵1体に{Karate}[gold]カラテ[/gold]を与える。",
+  "NINJA_SLAYER_CARD_NINJA_TAUNT.description": "{Block:diff()}[gold]ブロック[/gold]を得る。\n{Karate}[gold]カラテ[/gold]を与える。",
   "NINJA_SLAYER_CARD_CATAPULT_THROW.title": "カタパルト",
   "NINJA_SLAYER_CARD_CATAPULT_THROW.description": "{Damage:diff()}ダメージを与える。\n[gold]手札[/gold]に[gold]チャドー[/gold]がある場合、カードを{Cards:diff()}枚引く。",
   "NINJA_SLAYER_CARD_SOMERSAULT_KICK.title": "サマーソルトキック",
