@@ -61,6 +61,9 @@ public sealed class NarakuLifeHealthBarLayoutPatch : IPatchMethod
         }
 
         RefreshEmbeddedStrip(__instance, creature, narakuLife);
+        // The same native health-bar scene is also used in the multiplayer top panel.
+        // Only creature-state displays have combat hitbox/block anchoring.
+        if (__instance.GetParent() is not NCreatureStateDisplay) return;
         NCreature creatureNode = __instance.GetParent()?.GetParent() as NCreature
             ?? throw new InvalidOperationException(
                 "The active Naraku health bar is not attached to a creature node.");

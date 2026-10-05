@@ -188,6 +188,14 @@ public partial class OrbContractRunner : Node
             }
             MegaCrit.Sts2.Core.Multiplayer.Serialization.ModelIdSerializationCache.Init();
 
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_NARAKU_PANEL_BASELINE") == "1")
+            {
+                await VerifyNarakuPanelBaseline();
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
+
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_FRIENDLY_HIVE_BASELINE") == "1")
             {
                 await VerifyFriendlyHiveBaseline();
@@ -239,6 +247,7 @@ public partial class OrbContractRunner : Node
             MegaCrit.Sts2.Core.Localization.LocManager.Initialize();
             await VerifyFriendlyHive();
             await VerifyRelease113Cards();
+            await VerifyNarakuPanels();
             if (minion is not null)
             {
                 await VerifyMinionDamage(minion);

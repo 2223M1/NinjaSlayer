@@ -17,7 +17,6 @@ using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.TestSupport;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Transition;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
@@ -33,6 +32,8 @@ namespace NinjaSlayer.Events;
 [RegisterActEvent(typeof(Glory))]
 public sealed class TheMovingJungleEvent : ModEventTemplate
 {
+    private Func<Task>? _combatStartAfterReveal;
+    internal bool HasPendingCombatStart => _combatStartAfterReveal != null;
 #if NINJASLAYER_CHANNEL_STABLE
     private static readonly FieldInfo EmbeddedCombatState =
         AccessTools.Field(typeof(EventModel), "_combatStateForCombatLayout")
@@ -149,7 +150,7 @@ public sealed class TheMovingJungleEvent : ModEventTemplate
         }
     }
 
-    private async Task BeginLocalEvent(Player owner)
+    private Task BeginLocalEvent(Player owner)
     {
         TheMovingJungleEvent[] events = RunManager.Instance.EventSynchronizer.Events
             .OfType<TheMovingJungleEvent>()
@@ -176,19 +177,14 @@ public sealed class TheMovingJungleEvent : ModEventTemplate
                 eventModel.FinishForFallback();
                 eventModel.BeginEmbeddedCombat();
             }
-            return;
+            return Task.CompletedTask;
         }
 
         SawatariEventUi.Hide();
-        // Build the model and request music in the native room-load order. Only
-        // the entrance needs a processing scene tree; awaiting it during load
-        // would prevent the transition from ever revealing that tree.
-        if (NinjaSlayerTransitionGate.TryDeferPresentation(EnterCombat, out Task deferred))
-        {
-            _ = TaskHelper.RunSafely(deferred);
-            return;
-        }
-        await EnterCombat();
+        // EnterRoom is still under the native black transition. The feature-local
+        // FadeIn continuation consumes this start only after the room is visible.
+        _combatStartAfterReveal = EnterCombat;
+        return Task.CompletedTask;
 
         async Task EnterCombat()
         {
@@ -199,6 +195,13 @@ public sealed class TheMovingJungleEvent : ModEventTemplate
                 eventModel.BeginEmbeddedCombat();
             }
         }
+    }
+
+    internal Task StartCombatAfterRoomReveal()
+    {
+        Func<Task>? start = _combatStartAfterReveal;
+        _combatStartAfterReveal = null;
+        return start == null ? Task.CompletedTask : start();
     }
 
     private CombatState? GetEmbeddedCombatState()
