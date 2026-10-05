@@ -1,0 +1,235 @@
+{
+  "version": "1.0.15",
+  "sourceRevision": "6355a1a09a6bd69a33eb74a15dbea791865f372f",
+  "verifiedAtUtc": "2026-10-05T16:47:44.019Z",
+  "pullRequests": [
+    184,
+    185
+  ],
+  "ci": {
+    "conclusion": "success",
+    "databaseId": 37339860440,
+    "headSha": "6355a1a09a6bd69a33eb74a15dbea791865f372f",
+    "status": "completed",
+    "updatedAt": "2026-10-05T16:22:05Z",
+    "url": "https://github.com/2223M1/NinjaSlayer/actions/runs/37339860440"
+  },
+  "realClientValidationPolicy": "Owner explicitly approved one real client on 2026-10-05.",
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "cad3bb135e5f2bb3b408a9689008f2d1da8187ef9dc4d68032185c8d1ccd31ae",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "fbcd2ea21fef9f8b538bce43e2062d160faf30e707fdf56604575bb91d55c230",
+    "1b1fd010a99d2df271b02a48f71234a5b8dfa2c6ea781f119835f55579940175",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "03834bba79a7e8144c57eb25e68e1bcf443a371c6cde2dbd57fb18351d85d2e6",
+    "1ce6d3b4068680f0a55f7d3bf2803c9c3c4f36be26bf4dda5156cbaaa7c69a10",
+    "7234fed7fa9e122fa1dd37491f3a5150e62a3d39065fcca0debe208e8e1c8e68",
+    "26768861e03e0472c8ccc89617b29b76772492ee09ca477467812cdc4a7d8b38",
+    "22e3a1de2f5c31cafb18eb6a237c4fcba043532868831f9f52e6743893187309"
+  ],
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+      "bytes": 317440
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "sha256": "cad3bb135e5f2bb3b408a9689008f2d1da8187ef9dc4d68032185c8d1ccd31ae",
+      "bytes": 2229248
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "sha256": "fbcd2ea21fef9f8b538bce43e2062d160faf30e707fdf56604575bb91d55c230",
+      "bytes": 126464
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "sha256": "1b1fd010a99d2df271b02a48f71234a5b8dfa2c6ea781f119835f55579940175",
+      "bytes": 2232832
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+      "bytes": 1097
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "sha256": "03834bba79a7e8144c57eb25e68e1bcf443a371c6cde2dbd57fb18351d85d2e6",
+      "bytes": 522
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "sha256": "1ce6d3b4068680f0a55f7d3bf2803c9c3c4f36be26bf4dda5156cbaaa7c69a10",
+      "bytes": 24576
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "sha256": "7234fed7fa9e122fa1dd37491f3a5150e62a3d39065fcca0debe208e8e1c8e68",
+      "bytes": 363
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "sha256": "26768861e03e0472c8ccc89617b29b76772492ee09ca477467812cdc4a7d8b38",
+      "bytes": 209295668
+    },
+    {
+      "path": "SHA256SUMS",
+      "sha256": "22e3a1de2f5c31cafb18eb6a237c4fcba043532868831f9f52e6743893187309",
+      "bytes": 1008
+    }
+  ],
+  "previewAttestations": [
+    {
+      "schemaVersion": 6,
+      "candidateSha": "6355a1a09a6bd69a33eb74a15dbea791865f372f",
+      "bundleVersion": "1.0.15",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.5",
+      "additionalMods": [],
+      "bundleSha256": "22e3a1de2f5c31cafb18eb6a237c4fcba043532868831f9f52e6743893187309",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "release113",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-05T16:41:14.8976388+00:00"
+    },
+    {
+      "schemaVersion": 6,
+      "candidateSha": "6355a1a09a6bd69a33eb74a15dbea791865f372f",
+      "bundleVersion": "1.0.15",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.5",
+      "additionalMods": [],
+      "bundleSha256": "22e3a1de2f5c31cafb18eb6a237c4fcba043532868831f9f52e6743893187309",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "runtime-content-export",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-05T16:43:32.2277615+00:00"
+    }
+  ],
+  "validation": {
+    "logicTests": 379,
+    "repository": true,
+    "compatibility": true,
+    "buildBoundaries": true,
+    "dualHostDllContracts": true,
+    "dualHostPatchTransactions": true,
+    "autoAnthony": "0.3.136",
+    "previewRealClient": true,
+    "renderedCardCases": [
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_NINJA_TAUNT",
+        "upgraded": false,
+        "speed": "Normal"
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_KUNAI_THROW",
+        "upgraded": false,
+        "speed": "Normal"
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ASSESS",
+        "upgraded": false,
+        "speed": "Normal"
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_NINJA_TAUNT",
+        "upgraded": true,
+        "speed": "Normal"
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_KUNAI_THROW",
+        "upgraded": true,
+        "speed": "Normal"
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ASSESS",
+        "upgraded": true,
+        "speed": "Normal"
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_NINJA_TAUNT",
+        "upgraded": false,
+        "speed": "Fast"
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_KUNAI_THROW",
+        "upgraded": false,
+        "speed": "Fast"
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ASSESS",
+        "upgraded": false,
+        "speed": "Fast"
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_NINJA_TAUNT",
+        "upgraded": true,
+        "speed": "Fast"
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_KUNAI_THROW",
+        "upgraded": true,
+        "speed": "Fast"
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ASSESS",
+        "upgraded": true,
+        "speed": "Fast"
+      }
+    ]
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "tags": "Characters,Simplified Chinese,english,japanese",
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "remoteDescriptionVerified": true,
+    "localizedLanguages": [
+      "english",
+      "schinese",
+      "japanese"
+    ],
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "galleryUnchanged": true,
+    "mainPreviewBefore": "https://images.steamusercontent.com/ugc/13765530479187689089/F5A5A0550ED077F95747BF804BDCBE2119369C6A/",
+    "mainPreviewAfter": "https://images.steamusercontent.com/ugc/13765530479187689089/F5A5A0550ED077F95747BF804BDCBE2119369C6A/",
+    "latestChangeNoteTimestamp": 1791218709,
+    "downloadBytes": 214229234
+  },
+  "notRun": [
+    "Complete stable 0.107.1 client gameplay",
+    "macOS/Linux gameplay",
+    "Independent multiplayer client transport"
+  ]
+}
