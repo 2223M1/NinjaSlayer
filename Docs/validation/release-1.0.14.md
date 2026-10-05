@@ -16,6 +16,14 @@
 
 ## 验证
 
+## 多段处决
+
+1.0.13生产DLL已重现：风暴拳实际4段，显式 `ExecuteWithFinisher` 却通过只接受原版程序集的 `VanillaHitPreviewCompatibility` 构造预测，回落为1段／NotGuaranteed。不是活力伤害遗漏；两版原生 `VigorPower.ModifyDamageAdditive` 已将活力加入每段，`AttackCommand.Execute` 在整个命令前后各调用一次BeforeAttack／AfterAttack。旧生产者导致整组总伤害预测不足，直到末段直接伤害入口才取得处决，且错误 `ResolvedHits=1` 会令 `BeginComboRecovery` 的终段判断提前成立。
+
+删除显式路径的卡牌预览推导，复用攻击命令适配边界的真实伤害／段数／属性／目标；保留原有显式参数签名和旋风拳覆盖。不补登记猜测表、不改变实际伤害、原版活力消耗、随机目标、动画、模型ID或存档。风暴拳／龙回旋踢／掌底突刺／对空连打基础和升级的力量+活力、格挡、差1点不杀、预测无副作用契约覆盖该根因；渲染Release114增加首击前处决、前半1.35倍镜头、后续每段的普通距离回退／前冲、UI根节点稳定和最终释放验收。实机及最终干净提交结果以发布证据为准。
+
+原版行为参照为0.107.1及0.111.0的 `Core/Commands/Builders/AttackCommand.cs:Execute` 和 `Core/Models/Powers/VigorPower.cs:BeforeAttack/ModifyDamageAdditive/AfterAttack`。无新Patch目标、反射字段或兼容分支；共用既有命令私有字段边界，删除错误单调用生产者。卡牌数值及文案未改变，目录不因该处决修复改变。
+
 1.0.13原始DLL失败基线、非角色共享血条的嵌入段／原生锚点不改／能力移除、损坏战斗节点仍报错契约通过。379项逻辑测试、仓库／兼容／构建边界、双宿主DLL及Patch事务契约通过。新增的必需目标是RunManager.FadeIn，正式版该成员不可由nameof引用，采用两版源码已确认的精确字符串目标和bool签名，不增加运行时猜测。
 
 预览0.111.0完整客户端 `Release114` 隔离实机用四个原生Player模型及真实 `NMultiplayerPlayerState`，覆盖生命、格挡、奈落叠加／移除／再次给予、回合结束至第二回合及继续出牌；普通和快速均通过。事件实机在入场开始时检查原生过场已结束、SimpleTransition透明且人物尚隐藏，随后验证恰好一次可见入场及正常进入战斗，普通和快速均通过。这是单个渲染客户端的原生联机UI布局模拟，不是独立客户端网络传输验证。

@@ -23,62 +23,7 @@ internal enum FinisherTargeting
 internal sealed record FinisherAttackSpec(
     CardModel Card,
     CardPlay CardPlay,
-    FinisherForecastDescriptor Forecast)
-{
-    public static FinisherAttackSpec FromCard(
-        CardModel card,
-        CardPlay cardPlay,
-        decimal? damageOverride = null,
-        int? hitCountOverride = null,
-        ValueProp? propsOverride = null)
-    {
-        Func<Creature, decimal> damage;
-        ValueProp props;
-        if (damageOverride.HasValue)
-        {
-            damage = _ => damageOverride.Value;
-            props = propsOverride ?? ResolveProps(card);
-        }
-        else if (card.DynamicVars.TryGetValue(CalculatedDamageVar.defaultName, out DynamicVar? calculated)
-            && calculated is CalculatedDamageVar calculatedDamage)
-        {
-            damage = target => calculatedDamage.Calculate(target);
-            props = calculatedDamage.Props;
-        }
-        else
-        {
-            DamageVar damageVar = card.DynamicVars.Damage;
-            damage = _ => damageVar.BaseValue;
-            props = damageVar.Props;
-        }
-
-        FinisherTargeting targeting = card.TargetType switch
-        {
-            TargetType.AllEnemies => FinisherTargeting.All,
-            TargetType.RandomEnemy => FinisherTargeting.Random,
-            _ => FinisherTargeting.Single
-        };
-        int hitCount = hitCountOverride
-            ?? (VanillaHitPreviewCompatibility.TryGetHitCount(card, cardPlay.Target, out int resolvedHits) ? resolvedHits : 0);
-        return new FinisherAttackSpec(
-            card,
-            cardPlay,
-            new FinisherForecastDescriptor(
-                damage,
-                propsOverride ?? props,
-                Math.Max(1, hitCount),
-                targeting,
-                cardPlay.Target));
-    }
-
-    private static ValueProp ResolveProps(CardModel card)
-    {
-        return card.DynamicVars.TryGetValue(DamageVar.defaultName, out DynamicVar? damage)
-            && damage is DamageVar damageVar
-            ? damageVar.Props
-            : ValueProp.Move;
-    }
-}
+    FinisherForecastDescriptor Forecast);
 
 internal static class NinjaSlayerFinisherCinematic
 {
@@ -227,7 +172,8 @@ internal static class NinjaSlayerFinisherCinematic
         decimal? damageOverride = null,
         int? hitCountOverride = null)
     {
-        FinisherAttackSpec spec = FinisherAttackSpec.FromCard(
+        FinisherAttackSpec spec = FinisherAttackCommandAdapter.CreateSpec(
+            command,
             card,
             cardPlay,
             damageOverride,

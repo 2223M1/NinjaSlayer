@@ -196,6 +196,14 @@ public partial class OrbContractRunner : Node
                 return;
             }
 
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_FINISHER_FORECAST") == "1")
+            {
+                await VerifyMultiHitFinisherForecast();
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
+
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_FRIENDLY_HIVE_BASELINE") == "1")
             {
                 await VerifyFriendlyHiveBaseline();
