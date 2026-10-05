@@ -254,6 +254,7 @@ public partial class OrbContractRunner
             {
                 var kunai = Create(arena, ModelDb.Card<KunaiThrow>(), upgraded);
                 AddCard<DefendIronclad>(arena);
+                AddCard<StrikeIronclad>(arena);
                 for (int i = 0; i < 6; i++) AddCard<DefendIronclad>(arena, PileType.Draw);
                 int calls = 0;
                 using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
@@ -267,7 +268,7 @@ public partial class OrbContractRunner
                 }));
                 await Play(arena, kunai);
                 Require(calls == 2 && arena.Enemy.CurrentHp == 1000 - (upgraded ? 11 : 9),
-                    "Generated Kunai must keep damage/Scry/hand-discard command order.");
+                    $"Generated Kunai must keep damage/Scry/hand-discard command order: upgraded={upgraded}, selections={calls}, damage={1000 - arena.Enemy.CurrentHp}.");
             }
             using (var arena = new OrbCombat())
             {
