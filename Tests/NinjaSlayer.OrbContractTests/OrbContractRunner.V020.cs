@@ -64,7 +64,7 @@ public partial class OrbContractRunner
             await AddStock(combat.Player, 1);
             await AddStock(combat.Player, 2);
             await CardCmd.AutoPlay(Choice, AddCard<Moonsault>(combat, upgraded: upgraded), null);
-            Require(combat.Stock == 0 && combat.Tokens == 2 && combat.Player.Creature.Block == 0 && combat.Enemy.CurrentHp == 976,
+            Require(combat.Stock == 0 && combat.Tokens == 2 && combat.Player.Creature.Block == 0 && combat.Enemy.CurrentHp == 952,
                 "Oyeah Throw Sword must grant no block and consume the old stock without replenishing it.");
             var token = PileType.Hand.GetPile(combat.Player).Cards.OfType<StrongShuriken>().First();
             Require(token.Keywords.SetEquals([CardKeyword.Retain, CardKeyword.Exhaust]),
@@ -83,12 +83,12 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<FocusPower>(Choice, combat.Player.Creature, 8, combat.Player.Creature, null);
             await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
             await CardCmd.AutoPlay(Choice, token, combat.Enemy);
-            Require(combat.Enemy.CurrentHp == 961, "Snapshot token must gain Strength but not count Focus twice.");
+            Require(combat.Enemy.CurrentHp == 937, "Snapshot token must gain Strength but not count Focus twice.");
             await PowerCmd.Apply<WeakPower>(Choice, combat.Player.Creature, 1, combat.Enemy, null);
             await PowerCmd.Apply<VulnerablePower>(Choice, combat.Enemy, 1, combat.Player.Creature, null);
             var nextToken = PileType.Hand.GetPile(combat.Player).Cards.OfType<StrongShuriken>().First();
             await CardCmd.AutoPlay(Choice, nextToken, combat.Enemy);
-            Require(combat.Enemy.CurrentHp == 949, "Snapshot tokens must still use native Strength, Weak and Vulnerable modifiers.");
+            Require(combat.Enemy.CurrentHp == 925, "Snapshot tokens must still use native Strength, Weak and Vulnerable modifiers.");
         }
         using (var combat = new OrbCombat())
         {
@@ -112,7 +112,7 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<StarlessNightPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await AddStock(combat.Player, 2);
             await CardCmd.AutoPlay(Choice, AddCard<Moonsault>(combat, PileType.Discard), null);
-            Require(combat.Tokens == 1 && combat.Stock == 0 && combat.Enemy.CurrentHp == 988,
+            Require(combat.Tokens == 1 && combat.Stock == 0 && combat.Enemy.CurrentHp == 976,
                 "A full hand must not lose converted shots or prevent stock replacement.");
             Require(PileType.Discard.GetPile(combat.Player).Cards.OfType<StrongShuriken>().Count() == 1,
                 "Native generation must send overflow tokens to discard.");

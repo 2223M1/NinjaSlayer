@@ -12,7 +12,7 @@ param(
     [Parameter(Mandatory)][string]$RitsuLibModDirectory,
     [Parameter(Mandatory)][string]$OutputDirectory,
     [Parameter(Mandatory)][ValidateSet('stable', 'preview')][string]$Channel,
-    [ValidateSet('FirstCombatRestart', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossReload', 'TelemetryLoss', 'Catalog', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor')]
+    [ValidateSet('FirstCombatRestart', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossReload', 'TelemetryLoss', 'Catalog', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113')]
     [string]$Mode = 'FirstCombatRestart',
     [ValidateRange(0, 7200)][int]$PhaseTimeoutSeconds = 0,
     [string]$Seed = 'NINJASLAYER_SMOKE_01',
@@ -140,7 +140,7 @@ function Stop-SmokeProcesses {
 function Invoke-SmokePhase {
     param(
         [Parameter(Mandatory)]
-        [ValidateSet('Fresh', 'Resume', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossFresh', 'BossResume', 'BossVerify', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor')]
+        [ValidateSet('Fresh', 'Resume', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossFresh', 'BossResume', 'BossVerify', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113')]
         [string]$Phase,
         [Parameter(Mandatory)][int]$ExpectedExitCode
     )
@@ -168,6 +168,7 @@ function Invoke-SmokePhase {
             'GreetingBow' { 19 }
             'TomoeThrow' { 20 }
             'MultiHitVigor' { 21 }
+            'Release113' { 22 }
         }
         CheckpointPath = $checkpointPath
         AutoSlayLogPath = (Join-Path $OutputDirectory "autoslay-$($Phase.ToLowerInvariant()).log")
@@ -484,7 +485,7 @@ try {
         Invoke-SmokePhase -Phase BossResume -ExpectedExitCode 20
         Invoke-SmokePhase -Phase BossVerify -ExpectedExitCode 0
     }
-    elseif ($Mode -in @('ReverseFinisher', 'FullAutoSlay', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor')) {
+    elseif ($Mode -in @('ReverseFinisher', 'FullAutoSlay', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113')) {
         Invoke-SmokePhase -Phase $Mode -ExpectedExitCode 0
     }
     elseif ($Mode -eq 'SawatariSameCombat') {
@@ -519,6 +520,9 @@ try {
     }
     elseif ($Mode -eq 'TelemetryLoss') {
         @('telemetry.run-ended', 'telemetry.captured', 'telemetry.loss-completed')
+    }
+    elseif ($Mode -eq 'Release113') {
+        @('release113.hive.Normal', 'release113.hive.Fast', 'release113.completed')
     }
     elseif ($Mode -eq 'MultiHitVigor') {
         @('multihit.completed')
@@ -591,6 +595,7 @@ try {
             'GreetingBow' { 'greetingbow' }
             'TomoeThrow' { 'tomoe-throw' }
             'MultiHitVigor' { 'multihit-vigor' }
+            'Release113' { 'release113' }
             'ReverseFinisher' { 'reverse-finisher' }
             'SawatariSameCombat' { 'singleplayer-sawatari-same-combat' }
             'BossReload' { 'singleplayer-double-boss-reload' }

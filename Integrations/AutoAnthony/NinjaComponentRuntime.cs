@@ -78,7 +78,7 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                     await PowerCmd.Apply<KaratePower>(choice, enemy, amount, owner.Creature, card);
                 break;
             case "fire_stock":
-                if (ShurikenOrb.Find(owner) is { } volley) await volley.FireConsumedVolley(choice, 1, card);
+                if (ShurikenOrb.Find(owner) is { } volley) await volley.FireConsumedVolley(choice, amount, card);
                 break;
             case "double_stock":
                 if (ShurikenOrb.Find(owner) is { } stock) await ShurikenOrb.AddStock(choice, owner, stock.StackCount);
@@ -268,11 +268,6 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                 break;
             case "chado_retain":
                 await PowerCmd.Apply<RetainChadoPower>(choice, owner.Creature, amount, owner.Creature, card);
-                break;
-            case "draw_sly":
-                var drawn = await CardPileCmd.Draw(choice, amount, owner);
-                context.ReplaceDrawnCards(drawn);
-                foreach (var drawnCard in drawn) CardCmd.ApplyKeyword(drawnCard, CardKeyword.Sly);
                 break;
             case "generate_strike_strike":
                 var generatedStrike = owner.Creature.CombatState!.CreateCard<StrikeStrike>(owner);

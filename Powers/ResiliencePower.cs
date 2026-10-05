@@ -1,5 +1,6 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Content;
@@ -10,7 +11,10 @@ namespace NinjaSlayer.Powers;
 public sealed class ResiliencePower : NinjaSlayerCounterPower
 {
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(ResiliencePower));
-    public override Task AfterCardDrawn(PlayerChoiceContext choiceContext, CardModel card, bool fromHandDraw) =>
-        card.Owner.Creature == Owner && card.Type == CardType.Status
-            ? CardPileCmd.Draw(choiceContext, Amount, Owner.Player!) : Task.CompletedTask;
+    public override async Task AfterCardGeneratedForCombat(CardModel card, Player? creator)
+    {
+        if (creator?.Creature != Owner || card.Type != CardType.Status) return;
+        Flash();
+        await CardPileCmd.Draw(new ThrowingPlayerChoiceContext(), Amount, creator);
+    }
 }

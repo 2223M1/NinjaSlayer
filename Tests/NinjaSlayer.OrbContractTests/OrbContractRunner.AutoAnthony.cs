@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Modding;
 using NinjaSlayer.Content;
 using MegaCrit.Sts2.Core.Commands;
@@ -210,6 +211,33 @@ public partial class OrbContractRunner
                 "Generated Kindle must generate Black Flame in discard and trigger Devour Flame Naraku Life.");
         }
         GD.Print("PASS v1.19 generated Press the Attack three-hit Vigor and Kindle discard/status Naraku Life.");
+        foreach (bool upgraded in new[] { false, true })
+        {
+            using var arena = new OrbCombat();
+            await AddStock(arena.Player, 2);
+            await Play(arena, Create(arena, ModelDb.Card<SpiralJump>(), upgraded));
+            Require(arena.Stock == 0 && arena.Enemy.CurrentHp == 1000 - (upgraded ? 12 : 8) - 12,
+                "Generated Spiral Jump must consume one volley, not grant new stock.");
+            await AddStock(arena.Player, 2);
+            int hp = arena.Enemy.CurrentHp;
+            await Play(arena, Create(arena, ModelDb.Card<Moonsault>(), upgraded));
+            Require(arena.Stock == 0 && arena.Enemy.CurrentHp == hp - 24,
+                "Generated Moonsault must consume two volleys.");
+            for (int i = 0; i < 10; i++) AddCard<DefendIronclad>(arena, PileType.Draw);
+            await Play(arena, Create(arena, ModelDb.Card<Adapt>(), upgraded));
+            Require(PileType.Hand.GetPile(arena.Player).Cards.Count == (upgraded ? 4 : 3),
+                "Generated Adapt must draw three/four cards without Sly.");
+            var next = PileType.Hand.GetPile(arena.Player).Cards[0];
+            await CardCmd.AutoPlay(Choice, next, null);
+            Require(PileType.Draw.GetPile(arena.Player).Cards[0] == next && !next.Keywords.Contains(CardKeyword.Sly),
+                "Generated Adapt must rebound the next card without Sly.");
+            await Play(arena, Create(arena, ModelDb.Card<Resilience>(), upgraded));
+            int hand = PileType.Hand.GetPile(arena.Player).Cards.Count;
+            await NinjaSlayer.Code.Commands.NinjaSlayerCardCmd.AddGeneratedCard<Wound>(arena.Player, PileType.Discard);
+            Require(PileType.Hand.GetPile(arena.Player).Cards.Count == hand + (upgraded ? 2 : 1),
+                "Generated Resilience must draw on owned Status generation.");
+        }
+        GD.Print("PASS 1.0.13 generated Spiral/Moonsault volleys, Adapt draw/rebound and Resilience generation.");
         foreach (bool upgraded in new[] { false, true })
         foreach (bool hasTea in new[] { false, true })
         {

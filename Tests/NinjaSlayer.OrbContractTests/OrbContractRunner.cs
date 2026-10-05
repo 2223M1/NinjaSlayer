@@ -188,6 +188,14 @@ public partial class OrbContractRunner : Node
             }
             MegaCrit.Sts2.Core.Multiplayer.Serialization.ModelIdSerializationCache.Init();
 
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_FRIENDLY_HIVE_BASELINE") == "1")
+            {
+                await VerifyFriendlyHiveBaseline();
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
+
             if (anthonyBridge is not null)
             {
                 ModelDb.InitIds();
@@ -221,10 +229,16 @@ public partial class OrbContractRunner : Node
             patcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
             patcher.RegisterPatch<KarateDamageWavePatch>();
             patcher.RegisterPatch<NinjaSlayerRunSavePatch>();
-            foreach (string name in new[] { "CardPlayResolutionBeforePatch", "CardPlayResolutionAfterPatch", "CardResolutionCleanupPatch", "AttackEvasionDamagePatch" })
+            foreach (string name in new[] { "CardPlayResolutionBeforePatch", "CardPlayResolutionAfterPatch", "CardResolutionCleanupPatch", "AttackEvasionDamagePatch", "FriendlyCompanionPersonalHivePatch" })
                 typeof(ModPatcherExtensions).GetMethod("RegisterPatch")!
                     .MakeGenericMethod(product.GetType("NinjaSlayer.Code.Patches." + name, true)!).Invoke(null, [patcher]);
             Require(patcher.PatchAll(), "Orb patches failed to install.");
+            MegaCrit.Sts2.Core.Context.LocalContext.NetId = 1;
+            SaveManager.Instance.InitSettingsDataForTest();
+            SaveManager.Instance.InitPrefsDataForTest();
+            MegaCrit.Sts2.Core.Localization.LocManager.Initialize();
+            await VerifyFriendlyHive();
+            await VerifyRelease113Cards();
             if (minion is not null)
             {
                 await VerifyMinionDamage(minion);

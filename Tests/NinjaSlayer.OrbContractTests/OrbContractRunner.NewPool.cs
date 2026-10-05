@@ -354,9 +354,9 @@ public partial class OrbContractRunner
             AddCard<DefendIronclad>(combat, PileType.Draw);
             await PowerCmd.Apply<ResiliencePower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await CardPileCmd.Draw(Choice, 1, combat.Player);
-            Require(PileType.Hand.GetPile(combat.Player).Cards.Count == 3, "Status Draw must chain across successive drawn statuses.");
+            Require(PileType.Hand.GetPile(combat.Player).Cards.Count == 1, "Resilience must not trigger when an existing Status is drawn.");
         }
-        GD.Print("PASS status autoplay/exhaust, recovery transformation and turn expiry and chained Status Draw");
+        GD.Print("PASS status autoplay/exhaust, recovery transformation, turn expiry and Resilience draw isolation");
     }
 
     private static async Task VerifyTeaAndChop()

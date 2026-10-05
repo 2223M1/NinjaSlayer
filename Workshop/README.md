@@ -9,6 +9,8 @@
 
 Credentials and Steam `config.vdf` are never stored in this directory. Publication is performed only by the manual `workshop.yml` workflow or `tools/release/Publish-WorkshopQuickRelease.ps1`; both upload the same universal stable/preview bundle shape. The PCK excludes build-only `addons/spine/**` and all native libraries, so the same frozen candidate can reuse the official platform extension on Windows x64, macOS, and Linux x86_64/Steam Deck. Keep the owner's public visibility setting; record actual host/platform validation separately rather than implying all platforms were tested.
 
+The local quick-release script accepts `-ValidationChannel stable|preview` for its rendered validation and catalog export (default `stable`). `-PreUploadValidationModes Release113,Release100` runs those isolated scenarios on the exact frozen bundle before uploading; the default empty list preserves existing callers that validated separately. This does not remove either implementation from the universal bundle or substitute for DLL contracts. A release validated on only one real client must record that limitation explicitly. The uploader receives the configured existing item ID explicitly; the Steam metadata tool uses the actual game client's data directory, which includes the native Steam API library.
+
 ## Language-specific descriptions
 
 `workshop.json` keeps English in `description` (Steam's default language), and separate `schinese` and `japanese` entries in `localizedDescriptions`. Do not concatenate them. The title remains `忍者杀手 Ninja Slayer` in all languages. Tags remain `characters`, `Simplified Chinese`, `English`, and `Japanese`.

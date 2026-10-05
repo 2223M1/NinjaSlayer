@@ -1913,14 +1913,16 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_MOONSAULT",
     "Upgraded": false,
-    "Cost": 0,
+    "Cost": 1,
     "X": false,
     "Type": "Skill",
     "Rarity": "Uncommon",
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Retain"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Moonsault.png",
     "Vars": {}
@@ -2652,8 +2654,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/SpiralJump.png",
     "Vars": {
-      "Damage": 7,
-      "Stock": 2
+      "Damage": 8
     }
   },
   {
@@ -2670,8 +2671,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/SpiralJump.png",
     "Vars": {
-      "Damage": 11,
-      "Stock": 2
+      "Damage": 12
     }
   },
   {
@@ -2988,7 +2988,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Adapt.png",
     "Vars": {
-      "Cards": 2
+      "Cards": 3
     }
   },
   {
@@ -3005,7 +3005,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Adapt.png",
     "Vars": {
-      "Cards": 3
+      "Cards": 4
     }
   },
   {
@@ -3270,7 +3270,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Zanshin.png",
     "Vars": {
-      "Cards": 1
+      "Cards": 2
     }
   },
   {
@@ -3287,7 +3287,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Zanshin.png",
     "Vars": {
-      "Cards": 2
+      "Cards": 3
     }
   },
   {
