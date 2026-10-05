@@ -74,7 +74,7 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                     await PowerCmd.Apply<GrapplingHookStrengthDownPower>(choice, hooked, amount, owner.Creature, card);
                 break;
             case "enemy_karate":
-                if (owner.RunState.Rng.CombatTargets.NextItem(card.CombatState!.HittableEnemies) is { } enemy)
+                if (context.Target is { IsAlive: true } enemy)
                     await PowerCmd.Apply<KaratePower>(choice, enemy, amount, owner.Creature, card);
                 break;
             case "fire_stock":

@@ -239,6 +239,51 @@ public partial class OrbContractRunner
         }
         GD.Print("PASS 1.0.13 generated Spiral/Moonsault volleys, Adapt draw/rebound and Resilience generation.");
         foreach (bool upgraded in new[] { false, true })
+        {
+            using (var arena = new OrbCombat())
+            {
+                var second = arena.AddEnemy();
+                var taunt = Create(arena, ModelDb.Card<NinjaTaunt>(), upgraded);
+                Require(taunt.TargetType == TargetType.AnyEnemy, "Generated Taunt must require a selected enemy.");
+                await CardCmd.AutoPlay(Choice, taunt, second);
+                Require(second.GetPowerAmount<KaratePower>() == 4 && !arena.Enemy.HasPower<KaratePower>()
+                    && !arena.Player.Creature.HasPower<KaratePower>() && arena.Player.Creature.Block == (upgraded ? 17 : 14),
+                    "Generated Taunt must apply Karate to its actual selected target, never a random enemy or owner.");
+            }
+            using (var arena = new OrbCombat())
+            {
+                var kunai = Create(arena, ModelDb.Card<KunaiThrow>(), upgraded);
+                AddCard<DefendIronclad>(arena);
+                for (int i = 0; i < 6; i++) AddCard<DefendIronclad>(arena, PileType.Draw);
+                int calls = 0;
+                using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
+                {
+                    if (calls++ == 0)
+                    {
+                        Require(options.Length == (upgraded ? 4 : 3), "Generated Kunai lost revised Scry3/4.");
+                        return [];
+                    }
+                    return options.Take(1);
+                }));
+                await Play(arena, kunai);
+                Require(calls == 2 && arena.Enemy.CurrentHp == 1000 - (upgraded ? 11 : 9),
+                    "Generated Kunai must keep damage/Scry/hand-discard command order.");
+            }
+            using (var arena = new OrbCombat())
+            {
+                var assess = Create(arena, ModelDb.Card<Assess>(), upgraded);
+                for (int i = 0; i < 7; i++) AddCard<DefendIronclad>(arena, PileType.Draw);
+                using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
+                {
+                    Require(options.Length == (upgraded ? 6 : 4), "Generated Assess changed its Scry4/6.");
+                    return [];
+                }));
+                await Play(arena, assess);
+                Require(arena.Player.Creature.Block == (upgraded ? 6 : 4), "Generated Assess lost revised Block4/6.");
+            }
+        }
+        GD.Print("PASS fourth board generated Taunt selected enemy, Kunai Scry3/4 and Assess Block4/6 base+upgrade.");
+        foreach (bool upgraded in new[] { false, true })
         foreach (bool hasTea in new[] { false, true })
         {
             using var arena = new OrbCombat();

@@ -125,8 +125,8 @@ public partial class OrbContractRunner
                 "Meditation grants native Retain to existing and future tea.");
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
             await CardCmd.AutoPlay(Choice, AddCard<Assess>(combat), null);
-            Require(combat.Player.Creature.Block == 3 && tea.Pile?.Type == PileType.Draw,
-                "Macaco now grants three Block and scries without changing Tea Retain.");
+            Require(combat.Player.Creature.Block == 4 && tea.Pile?.Type == PileType.Draw,
+                "Assess grants four Block and scries without changing Tea Retain.");
         }
         foreach (bool upgraded in new[] { false, true })
         {

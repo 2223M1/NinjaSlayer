@@ -23,7 +23,7 @@ namespace NinjaSlayer.Cards.Standard;
 public sealed class KunaiThrow : NinjaSlayerCommonCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(9, ValueProp.Move), new CardsVar(2)];
+        [new DamageVar(9, ValueProp.Move), new CardsVar(3)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromKeyword(NinjaSlayerKeywords.Scry)];
 

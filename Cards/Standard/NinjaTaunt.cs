@@ -1,6 +1,5 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
-using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
@@ -18,21 +17,17 @@ public sealed class NinjaTaunt : NinjaSlayerCommonCard
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<KaratePower>()];
 
     public NinjaTaunt()
-        : base(nameof(NinjaTaunt), 1, CardType.Skill, TargetType.Self) { }
+        : base(nameof(NinjaTaunt), 1, CardType.Skill, TargetType.AnyEnemy) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
-        Creature? target = Owner.RunState.Rng.CombatTargets.NextItem(CombatState!.HittableEnemies);
-        if (target != null)
-        {
-            await PowerCmd.Apply<KaratePower>(
-                choiceContext,
-                target,
-                DynamicVars.Karate().BaseValue,
-                Owner.Creature,
-                this);
-        }
+        await PowerCmd.Apply<KaratePower>(
+            choiceContext,
+            cardPlay.Target!,
+            DynamicVars.Karate().BaseValue,
+            Owner.Creature,
+            this);
     }
 
     protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(3);

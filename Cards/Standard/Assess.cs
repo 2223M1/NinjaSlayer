@@ -14,7 +14,7 @@ public sealed class Assess : NinjaSlayerUncommonCard
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromKeyword(NinjaSlayerKeywords.Scry)];
     public Assess() : base(nameof(Assess), 1, CardType.Skill, TargetType.Self) { }
     public override bool GainsBlock => true;
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(3, ValueProp.Move), new DynamicVar("Scry", 4)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(4, ValueProp.Move), new DynamicVar("Scry", 4)];
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
@@ -22,7 +22,7 @@ public sealed class Assess : NinjaSlayerUncommonCard
     }
     protected override void OnUpgrade()
     {
-        DynamicVars.Block.UpgradeValueBy(1);
+        DynamicVars.Block.UpgradeValueBy(2);
         DynamicVars["Scry"].UpgradeValueBy(2);
     }
 }

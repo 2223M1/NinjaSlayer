@@ -1423,7 +1423,7 @@
     "X": false,
     "Type": "Skill",
     "Rarity": "Common",
-    "Target": "Self",
+    "Target": "AnyEnemy",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
@@ -1441,7 +1441,7 @@
     "X": false,
     "Type": "Skill",
     "Rarity": "Common",
-    "Target": "Self",
+    "Target": "AnyEnemy",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
@@ -3022,7 +3022,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/KunaiThrow.png",
     "Vars": {
-      "Cards": 2,
+      "Cards": 3,
       "Damage": 9
     }
   },
@@ -3040,7 +3040,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/KunaiThrow.png",
     "Vars": {
-      "Cards": 3,
+      "Cards": 4,
       "Damage": 11
     }
   },
@@ -3058,7 +3058,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Assess.png",
     "Vars": {
-      "Block": 3,
+      "Block": 4,
       "Scry": 4
     }
   },
@@ -3076,7 +3076,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Assess.png",
     "Vars": {
-      "Block": 4,
+      "Block": 6,
       "Scry": 6
     }
   },

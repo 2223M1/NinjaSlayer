@@ -48,7 +48,7 @@
   "NINJA_SLAYER_CARD_CHOP.title": "Chop",
   "NINJA_SLAYER_CARD_CHOP.description": "造成{Damage:diff()}点伤害。\n获得{Karate:diff()}层[gold]空手道[/gold]。\n将这张牌放到你的[gold]抽牌堆[/gold]顶部。",
   "NINJA_SLAYER_CARD_NINJA_TAUNT.title": "嘲讽",
-  "NINJA_SLAYER_CARD_NINJA_TAUNT.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n随机给予一名敌人{Karate}层[gold]空手道[/gold]。",
+  "NINJA_SLAYER_CARD_NINJA_TAUNT.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n给予{Karate}层[gold]空手道[/gold]。",
   "NINJA_SLAYER_CARD_CATAPULT_THROW.title": "投石器摔",
   "NINJA_SLAYER_CARD_CATAPULT_THROW.description": "造成{Damage:diff()}点伤害。\n如果你的[gold]手牌[/gold]中有[gold]茶道[/gold]，抽{Cards:diff()}张牌。",
   "NINJA_SLAYER_CARD_SOMERSAULT_KICK.title": "倒挂金钩踢",
