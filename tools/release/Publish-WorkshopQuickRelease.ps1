@@ -16,6 +16,7 @@ param(
     [string] $GodotExe,
     [Parameter(Mandatory)][string] $GameRootDirectory,
     [Parameter(Mandatory)][string] $RitsuLibModDirectory,
+    [ValidateSet('stable', 'preview')][string] $ValidationChannel = 'stable',
     [switch] $Confirm
 )
 
@@ -201,7 +202,7 @@ $catalogDirectory = Join-Path $releaseDirectory "website-$tag-$($SourceRevision.
     -CandidateSha $SourceRevision -BundleVersion $Version -CandidateRoot $repositoryRoot `
     -BundleDirectory $bundleDirectory -TrustedRoot $repositoryRoot `
     -GameRootDirectory $GameRootDirectory -RitsuLibModDirectory $RitsuLibModDirectory `
-    -OutputDirectory $catalogDirectory -Channel stable -Mode Catalog -PhaseTimeoutSeconds 600
+    -OutputDirectory $catalogDirectory -Channel $ValidationChannel -Mode Catalog -PhaseTimeoutSeconds 600
 $catalog = Get-Content -LiteralPath (Join-Path $catalogDirectory 'content\catalog.json') -Raw | ConvertFrom-Json
 if ($catalog.version -cne $Version -or $catalog.sourceRevision -cne $SourceRevision) {
     throw 'Runtime website catalog does not match the candidate.'
@@ -230,7 +231,7 @@ Invoke-Native -Command dotnet -Arguments @(
 
 Push-Location $WorkshopUploadRoot
 try {
-    Invoke-Native -Command $uploader -Arguments @('upload', '-w', 'NinjaSlayer')
+    Invoke-Native -Command $uploader -Arguments @('upload', '-w', 'NinjaSlayer', '-i', [string]$compatibility.workshop.itemId)
 }
 finally {
     Pop-Location
@@ -238,7 +239,7 @@ finally {
 
 Invoke-Native -Command dotnet -Arguments @(
     'run', '--project', (Join-Path $repositoryRoot 'tools/workshop-metadata/WorkshopMetadata.csproj'),
-    '--configuration', 'Release', "-p:Sts2DataDir=$stableDataDirectory", '--',
+    '--configuration', 'Release', "-p:Sts2DataDir=$(Join-Path $GameRootDirectory 'data_sts2_windows_x86_64')", '--',
     'apply', $pendingMetadataPath, (Join-Path $repositoryRoot 'eng/compatibility.json')
 )
 
