@@ -1,0 +1,5 @@
+{
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.title": "Shuriken",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "Ogni volta che scarti una carta, gli Shuriken attaccano un nemico casuale e perdi 1 Shuriken.\nAll’Evocazione, ogni carica attacca una volta.",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue] {Passive:plural:carica|cariche}\nOgni volta che scarti una carta, infliggi {Evoke} di danno a un nemico casuale e perdi 1 Shuriken.\nAll’Evocazione, ogni carica infligge {Evoke} di danno a un nemico casuale."
+}

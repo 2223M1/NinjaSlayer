@@ -1,0 +1,6 @@
+{
+  "NINJA_SLAYER_YAMOTO_KOKI_SUMMON.title": "소환",
+  "NINJA_SLAYER_YAMOTO_KOKI_SUMMON.description": "이 아군은 [gold]오리가미 미사일[/gold]을 [blue]{Count}[/blue]개 소환하려고 합니다.",
+  "NINJA_SLAYER_YAMOTO_KOKI_IAI_SLASH.title": "이아이 베기",
+  "NINJA_SLAYER_YAMOTO_KOKI_IAI_SLASH.description": "이 아군은 모든 적을 [gold]공격[/gold]하여 피해를 [blue]{Damage}[/blue] 주려고 합니다."
+}

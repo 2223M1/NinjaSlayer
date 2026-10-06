@@ -14,6 +14,24 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { applyCatalogLocalization } from '../dashboard/catalog-localization.mjs';
+import { languages } from '../dashboard/languages.mjs';
+
+test('supplemental locales match the exact published artifact and preserve every card rule', () => {
+  const root = new URL('../../../Website/content/', import.meta.url);
+  const current = JSON.parse(readFileSync(new URL('current.json', root)));
+  const catalog = JSON.parse(readFileSync(new URL(`versions/${current.version}/catalog.json`, root)));
+  for (const lang of languages.filter(code => !catalog.languages[code])) {
+    const supplement = JSON.parse(readFileSync(new URL(`localization/${current.version}/${lang}.json`, root)));
+    assert.equal(supplement.baseFingerprint, current.fingerprint, lang);
+    const localized = applyCatalogLocalization(catalog, supplement, lang);
+    assert.equal(localized.languages[lang].filter(model => model.kind === 'card' && model.mod).length, 93, lang);
+    assert.throws(() => applyCatalogLocalization(catalog, { ...supplement, baseDllSha256: 'wrong' }, lang));
+    const changed = structuredClone(supplement);
+    changed.models.find(model => model.kind === 'card').variants[0].cost++;
+    assert.throws(() => applyCatalogLocalization(catalog, changed, lang), /card rules/);
+  }
+});
 
 test("checked-in runtime catalogs preserve their exported fingerprints", () => {
   const root = new URL("../../../Website/content/", import.meta.url);

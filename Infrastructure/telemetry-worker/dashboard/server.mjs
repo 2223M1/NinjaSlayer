@@ -12,9 +12,10 @@ import { copyDefaults, readDraft, readCopy, saveCopy, draftCopyPath, copyModule 
 import { publishCopy, continuePublication, readPublication } from './copy-publisher.mjs';
 import { inspectFeedbackZip } from './feedback-files.mjs';
 import { feedbackPublication, publishFeedback } from './feedback-publisher.mjs';
+import { languages } from './languages.mjs';
 
 const publicFiles = new Map([['/', ['index.html', 'text/html']], ['/app.js', ['app.js', 'text/javascript']], ['/styles.css', ['styles.css', 'text/css']], ['/public-data.mjs', ['public-data.mjs', 'text/javascript']]]);
-for (const file of ['i18n.mjs', 'translations.mjs', 'version-filter.mjs', 'charts.mjs', 'chart-view.mjs', 'catalog-view.mjs', 'replay-view.mjs']) publicFiles.set('/' + file, [file, 'text/javascript']);
+for (const file of ['i18n.mjs', 'languages.mjs', 'translations.mjs', 'translations-extra.mjs', 'version-filter.mjs', 'charts.mjs', 'chart-view.mjs', 'catalog-view.mjs', 'catalog-localization.mjs', 'replay-view.mjs']) publicFiles.set('/' + file, [file, 'text/javascript']);
 publicFiles.set('/vendor/chart.umd.js', ['../node_modules/chart.js/dist/chart.umd.js', 'text/javascript']);
 for (const [path, file, type] of [['/admin', 'admin.html', 'text/html'], ['/admin.js', 'admin.js', 'text/javascript'], ['/admin.css', 'admin.css', 'text/css']]) publicFiles.set(path, [file, type]);
 
@@ -108,8 +109,12 @@ export async function createDashboardServer({ feedbackReader = { loadFeedback, r
           else if (url.pathname.endsWith('/publish')) send(200, await publishCopy(await readDraft(draftPath)));
           else send(200, await continuePublication());
         } finally { editing = false; }
-      } else if (request.method === 'GET' && /^\/content\/(images\/[a-f0-9]{64}\.webp|versions\/\d+\.\d+\.\d+\/catalog\.json)$/.test(url.pathname)) {
-        const bytes = await readFile(new URL('../../../Website' + url.pathname, import.meta.url));
+      } else if (request.method === 'GET' && (/^\/content\/(images\/[a-f0-9]{64}\.webp|versions\/\d+\.\d+\.\d+\/catalog\.json)$/.test(url.pathname)
+          || (/^\/content\/localization\/\d+\.\d+\.\d+\/[a-z]{3}\.json$/.test(url.pathname)
+            && languages.includes(url.pathname.split('/').at(-1).slice(0, -5))))) {
+        let bytes;
+        try { bytes = await readFile(new URL('../../../Website' + url.pathname, import.meta.url)); }
+        catch (error) { if (error.code === 'ENOENT') { send(404, { error: '未找到此版本的资料。' }); return; } throw error; }
         send(200, url.pathname.endsWith('.json') ? JSON.parse(bytes) : bytes, url.pathname.endsWith('.json') ? 'application/json' : 'image/webp');
       } else if (request.method === 'GET' && url.pathname === '/api/snapshot') {
         send(200, { ...publishSnapshot(telemetry, catalog), currentVersion: (await readCurrentRelease()).version, sources, feedback: publicFeedback(feedback) });

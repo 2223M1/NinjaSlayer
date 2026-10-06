@@ -1,0 +1,5 @@
+{
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.title": "ชุริเค็น",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "ทุกครั้งที่คุณทิ้งการ์ด ชุริเค็นโจมตีศัตรูแบบสุ่มและคุณเสียชุริเค็น 1\nเมื่อปล่อยพลัง แต่ละชั้นโจมตีหนึ่งครั้ง",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue] ชั้น\nทุกครั้งที่คุณทิ้งการ์ด สร้างความเสียหาย {Evoke} แก่ศัตรูแบบสุ่มและเสียชุริเค็น 1\nเมื่อปล่อยพลัง แต่ละชั้นสร้างความเสียหาย {Evoke} แก่ศัตรูแบบสุ่ม"
+}

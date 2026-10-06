@@ -1,0 +1,6 @@
+{
+  "NINJA_SLAYER_KEYWORD_SCRY.description": "[gold]뽑을 카드 더미[/gold] 맨 위의 카드를 지정된 수만큼 확인합니다. 원하는 만큼 버립니다.",
+  "NINJA_SLAYER_KEYWORD_SCRY.title": "예지",
+  "NINJA_SLAYER_KEYWORD_JUDGMENT.description": "지정된 체력 조건을 만족하는 적을 [gold]방어도[/gold]를 무시하고 처치합니다.",
+  "NINJA_SLAYER_KEYWORD_JUDGMENT.title": "심판"
+}

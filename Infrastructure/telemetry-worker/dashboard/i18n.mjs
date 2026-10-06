@@ -1,9 +1,10 @@
 import { messages } from './translations.mjs';
 import { siteCopy } from './site-copy.mjs';
+import { languages, locales } from './languages.mjs';
+import { additionalMessages } from './translations-extra.mjs';
 
 const inBrowser = typeof document !== 'undefined';
 const isAdmin = inBrowser && document.body?.dataset.view === 'admin';
-const supported = ['zhs', 'eng', 'jpn'];
 let preferred;
 if (inBrowser) {
   preferred = new URLSearchParams(location.search).get('lang');
@@ -11,10 +12,13 @@ if (inBrowser) {
     try { preferred = localStorage.getItem('ninjaslayer-language'); } catch { /* Storage can be disabled. */ }
   }
 }
-export const language = !isAdmin && supported.includes(preferred) ? preferred : 'zhs';
-export const locale = { zhs: 'zh-CN', eng: 'en-US', jpn: 'ja-JP' }[language];
+export const language = !isAdmin && languages.includes(preferred) ? preferred : 'zhs';
+export const locale = locales[language][0];
 export function t(key, ...values) {
-  const text = (isAdmin ? undefined : siteCopy[key]?.[language]) ?? (language === 'zhs' ? key : messages[key]?.[language === 'eng' ? 0 : 1] ?? key);
+  const text = (isAdmin ? undefined : siteCopy[key]?.[language]) ?? (language === 'zhs' ? key
+    : language === 'eng' ? messages[key]?.[0] ?? key
+    : language === 'jpn' ? messages[key]?.[1] ?? key
+    : additionalMessages[language]?.[key] ?? key);
   return String(text).replace(/\{(\d+)\}/g, (token, index) => values[index] === undefined ? token : String(values[index]));
 }
 export function tr(parts, ...values) {
@@ -39,6 +43,7 @@ export function localizePage() {
     for (const attr of ['aria-label', 'placeholder', 'alt']) if (node.hasAttribute(attr)) node.setAttribute(attr, t(node.getAttribute(attr)));
   }
   const select = document.querySelector('#language');
+  select.replaceChildren(...languages.map(code => new Option(locales[code][1], code)));
   select.value = language;
   select.addEventListener('change', () => {
     const url = new URL(location.href);

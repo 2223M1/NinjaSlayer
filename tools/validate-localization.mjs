@@ -1,11 +1,19 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
+import { languages as officialLanguages } from '../Infrastructure/telemetry-worker/dashboard/languages.mjs';
 const root = resolve(import.meta.dirname, '..', 'NinjaSlayer', 'localization');
 const errors = [];
-const languages = ['zhs', 'eng', 'jpn'];
-const tables = Object.fromEntries(languages.map(lang => [lang, Object.fromEntries(
-  readdirSync(join(root, lang)).filter(f => f.endsWith('.json')).map(f => [f, JSON.parse(readFileSync(join(root, lang, f), 'utf8'))])
-)]));
+// Optional language arguments make each translation group independently testable.
+const languages = process.argv.length > 2 ? [...new Set(process.argv.slice(2))] : officialLanguages;
+if (languages.some(lang => !officialLanguages.includes(lang))) throw new Error('Unknown game language');
+if (process.argv.length === 2 && readdirSync(root).sort().join() !== [...officialLanguages].sort().join()) errors.push('Localization folders must match all official game languages');
+const tables = {};
+for (const lang of new Set(['zhs', ...languages])) {
+  try {
+    tables[lang] = Object.fromEntries(readdirSync(join(root, lang)).filter(f => f.endsWith('.json'))
+      .map(f => [f, JSON.parse(readFileSync(join(root, lang, f), 'utf8'))]));
+  } catch (error) { errors.push(lang + ': ' + error.message); tables[lang] = {}; }
+}
 const variables = text => [...new Set([...text.matchAll(/\{([A-Za-z_]\w*)[}:]/g)].map(m => m[1]))].sort().join(',');
 const formatters = text => [...text.matchAll(/\{([A-Za-z_]\w*):(diff\(\)|energyIcons\(\)|show)/g)].map(m => m[1] + ':' + m[2]).sort().join(',');
 function validateText(text, label) {
@@ -24,7 +32,9 @@ function validateText(text, label) {
     else if (stack.pop() !== tag) errors.push(label + ' has mismatched rich-text tags');
   }
   if (stack.length) errors.push(label + ' has unclosed rich-text tags');
+  if (/__NS\d+__|ZXROW\d+XZ|⟦\d+⟧|941\d{3}/.test(text)) errors.push(label + ' contains a discarded translation placeholder');
 }
+for (const lang of languages) if (Object.keys(tables[lang]).sort().join() !== Object.keys(tables.zhs).sort().join()) errors.push(lang + ' table inventory mismatch');
 for (const table of Object.keys(tables.zhs)) {
   const base = tables.zhs[table];
   for (const language of languages) {
@@ -35,8 +45,8 @@ for (const table of Object.keys(tables.zhs)) {
       if (!(key in base) || !(key in current)) { errors.push(label + ' key mismatch'); continue; }
       validateText(current[key], label);
       if (variables(base[key]) !== variables(current[key])) errors.push(label + ' variable mismatch');
-      // The approved English Roundhouse text also highlights Repeat; Chinese does not.
-      const expectedFormats = language === 'eng' && key === 'NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK.description'
+      // New non-Chinese translations follow the approved English Repeat highlight.
+      const expectedFormats = language !== 'zhs' && language !== 'jpn' && language !== 'zht' && key === 'NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK.description'
         ? 'Damage:diff(),Repeat:diff()' : formatters(base[key]);
       if (expectedFormats !== formatters(current[key])) errors.push(label + ' formatter mismatch');
       if ((base[key] === '') !== (current[key] === '')) errors.push(label + ' intentional-empty mismatch');
@@ -45,11 +55,11 @@ for (const table of Object.keys(tables.zhs)) {
   }
 }
 for (const lang of languages) {
-  const keys = Object.keys(tables[lang]['ancients.json']);
+  const keys = Object.keys(tables[lang]['ancients.json'] ?? {});
   for (const key of keys.filter(k => k.endsWith('.ancient'))) {
     if (keys.includes(key.replace(/\.ancient$/, '.char'))) errors.push(lang + ':' + key + ' conflicting speakers');
   }
 }
 if (errors.length) { console.error(errors.join('\n')); process.exitCode = 1; }
-else console.log('Localization checks passed: 3 languages, ' + Object.keys(tables.zhs).length + ' tables, ' +
+else console.log('Localization checks passed: ' + languages.length + ' languages, ' + Object.keys(tables.zhs).length + ' tables, ' +
   Object.values(tables.zhs).reduce((n, table) => n + Object.keys(table).length, 0) + ' keys per language.');

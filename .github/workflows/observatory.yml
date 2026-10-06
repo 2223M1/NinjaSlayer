@@ -9,6 +9,7 @@ on:
       - 'Infrastructure/telemetry-worker/**'
       - 'Website/content/**'
       - 'Website/site-copy.json'
+      - 'Website/i18n/**'
   workflow_dispatch:
     inputs:
       feedback_sync_id:

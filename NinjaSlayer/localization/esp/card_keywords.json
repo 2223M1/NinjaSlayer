@@ -1,0 +1,6 @@
+{
+  "NINJA_SLAYER_KEYWORD_SCRY.description": "Mira el número indicado de cartas de la parte superior de tu [gold]mazo de robo[/gold]. Descarta tantas como quieras.",
+  "NINJA_SLAYER_KEYWORD_SCRY.title": "Previsión",
+  "NINJA_SLAYER_KEYWORD_JUDGMENT.description": "Mata a un enemigo que cumpla la condición de PV indicada, ignorando el [gold]bloqueo[/gold].",
+  "NINJA_SLAYER_KEYWORD_JUDGMENT.title": "Juicio"
+}

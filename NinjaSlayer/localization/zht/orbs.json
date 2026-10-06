@@ -1,0 +1,5 @@
+{
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.title": "手裏劍",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "每當你棄掉一張牌，手裏劍攻擊隨機敵人，失去1層手裏劍。\n激發時，每層手裏劍攻擊一次。",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue]層\n每當你棄掉一張牌，對隨機敵人造成{Evoke}點傷害，失去1層手裏劍。\n激發時，每層手裏劍各對隨機敵人造成{Evoke}點傷害。"
+}

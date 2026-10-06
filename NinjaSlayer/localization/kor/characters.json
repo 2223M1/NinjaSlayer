@@ -1,0 +1,20 @@
+{
+  "NINJA_SLAYER_GREETING_PLAYER": "DOMO, {BossTitle}=SAN, 닌자 슬레이어 DESU.",
+  "NINJA_SLAYER_GREETING_BOSS": "DOMO, 닌자 슬레이어=SAN, {BossTitle} DESU.",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.title": "닌자 슬레이어",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.name": "닌자 슬레이어",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.titleObject": "닌자 슬레이어",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.description": "아내와 아이를 잃은 회사원.\n수수께끼의 닌자 소울에 빙의되어 복수를 위해 닌자를 사냥한다.",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.pronounSubject": "그",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.pronounObject": "그",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.pronounPossessive": "그의",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.possessiveAdjective": "그의",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.aromaPrinciple": "나는 후지키도 켄지다.",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.goldMonologue": "[sine]이 돈이면 닌자를 얼마나 추적할 수 있을까...[/sine]",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.eventDeathPrevention": "내 복수는 아직 끝나지 않았다.",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.cardsModifierTitle": "닌자 슬레이어 카드",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.cardsModifierDescription": "카드 보상에 닌자 슬레이어 카드가 등장합니다.",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.banter.alive.endTurnPing": "준비됐나?",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.banter.dead.endTurnPing": "계속 나아가...!",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.bestiaryQuote": "닌자는 죽여야 한다."
+}

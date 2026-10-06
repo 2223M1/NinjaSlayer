@@ -1,0 +1,7 @@
+{
+  "NINJA_SLAYER_AFFLICTION_PREPARED_AFFLICTION.title": "Подготовлена",
+  "NINJA_SLAYER_AFFLICTION_PREPARED_AFFLICTION.description": "Берётся только при дополнительном доборе карт на вашем ходу. Предвидение пропускает эту карту.",
+  "NINJA_SLAYER_AFFLICTION_PREPARED_AFFLICTION.extraCardText": "Подготовлена",
+  "NINJA_SLAYER_AFFLICTION_NEXT_DISCARD_SOURCE_AFFLICTION.title": "Сохранение источника",
+  "NINJA_SLAYER_AFFLICTION_NEXT_DISCARD_SOURCE_AFFLICTION.description": "Сохраняет состояние источника, пока разрешается карта."
+}

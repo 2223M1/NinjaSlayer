@@ -1,0 +1,5 @@
+{
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.title": "Shuriken",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "Wenn du eine Karte abwirfst, greifen Shuriken einen zufälligen Gegner an und du verlierst 1 Shuriken.\nBeim Entladen greift jeder Stapel einmal an.",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue] {Passive:plural:Stapel|Stapel}\nWenn du eine Karte abwirfst, füge einem zufälligen Gegner {Evoke} Schaden zu und verliere 1 Shuriken.\nBeim Entladen fügt jeder Stapel einem zufälligen Gegner {Evoke} Schaden zu."
+}

@@ -1,0 +1,5 @@
+{
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.title": "Сюрикен",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "При сбросе карты сюрикен атакует случайного врага, и вы теряете 1 сюрикен.\nПри разрядке каждый заряд атакует один раз.",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue] {Passive:plural(ru):заряд|заряда|зарядов}\nПри сбросе карты наносит случайному врагу {Evoke} урона, и вы теряете 1 сюрикен.\nПри разрядке каждый заряд наносит случайному врагу {Evoke} урона."
+}

@@ -1,4 +1,5 @@
 import { t, language } from './i18n.mjs';
+import { applyCatalogLocalization } from './catalog-localization.mjs';
 const node = (tag, text, className) => {
   const item = document.createElement(tag);
   if (text !== undefined) item.textContent = text;
@@ -13,7 +14,15 @@ export async function loadCatalog(version) {
       version,
       fetch(
         `./content/versions/${encodeURIComponent(version)}/catalog.json`,
-      ).then(async (response) => (response.ok ? response.json() : null)),
+      ).then(async (response) => {
+        if (!response.ok) return null;
+        const catalog = await response.json();
+        if (catalog.languages[language]) return catalog;
+        const translation = await fetch(`./content/localization/${encodeURIComponent(version)}/${language}.json`);
+        if (translation.status === 404) return catalog; // Historical releases may not have new translations.
+        if (!translation.ok) throw new Error('Cannot load catalog translation: ' + translation.status);
+        return applyCatalogLocalization(catalog, await translation.json(), language);
+      }).catch(error => { cache.delete(version); throw error; }),
     );
   return cache.get(version);
 }

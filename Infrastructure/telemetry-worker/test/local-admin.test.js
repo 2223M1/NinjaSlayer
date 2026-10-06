@@ -6,12 +6,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { crc32 } from 'node:zlib';
-import { validateCopy, readDraft, copyModule, saveCopy } from '../dashboard/copy-store.mjs';
+import { validateCopy, readDraft, copyModule, saveCopy, copyDefaults } from '../dashboard/copy-store.mjs';
 import { createDashboardServer } from '../dashboard/server.mjs';
 import { inspectFeedbackZip } from '../dashboard/feedback-files.mjs';
 import { publishCopy, continuePublication, readPublication } from '../dashboard/copy-publisher.mjs';
+import { languages, locales } from '../dashboard/languages.mjs';
 
-const copy = { schemaVersion: 1, overrides: { 'DOMO，玩家=SAN。': { zhs: '欢迎，玩家。', eng: 'Welcome, player.', jpn: 'ようこそ。' } } };
+const copy = { schemaVersion: 1, overrides: { 'DOMO，玩家=SAN。': { ...copyDefaults['DOMO，玩家=SAN。'], zhs: '欢迎，玩家。', eng: 'Welcome, player.', jpn: 'ようこそ。' } } };
 async function temp(t) {
   const dir = await mkdtemp(join(tmpdir(), 'ninja-admin-'));
   t.after(() => rm(dir, { recursive: true, force: true })); return dir;
@@ -108,23 +109,41 @@ test('copy publishing changes one file, persists its PR and only merges the exac
   assert.deepEqual(calls.at(-1).body, { sha: 'candidate', merge_method: 'squash', commit_title: 'Update Intel website copy (#123)', commit_message: '' });
 });
 
-// Exercise the actual admin script with a minimal DOM, without fetching private feedback.
-test('admin opens an unloaded inbox automatically and distinguishes failures from an empty inbox', async () => {
+// Exercise the actual module body with its real language metadata. Register ids
+// assigned to dynamically created textareas so selectors reach the rendered nodes.
+function adminDom() {
+  const nodes = new Map();
+  function createElement(tag) {
+    let id = '';
+    return { tagName: tag, value: '', textContent: '', children: [], disabled: false,
+      get id() { return id; },
+      set id(value) { if (id) nodes.delete(`#${id}`); id = value; if (id) nodes.set(`#${id}`, this); },
+      append(...items) { this.children.push(...items); },
+      replaceChildren(...items) { this.children = items; },
+      setAttribute() {},
+    };
+  }
+  const select = selector => { if (!nodes.has(selector)) nodes.set(selector, createElement()); return nodes.get(selector); };
+  return { select, document: { querySelector: select, createElement,
+    createTextNode: text => ({ textContent: text }) } };
+}
+async function runAdmin(document, fetch) {
   const { runInNewContext } = await import('node:vm');
   const source = await readFile(new URL('../dashboard/admin.js', import.meta.url), 'utf8');
+  const metadataImport = /^import \{ languages, locales \} from '\.\/languages\.mjs';\r?\n/;
+  assert.match(source, metadataImport, 'the browser module uses the injected real metadata');
+  return runInNewContext(`(async () => { ${source.replace(metadataImport, '')}\n })()`, {
+    document, languages, locales, fetch,
+    window: { addEventListener() {}, confirm: () => true },
+  });
+}
+
+// No private feedback is fetched by these browser-harness tests.
+test('admin opens an unloaded inbox automatically and distinguishes failures from an empty inbox', async () => {
   for (const outcome of ['mail', 'error', 'empty']) {
-    const nodes = new Map(), calls = [];
-    function node() {
-      return { value: '', textContent: '', children: [], disabled: false,
-        append(...items) { this.children.push(...items); },
-        replaceChildren(...items) { this.children = items; } };
-    }
-    const select = selector => { if (!nodes.has(selector)) nodes.set(selector, node()); return nodes.get(selector); };
+    const { document, select } = adminDom(), calls = [];
     let refreshed = false;
-    await runInNewContext(`(async () => { ${source}\n })()`, {
-      document: { querySelector: select, createElement: node },
-      window: { addEventListener() {}, confirm: () => true },
-      fetch: async (path, options) => {
+    await runAdmin(document, async (path, options) => {
         calls.push([path, options.method]);
         if (path === '/api/copy') return { ok: false, json: async () => ({ error: 'Copy unavailable' }) };
         if (path === '/api/refresh') {
@@ -139,7 +158,6 @@ test('admin opens an unloaded inbox automatically and distinguishes failures fro
           feedback: refreshed && outcome === 'mail' ? [{ id: 'test-feedback', description: 'A player letter' }] : [],
           sources: { feedback: { state, message: state === 'error' ? 'Cloudflare failed' : undefined } }, feedbackWarnings: [],
         }) };
-      },
     });
     assert.equal(calls.filter(([path]) => path === '/api/refresh').length, 1);
     assert.equal(select('#refresh').disabled, false);
@@ -150,25 +168,17 @@ test('admin opens an unloaded inbox automatically and distinguishes failures fro
 });
 
 test('feedback text appears before details and saving shows pending, success or preserved-input failure', async () => {
-  const { runInNewContext } = await import('node:vm');
-  const source = await readFile(new URL('../dashboard/admin.js', import.meta.url), 'utf8');
-  const nodes = new Map();
-  function node() { return { value: '', textContent: '', children: [], disabled: false,
-    append(...items) { this.children.push(...items); }, replaceChildren(...items) { this.children = items; }, setAttribute() {} }; }
-  const select = selector => { if (!nodes.has(selector)) nodes.set(selector, node()); return nodes.get(selector); };
+  const { document, select } = adminDom();
   let finishDetails, finishSave;
   const review = { status: 'unresolved', reply: '', updatedAt: null };
   const item = { id: 'local-fixture', description: 'Visible immediately', review };
   const response = (value, ok = true) => ({ ok, json: async () => value });
-  await runInNewContext(`(async () => { ${source}\n })()`, {
-    document: { querySelector: select, createElement: node }, window: { addEventListener() {}, confirm: () => true },
-    fetch: async (path, options) => {
+  await runAdmin(document, async (path, options) => {
       if (path === '/api/copy') return response({ error: 'Copy unavailable' }, false);
       if (path === '/api/view') return response({ feedback: [item], sources: { feedback: { state: 'ready' } }, feedbackWarnings: [] });
       if (path.endsWith('/details')) return new Promise(resolve => { finishDetails = resolve; });
       assert.equal(options.method, 'PUT'); assert.match(path, /\/review$/);
       return new Promise(resolve => { finishSave = resolve; });
-    },
   });
   const opening = select('#feedback-list').children[0].onclick();
   assert.equal(select('#feedback-detail').children[1].textContent, 'Visible immediately');
@@ -182,4 +192,46 @@ test('feedback text appears before details and saving shows pending, success or 
   assert.equal(reply.value, 'Author reply'); assert.equal(save.disabled, false); assert.match(saved.textContent, /保存未获确认/);
   const retry = save.onclick(); finishSave(response({ ...review, reply: 'Author reply', updatedAt: new Date().toISOString() })); await retry;
   assert.match(saved.textContent, /已保存到 Cloudflare/); assert.equal(save.disabled, false);
+});
+
+test('admin renders every language and reset captures defaults regardless of metadata key order', async () => {
+  const { document, select } = adminDom();
+  const greeting = 'DOMO，玩家=SAN。', second = '已选 {0} 个版本';
+  // Deliberately unlike the languages array and the object captured from inputs.
+  const defaults = Object.fromEntries([greeting, second].map(key => [key,
+    Object.fromEntries([...languages].reverse().map(lang => [lang, copyDefaults[key][lang]]))]));
+  const draft = { schemaVersion: 1, overrides: { [greeting]: { ...defaults[greeting], eng: 'Custom greeting' } } };
+  const saved = [];
+  const response = value => ({ ok: true, json: async () => value });
+  await runAdmin(document, async (path, options) => {
+    if (path === '/api/copy') {
+      if (options.method === 'POST') {
+        const body = JSON.parse(options.body); saved.push(body); return response(body);
+      }
+      return response({ defaults, draft, publication: null });
+    }
+    assert.equal(path, '/api/view');
+    return response({ feedback: [], sources: { feedback: { state: 'ready' } }, feedbackWarnings: [] });
+  });
+  const children = select('#copy-languages').children;
+  assert.equal(children.length, languages.length * 2);
+  for (const [index, lang] of languages.entries()) {
+    assert.equal(children[index * 2].textContent, locales[lang][1]);
+    assert.equal(children[index * 2].htmlFor, `copy-${lang}`);
+    assert.equal(children[index * 2 + 1], select(`#copy-${lang}`), 'selectors use the generated textarea');
+  }
+  assert.equal(select('#copy-eng').value, 'Custom greeting');
+  select('#reset').onclick();
+  for (const lang of languages) assert.equal(select(`#copy-${lang}`).value, defaults[greeting][lang]);
+  await select('#save').onclick();
+  assert.deepEqual(saved.at(-1).overrides, {}, 'reset does not save an override equal to reordered defaults');
+  const buttons = select('#copy-list').children;
+  const other = buttons.find(button => button.textContent === second);
+  assert.ok(other); other.onclick();
+  await select('#save').onclick();
+  assert.deepEqual(saved.at(-1).overrides, {}, 'switching untouched entries also avoids a false override');
+  select('#copy-deu').value = 'A new German translation'; select('#copy-deu').oninput();
+  await select('#save').onclick();
+  assert.equal(saved.at(-1).overrides[second].deu, 'A new German translation');
+  assert.deepEqual(Object.keys(saved.at(-1).overrides[second]), languages, 'edited drafts capture all supported languages');
 });
