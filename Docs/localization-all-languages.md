@@ -31,3 +31,5 @@
 基準英文目錄有三項原版附魔名稱的舊跨語快取（PAELS_CLAW、PAELS_GROWTH、ROYAL_STAMP），新導出修正為 Goopy/Clone/Royally Approved。三項圖片讀回雜湊不同（ADAPT、NAVY_HAMMER、YUMMY_COOKIE）；歷史基準均不覆寫，補充目錄保留原圖。導入器只接受這些已定位差異，拒絕其他原版規則、文字或圖片变化。
 
 官網發布沿用 GitHub Pages/既有 PR 與 CI 保護。本輪沒有更新創意工坊、遊戲版本或已有已發布套件；新增本地化源稿和驗證 PCK供下一次遊戲發布整合。
+
+上述為PR #187的翻譯源稿階段。用戶隨後要求連帶全語言支持上傳，16語資源已隨1.0.16發布並逐文件下載回驗；準確包／原生14與16語檢查／渲染回歸證據見 `Docs/validation/release-1.0.16.md` 及同版本evidence。歷史1.0.15基準與補充翻譯仍不覆寫。
