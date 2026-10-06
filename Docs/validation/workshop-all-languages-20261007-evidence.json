@@ -1,0 +1,199 @@
+{
+  "itemId": "3776911445",
+  "gameVersion": "1.0.17",
+  "verifiedAtUtc": "2026-10-06T17:28:40.230Z",
+  "descriptionsVerified": [
+    {
+      "game": "eng",
+      "steam": "english",
+      "tag": "English",
+      "descriptionSha256": "387cdf6e481c5fdcf76bde32d64d0caa86a247bdbbc68e8e71ee363df5d6ea3c"
+    },
+    {
+      "game": "zhs",
+      "steam": "schinese",
+      "tag": "schinese",
+      "descriptionSha256": "84b60c3d422ea5be9fc5a5d511d0af0de2553896445cbbf4c305e3f9f3f83fb6"
+    },
+    {
+      "game": "zht",
+      "steam": "tchinese",
+      "tag": "tchinese",
+      "descriptionSha256": "56785f09a408527cda3ff4489e03db2f964d99dd13425cf58392dfeafe0f531e"
+    },
+    {
+      "game": "deu",
+      "steam": "german",
+      "tag": "German",
+      "descriptionSha256": "6a1a1863437229bf4e42a6c65b034c0e56773aa80535ffacd70e4e3a975497f5"
+    },
+    {
+      "game": "esp",
+      "steam": "latam",
+      "tag": "latam",
+      "descriptionSha256": "cab7dfb5057394e68f10d6fec7713584e96eeff33ec353b5dcfb8189a1c51cbd"
+    },
+    {
+      "game": "fra",
+      "steam": "french",
+      "tag": "French",
+      "descriptionSha256": "ed4955ebb242214b4d327f0e83b1dbae63abce99840bc6125370b6d90b69a11f"
+    },
+    {
+      "game": "ind",
+      "steam": "indonesian",
+      "tag": "Indonesian",
+      "descriptionSha256": "4c4503bed3021d20ae50cb963e6d636e4efe00bbcc2b5ea2e38433b9f3423c17"
+    },
+    {
+      "game": "ita",
+      "steam": "italian",
+      "tag": "Italian",
+      "descriptionSha256": "ce37cddf2d8638ad62ace987f0b7fe4c69caee4c6daa163feb256792cef3afb4"
+    },
+    {
+      "game": "jpn",
+      "steam": "japanese",
+      "tag": "Japanese",
+      "descriptionSha256": "6779a1d6b2bd4a607647d95c68cb6ea2c836c4c1f745213679a57cca5aa83f37"
+    },
+    {
+      "game": "kor",
+      "steam": "koreana",
+      "tag": "Korean",
+      "descriptionSha256": "5804246924ee8491fc6a93af0ed58e334f540dd5dec450e8e10d5998fcb4a6ea"
+    },
+    {
+      "game": "pol",
+      "steam": "polish",
+      "tag": "Polish",
+      "descriptionSha256": "6e07c126829b625212819daeb79b0ef5ef6b6e38c8d814ef60e0db27834c527b"
+    },
+    {
+      "game": "ptb",
+      "steam": "brazilian",
+      "tag": "brazilian",
+      "descriptionSha256": "fc04e9f9322fa1001523f140cf86a0458a0caf3d1c803429be6d259b54cc3b85"
+    },
+    {
+      "game": "rus",
+      "steam": "russian",
+      "tag": "Russian",
+      "descriptionSha256": "3e0a8cc50bcdbad3252d0e62f943a9f8fcf2b1ad1df6b13e730dc17e22d828e5"
+    },
+    {
+      "game": "spa",
+      "steam": "spanish",
+      "tag": "Spanish",
+      "descriptionSha256": "e26c67d75d30f1532ac5bbc219f3094f95bac53f5ce5c4514638ce4950a755d1"
+    },
+    {
+      "game": "tha",
+      "steam": "thai",
+      "tag": "Thai",
+      "descriptionSha256": "18856527de6a54cf7f305faeef818b6a57a56a38bbc43078a601b0e61d8950cf"
+    },
+    {
+      "game": "tur",
+      "steam": "turkish",
+      "tag": "Turkish",
+      "descriptionSha256": "29479963e9169cb8352628c9e954c76f06cf2d288bf1818ca8d38e2ef24584a3"
+    }
+  ],
+  "globalTags": [
+    "Characters",
+    "english",
+    "schinese",
+    "tchinese",
+    "german",
+    "latam",
+    "french",
+    "Indonesian",
+    "italian",
+    "japanese",
+    "korean",
+    "Polish",
+    "brazilian",
+    "russian",
+    "spanish",
+    "thai",
+    "turkish"
+  ],
+  "browseFilterMissing": [
+    "ind"
+  ],
+  "preserved": [
+    "originalTitle",
+    "existingEnglishSimplifiedChineseJapaneseCopy",
+    "content",
+    "visibility",
+    "dependencies",
+    "mainPreview",
+    "gallery"
+  ],
+  "unchangedPackageFiles": [
+    {
+      "path": "Box2D.NET.dll",
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+      "bytes": 317440
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "sha256": "23ff4b8bf99bdb8c34eec3f5afc3bda473539caca0a3a658aa5ef2e45aa99609",
+      "bytes": 2226176
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "sha256": "f272beb36f9d2961b2b0aee4062aa70b4919aa460e1ff2da04181a8f36236e7c",
+      "bytes": 126464
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "sha256": "8949d9bf068784027717f2126c55167dd947088e823ad62035e33708aeb2666f",
+      "bytes": 2230272
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+      "bytes": 1097
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "sha256": "7b6ee854a225e6d96549cdd6c7588fbe8acaa53cc23e286e53def46401f65ffd",
+      "bytes": 522
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "sha256": "070aa01f81754ee06b701201c75ce4933b8f1a77f77c9b5741bf2114ba83015b",
+      "bytes": 24576
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "sha256": "ffa2599474336fbb2d906966609cdd5c7734ecb0da3cccc9c9cce2db6e542d2e",
+      "bytes": 363
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "sha256": "4ab9046de60bd77e90e74ef8d20520e2f09e8f07d19b050b9bd08462ccbdf789",
+      "bytes": 211284156
+    },
+    {
+      "path": "SHA256SUMS",
+      "sha256": "4fb65b83bf653baeaf998e84e22a972a7a0df1959fac66b1403069d59dd3455f",
+      "bytes": 1008
+    }
+  ],
+  "noContentUpload": true,
+  "noGameVersionBump": true,
+  "noWorkerDeployment": true
+}

@@ -364,8 +364,21 @@ const workshopDescriptions = {
   english: localWorkshopManifest?.description,
   ...localWorkshopManifest?.localizedDescriptions,
 };
-if (Object.keys(localWorkshopManifest?.localizedDescriptions ?? {}).sort().join(',') !== 'japanese,schinese') {
-  errors.push('Workshop descriptions must have separate schinese/japanese fields, with English as the default');
+const workshopLanguages = readJson(join(root, 'Workshop', 'languages.json')) ?? {};
+const gameLanguages = readdirSync(join(root, 'NinjaSlayer', 'localization')).filter(language =>
+  statSync(join(root, 'NinjaSlayer', 'localization', language)).isDirectory());
+if (Object.keys(workshopLanguages).sort().join(',') !== gameLanguages.sort().join(',')) {
+  errors.push('Workshop language mapping must cover every shipped game language exactly');
+}
+const steamLanguages = Object.values(workshopLanguages).map(language => language.steam);
+if (new Set(steamLanguages).size !== steamLanguages.length
+    || Object.keys(workshopDescriptions).sort().join(',') !== steamLanguages.sort().join(',')) {
+  errors.push('Workshop descriptions must cover every mapped Steam language, with English as the default');
+}
+const workshopTags = (localWorkshopManifest?.tags ?? []).map(tag => tag.toLowerCase());
+if (new Set(workshopTags).size !== workshopTags.length
+    || Object.values(workshopLanguages).some(language => !workshopTags.includes(language.tag.toLowerCase()))) {
+  errors.push('Workshop tags must include each supported language exactly once');
 }
 for (const [language, description] of Object.entries(workshopDescriptions)) {
   if (typeof description !== 'string' || !description.trim()
