@@ -207,34 +207,6 @@ public sealed class FeedbackHttpClientTests
         stream.Close();
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task OwnershipWrapperClosesBothStreamsOnEveryExit(bool throwDuringSend)
-    {
-        var screenshot = new SentinelStream([]);
-        var logs = new SentinelStream([]);
-
-        async Task<bool> Send()
-        {
-            await Task.Yield();
-            return throwDuringSend ? throw new InvalidOperationException("send failed") : true;
-        }
-
-        if (throwDuringSend)
-        {
-            await Assert.ThrowsAsync<InvalidOperationException>(
-                () => FeedbackStreamOwnership.SendAndCloseAsync(Send, screenshot, logs));
-        }
-        else
-        {
-            Assert.True(await FeedbackStreamOwnership.SendAndCloseAsync(Send, screenshot, logs));
-        }
-
-        Assert.True(screenshot.IsClosed);
-        Assert.True(logs.IsClosed);
-    }
-
     private static FeedbackHttpClient CreateClient(
         QueueHandler handler,
         FeedbackHttpClientOptions? options = null,

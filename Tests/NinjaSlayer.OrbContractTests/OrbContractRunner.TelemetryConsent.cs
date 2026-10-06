@@ -26,6 +26,7 @@ public partial class OrbContractRunner
         var onMenu = AccessTools.Method(product, "OnMainMenu").CreateDelegate<Action>();
         var setEnabled = AccessTools.Method(product, "SetEnabled").CreateDelegate<Action<bool>>();
         var switchEnabled = AccessTools.PropertyGetter(product, "SwitchEnabled").CreateDelegate<Func<bool>>();
+        var statusText = AccessTools.Method(product, "StatusText").CreateDelegate<Func<string>>();
         var processHandled = AccessTools.Field(product, "_handledMainMenu");
         Type nativeStore = typeof(TelemetryApi).Assembly.GetType("STS2RitsuLib.Telemetry.TelemetryConsentStore", true)!;
         _nativeConsentDocument = AccessTools.Field(nativeStore, "_document");
@@ -61,6 +62,7 @@ public partial class OrbContractRunner
             reset();
             newProcess();
             Require(_consentPrompts == 1 && switchEnabled() && !enabled(), "First notice must precede default-on delivery.");
+            Require(statusText() == "已开启，对局结束后发送数据。", "Settings must show the default-on switch as enabled, without a pending status.");
             onMenu();
             Require(_consentPrompts == 1 && !enabled(), "Returning to the menu must not count as restarting the game.");
             newProcess();
@@ -69,6 +71,7 @@ public partial class OrbContractRunner
             _nativeConsentDocument.SetValue(null, JsonSerializer.Deserialize(_savedConsent, _nativeConsentDocument.FieldType));
             newProcess();
             Require(!enabled() && !switchEnabled(), "An explicit opt-out must survive serialization and restart.");
+            Require(statusText() == "已关闭，不发送对局数据。", "Settings must show only the disabled status after opt-out.");
 
             reset(); newProcess(); _acceptTelemetry!();
             Require(enabled(), "Accept must enable the current session immediately.");

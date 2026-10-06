@@ -5,7 +5,9 @@ using System.Text.Json.Nodes;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Nodes;
-using MegaCrit.Sts2.Core.Nodes.Screens.FeedbackScreen;
+using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
+using MegaCrit.Sts2.Core.Nodes.CommonUi;
+using STS2RitsuLib.Settings;
 using NinjaSlayer.Code.Feedback;
 
 namespace NinjaSlayer.SmokeDriver;
@@ -16,12 +18,7 @@ internal sealed partial class SmokeController
 
     private async Task VerifyFeedbackUploadAsync()
     {
-        // Native F2 captures the viewport itself before opening the feedback screen.
-        if (_configuration.NoScreenshots)
-        {
-            _checkpoints.Write("feedback.f2-upload-skipped", data: new JsonObject { ["reason"] = "NoScreenshots" });
-            return;
-        }
+        // The form's in-memory attachment is sent only to loopback. No image is saved to disk.
         using var reservation = new TcpListener(IPAddress.Loopback, 0);
         reservation.Start();
         int port = ((IPEndPoint)reservation.LocalEndpoint).Port;
@@ -39,11 +36,9 @@ internal sealed partial class SmokeController
             Input.ParseInputEvent(new InputEventKey { Keycode = Key.F2, Pressed = true });
             await WaitFrames(3);
             Input.ParseInputEvent(new InputEventKey { Keycode = Key.F2, Pressed = false });
-            var screen = NGame.Instance!.GetOrCreateFeedbackScreen();
-            Require(screen.Visible && NinjaSlayerFeedbackSession.TryGetCurrentToken(screen.GetInstanceId(), out _),
-                "Native F2 did not bind the NinjaSlayer feedback session.");
-            NinjaSlayerFeedbackSession.TryGetCurrentToken(screen.GetInstanceId(), out var token);
-            Require(NinjaSlayerFeedbackSession.TryConfirm(token), "Could not confirm the isolated feedback session.");
+            var screen = NinjaSlayerFeedbackScreen.Instance!;
+            Require(screen is { Visible: true } && NGame.Instance!.FeedbackScreen is not { Visible: true },
+                "F2 did not open only the independent NinjaSlayer feedback form.");
             Task<string> receive = Task.Run(async () =>
             {
                 var request = await listener.GetContextAsync().WaitAsync(TimeSpan.FromSeconds(15));
@@ -58,20 +53,58 @@ internal sealed partial class SmokeController
                 request.Response.Close();
                 return id;
             });
-            using var screenshot = new MemoryStream(NGame.Instance.GetViewport().GetTexture().GetImage().SavePngToBuffer());
-            byte[] zip = new byte[22]; zip[0] = 80; zip[1] = 75; zip[2] = 5; zip[3] = 6;
-            using var logs = new MemoryStream(zip);
-            var data = new FeedbackData { description = "Isolated F2 upload contract", category = "bug", gameVersion = "contract" };
-            var task = (Task<bool>)AccessTools.Method(typeof(NSendFeedbackScreen), "SendFeedback")
-                .Invoke(null, [data, screenshot, logs])!;
-            Require(await task, "Native feedback send did not accept the NinjaSlayer receipt.");
-            Require(!screenshot.CanRead && !logs.CanRead, "F2 send did not close its upload streams.");
-            _checkpoints.Write("feedback.f2-upload", data: new JsonObject { ["submissionId"] = await receive,
-                ["nativeF2"] = true, ["matchingReceipt"] = true, ["destination"] = "loopback" });
-            AccessTools.Method(typeof(NSendFeedbackScreen), "Close").Invoke(screen, null);
-            Require(!NinjaSlayerFeedbackSession.IsCurrent(token), "Closing F2 left a routed feedback session.");
+            var description = (NMegaTextEdit)screen.FindChild("DescriptionInput", true, false);
+            description.InsertTextAtCaret("Isolated independent F2 upload contract");
+            await WaitFrames(2);
+            var button = (ModSettingsSidebarButton)screen.FindChild("SendButton", true, false);
+            Require(!button.Disabled, "Nonempty feedback did not enable Send.");
+            button.EmitSignal(BaseButton.SignalName.Pressed);
+            Require(ReferenceEquals(NModalContainer.Instance!.OpenModal, screen) && button.Disabled,
+                "One Send click must start uploading without another confirmation modal.");
+            string submissionId = await receive;
+            await WaitUntilAsync(() => description.Editable == false && button.Disabled
+                && screen.FindChild("SendStatus", true, false).Get("text").AsString().Contains(
+                    new MegaCrit.Sts2.Core.Localization.LocString("settings_ui", "FEEDBACK_SEND_SUCCESS_LABEL").GetFormattedText()),
+                "Independent feedback did not display a successful receipt.");
+            _checkpoints.Write("feedback.f2-upload", data: new JsonObject { ["submissionId"] = submissionId,
+                ["independentF2"] = true, ["oneClick"] = true, ["matchingReceipt"] = true, ["destination"] = "loopback" });
+            screen.Close();
+            await WaitFrames(3);
+            Require(NinjaSlayerFeedbackScreen.Instance is null && NModalContainer.Instance.OpenModal is null,
+                "Closing F2 left a modal or feedback instance.");
+            await VerifyIndependentFeedbackLanguagesAsync();
         }
         finally { harmony.UnpatchAll(harmony.Id); _feedbackLoopback = null; }
+    }
+
+    private async Task VerifyIndependentFeedbackLanguagesAsync()
+    {
+        var localization = MegaCrit.Sts2.Core.Localization.LocManager.Instance;
+        string originalLanguage = localization.Language;
+        try
+        {
+            foreach (string language in MegaCrit.Sts2.Core.Localization.LocManager.Languages)
+            {
+                localization.SetLanguage(language);
+                Require(await NinjaSlayerFeedbackScreen.OpenAsync(), "Independent feedback failed to open in " + language);
+                await WaitFrames(3);
+                var screen = NinjaSlayerFeedbackScreen.Instance!;
+                var description = (NMegaTextEdit)screen.FindChild("DescriptionInput", true, false);
+                string expected = new MegaCrit.Sts2.Core.Localization.LocString("settings_ui", "NINJA_SLAYER_FEEDBACK_TITLE").GetFormattedText();
+                Require(description.GetParent().GetChild(0).Get("text").AsString() == expected,
+                    "Independent feedback title did not localize in " + language);
+                var panel = description.GetParent().GetParent().GetParent<PanelContainer>();
+                Vector2 viewport = screen.GetViewportRect().Size;
+                Require(panel.Size.X <= viewport.X && panel.Size.Y <= viewport.Y,
+                    "Independent feedback overflowed the viewport in " + language);
+                _checkpoints.Write("feedback.language", data: new JsonObject { ["language"] = language, ["title"] = expected });
+                screen.Close();
+                await WaitFrames(3);
+                Require(NModalContainer.Instance!.OpenModal is null && NinjaSlayerFeedbackScreen.Instance is null,
+                    "Independent feedback retained modal ownership after " + language);
+            }
+        }
+        finally { localization.SetLanguage(originalLanguage); }
     }
 
     private static void RouteFeedbackToLoopback(HttpRequestMessage request)

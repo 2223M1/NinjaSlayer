@@ -180,10 +180,6 @@ public class Entry
             requiredPatcher.RegisterPatch<NinjaSlayerFinisherCardPlayCleanupPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerDeathCompletionPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerFeedbackOpenerPatch>();
-            requiredPatcher.RegisterPatch<NinjaSlayerFeedbackOpenPatch>();
-            requiredPatcher.RegisterPatch<NinjaSlayerFeedbackConfirmPatch>();
-            requiredPatcher.RegisterPatch<NinjaSlayerFeedbackSendPatch>();
-            requiredPatcher.RegisterPatch<NinjaSlayerFeedbackClosePatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerFirstVictoryFeedbackPatch>();
 
             int expectedRequiredPatchCount = requiredPatcher.RegisteredPatchCount

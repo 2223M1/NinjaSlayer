@@ -8,7 +8,6 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Characters;
 using MegaCrit.Sts2.Core.Models.Events;
 using MegaCrit.Sts2.Core.Nodes;
-using MegaCrit.Sts2.Core.Nodes.Screens.FeedbackScreen;
 using MegaCrit.Sts2.Core.Nodes.Screens.GameOverScreen;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
@@ -48,20 +47,22 @@ internal sealed partial class SmokeController
                 await (Task)AccessTools.Method(typeof(RunManager), "WinRun").Invoke(RunManager.Instance, null)!;
                 NGameOverScreen? ending = null;
                 await WaitUntilAsync(() => (ending = FindDescendant<NGameOverScreen>(_tree.Root)) != null, "Native game-over screen was not created.");
-                var feedback = NGame.Instance.GetOrCreateFeedbackScreen();
                 if (scenario == "first")
                 {
-                    await WaitUntilAsync(() => feedback.Visible, "First standard victory did not invite feedback.");
-                    Require(ending!.Visible && NinjaSlayerFeedbackSession.TryGetCurrentToken(feedback.GetInstanceId(), out _),
-                        "First-win feedback must belong to the mod and display over completed native game-over.");
+                    await WaitUntilAsync(() => NinjaSlayerFeedbackScreen.Instance is { Visible: true }, "First standard victory did not invite feedback.");
+                    var feedback = NinjaSlayerFeedbackScreen.Instance!;
+                    Require(ending!.Visible && NGame.Instance.FeedbackScreen is not { Visible: true }
+                        && ReferenceEquals(MegaCrit.Sts2.Core.Nodes.CommonUi.NModalContainer.Instance!.OpenModal, feedback),
+                        "First-win feedback must use the independent mod form, not the native form.");
                     await WaitFrames(3);
                     Require((bool)shown.GetValue(data)!, "Showing the invitation must persist without sending.");
-                    AccessTools.Method(typeof(NSendFeedbackScreen), "Close").Invoke(feedback, null);
+                    feedback.Close();
                     RunManager.Instance.OnEnded(isVictory: true);
                     await WaitFrames(30);
-                    Require(!feedback.Visible, "Repeated victory notification reopened dismissed feedback.");
+                    Require(NinjaSlayerFeedbackScreen.Instance is null, "Repeated victory notification reopened dismissed feedback.");
+                    await VerifyFeedbackUploadAsync();
                 }
-                else { await WaitFrames(240); Require(!feedback.Visible, scenario + " incorrectly prompted again."); }
+                else { await WaitFrames(240); Require(NinjaSlayerFeedbackScreen.Instance is null, scenario + " incorrectly prompted again."); }
                 _checkpoints.Write("release102." + scenario, data: new JsonObject { ["wins"] = stats.TotalWins, ["shown"] = (bool)shown.GetValue(data)! });
                 await NGame.Instance.ReturnToMainMenuAfterRun();
                 await WaitFrames(30);

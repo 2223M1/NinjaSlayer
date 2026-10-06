@@ -1,34 +1,5 @@
 namespace NinjaSlayer.Code.Feedback;
 
-public static class FeedbackStreamOwnership
-{
-    public static async Task<bool> SendAndCloseAsync(
-        Func<Task<bool>> sendAsync,
-        Stream screenshotStream,
-        Stream logsStream)
-    {
-        ArgumentNullException.ThrowIfNull(sendAsync);
-        ArgumentNullException.ThrowIfNull(screenshotStream);
-        ArgumentNullException.ThrowIfNull(logsStream);
-
-        try
-        {
-            return await sendAsync();
-        }
-        finally
-        {
-            try
-            {
-                screenshotStream.Close();
-            }
-            finally
-            {
-                logsStream.Close();
-            }
-        }
-    }
-}
-
 public sealed class FeedbackNonDisposingStream(Stream inner) : Stream
 {
     public override bool CanRead => inner.CanRead;

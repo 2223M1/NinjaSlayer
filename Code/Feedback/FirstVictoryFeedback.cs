@@ -2,11 +2,9 @@ using Godot;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes;
-using MegaCrit.Sts2.Core.Nodes.Screens.FeedbackScreen;
 using MegaCrit.Sts2.Core.Nodes.Screens.GameOverScreen;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves;
-using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
 using STS2RitsuLib;
@@ -61,11 +59,10 @@ internal static class FirstVictoryFeedback
         if (!GodotObject.IsInstanceValid(screen) || !screen.IsInsideTree() || !screen.Visible
             || !ReferenceEquals(run, RunManager.Instance.DebugOnlyGetState())
             || _pendingProfile != SaveManager.Instance.CurrentProfileId) return;
-        await NinjaSlayerFeedbackOpenerPatch.OpenFeedbackScreen(NFeedbackScreenOpener.Instance);
-        if (NGame.Instance is not { } game || !ReferenceEquals(run, RunManager.Instance.DebugOnlyGetState())
+        bool opened = await NinjaSlayerFeedbackScreen.OpenAsync();
+        if (NGame.Instance is null || !ReferenceEquals(run, RunManager.Instance.DebugOnlyGetState())
             || _pendingProfile != SaveManager.Instance.CurrentProfileId) return;
-        var feedback = game.GetOrCreateFeedbackScreen();
-        if (feedback.Visible && NinjaSlayerFeedbackSession.TryGetCurrentToken(feedback.GetInstanceId(), out _))
+        if (opened && NinjaSlayerFeedbackScreen.Instance is { Visible: true })
         {
             var store = ModDataStore.For(NinjaSlayerIds.ModId);
             store.Get<FirstVictoryFeedbackData>(DataKey).Shown = true;
