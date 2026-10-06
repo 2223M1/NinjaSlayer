@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.GameActions;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Cards;
+using MegaCrit.Sts2.Core.Models.Characters;
 using MegaCrit.Sts2.Core.Models.Enchantments;
 using MegaCrit.Sts2.Core.Models.Encounters;
 using MegaCrit.Sts2.Core.Multiplayer;
@@ -34,7 +35,8 @@ internal sealed partial class SmokeController
             SaveManager.Instance.PrefsSave.FastMode = speed;
             var local = Player.CreateForNewRun<NinjaSlayerCharacter>(UnlockState.all, 1);
             var remote = Player.CreateForNewRun<NinjaSlayerCharacter>(UnlockState.all, 2);
-            var run = RunState.CreateForNewRun([local, remote], ActModel.GetDefaultList().Select(a => a.ToMutable()).ToList(),
+            var native = Player.CreateForNewRun<Ironclad>(UnlockState.all, 3);
+            var run = RunState.CreateForNewRun([local, remote, native], ActModel.GetDefaultList().Select(a => a.ToMutable()).ToList(),
                 [], GameMode.Standard, 0, _configuration.Seed);
             RunManager.Instance.SetUpTest(run, new NetSingleplayerGameService(), true, false);
             AccessTools.Method(typeof(RunManager), "GenerateRooms").Invoke(RunManager.Instance, null);
@@ -47,13 +49,14 @@ internal sealed partial class SmokeController
             foreach (Player caster in new[] { remote, local })
             foreach (bool upgraded in new[] { false, true })
             foreach (bool enchanted in new[] { false, true })
+            foreach (bool shortPile in new[] { false, true })
             {
                 foreach (Player player in run.Players)
                 {
                     foreach (var old in player.Piles.Where(p => p.Type != PileType.Deck).SelectMany(p => p.Cards).ToArray()) await CardPileCmd.RemoveFromCombat(old);
                     foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
                     player.PlayerCombatState!.GainEnergy(20);
-                    for (int i = 0; i < 12; i++) await CardPileCmd.Add(combat.CreateCard<DefendIronclad>(player), PileType.Draw);
+                    for (int i = 0; i < (shortPile ? upgraded ? 3 : 2 : 12); i++) await CardPileCmd.Add(combat.CreateCard<DefendIronclad>(player), PileType.Draw);
                 }
                 Player teammate = caster == local ? remote : local;
                 var kindle = combat.CreateCard<Kindle>(caster);
@@ -74,9 +77,22 @@ internal sealed partial class SmokeController
                 await Task.WhenAll(action.CompletionTask, other.CompletionTask).WaitAsync(TimeSpan.FromSeconds(15));
                 if (action.Exception != null) throw action.Exception;
                 if (other.Exception != null) throw other.Exception;
+                var nativePower = combat.CreateCard<Inflame>(native);
+                await CardPileCmd.Add(nativePower, PileType.Hand);
+                var nativeAction = new PlayCardAction(nativePower, null);
+                RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(nativeAction);
+                await nativeAction.CompletionTask.WaitAsync(TimeSpan.FromSeconds(15));
+                if (nativeAction.Exception != null) throw nativeAction.Exception;
+                var matePower = combat.CreateCard<Resilience>(teammate);
+                await CardPileCmd.Add(matePower, PileType.Hand);
+                var mateAction = new PlayCardAction(matePower, null);
+                RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(mateAction);
+                await mateAction.CompletionTask.WaitAsync(TimeSpan.FromSeconds(15));
+                if (mateAction.Exception != null) throw mateAction.Exception;
                 int plays = enchanted ? 2 : 1;
-                Require(PileType.Hand.GetPile(caster).Cards.Count == plays * (upgraded ? 3 : 2)
-                    && PileType.Discard.GetPile(caster).Cards.OfType<BlackFlame>().Count() == plays
+                int expectedHand = shortPile && enchanted ? (upgraded ? 3 : 2) + 1 : plays * (upgraded ? 3 : 2);
+                Require(PileType.Hand.GetPile(caster).Cards.Count == expectedHand
+                    && caster.PlayerCombatState!.AllCards.OfType<BlackFlame>().Count() == plays
                     && kindle.Pile?.Type == PileType.Discard && followup.Pile?.Type == PileType.Discard,
                     "Glam Kindle changed repeated draw, generation ownership or teammate action completion.");
                 await WaitFrames(90);
@@ -84,7 +100,7 @@ internal sealed partial class SmokeController
                     && casterNode.Visuals.Transform.IsEqualApprox(casterPose) && mateNode.Visuals.Transform.IsEqualApprox(matePose),
                     "Glam Kindle left a caster/teammate body animation unfinished.");
                 _checkpoints.Write("glam-kindle.card", data: new JsonObject { ["ownerLocal"] = caster == local,
-                    ["upgraded"] = upgraded, ["glam"] = enchanted, ["speed"] = speed.ToString(), ["plays"] = plays });
+                    ["upgraded"] = upgraded, ["glam"] = enchanted, ["speed"] = speed.ToString(), ["plays"] = plays, ["shortPile"] = shortPile });
             }
             foreach (var player in run.Players) PlayerCmd.EndTurn(player, true);
             await WaitUntilAsync(() => local.PlayerCombatState!.TurnNumber >= 2 && local.PlayerCombatState.Phase == PlayerTurnPhase.Play,

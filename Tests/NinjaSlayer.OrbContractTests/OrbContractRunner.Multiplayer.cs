@@ -11,6 +11,7 @@ using MegaCrit.Sts2.Core.GameActions;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Cards;
+using MegaCrit.Sts2.Core.Models.Enchantments;
 using MegaCrit.Sts2.Core.Multiplayer;
 using MegaCrit.Sts2.Core.Multiplayer.Game;
 using MegaCrit.Sts2.Core.Multiplayer.Serialization;
@@ -129,6 +130,7 @@ public partial class OrbContractRunner
             PileType.Discard, PileType.Discard, PileType.Exhaust, PileType.Exhaust, null, PileType.Discard, PileType.Discard];
         foreach (var (card, _) in plays) await CardPileCmd.Add(card, PileType.Hand);
         System.IO.File.WriteAllText(Path.Combine(directory, role + ".ready"), "ready");
+        using var openingSelector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
         await WaitNetwork(() => System.IO.File.Exists(Path.Combine(directory, "host.ready"))
             && System.IO.File.Exists(Path.Combine(directory, "client.ready")), "both combat fixtures");
         for (int step = 0; step < plays.Length; step++)
@@ -156,6 +158,44 @@ public partial class OrbContractRunner
         Require(PileType.Draw.GetPile(first).Cards.OfType<BlackFlame>().Count() == 0
             && !PileType.Draw.GetPile(second).Cards.OfType<BlackFlame>().Any(),
             "Naraku must no longer generate Black Flame cards.");
+        int glamCase = 0;
+        foreach (Player caster in new[] { first, second })
+        foreach (bool upgraded in new[] { false, true })
+        {
+            foreach (Player player in run.Players)
+            {
+                foreach (var old in player.Piles.Where(p => p.Type != PileType.Deck).SelectMany(p => p.Cards).ToArray())
+                    await CardPileCmd.RemoveFromCombat(old);
+                for (int i = 0; i < 12; i++)
+                    await CardPileCmd.Add(combat.State.CreateCard<DefendIronclad>(player), PileType.Draw);
+                await PlayerCmd.SetEnergy(30, player);
+            }
+            Player teammate = caster == first ? second : first;
+            var kindle = combat.State.CreateCard<Kindle>(caster);
+            if (upgraded) kindle.UpgradeInternal();
+            CardCmd.Enchant<Glam>(kindle, 1);
+            var next = combat.State.CreateCard<DefendNinjaSlayer>(teammate);
+            await CardPileCmd.Add(kindle, PileType.Hand);
+            await CardPileCmd.Add(next, PileType.Hand);
+            int expected = completed + 1;
+            string fixture = ".glam-" + glamCase++;
+            System.IO.File.WriteAllText(Path.Combine(directory, role + fixture), "ready");
+            await WaitNetwork(() => System.IO.File.Exists(Path.Combine(directory, "host" + fixture))
+                && System.IO.File.Exists(Path.Combine(directory, "client" + fixture)), "both Glam fixtures");
+            if (caster.NetId == _network.NetId)
+                RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(kindle, null));
+            await WaitNetwork(() => completed >= expected, "Glam Kindle owner " + caster.NetId);
+            Require(kindle.Pile?.Type == PileType.Discard && PileType.Hand.GetPile(caster).Cards.Count == (upgraded ? 6 : 4)
+                && PileType.Discard.GetPile(caster).Cards.OfType<BlackFlame>().Count() == 2,
+                "Glam Kindle repeated draws or generated card owner differ between peers.");
+            expected++;
+            if (teammate.NetId == _network.NetId)
+                RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(next, null));
+            await WaitNetwork(() => completed >= expected, "teammate following Glam Kindle");
+            Require(next.Pile?.Type == PileType.Discard, "Teammate queue did not resolve after Glam Kindle.");
+        }
+        GD.Print("PASS native ENet Glam Kindle: both owners, base+upgrade, two replays, owned draws/statuses and teammate continuation.");
+        openingSelector.Dispose();
 #if !NINJASLAYER_CHANNEL_STABLE
         int localSelections = 0;
         using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
