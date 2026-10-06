@@ -60,12 +60,7 @@ internal static class NinjaSlayerTelemetryConsent
             requests.Count > 0 ? TelemetryConsentState.Granted : TelemetryConsentState.Denied, requests);
     }
 
-    internal static string StatusText() => Text(State switch
-    {
-        TelemetryConsentState.Unknown => "PENDING",
-        _ when SwitchEnabled => "ENABLED",
-        _ => "DISABLED"
-    }).Resolve();
+    internal static string StatusText() => Text(SwitchEnabled ? "ENABLED" : "DISABLED").Resolve();
 
     internal static string ReplayStatusText() => Text("REPLAY_" + NinjaSlayer.Code.Telemetry.NinjaSlayerReplay.Status.ToUpperInvariant()).Resolve();
 
