@@ -28,7 +28,6 @@ using MegaCrit.Sts2.Core.ValueProps;
 
 
 using NinjaSlayer.Code.ExternalAnimations;
-using NinjaSlayer.Code.Feedback;
 using NinjaSlayer.Code.Patches;
 
 using NinjaSlayer.Content;
