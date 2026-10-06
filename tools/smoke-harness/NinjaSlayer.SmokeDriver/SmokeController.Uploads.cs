@@ -54,8 +54,8 @@ internal sealed partial class SmokeController
                 return id;
             });
             var description = (NMegaTextEdit)screen.FindChild("DescriptionInput", true, false);
-            description.Text = "Isolated independent F2 upload contract";
-            await WaitFrames(2); // Godot delivers programmatic TextEdit text_changed on the next frame.
+            description.InsertTextAtCaret("Isolated independent F2 upload contract");
+            await WaitFrames(2);
             var button = (ModSettingsSidebarButton)screen.FindChild("SendButton", true, false);
             Require(!button.Disabled, "Nonempty feedback did not enable Send.");
             button.EmitSignal(BaseButton.SignalName.Pressed);
