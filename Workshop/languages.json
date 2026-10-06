@@ -1,0 +1,18 @@
+{
+  "eng": { "steam": "english", "tag": "English" },
+  "zhs": { "steam": "schinese", "tag": "schinese" },
+  "zht": { "steam": "tchinese", "tag": "tchinese" },
+  "deu": { "steam": "german", "tag": "German" },
+  "esp": { "steam": "latam", "tag": "latam" },
+  "fra": { "steam": "french", "tag": "French" },
+  "ind": { "steam": "indonesian", "tag": "Indonesian" },
+  "ita": { "steam": "italian", "tag": "Italian" },
+  "jpn": { "steam": "japanese", "tag": "Japanese" },
+  "kor": { "steam": "koreana", "tag": "Korean" },
+  "pol": { "steam": "polish", "tag": "Polish" },
+  "ptb": { "steam": "brazilian", "tag": "brazilian" },
+  "rus": { "steam": "russian", "tag": "Russian" },
+  "spa": { "steam": "spanish", "tag": "Spanish" },
+  "tha": { "steam": "thai", "tag": "Thai" },
+  "tur": { "steam": "turkish", "tag": "Turkish" }
+}
