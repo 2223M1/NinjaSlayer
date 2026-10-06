@@ -1,0 +1,241 @@
+{
+  "version": "1.0.17",
+  "sourceRevision": "ededb5561735d45589c1c2866adfa9e00511c8e4",
+  "verifiedAtUtc": "2026-10-06T15:44:53.093Z",
+  "pullRequests": [
+    190
+  ],
+  "ci": {
+    "conclusion": "success",
+    "databaseId": 37487089023,
+    "headSha": "ededb5561735d45589c1c2866adfa9e00511c8e4",
+    "status": "completed",
+    "updatedAt": "2026-10-06T15:26:42Z",
+    "url": "https://github.com/2223M1/NinjaSlayer/actions/runs/37487089023"
+  },
+  "realClientValidationPolicy": "Owner explicitly approved one real client on 2026-10-05.",
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "23ff4b8bf99bdb8c34eec3f5afc3bda473539caca0a3a658aa5ef2e45aa99609",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "f272beb36f9d2961b2b0aee4062aa70b4919aa460e1ff2da04181a8f36236e7c",
+    "8949d9bf068784027717f2126c55167dd947088e823ad62035e33708aeb2666f",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "7b6ee854a225e6d96549cdd6c7588fbe8acaa53cc23e286e53def46401f65ffd",
+    "070aa01f81754ee06b701201c75ce4933b8f1a77f77c9b5741bf2114ba83015b",
+    "ffa2599474336fbb2d906966609cdd5c7734ecb0da3cccc9c9cce2db6e542d2e",
+    "4ab9046de60bd77e90e74ef8d20520e2f09e8f07d19b050b9bd08462ccbdf789",
+    "4fb65b83bf653baeaf998e84e22a972a7a0df1959fac66b1403069d59dd3455f"
+  ],
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+      "bytes": 317440
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "sha256": "23ff4b8bf99bdb8c34eec3f5afc3bda473539caca0a3a658aa5ef2e45aa99609",
+      "bytes": 2226176
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "sha256": "f272beb36f9d2961b2b0aee4062aa70b4919aa460e1ff2da04181a8f36236e7c",
+      "bytes": 126464
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "sha256": "8949d9bf068784027717f2126c55167dd947088e823ad62035e33708aeb2666f",
+      "bytes": 2230272
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+      "bytes": 1097
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "sha256": "7b6ee854a225e6d96549cdd6c7588fbe8acaa53cc23e286e53def46401f65ffd",
+      "bytes": 522
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "sha256": "070aa01f81754ee06b701201c75ce4933b8f1a77f77c9b5741bf2114ba83015b",
+      "bytes": 24576
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "sha256": "ffa2599474336fbb2d906966609cdd5c7734ecb0da3cccc9c9cce2db6e542d2e",
+      "bytes": 363
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "sha256": "4ab9046de60bd77e90e74ef8d20520e2f09e8f07d19b050b9bd08462ccbdf789",
+      "bytes": 211284156
+    },
+    {
+      "path": "SHA256SUMS",
+      "sha256": "4fb65b83bf653baeaf998e84e22a972a7a0df1959fac66b1403069d59dd3455f",
+      "bytes": 1008
+    }
+  ],
+  "previewAttestations": [
+    {
+      "schemaVersion": 6,
+      "candidateSha": "ededb5561735d45589c1c2866adfa9e00511c8e4",
+      "bundleVersion": "1.0.17",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.6",
+      "additionalMods": [],
+      "bundleSha256": "4fb65b83bf653baeaf998e84e22a972a7a0df1959fac66b1403069d59dd3455f",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "release102",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-06T15:33:35.4981333+00:00"
+    },
+    {
+      "schemaVersion": 6,
+      "candidateSha": "ededb5561735d45589c1c2866adfa9e00511c8e4",
+      "bundleVersion": "1.0.17",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.6",
+      "additionalMods": [],
+      "bundleSha256": "4fb65b83bf653baeaf998e84e22a972a7a0df1959fac66b1403069d59dd3455f",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "runtime-content-export",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-06T15:37:01.5553030+00:00"
+    }
+  ],
+  "validation": {
+    "logicTests": 374,
+    "repository": true,
+    "compatibility": true,
+    "buildBoundaries": true,
+    "dualHostDllContracts": true,
+    "dualHostPatchTransactions": true,
+    "dualHostTwoProcessEnet": true,
+    "autoAnthony": "0.3.137",
+    "previewRealClient": true,
+    "localizationLanguages": [
+      "deu",
+      "eng",
+      "esp",
+      "fra",
+      "ind",
+      "ita",
+      "jpn",
+      "kor",
+      "pol",
+      "ptb",
+      "rus",
+      "spa",
+      "tha",
+      "tur",
+      "zhs",
+      "zht"
+    ],
+    "independentFeedback": true,
+    "feedbackSecondaryConfirmation": false,
+    "renderedFeedbackLocales": [
+      "deu",
+      "eng",
+      "esp",
+      "fra",
+      "ind",
+      "ita",
+      "jpn",
+      "kor",
+      "pol",
+      "ptb",
+      "rus",
+      "spa",
+      "tha",
+      "tur",
+      "zhs",
+      "zht"
+    ],
+    "telemetryNextLaunchDefaultPreserved": true
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "tags": "Characters,Simplified Chinese,english,japanese",
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "remoteDescriptionVerified": true,
+    "localizedLanguages": [
+      "english",
+      "schinese",
+      "japanese"
+    ],
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "galleryUnchanged": true,
+    "mainPreviewBefore": "https://images.steamusercontent.com/ugc/13765530479187689089/F5A5A0550ED077F95747BF804BDCBE2119369C6A/",
+    "mainPreviewAfter": "https://images.steamusercontent.com/ugc/13765530479187689089/F5A5A0550ED077F95747BF804BDCBE2119369C6A/",
+    "latestChangeNoteTimestamp": 1791301288,
+    "downloadBytes": 216212090
+  },
+  "notRun": [
+    "Complete stable 0.107.1 client gameplay",
+    "macOS/Linux gameplay",
+    "Two independent rendered multiplayer clients / cross-machine transport",
+    "Player-specific mod combination or save/log not supplied"
+  ],
+  "architecture": {
+    "base": "ad3d8ceafd84fe8062fe1b028e59f99f6b9ce641",
+    "before": {
+      "files": 522,
+      "typeDeclarations": 902,
+      "physicalLines": 64344
+    },
+    "after": {
+      "files": 521,
+      "typeDeclarations": 894,
+      "physicalLines": 64002
+    },
+    "deleted": [
+      "NinjaSlayerFeedbackSession and token",
+      "NinjaSlayerFeedbackPresentation and style snapshot",
+      "Four native-form feedback patches",
+      "FeedbackStreamOwnership wrapper and tests"
+    ],
+    "retainedPrivateApi": "TelemetryConsentStore.GetApplicantConsent only, to distinguish Unknown from Denied.",
+    "newSynchronization": false,
+    "newHostBranches": false,
+    "newGlobalCompatibilityLayer": false
+  },
+  "runtime": {
+    "ritsuLib": "0.6.6",
+    "compileRitsuLib": "0.5.12",
+    "autoAnthony": "0.3.137"
+  }
+}
