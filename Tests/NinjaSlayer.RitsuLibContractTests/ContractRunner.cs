@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Net;
+using System.Net.Sockets;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Assets;
