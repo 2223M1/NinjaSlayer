@@ -29,7 +29,8 @@ internal enum SmokePhase
     TomoeThrow,
     MultiHitVigor,
     Release113,
-    Release114
+    Release114,
+    GlamKindle
 }
 
 internal sealed record SmokeConfiguration(
