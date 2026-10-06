@@ -1,0 +1,20 @@
+{
+  "NINJA_SLAYER_GREETING_PLAYER": "DOMO, {BossTitle}=SAN, NINJA SLAYER DESU.",
+  "NINJA_SLAYER_GREETING_BOSS": "DOMO, NINJA SLAYER=SAN, {BossTitle} DESU.",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.title": "Ninja Slayer",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.name": "Ninja Slayer",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.titleObject": "Ninja Slayer",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.description": "Un impiegato che ha perso la moglie e il figlio.\nPosseduto da una misteriosa anima ninja, dà la caccia ai ninja per vendicarsi.",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.pronounSubject": "lui",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.pronounObject": "lui",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.pronounPossessive": "suo",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.possessiveAdjective": "suo",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.aromaPrinciple": "Sono Fujikido Kenji.",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.goldMonologue": "[sine]Quanti ninja potrei rintracciare con questi soldi...[/sine]",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.eventDeathPrevention": "La mia vendetta non è ancora compiuta.",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.cardsModifierTitle": "Carte Ninja Slayer",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.cardsModifierDescription": "Le carte Ninja Slayer appaiono nelle ricompense di carte.",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.banter.alive.endTurnPing": "Sei pronto?",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.banter.dead.endTurnPing": "Avanti...!",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.bestiaryQuote": "Tutti i ninja devono morire."
+}

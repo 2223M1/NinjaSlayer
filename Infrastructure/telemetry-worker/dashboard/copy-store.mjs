@@ -1,12 +1,15 @@
 import { readFile, writeFile, mkdir, rename } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { messages } from './translations.mjs';
+import { additionalMessages } from './translations-extra.mjs';
+import { languages } from './languages.mjs';
+export { languages } from './languages.mjs';
 
 export const committedCopyPath = new URL('../../../Website/site-copy.json', import.meta.url);
 export const draftCopyPath = new URL('../../../build/dashboard/site-copy-draft.json', import.meta.url);
-export const languages = ['zhs', 'eng', 'jpn'];
 export const copyDefaults = Object.fromEntries(Object.entries(messages).map(([key, value]) =>
-  [key, { zhs: key, eng: value[0], jpn: value[1] }]));
+  [key, { zhs: key, eng: value[0], jpn: value[1], ...Object.fromEntries(
+    languages.filter(lang => !['zhs', 'eng', 'jpn'].includes(lang)).map(lang => [lang, additionalMessages[lang][key]])) }]));
 
 export function validateCopy(value) {
   if (value?.schemaVersion !== 1 || !value.overrides || Array.isArray(value.overrides)
@@ -16,7 +19,7 @@ export function validateCopy(value) {
   for (const [key, texts] of Object.entries(value.overrides)) {
     if (!Object.hasOwn(copyDefaults, key) || !texts || typeof texts !== 'object' || Array.isArray(texts)
         || Object.keys(texts).sort().join() !== [...languages].sort().join())
-      throw new Error('文案包含未知条目或缺少三语内容。');
+      throw new Error('文案包含未知条目或缺少受支持语言的内容。');
     const placeholders = text => (text.match(/\{\d+\}/g) ?? []).sort().join();
     for (const lang of languages) {
       if (typeof texts[lang] !== 'string' || !texts[lang].trim() || texts[lang].length > 5000

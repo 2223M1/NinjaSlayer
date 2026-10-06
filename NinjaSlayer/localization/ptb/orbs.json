@@ -1,0 +1,5 @@
+{
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.title": "Shuriken",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "Sempre que descartar uma carta, Shuriken ataca um inimigo aleatório e você perde 1 Shuriken.\nAo ser evocado, cada acúmulo ataca uma vez.",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue] {Passive:plural:acúmulo|acúmulos}\nSempre que descartar uma carta, cause {Evoke} de dano a um inimigo aleatório e perca 1 Shuriken.\nAo ser evocado, cada acúmulo causa {Evoke} de dano a um inimigo aleatório."
+}

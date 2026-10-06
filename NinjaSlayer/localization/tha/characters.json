@@ -1,0 +1,20 @@
+{
+  "NINJA_SLAYER_GREETING_PLAYER": "DOMO, {BossTitle}=SAN, นินจาสเลเยอร์ DESU.",
+  "NINJA_SLAYER_GREETING_BOSS": "DOMO, นินจาสเลเยอร์=SAN, {BossTitle} DESU.",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.title": "นินจาสเลเยอร์",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.name": "นินจาสเลเยอร์",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.titleObject": "นินจาสเลเยอร์",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.description": "มนุษย์เงินเดือนผู้สูญเสียภรรยาและลูก\nถูกวิญญาณนินจาลึกลับสิง เขาล่านินจาเพื่อแก้แค้น",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.pronounSubject": "เขา",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.pronounObject": "เขา",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.pronounPossessive": "ของเขา",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.possessiveAdjective": "ของเขา",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.aromaPrinciple": "ข้าคือฟูจิคิโดะ เคนจิ",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.goldMonologue": "[sine]เงินนี้จะช่วยข้าตามล่านินจาได้กี่คน...[/sine]",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.eventDeathPrevention": "การแก้แค้นของข้ายังไม่จบ",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.cardsModifierTitle": "การ์ดนินจาสเลเยอร์",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.cardsModifierDescription": "การ์ดนินจาสเลเยอร์ปรากฏในรางวัลการ์ด",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.banter.alive.endTurnPing": "พร้อมหรือยัง?",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.banter.dead.endTurnPing": "ไปต่อ...!",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.bestiaryQuote": "นินจาทุกคนต้องตาย"
+}

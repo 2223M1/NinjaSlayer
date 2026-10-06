@@ -1,0 +1,5 @@
+{
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.title": "Shuriken",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "Chaque fois que vous défaussez une carte, les Shuriken attaquent un ennemi aléatoire et vous perdez 1 Shuriken.\nLors de l’Activation, chaque cumul attaque une fois.",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue] {Passive:plural:cumul|cumuls}\nChaque fois que vous défaussez une carte, infligez {Evoke} dégâts à un ennemi aléatoire et perdez 1 Shuriken.\nLors de l’Activation, chaque cumul inflige {Evoke} dégâts à un ennemi aléatoire."
+}

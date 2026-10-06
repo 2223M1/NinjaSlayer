@@ -1,0 +1,6 @@
+{
+  "NINJA_SLAYER_KEYWORD_SCRY.description": "檢視你[gold]抽牌堆[/gold]頂部指定數量的牌，丟棄其中任意數量的牌。",
+  "NINJA_SLAYER_KEYWORD_SCRY.title": "預見",
+  "NINJA_SLAYER_KEYWORD_JUDGMENT.description": "敵人滿足指定的生命條件時，無視[gold]格擋[/gold]將其擊殺。",
+  "NINJA_SLAYER_KEYWORD_JUDGMENT.title": "審判"
+}

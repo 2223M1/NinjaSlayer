@@ -1,0 +1,7 @@
+{
+  "NINJA_SLAYER_AFFLICTION_PREPARED_AFFLICTION.title": "준비됨",
+  "NINJA_SLAYER_AFFLICTION_PREPARED_AFFLICTION.description": "내 턴 중 추가 뽑기로만 뽑을 수 있습니다. 예지는 이 카드를 건너뜁니다.",
+  "NINJA_SLAYER_AFFLICTION_PREPARED_AFFLICTION.extraCardText": "준비됨",
+  "NINJA_SLAYER_AFFLICTION_NEXT_DISCARD_SOURCE_AFFLICTION.title": "원본 보호",
+  "NINJA_SLAYER_AFFLICTION_NEXT_DISCARD_SOURCE_AFFLICTION.description": "카드가 처리되는 동안 원본 상태를 보존합니다."
+}

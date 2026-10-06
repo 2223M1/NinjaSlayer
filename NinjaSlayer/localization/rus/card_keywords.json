@@ -1,0 +1,6 @@
+{
+  "NINJA_SLAYER_KEYWORD_SCRY.description": "Посмотрите указанное число верхних карт [gold]стопки добора[/gold]. Сбросьте любое их количество.",
+  "NINJA_SLAYER_KEYWORD_SCRY.title": "Предвидение",
+  "NINJA_SLAYER_KEYWORD_JUDGMENT.description": "Убивает врага, отвечающего указанному условию ОЗ, игнорируя [gold]защиту[/gold].",
+  "NINJA_SLAYER_KEYWORD_JUDGMENT.title": "Суд"
+}

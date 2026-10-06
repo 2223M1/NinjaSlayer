@@ -8,6 +8,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../tools/smoke-harness/NinjaSlayer.SmokeDriver/WebsiteCatalogExporter.cs" Link="WebsiteCatalogExporter.cs" />
     <PackageReference Include="Box2D.NET" Version="$(NinjaSlayerBox2DVersion)" />
     <Reference Include="NinjaSlayer" HintPath="$(NinjaSlayerAssemblyPath)" />
     <Reference Include="sts2" HintPath="$(Sts2DataDir)/sts2.dll" />

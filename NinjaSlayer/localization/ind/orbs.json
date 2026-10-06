@@ -1,0 +1,5 @@
+{
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.title": "Shuriken",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "Setiap kali kamu menyingkirkan kartu, Shuriken menyerang musuh acak dan kamu kehilangan 1 Shuriken.\nSaat dipicu, setiap tumpukan menyerang sekali.",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue] tumpukan\nSetiap kali kamu menyingkirkan kartu, lakukan {Evoke} kerusakan ke musuh acak dan kehilangan 1 Shuriken.\nSaat dipicu, setiap tumpukan melakukan {Evoke} kerusakan ke musuh acak."
+}

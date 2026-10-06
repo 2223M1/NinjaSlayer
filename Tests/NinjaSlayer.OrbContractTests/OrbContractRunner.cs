@@ -45,6 +45,7 @@ public partial class OrbContractRunner : Node
 {
     private static int _evoked;
     private static bool _hasPresentationResources;
+    private MegaCrit.Sts2.Core.Assets.AtlasResourceLoader? _catalogAtlasLoader;
     private static readonly BlockingPlayerChoiceContext Choice = new();
 
     public override async void _Ready()
@@ -116,6 +117,9 @@ public partial class OrbContractRunner : Node
             string hostPack = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_HOST_PACK")
                 ?? throw new InvalidOperationException("Product gameplay contracts require the host resource pack for native selection prompts.");
             Require(ProjectSettings.LoadResourcePack(hostPack, replaceFiles: false), "Could not mount the host resource pack.");
+            string? catalogDestination = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_CATALOG_OUTPUT");
+            if (catalogDestination is not null)
+                MountCatalogHostLocalization(catalogDestination);
             string? productPack = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_PRODUCT_PACK");
             if (productPack is not null)
             {
@@ -124,6 +128,14 @@ public partial class OrbContractRunner : Node
             }
             else
                 GD.Print("NOT RUN: tooltip and native event presentation contracts (no product resource pack supplied).");
+            if (catalogDestination is not null)
+            {
+                // Native .sprites/*.tres paths are virtual atlas resources. The
+                // standalone test scene does not run the game's menu bootstrap.
+                _catalogAtlasLoader = new MegaCrit.Sts2.Core.Assets.AtlasResourceLoader();
+                ResourceLoader.AddResourceFormatLoader(_catalogAtlasLoader, atFront: true);
+                MegaCrit.Sts2.Core.Assets.AtlasManager.LoadAllAtlases();
+            }
             // Reproduce a mod patching AutoPlay before RitsuLib/NinjaSlayer install wrapper hooks.
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_EARLY_AUTOPLAY") == "1")
                 PatchAutoplayBeforeFramework();
@@ -157,7 +169,8 @@ public partial class OrbContractRunner : Node
             AccessTools.Method(typeof(RitsuLibFramework).Assembly.GetType("STS2RitsuLib.Interop.Patches.ModTypeDiscoveryPatch", true), "Prefix")
                 .Invoke(null, null);
             ModelDb.Init();
-            ModelDb.Inject(typeof(EvokeObserver));
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_CATALOG_OUTPUT") is null)
+                ModelDb.Inject(typeof(EvokeObserver));
             string? minionPath = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_MINION_DLL");
             Assembly? minion = minionPath is null ? null : System.Runtime.Loader.AssemblyLoadContext.GetLoadContext(typeof(Creature).Assembly)!
                 .LoadFromAssemblyPath(System.IO.Path.GetFullPath(minionPath));
@@ -187,6 +200,25 @@ public partial class OrbContractRunner : Node
                 ModelDb.Inject(hextech.GetType("HextechRunes.HextechMayhemModifier", true)!);
             }
             MegaCrit.Sts2.Core.Multiplayer.Serialization.ModelIdSerializationCache.Init();
+
+            if (catalogDestination is not null)
+            {
+                // Offline resource/formatting validation uses the production export path.
+                ModelDb.InitIds();
+                SaveManager.Instance.InitSettingsDataForTest();
+                SaveManager.Instance.InitPrefsDataForTest();
+                MegaCrit.Sts2.Core.Localization.LocManager.Initialize();
+#if NINJASLAYER_CHANNEL_STABLE
+                // Only preview art is supplied; keep every stable model and validate
+                // its exact-version text without pretending to verify stable images.
+                NinjaSlayer.SmokeDriver.WebsiteCatalogExporter.Export(catalogDestination, exportImages: false, assemblyPath: productPath);
+#else
+                NinjaSlayer.SmokeDriver.WebsiteCatalogExporter.Export(catalogDestination, assemblyPath: productPath);
+#endif
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
 
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_NARAKU_PANEL_BASELINE") == "1")
             {
@@ -393,6 +425,36 @@ public partial class OrbContractRunner : Node
             GD.PushError(error.ToString());
             GetTree().Quit(1);
         }
+    }
+
+    private static void MountCatalogHostLocalization(string destination)
+    {
+        string source = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_HOST_LOCALIZATION")
+            ?? throw new InvalidOperationException("Offline catalog validation requires exact-version native localization.");
+        Directory.CreateDirectory(destination);
+        string packPath = Path.Combine(destination, "host-localization.pck");
+        int files = 0;
+        using (var pack = new PckPacker())
+        {
+            Require(pack.PckStart(packPath) == Error.Ok, "Could not create native localization overlay.");
+            foreach (string language in MegaCrit.Sts2.Core.Localization.LocManager.Languages)
+            {
+                string directory = Path.Combine(source, language);
+                Require(Directory.Exists(directory), $"Missing native localization directory: {directory}");
+                string[] tables = Directory.GetFiles(directory, "*.json").Order(StringComparer.Ordinal).ToArray();
+                Require(tables.Length > 0, $"No native localization tables: {directory}");
+                foreach (string table in tables)
+                {
+                    Require(pack.AddFile($"res://localization/{language}/{Path.GetFileName(table)}", table) == Error.Ok,
+                        $"Could not pack native localization: {table}");
+                    files++;
+                }
+            }
+            Require(pack.Flush() == Error.Ok, "Could not finish native localization overlay.");
+        }
+        Require(ProjectSettings.LoadResourcePack(packPath, replaceFiles: true), "Could not mount exact-version native localization overlay.");
+        GD.Print($"Native localization overlay: {source}; {files} tables; SHA256 {Convert.ToHexString(SHA256.HashData(System.IO.File.ReadAllBytes(packPath)))}");
+        GD.Print("Offline formatting proof only: native host DLL and exact-version text; complete stable art/client NOT RUN.");
     }
 
     private static async Task VerifyRunSaves()

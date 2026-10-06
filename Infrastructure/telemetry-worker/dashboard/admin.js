@@ -1,3 +1,4 @@
+import { languages, locales } from './languages.mjs';
 const $ = selector => document.querySelector(selector);
 const element = (tag, text) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; return node; };
 const link = (label, href) => { const node = element('a', label); node.href = href; return node; };
@@ -130,12 +131,12 @@ async function showFeedback(item) {
 function setDirty() { dirty = true; $('#dirty').textContent = '有尚未保存的修改。'; }
 function capture() {
   if (!key) return;
-  const texts = Object.fromEntries(['zhs', 'eng', 'jpn'].map(lang => [lang, $(`#copy-${lang}`).value]));
-  if (JSON.stringify(texts) === JSON.stringify(defaults[key])) delete draft.overrides[key]; else draft.overrides[key] = texts;
+  const texts = Object.fromEntries(languages.map(lang => [lang, $(`#copy-${lang}`).value]));
+  if (languages.every(lang => texts[lang] === defaults[key][lang])) delete draft.overrides[key]; else draft.overrides[key] = texts;
 }
 function selectCopy(next) {
   capture(); key = next; $('#copy-key').textContent = `原文：${key}`;
-  for (const lang of ['zhs', 'eng', 'jpn']) $(`#copy-${lang}`).value = (draft.overrides[key] ?? defaults[key])[lang];
+  for (const lang of languages) $(`#copy-${lang}`).value = (draft.overrides[key] ?? defaults[key])[lang];
 }
 function showCopyList() {
   const query = $('#copy-search').value.toLowerCase(); $('#copy-list').replaceChildren();
@@ -157,8 +158,12 @@ $('#feedback-search').oninput = showFeedbackList;
 $('#feedback-status').onchange = showFeedbackList;
 $('#copy-search').oninput = showCopyList;
 $('#copy-form').onsubmit = event => event.preventDefault();
-for (const lang of ['zhs', 'eng', 'jpn']) $(`#copy-${lang}`).oninput = setDirty;
-$('#reset').onclick = () => { if (!key) return; for (const lang of ['zhs', 'eng', 'jpn']) $(`#copy-${lang}`).value = defaults[key][lang]; capture(); setDirty(); };
+for (const lang of languages) {
+  const label = element('label', locales[lang][1]); label.htmlFor = `copy-${lang}`;
+  const input = element('textarea'); input.id = `copy-${lang}`; input.rows = 4; input.maxLength = 5000;
+  input.oninput = setDirty; $('#copy-languages').append(label, input);
+}
+$('#reset').onclick = () => { if (!key) return; for (const lang of languages) $(`#copy-${lang}`).value = defaults[key][lang]; capture(); setDirty(); };
 $('#preview').onclick = event => { if (dirty) { event.preventDefault(); status('请先保存草稿，再预览。'); } };
 action($('#refresh'), refreshFeedback);
 function showFeedbackPublication(receipt) {

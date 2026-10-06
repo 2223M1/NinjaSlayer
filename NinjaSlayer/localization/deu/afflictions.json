@@ -1,0 +1,7 @@
+{
+  "NINJA_SLAYER_AFFLICTION_PREPARED_AFFLICTION.title": "Vorbereitet",
+  "NINJA_SLAYER_AFFLICTION_PREPARED_AFFLICTION.description": "Kann nur durch zusätzliches Kartenziehen während deines Zuges gezogen werden. Voraussicht überspringt diese Karte.",
+  "NINJA_SLAYER_AFFLICTION_PREPARED_AFFLICTION.extraCardText": "Vorbereitet",
+  "NINJA_SLAYER_AFFLICTION_NEXT_DISCARD_SOURCE_AFFLICTION.title": "Quellzustand bewahren",
+  "NINJA_SLAYER_AFFLICTION_NEXT_DISCARD_SOURCE_AFFLICTION.description": "Bewahrt den Quellzustand, während eine Karte abgewickelt wird."
+}

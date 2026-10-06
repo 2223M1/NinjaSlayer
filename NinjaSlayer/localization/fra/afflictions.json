@@ -1,0 +1,7 @@
+{
+  "NINJA_SLAYER_AFFLICTION_PREPARED_AFFLICTION.title": "Préparée",
+  "NINJA_SLAYER_AFFLICTION_PREPARED_AFFLICTION.description": "Ne peut être piochée que par une pioche supplémentaire pendant votre tour. Préscience ignore cette carte.",
+  "NINJA_SLAYER_AFFLICTION_PREPARED_AFFLICTION.extraCardText": "Préparée",
+  "NINJA_SLAYER_AFFLICTION_NEXT_DISCARD_SOURCE_AFFLICTION.title": "Protection de la source",
+  "NINJA_SLAYER_AFFLICTION_NEXT_DISCARD_SOURCE_AFFLICTION.description": "Préserve l’état de la source pendant la résolution d’une carte."
+}

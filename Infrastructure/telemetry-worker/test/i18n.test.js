@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { messages } from '../dashboard/translations.mjs';
+import { additionalMessages } from '../dashboard/translations-extra.mjs';
+import { languages, locales } from '../dashboard/languages.mjs';
 
 const placeholders = text => [...new Set([...text.matchAll(/\{(\d+)\}/g)].map(match => match[1]))].sort();
 
@@ -15,6 +17,19 @@ test('website translations preserve every interpolated value', () => {
   }
 });
 
+test('every official language has complete website text with identical placeholders', () => {
+  assert.equal(languages.length, 16);
+  for (const lang of languages.filter(code => !['zhs','eng','jpn'].includes(code))) {
+    assert.deepEqual(Object.keys(additionalMessages[lang]).sort(), Object.keys(messages).sort(), lang);
+    for (const [key, text] of Object.entries(additionalMessages[lang])) {
+      assert.equal(typeof text, 'string', `${lang}/${key}`);
+      assert.ok(text.trim(), `${lang}/${key}`);
+      assert.deepEqual(placeholders(text), placeholders(key), `${lang}/${key}`);
+      assert.doesNotMatch(text, /__NS\d+__|ZXROW\d+XZ/, `${lang}/${key}`);
+    }
+  }
+});
+
 test('website language uses URL, then saved choice; admin remains Chinese', async () => {
   const originals = Object.fromEntries(['document', 'location', 'localStorage'].map(key => [key, globalThis[key]]));
   try {
@@ -24,6 +39,7 @@ test('website language uses URL, then saved choice; admin remains Chinese', asyn
       ['?lang=invalid', 'eng', 'pages', 'zhs', 'zh-CN'],
       ['?lang=eng', 'eng', 'admin', 'zhs', 'zh-CN'],
       ['', null, 'pages', 'zhs', 'zh-CN'],
+      ...languages.map(code => [`?lang=${code}`, 'zhs', 'pages', code, locales[code][0]]),
     ];
     for (const [index, [search, saved, view, expected, locale]] of cases.entries()) {
       globalThis.document = { body: { dataset: { view } } };

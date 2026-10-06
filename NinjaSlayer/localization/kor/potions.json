@@ -1,0 +1,5 @@
+{
+  "NINJA_SLAYER_POTION_ZBR_AMPOULE_POTION.title": "ZBR 앰풀",
+  "NINJA_SLAYER_POTION_ZBR_AMPOULE_POTION.description": "[gold]나라쿠 생명[/gold]을 {NarakuLife:diff()} 얻습니다.",
+  "NINJA_SLAYER_POTION_ZBR_AMPOULE_POTION.flavor": "위험한 응급 주사."
+}

@@ -329,7 +329,7 @@ test('scheduled feedback failure retains the last complete snapshot; manual sync
 
 test('Pages artifact is standalone under the project subpath and accepts genuinely empty fresh telemetry', async t => {
   const output = await buildPages(t);
-  assert.deepEqual((await readdir(output)).sort(), ['.nojekyll', 'app.js', 'assets', 'catalog-view.mjs', 'chart-view.mjs', 'charts.mjs', 'content', 'data.json', 'i18n.mjs', 'index.html', 'public-data.mjs', 'replay-view.mjs', 'site-copy.mjs', 'styles.css', 'translations.mjs', 'vendor', 'version-filter.mjs']);
+  assert.deepEqual((await readdir(output)).sort(), ['.nojekyll', 'app.js', 'assets', 'catalog-localization.mjs', 'catalog-view.mjs', 'chart-view.mjs', 'charts.mjs', 'content', 'data.json', 'i18n.mjs', 'index.html', 'languages.mjs', 'public-data.mjs', 'replay-view.mjs', 'site-copy.mjs', 'styles.css', 'translations-extra.mjs', 'translations.mjs', 'vendor', 'version-filter.mjs']);
   const html = await readFile(join(output, 'index.html'), 'utf8');
   assert.match(html, /data-view="pages"/);
   assert.match(html, /Content-Security-Policy/);
