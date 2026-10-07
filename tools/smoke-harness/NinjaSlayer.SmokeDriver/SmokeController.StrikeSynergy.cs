@@ -19,6 +19,7 @@ using MegaCrit.Sts2.Core.TestSupport;
 using MegaCrit.Sts2.Core.Unlocks;
 using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Content;
+using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.SmokeDriver;
 
@@ -58,7 +59,7 @@ internal sealed partial class SmokeController
                 RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(action);
                 await action.CompletionTask.WaitAsync(TimeSpan.FromSeconds(30));
                 if (action.Exception != null) throw action.Exception;
-                Require(before - enemy.CurrentHp == expectedDamage, $"{card.Id} rendered action did not gain its exact native Strike bonus.");
+                Require(before - enemy.CurrentHp == expectedDamage, $"{card.Id}: expected {expectedDamage} HP damage, got {before - enemy.CurrentHp}.");
                 _checkpoints.Write("strike-synergy.damage", data: new JsonObject
                 { ["card"] = card.Id.ToString(), ["upgraded"] = card.IsUpgraded, ["speed"] = speed.ToString(), ["damage"] = expectedDamage });
             }
@@ -78,6 +79,8 @@ internal sealed partial class SmokeController
                 var chop = combat.CreateCard<Chop>(player);
                 if (upgraded) CardCmd.Upgrade(chop);
                 await Play(chop, (int)chop.DynamicVars.Damage.BaseValue);
+                // Chop's normal post-play Karate is a separate bonus, not a Strike relic bonus.
+                if (player.Creature.GetPower<KaratePower>() is { } karate) await PowerCmd.Remove(karate);
                 var perfected = combat.CreateCard<PerfectedStrike>(player);
                 if (upgraded) CardCmd.Upgrade(perfected);
                 await CardPileCmd.Add(perfected, PileType.Hand);
