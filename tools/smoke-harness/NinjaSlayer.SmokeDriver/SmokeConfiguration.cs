@@ -30,7 +30,8 @@ internal enum SmokePhase
     MultiHitVigor,
     Release113,
     Release114,
-    GlamKindle
+    GlamKindle,
+    StrikeSynergy
 }
 
 internal sealed record SmokeConfiguration(

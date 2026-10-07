@@ -351,6 +351,7 @@ public partial class OrbContractRunner : Node
             {
                 VerifyCardMetadata();
                 await VerifyCurrentCardInteractions();
+                await VerifyStrikeSynergy();
                 await VerifyV020();
                 await VerifyV17();
                 await VerifyV023();
@@ -405,6 +406,7 @@ public partial class OrbContractRunner : Node
             await VerifyGroundShadows();
             VerifyCardMetadata();
             await VerifyCurrentCardInteractions();
+            await VerifyStrikeSynergy();
             await VerifyV020();
             await VerifyEventRelics();
             await VerifyV17();

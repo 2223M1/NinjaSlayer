@@ -22,6 +22,8 @@ namespace NinjaSlayer.Cards.Standard;
 
 public sealed class ChopStrike : NinjaSlayerCommonCard
 {
+    protected override HashSet<CardTag> CanonicalTags => [CardTag.Strike];
+
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new DamageVar(11, ValueProp.Move), new KarateVar(2)];
 

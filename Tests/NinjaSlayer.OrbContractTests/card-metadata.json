@@ -674,7 +674,9 @@
     "Keywords": [
       "Exhaust"
     ],
-    "Tags": [],
+    "Tags": [
+      "Strike"
+    ],
     "Portrait": "res://NinjaSlayer/images/cards/StrikeStrike.png",
     "Vars": {
       "Cards": 2,
@@ -694,7 +696,9 @@
     "Keywords": [
       "Exhaust"
     ],
-    "Tags": [],
+    "Tags": [
+      "Strike"
+    ],
     "Portrait": "res://NinjaSlayer/images/cards/StrikeStrike.png",
     "Vars": {
       "Cards": 3,
@@ -1601,7 +1605,9 @@
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
-    "Tags": [],
+    "Tags": [
+      "Strike"
+    ],
     "Portrait": "res://NinjaSlayer/images/cards/ChopStrike.png",
     "Vars": {
       "Damage": 11,
@@ -1619,7 +1625,9 @@
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
-    "Tags": [],
+    "Tags": [
+      "Strike"
+    ],
     "Portrait": "res://NinjaSlayer/images/cards/ChopStrike.png",
     "Vars": {
       "Damage": 13,
