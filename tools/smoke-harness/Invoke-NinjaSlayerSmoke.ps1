@@ -12,7 +12,7 @@ param(
     [Parameter(Mandatory)][string]$RitsuLibModDirectory,
     [Parameter(Mandatory)][string]$OutputDirectory,
     [Parameter(Mandatory)][ValidateSet('stable', 'preview')][string]$Channel,
-    [ValidateSet('FirstCombatRestart', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossReload', 'TelemetryLoss', 'Catalog', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113', 'Release114', 'GlamKindle')]
+    [ValidateSet('FirstCombatRestart', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossReload', 'TelemetryLoss', 'Catalog', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113', 'Release114', 'GlamKindle', 'StrikeSynergy')]
     [string]$Mode = 'FirstCombatRestart',
     [ValidateRange(0, 7200)][int]$PhaseTimeoutSeconds = 0,
     [string]$Seed = 'NINJASLAYER_SMOKE_01',
@@ -487,7 +487,7 @@ try {
         Invoke-SmokePhase -Phase BossResume -ExpectedExitCode 20
         Invoke-SmokePhase -Phase BossVerify -ExpectedExitCode 0
     }
-    elseif ($Mode -in @('ReverseFinisher', 'FullAutoSlay', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113', 'Release114', 'GlamKindle')) {
+    elseif ($Mode -in @('ReverseFinisher', 'FullAutoSlay', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113', 'Release114', 'GlamKindle', 'StrikeSynergy')) {
         Invoke-SmokePhase -Phase $Mode -ExpectedExitCode 0
     }
     elseif ($Mode -eq 'SawatariSameCombat') {
@@ -522,6 +522,9 @@ try {
     }
     elseif ($Mode -eq 'TelemetryLoss') {
         @('telemetry.run-ended', 'telemetry.captured', 'telemetry.loss-completed')
+    }
+    elseif ($Mode -eq 'StrikeSynergy') {
+        @('strike-synergy.completed')
     }
     elseif ($Mode -eq 'GlamKindle') {
         @('glam-kindle.completed')

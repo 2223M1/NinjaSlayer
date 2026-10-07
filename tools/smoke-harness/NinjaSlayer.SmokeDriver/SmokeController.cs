@@ -1746,6 +1746,10 @@ internal sealed partial class SmokeController
             {
                 await RunTornadoPreviewAsync();
             }
+            else if (_configuration.Phase == SmokePhase.StrikeSynergy)
+            {
+                await RunStrikeSynergyAsync();
+            }
             else if (_configuration.Phase == SmokePhase.GlamKindle)
             {
                 await RunGlamKindleAsync();

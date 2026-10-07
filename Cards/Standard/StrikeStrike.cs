@@ -23,6 +23,8 @@ namespace NinjaSlayer.Cards.Standard;
 
 public sealed class StrikeStrike : NinjaSlayerUncommonCard
 {
+    protected override HashSet<CardTag> CanonicalTags => [CardTag.Strike];
+
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
