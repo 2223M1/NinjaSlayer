@@ -140,7 +140,7 @@ function Stop-SmokeProcesses {
 function Invoke-SmokePhase {
     param(
         [Parameter(Mandatory)]
-        [ValidateSet('Fresh', 'Resume', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossFresh', 'BossResume', 'BossVerify', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113', 'Release114', 'GlamKindle')]
+        [ValidateSet('Fresh', 'Resume', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossFresh', 'BossResume', 'BossVerify', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113', 'Release114', 'GlamKindle', 'StrikeSynergy')]
         [string]$Phase,
         [Parameter(Mandatory)][int]$ExpectedExitCode
     )
@@ -171,6 +171,7 @@ function Invoke-SmokePhase {
             'Release113' { 22 }
             'Release114' { 23 }
             'GlamKindle' { 24 }
+            'StrikeSynergy' { 25 }
         }
         CheckpointPath = $checkpointPath
         AutoSlayLogPath = (Join-Path $OutputDirectory "autoslay-$($Phase.ToLowerInvariant()).log")
@@ -609,6 +610,7 @@ try {
             'Release113' { 'release113' }
             'Release114' { 'release114' }
             'GlamKindle' { 'glam-kindle' }
+            'StrikeSynergy' { 'strike-synergy' }
             'ReverseFinisher' { 'reverse-finisher' }
             'SawatariSameCombat' { 'singleplayer-sawatari-same-combat' }
             'BossReload' { 'singleplayer-double-boss-reload' }
