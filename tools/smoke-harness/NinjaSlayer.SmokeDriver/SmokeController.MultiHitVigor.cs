@@ -93,6 +93,8 @@ internal sealed partial class SmokeController
         var actor = NCombatRoom.Instance!.GetCreatureNode(player.Creature)!;
         var baselineRoot = actor.GetGlobalTransform();
         var baselineVisuals = actor.Visuals.Transform;
+        Node2D aimPose = actor.Visuals.GetNode<Node2D>("%AimPose");
+        var baselinePose = aimPose.Transform;
         var observer = new Harmony("NinjaSlayer.SmokeDriver.MultiHitVigor");
         observer.Patch(AccessTools.Method(typeof(Hook), nameof(Hook.BeforeAttack)),
             prefix: new HarmonyMethod(typeof(MultiHitVigorProbe), nameof(MultiHitVigorProbe.BeforeAttack)));
@@ -103,7 +105,7 @@ internal sealed partial class SmokeController
         try
         {
             foreach (bool upgraded in new[] { false, true })
-            foreach (var speed in new[] { FastModeType.Normal, FastModeType.Fast })
+            foreach (var speed in new[] { FastModeType.Normal, FastModeType.Fast, FastModeType.Instant })
             foreach (var model in new CardModel[] { ModelDb.Card<StormFist>(), ModelDb.Card<DragonRoundhouseKick>(),
                          ModelDb.Card<PalmThrust>(), ModelDb.Card<PressTheAttack>(), ModelDb.Card<Endurance>(), ModelDb.Card<AntiAirBangBangFist>(), ModelDb.Card<TornadoFist>() })
             {
@@ -144,8 +146,18 @@ internal sealed partial class SmokeController
                 if (card is Endurance)
                     Require(player.Creature.GetPowerAmount<NinjaSlayer.Powers.KaratePower>() == (upgraded ? 5 : 4)
                         && !player.Creature.HasPower<NinjaSlayer.Powers.EndurancePower>(), "Endurance must grant Karate after its hits without its former delayed power.");
+                if (card is PalmThrust or Endurance && speed != FastModeType.Instant)
+                {
+                    // The native card action has completed; its visible tail must
+                    // still move for longer than the former 0.1s return.
+                    await _tree.ToSignal(_tree.CreateTimer(.2), SceneTreeTimer.SignalName.Timeout);
+                    Require(!aimPose.Transform.IsEqualApprox(baselinePose), "The settled attack snapped to idle before its vanilla visual tail finished.");
+                    _checkpoints.Write("attack-tail.after-settlement", data: new JsonObject {
+                        ["card"] = card.Id.ToString(), ["speed"] = speed.ToString(), ["upgraded"] = upgraded });
+                }
                 await WaitUntilAsync(() => actor.GetGlobalTransform().IsEqualApprox(baselineRoot)
-                    && actor.Visuals.Transform.IsEqualApprox(baselineVisuals), "Attack visual tail did not return to idle.");
+                    && actor.Visuals.Transform.IsEqualApprox(baselineVisuals) && aimPose.Transform.IsEqualApprox(baselinePose),
+                    "Attack visual tail did not return to idle.");
                 Require(actor.GetGlobalTransform().IsEqualApprox(baselineRoot) && actor.Visuals.Transform.IsEqualApprox(baselineVisuals),
                     "Multi-hit attack did not restore the body/root pose.");
                 _checkpoints.Write("multihit.resolved", data: new JsonObject { ["card"] = card.Id.ToString(),
