@@ -104,7 +104,8 @@ internal sealed partial class SmokeController
         Release114EntranceProbe.Count = 0;
         // Native map travel writes the pre-room checkpoint used by Continue.
         await RunManager.Instance.EnterMapCoord(run.Map.GetAllMapPoints().First(p => p.PointType == MapPointType.Unknown).coord);
-        await RunManager.Instance.FadeIn();
+        await (Task)AccessTools.Method(typeof(RunManager), "FadeIn", [typeof(bool)])
+            .Invoke(RunManager.Instance, [true])!;
         await RequireFeedbackEntrance(run.Players[0]);
         return run;
     }
