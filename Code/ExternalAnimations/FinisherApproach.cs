@@ -12,7 +12,6 @@ internal sealed class FinisherApproach : IDisposable
     private static readonly Dictionary<Creature, FinisherApproach> Active = [];
     private readonly NCreature _actor;
     private readonly NCreature _focus;
-    private readonly Vector2 _squash;
     private Vector2 _destination;
     private Vector2 _animationPosition;
     private Vector2 _offset;
@@ -41,11 +40,10 @@ internal sealed class FinisherApproach : IDisposable
         }
     }
 
-    private FinisherApproach(NCreature actor, NCreature focus, Vector2 squash)
+    private FinisherApproach(NCreature actor, NCreature focus)
     {
         _actor = actor;
         _focus = focus;
-        _squash = squash;
         _animationPosition = actor.Visuals.Position;
         RefreshDestination();
         actor.TreeExiting += Dispose;
@@ -53,7 +51,7 @@ internal sealed class FinisherApproach : IDisposable
 
     private void RefreshDestination()
     {
-        float impactX = FinisherImpactPositionResolver.ResolveImpactX(_actor, _focus, _squash,
+        float impactX = FinisherImpactPositionResolver.ResolveImpactX(_actor, _focus,
             NinjaSlayerCombatVisuals.CloseRangeApproachGap);
         Vector2 canvasTravel = _actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
             .BasisXform(new Vector2(impactX - _actor.Position.X, 0f));
@@ -62,7 +60,7 @@ internal sealed class FinisherApproach : IDisposable
         _destination = destination + (SawatariWeaponVisuals.Get(_actor.Entity) != null ? _offset : Vector2.Zero);
     }
 
-    internal static FinisherApproach Create(NCreature actor, NCreature focus, Vector2 squash)
+    internal static FinisherApproach Create(NCreature actor, NCreature focus)
     {
         Vector2 baseline = actor.Visuals.Position, offset = Vector2.Zero;
         if (Active.TryGetValue(actor.Entity, out var previous))
@@ -71,7 +69,7 @@ internal sealed class FinisherApproach : IDisposable
             offset = previous._offset;
             previous.Dispose();
         }
-        var lease = new FinisherApproach(actor, focus, squash);
+        var lease = new FinisherApproach(actor, focus);
         lease._animationPosition = baseline;
         lease._from = offset;
         lease.Apply(offset);

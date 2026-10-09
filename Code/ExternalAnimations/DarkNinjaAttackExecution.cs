@@ -139,7 +139,7 @@ internal static class DarkNinjaAttackExecution
             && FinisherAttackCommandAdapter.PredictReverseVictim(command, pendingTargets, damage, 1)
             ?.GetCreatureNode() is { } focus && attacker.GetCreatureNode() is { } actorNode)
         {
-            approach = FinisherApproach.Create(actorNode, focus, FinisherTimeline.MeleeSquash(FinisherTimeline.PreviewProfile));
+            approach = FinisherApproach.Create(actorNode, focus);
             approach.Start(hitSeconds);
         }
         try

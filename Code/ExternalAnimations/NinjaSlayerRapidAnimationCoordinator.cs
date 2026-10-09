@@ -73,7 +73,8 @@ internal static class NinjaSlayerRapidAnimationCoordinator
                 return;
         }
         returnSeconds = somersault ? SlowAttackAnimation.SomersaultHalfSeconds
-            : standardPresentation ? CombatActionTimingRuntime.ReturnSeconds : returnSeconds;
+            : standardPresentation && !heldTornado ? CombatActionTimingRuntime.AttackReturnSeconds(
+                firstPeakSeconds, distance >= NinjaSlayerCombatVisuals.SlowAttackLungeDistance) : returnSeconds;
         state.ReturnSeconds = Math.Max(state.ReturnSeconds, returnSeconds);
         bool isContinuation = state.HasPlayedAction;
         if (!isContinuation) state.BaseOffset = pose?.Travel ?? Vector2.Zero;

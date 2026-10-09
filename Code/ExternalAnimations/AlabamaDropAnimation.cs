@@ -156,7 +156,8 @@ public static class AlabamaDropAnimation
         Vector2 ownerStartPos = ownerAuthoredBaseline;
         Vector2 ownerLandingPos = ResolveOwnerLandingPosition(ownerRig, targetRig);
         NinjaSlayerAimPose? aimPose = NinjaSlayerAimPose.Get(owner);
-        Vector2 targetChargeScale = FinisherTimeline.AllowsDeathSquash(target) ? new(
+        Vector2 targetChargeScale = (target.Player?.Character is not INinjaSlayerCharacter
+            && target.Monster?.GetType().Assembly != typeof(AlabamaDropAnimation).Assembly) ? new(
             targetSnapshot.BodyScale.X * LandingSquashScaleX,
             targetSnapshot.BodyScale.Y * LandingSquashScaleY) : targetSnapshot.BodyScale;
         Vector2 targetLandingScale = targetChargeScale;
@@ -249,21 +250,16 @@ public static class AlabamaDropAnimation
                     targetSpinBlur));
 
             ownerPivot.Apply(ownerInvertedRotation, ownerInvertedScale);
-            // The contact is the crown of the inverted head, not the standing
-            // bounds center. A finisher owns its one downward compression.
-            landingPivot.Value.Apply(targetInvertedRotation, targetSnapshot.BodyScale);
+            // Compress around the measured crown, keeping it at the floor before
+            // damage starts a finisher and captures the impact pose.
+            landingPivot.Value.Apply(targetInvertedRotation, targetLandingScale);
             // Finish both fall tracks and release their exposure before Doom can
             // freeze the actor. Otherwise the final spin Tween remains blurred.
             ByrdFallAnimation.PlayLandingImpact(null);
             await PlayImpact();
             finisher = FinisherSessionRegistry.GetActiveSession();
             bool finishing = finisher?.Actor == owner;
-            if (!finishing)
-            {
-                if (!targetReleasedForDeath)
-                    landingPivot.Value.Apply(targetInvertedRotation, targetLandingScale);
-            }
-            else if (!architectRecovery)
+            if (finishing && !architectRecovery)
             {
                 ownerAuthoredBaseline = finisher!.ActorBaseline;
                 ownerRestoreSnapshot = ownerRestoreSnapshot with { CreaturePosition = ownerAuthoredBaseline };

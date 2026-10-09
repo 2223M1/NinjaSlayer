@@ -41,11 +41,11 @@ public static class SlowAttackAnimation
         {
             await NinjaSlayerRapidAnimationCoordinator.PlayAttackToPeak(creature,
                 NinjaSlayerCombatVisuals.SlowAttackLungeDistance, gate, FinisherActionTrajectory.SlowProgress,
-                returnSeconds: CombatActionTimingRuntime.ReturnSeconds);
+                returnSeconds: CombatActionTimingRuntime.AttackReturnSeconds(gate, heavy: true));
             return;
         }
         await PlayLunge(creature, NinjaSlayerCombatVisuals.SlowAttackLungeDistance,
-            gate, StandardOutboundSeconds, CombatActionTimingRuntime.ReturnSeconds);
+            gate, StandardOutboundSeconds, CombatActionTimingRuntime.AttackReturnSeconds(gate, heavy: true));
     }
 
     // Companion and counter triggers must not inherit the enclosing player's card pose.

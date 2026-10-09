@@ -145,19 +145,11 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 ?? creatureNode.Visuals.GetCurrentBody();
             if (!snapshots.ContainsKey(body))
             {
-                DeathSquashVisualState? squashState = _deathSquashStates.GetValueOrDefault(body);
                 snapshots.Add(body, new ImpactVisualSnapshot(
                     body,
-                    squashState?.OriginalPosition ?? body.Position,
-                    squashState?.OriginalScale ?? body.Scale,
-                    body.Rotation,
+                    body.Transform,
                     body.Modulate,
-                    creatureNode.Visuals.Bounds,
-                    ResolveImpactDirection(_actorNode, creatureNode),
-                    IsAlabamaDrop ? Vector2.Down : _impactAxes.GetValueOrDefault(creatureNode.Entity,
-                        (creatureNode.VfxSpawnPosition - _actorNode.VfxSpawnPosition).Normalized()),
-                    GetDeathSquashMultiplier(creatureNode.Entity),
-                    IsAlabamaDrop ? creatureNode.Body.GetNodeOrNull<Marker2D>(AlabamaDropAnimation.GroundContactName)?.GlobalPosition : null));
+                    ResolveImpactDirection(_actorNode, creatureNode)));
             }
         }
     }
@@ -194,83 +186,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     {
         Vector2 focusPoint = _camera.GetLocalCenter(GetCameraFocus());
         return focusPoint;
-    }
-
-    private void ApplyDeathSquashes(IEnumerable<ImpactVisualSnapshot> snapshots)
-    {
-        if (IsRanged) return;
-        foreach (ImpactVisualSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Body)))
-        {
-            Vector2 multiplier = snapshot.SquashMultiplier;
-            if (multiplier == Vector2.One) continue;
-            if (!_deathSquashStates.TryGetValue(snapshot.Body, out DeathSquashVisualState? state))
-            {
-                state = CaptureDeathSquashState(snapshot, multiplier);
-                _deathSquashStates.Add(snapshot.Body, state);
-            }
-
-            ApplyDeathSquashTransform(state, multiplier, snapshot.Rotation);
-        }
-    }
-
-    private void RestoreDeathSquashes(bool preserveAlabamaContact = false)
-    {
-        foreach ((Node2D body, DeathSquashVisualState state) in _deathSquashStates)
-        {
-            if (preserveAlabamaContact && GodotObject.IsInstanceValid(body)
-                && body.GetNodeOrNull<Marker2D>(AlabamaDropAnimation.GroundContactName) != null)
-                continue;
-            if (GodotObject.IsInstanceValid(body))
-            {
-                body.Transform = state.OriginalTransform;
-            }
-        }
-
-        _deathSquashStates.Clear();
-    }
-
-    private static DeathSquashVisualState CaptureDeathSquashState(
-        ImpactVisualSnapshot snapshot,
-        Vector2 multiplier)
-    {
-        Node2D body = snapshot.Body;
-        Rect2 bounds = snapshot.Bounds.GetGlobalRect();
-        Vector2 axis = snapshot.Axis.LengthSquared() > 0.0001f
-            ? snapshot.Axis.Normalized() : Vector2.Right * snapshot.Direction;
-        Vector2 half = bounds.Size * 0.5f;
-        float distance = Math.Min(Math.Abs(axis.X) > 0.0001f ? half.X / Math.Abs(axis.X) : float.PositiveInfinity,
-            Math.Abs(axis.Y) > 0.0001f ? half.Y / Math.Abs(axis.Y) : float.PositiveInfinity);
-        Vector2 anchor = snapshot.GroundContact ?? (bounds.GetCenter() + axis * distance);
-        Transform2D world = body.GlobalTransform;
-        Transform2D inverse = world.AffineInverse();
-        Vector2[] corners = [bounds.Position, new(bounds.End.X, bounds.Position.Y), bounds.End,
-            new(bounds.Position.X, bounds.End.Y)];
-        return new DeathSquashVisualState(body, body.Transform,
-            body.TopLevel ? Transform2D.Identity : (body.GetParent() as CanvasItem)!.GetGlobalTransform(),
-            inverse * anchor, anchor, axis, corners.Select(point => inverse * point).ToArray(),
-            snapshot.GroundContact.HasValue ? float.PositiveInfinity : bounds.End.Y);
-    }
-
-    private static void ApplyDeathSquashTransform(
-        DeathSquashVisualState state,
-        Vector2 multiplier,
-        float rotation)
-    {
-        Node2D body = state.Body;
-        if (!GodotObject.IsInstanceValid(body))
-        {
-            return;
-        }
-
-        Transform2D basis = new(state.Axis.Angle(), Vector2.Zero);
-        Transform2D compression = basis * new Transform2D(0f, multiplier, 0f, Vector2.Zero) * basis.AffineInverse();
-        Transform2D world = compression
-            * new Transform2D(rotation - state.OriginalTransform.Rotation, Vector2.Zero)
-            * state.ParentToWorld * state.OriginalTransform;
-        world.Origin = state.AnchorWorld - world.BasisXform(state.AnchorInBody);
-        float bottom = state.Corners.Max(point => (world * point).Y);
-        world.Origin -= Vector2.Down * Math.Max(0f, bottom - state.SupportY);
-        body.Transform = state.ParentToWorld.AffineInverse() * world;
     }
 
     private void ArmDeathKicks(IEnumerable<Creature> targets)
@@ -360,9 +275,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
     }
 
-    private Vector2 GetDeathSquashMultiplier(Creature victim) =>
-        IsRanged || !AllowsDeathSquash(victim) ? Vector2.One : MeleeSquash(_previewProfile);
-
     private static void ApplyEnemyFlash(
         IEnumerable<ImpactVisualSnapshot> snapshots,
         float amount)
@@ -382,20 +294,9 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     {
         foreach (ImpactVisualSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Body)))
         {
-            Vector2 squashMultiplier = snapshot.SquashMultiplier;
-            float rotation = IsRanged || IsAlabamaDrop
-                ? snapshot.Rotation
-                : snapshot.Rotation + Mathf.DegToRad(EnhancedEnemyTiltDegrees * snapshot.Direction * amount);
-            if (_deathSquashStates.TryGetValue(snapshot.Body, out DeathSquashVisualState? state))
-            {
-                ApplyDeathSquashTransform(state, squashMultiplier, rotation);
-            }
-            else
-            {
-                if (squashMultiplier != Vector2.One)
-                    snapshot.Body.Scale = snapshot.Scale * squashMultiplier;
-                snapshot.Body.Rotation = rotation;
-            }
+            snapshot.Body.Rotation = IsRanged || IsAlabamaDrop
+                ? snapshot.Transform.Rotation
+                : snapshot.Transform.Rotation + Mathf.DegToRad(EnhancedEnemyTiltDegrees * snapshot.Direction * amount);
             snapshot.Body.Modulate = flash
                 ? snapshot.Modulate.Lerp(
                     new Color(1.8f, 1.8f, 1.8f, snapshot.Modulate.A),
@@ -451,20 +352,11 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
     }
 
-    private void RestoreImpactVisuals(IEnumerable<ImpactVisualSnapshot> snapshots)
+    private static void RestoreImpactVisuals(IEnumerable<ImpactVisualSnapshot> snapshots)
     {
         foreach (ImpactVisualSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Body)))
         {
-            if (_deathSquashStates.TryGetValue(snapshot.Body, out DeathSquashVisualState? state))
-            {
-                ApplyDeathSquashTransform(state, snapshot.SquashMultiplier, snapshot.Rotation);
-            }
-            else
-            {
-                snapshot.Body.Position = snapshot.Position;
-                snapshot.Body.Scale = snapshot.Scale;
-                snapshot.Body.Rotation = snapshot.Rotation;
-            }
+            snapshot.Body.Transform = snapshot.Transform;
             snapshot.Body.Modulate = snapshot.Modulate;
         }
     }
@@ -490,7 +382,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         float backdropFrom = _backdropIntensity;
         float actorReturnSeconds = AlabamaOwnsRecovery ? 0f : _continuousPlayerApproach
             ? IsAlabamaDrop ? AlabamaDropAnimation.StandUpDuration : NinjaSlayerAimPose.IsSomersaultHeavy(CardPlay?.Card)
-                ? SlowAttackAnimation.SomersaultHalfSeconds : CombatActionTimingRuntime.ReturnSeconds
+                ? SlowAttackAnimation.SomersaultHalfSeconds : _actorReturnSeconds
             : ReturnSeconds;
         float cameraReturnSeconds = ReturnSeconds;
         bool measuredCamera = _measuredCameraTask != null;
@@ -623,15 +515,9 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private readonly record struct ProcessModeSnapshot(Node Node, Node.ProcessModeEnum Mode);
     private readonly record struct ImpactVisualSnapshot(
         Node2D Body,
-        Vector2 Position,
-        Vector2 Scale,
-        float Rotation,
+        Transform2D Transform,
         Color Modulate,
-        Control Bounds,
-        float Direction,
-        Vector2 Axis,
-        Vector2 SquashMultiplier,
-        Vector2? GroundContact);
+        float Direction);
 
     private sealed class DeathKickVisual(Node2D body, Vector2 position, float direction)
     {
@@ -640,20 +526,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         public float Direction { get; } = direction;
         public bool Triggered { get; set; }
         public float JoinedAtReturnProgress { get; set; }
-    }
-
-    private sealed record DeathSquashVisualState(
-        Node2D Body,
-        Transform2D OriginalTransform,
-        Transform2D ParentToWorld,
-        Vector2 AnchorInBody,
-        Vector2 AnchorWorld,
-        Vector2 Axis,
-        Vector2[] Corners,
-        float SupportY)
-    {
-        internal Vector2 OriginalPosition => OriginalTransform.Origin;
-        internal Vector2 OriginalScale => OriginalTransform.Scale;
     }
 
     private static float EaseOut(float value) => 1f - (1f - value) * (1f - value);

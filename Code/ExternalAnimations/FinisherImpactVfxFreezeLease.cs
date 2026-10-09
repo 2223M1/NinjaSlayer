@@ -255,7 +255,7 @@ internal static class FinisherAttackVfxBaselineContext
         if (victim?.GetCreatureNode() is not { } focus || actor.GetCreatureNode() is not { } node) return;
         if (frame.Ranged == null)
         {
-            frame.Approach = FinisherApproach.Create(node, focus, FinisherTimeline.MeleeSquash(FinisherTimeline.PreviewProfile));
+            frame.Approach = FinisherApproach.Create(node, focus);
             bool isIai = trigger == "SlowAttack" && actor.Monster is NinjaSlayer.Monsters.DarkNinjaMonster;
             float gate = isIai
                 ? SlowAttackAnimation.IaiPeakSeconds : NinjaSlayer.Code.Combat.CombatActionTimingRuntime.TriggerSeconds(waitTime);

@@ -224,7 +224,7 @@ public sealed partial class ForestSawatariMonster : ModMonsterTemplate
         if (FinisherAttackCommandAdapter.PredictReverseVictim(command, [target], BambooDamage, hitCount)
             ?.GetCreatureNode() is { } focus && attacker.GetCreatureNode() is { } actorNode)
         {
-            approach = FinisherApproach.Create(actorNode, focus, FinisherTimeline.MeleeSquash(FinisherTimeline.PreviewProfile));
+            approach = FinisherApproach.Create(actorNode, focus);
             approach.Start(CombatActionTimingRuntime.VisualSeconds(SawatariBambooAnimation.CycleSeconds * SawatariBambooAnimation.PeakPhase));
             if (attackFrame != null)
                 NinjaSlayerDeathClassifier.TryStartPredictedReverseFinisher(attackFrame, target, [target]);

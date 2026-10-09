@@ -362,7 +362,8 @@ public partial class OrbContractRunner : Node
             }
             await VerifyCombatRegression();
             await VerifyRangedSources();
-            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_FINISHERS") == "1")
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_FINISHERS") == "1"
+                || System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_ATTACK_RECOVERY") == "1")
             {
                 await VerifyAttackCadence();
                 await VerifyAimPose();

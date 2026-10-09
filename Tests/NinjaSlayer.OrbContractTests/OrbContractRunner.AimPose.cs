@@ -153,6 +153,15 @@ public partial class OrbContractRunner
             actor.Position = Vector2.Zero;
             target.Position = new(700f, 0f);
             GD.Print("PASS finisher combo: opening peak, mirrored visual-only retreat, repeat endpoint and cleanup.");
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_ATTACK_RECOVERY") == "1")
+            {
+                object lease = AccessTools.Method(typeof(ShurikenOrb).Assembly.GetType(
+                    "NinjaSlayer.Code.Lifecycle.RapidCardPresentationContext", true)!, "Begin").Invoke(null, [combat.Card()])!;
+                pose.SetProcess(false);
+                try { await VerifyStandardComboRecovery(combat, pose); }
+                finally { AccessTools.Method(lease.GetType(), "RestoreCallerContext").Invoke(lease, null); }
+                return;
+            }
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_FINISHERS") == "1") return;
             await VerifyHeldShurikenInertia(combat, actor, anchor);
             Require(pose.GetType() == poseType, "The packaged AimPose script failed to bind.");

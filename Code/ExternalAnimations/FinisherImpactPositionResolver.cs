@@ -1,7 +1,6 @@
 using Godot;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Nodes.Combat;
-using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Nodes;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -11,10 +10,8 @@ internal static class FinisherImpactPositionResolver
     public static float ResolveImpactX(
         NCreature actor,
         NCreature target,
-        Vector2 squashMultiplier,
         float approachGap)
     {
-        if (!FinisherTimeline.AllowsDeathSquash(target.Entity)) squashMultiplier = Vector2.One;
         // Only Sawatari has a separately assembled, changing weapon silhouette.
         Transform2D canvasToParent = actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse();
         float ContactX(float nearEdge, float direction)
@@ -29,42 +26,20 @@ internal static class FinisherImpactPositionResolver
             return nearEdge - direction * (Math.Max(0f, approachGap) + reach);
         }
 
-        float Fallback() => ContactX(ResolveFallback(actor, target, squashMultiplier, 0f),
+        float Fallback() => ContactX(ResolveFallback(actor, target, 0f),
             ResolveDirection(actor.Position.X, target.Position.X, actor.Entity.Side == CombatSide.Player ? 1f : -1f));
 
         try
         {
-            Node2D body = target.Visuals.GetCurrentBody();
             Control bounds = target.Visuals.Bounds;
             CanvasItem? actorParent = actor.GetParent() as CanvasItem;
-            if (!GodotObject.IsInstanceValid(body)
-                || !GodotObject.IsInstanceValid(bounds)
+            if (!GodotObject.IsInstanceValid(bounds)
                 || actorParent == null
                 || !GodotObject.IsInstanceValid(actorParent)
                 || bounds.Size.X <= 0f
                 || bounds.Size.Y <= 0f)
             {
                 return Fallback();
-            }
-
-            Transform2D bodyCanvas = body.GetGlobalTransformWithCanvas();
-            Transform2D boundsCanvas = bounds.GetGlobalTransformWithCanvas();
-            Transform2D bodyCanvasInverse = bodyCanvas.AffineInverse();
-            var predictedBodyCanvas = new Transform2D(
-                bodyCanvas.X * squashMultiplier.X,
-                bodyCanvas.Y * squashMultiplier.Y,
-                bodyCanvas.Origin);
-
-            if (FinisherSquashAnchorPolicy.Resolve(
-                    squashMultiplier.X,
-                    squashMultiplier.Y)
-                == FinisherSquashAnchorKind.BottomCenter)
-            {
-                Vector2 anchorCanvas = boundsCanvas
-                    * new Vector2(bounds.Size.X * 0.5f, bounds.Size.Y);
-                Vector2 anchorInBody = bodyCanvasInverse * anchorCanvas;
-                predictedBodyCanvas.Origin = anchorCanvas
-                    - predictedBodyCanvas.BasisXform(anchorInBody);
             }
 
             Transform2D canvasToActorParent = actorParent
@@ -81,10 +56,8 @@ internal static class FinisherImpactPositionResolver
             float maximumX = float.NegativeInfinity;
             foreach (Vector2 corner in corners)
             {
-                Vector2 currentCanvas = boundsCanvas * corner;
-                Vector2 bodyLocal = bodyCanvasInverse * currentCanvas;
                 Vector2 predictedParent = canvasToActorParent
-                    * (predictedBodyCanvas * bodyLocal);
+                    * (bounds.GetGlobalTransformWithCanvas() * corner);
                 minimumX = Math.Min(minimumX, predictedParent.X);
                 maximumX = Math.Max(maximumX, predictedParent.X);
             }
@@ -109,12 +82,10 @@ internal static class FinisherImpactPositionResolver
     private static float ResolveFallback(
         NCreature actor,
         NCreature target,
-        Vector2 squashMultiplier,
         float approachGap)
     {
         float targetHalfWidth = target.Visuals.Bounds.Size.X
             * Mathf.Abs(target.Visuals.Scale.X)
-            * Math.Max(0f, squashMultiplier.X)
             * 0.5f;
         float fallbackDirection = actor.Entity.Side == CombatSide.Player ? 1f : -1f;
         float direction = ResolveDirection(

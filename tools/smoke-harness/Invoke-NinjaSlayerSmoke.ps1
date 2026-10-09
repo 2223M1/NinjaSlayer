@@ -537,7 +537,7 @@ try {
         @('feedback119.fresh', 'feedback119.process-reload', 'feedback119.intermission-exit', 'feedback119.rewards-next-rooms', 'feedback119.reload.Normal', 'feedback119.reload.Fast', 'feedback119.reload.Instant', 'feedback119.completed')
     }
     elseif ($Mode -eq 'FeedbackCombat') {
-        @('feedback119.death.Normal.damage', 'feedback119.death.Normal.swallow', 'feedback119.death.Fast.damage', 'feedback119.death.Fast.swallow', 'feedback119.death.Instant.damage', 'feedback119.death.Instant.swallow', 'feedback119.ink-reflection', 'feedback119.vantom-kill', 'feedback119.combat-completed')
+        @('feedback119.death.Normal.damage', 'feedback119.death.Normal.swallow', 'feedback119.death.Fast.damage', 'feedback119.death.Fast.swallow', 'feedback119.death.Instant.damage', 'feedback119.death.Instant.swallow', 'feedback119.ink-reflection', 'feedback119.vantom-kill', 'feedback119.victim-shape.Normal.False', 'feedback119.victim-shape.Normal.True', 'feedback119.victim-shape.Fast.False', 'feedback119.victim-shape.Fast.True', 'feedback119.victim-shape.Instant.False', 'feedback119.victim-shape.Instant.True', 'feedback119.combat-completed')
     }
     elseif ($Mode -eq 'StrikeSynergy') {
         @('strike-synergy.completed')
@@ -612,6 +612,8 @@ try {
         mode = if ($DevelopmentPackage) { "development-$Mode" } else { switch ($Mode) {
             'FullAutoSlay' { 'singleplayer-full-autoslay' }
             'TelemetryLoss' { 'singleplayer-telemetry-loss' }
+            'Feedback119' { 'feedback119-event-reload' }
+            'FeedbackCombat' { 'feedback119-combat-and-victim-shapes' }
             'ModCompatibility' { 'singleplayer-mod-compatibility' }
             'CombatRegression' { 'combat-regression' }
             'Release034' { 'release034' }

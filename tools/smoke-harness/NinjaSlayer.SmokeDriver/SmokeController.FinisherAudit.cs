@@ -24,6 +24,7 @@ internal sealed partial class SmokeController
         private readonly JsonArray _auditMotionEvents = [];
         private readonly JsonArray _auditDeathEvents = [];
         private readonly Dictionary<Creature, NCreature> _auditNodes = [];
+        private readonly Dictionary<Creature, Transform2D> _auditInitialBodies = [];
         private Transform2D _auditRender = Transform2D.Identity;
 
         private async Task CompanionFacingPreview()
@@ -166,7 +167,10 @@ internal sealed partial class SmokeController
                 .Where(entry => entry.Node != null && GodotObject.IsInstanceValid(entry.Node))
                 .ToDictionary(entry => entry.Creature, entry => entry.Node!.Body.Transform);
             foreach (Creature creature in initialBodies.Keys)
+            {
                 _auditNodes[creature] = creature.GetCreatureNode()!;
+                _auditInitialBodies[creature] = initialBodies[creature];
+            }
             AlabamaDeathObservationPatch.Record = (name, node) =>
             {
                 if (_start == 0 || !initialBodies.TryGetValue(node.Entity, out Transform2D initial)) return;
@@ -264,24 +268,29 @@ internal sealed partial class SmokeController
             row["ordinaryTravel"] = new JsonObject { ["x"] = travel.X, ["y"] = travel.Y };
             var registry = ProductType("NinjaSlayer.Code.ExternalAnimations.FinisherSessionRegistry");
             if (InvokeMethod(registry, null, "GetActiveSession") is not { } session) return;
-            var squashes = (System.Collections.IDictionary)AccessTools.Field(session.GetType(), "_deathSquashStates").GetValue(session)!;
-            var ratios = new JsonArray();
-            foreach (System.Collections.DictionaryEntry entry in squashes)
-            {
-                var body = (Node2D)entry.Key;
-                if (!GodotObject.IsInstanceValid(body)) continue;
-                Transform2D original = (Transform2D)AccessTools.Property(entry.Value!.GetType(), "OriginalTransform").GetValue(entry.Value)!;
-                ratios.Add(body.Transform.Determinant() / original.Determinant());
-            }
             object ledger = AccessTools.Field(session.GetType(), "_ledger").GetValue(session)!;
             Creature[] victims = ((IEnumerable<Creature>)AccessTools.Property(ledger.GetType(), "Victims").GetValue(ledger)!).ToArray();
+            var victimShapes = new JsonArray();
+            foreach (Creature victim in victims)
+            {
+                if (!_auditInitialBodies.TryGetValue(victim, out Transform2D initial)
+                    || !_auditNodes.TryGetValue(victim, out NCreature? victimNode)
+                    || !GodotObject.IsInstanceValid(victimNode.Body)) continue;
+                Node2D body = victimNode.Body;
+                bool alabama = body.GetNodeOrNull<Marker2D>("AlabamaGroundContact") != null;
+                victimShapes.Add(new JsonObject {
+                    ["xRatio"] = body.Transform.X.Length() / initial.X.Length(),
+                    ["yRatio"] = body.Transform.Y.Length() / initial.Y.Length(),
+                    ["alabama"] = alabama,
+                    ["nativeMonster"] = victim.Monster != null
+                        && victim.Monster.GetType().Assembly != typeof(ForestSawatariMonster).Assembly
+                });
+            }
             var actorNode = (MegaCrit.Sts2.Core.Nodes.Combat.NCreature)AccessTools.Field(session.GetType(), "_actorNode").GetValue(session)!;
             row["impactPose"] = new JsonObject
             {
                 ["actorFrozen"] = !actorNode.CanProcess(),
-                ["squashAreaRatios"] = ratios,
-                ["squashEligibleVictims"] = victims.Count(v => v.Player?.Character is not NinjaSlayer.Content.INinjaSlayerCharacter
-                    && v.Monster?.GetType().Assembly != typeof(ForestSawatariMonster).Assembly)
+                ["victimShapes"] = victimShapes
             };
             Vector2 combo = (Vector2)AccessTools.Field(session.GetType(), "_comboTravel").GetValue(session)!;
             row["comboTravel"] = new JsonObject { ["x"] = combo.X, ["y"] = combo.Y };
@@ -355,11 +364,12 @@ internal sealed partial class SmokeController
                     .ToArray();
                 Require(heldFrames.Length > 0 && heldFrames.All(e => e!["impactPose"]!["actorFrozen"]!.GetValue<bool>()),
                     "A combo actor continued its recovery during the shared Doom hold.");
-                bool ranged = impact["ranged"]!.GetValue<bool>();
-                Require(heldFrames.All(e => e!["impactPose"]!["squashAreaRatios"] is JsonArray ratios
-                    && (ranged || e["impactPose"]!["squashEligibleVictims"]!.GetValue<int>() == 0 ? ratios.Count == 0 : ratios.Count > 0
-                        && ratios.All(r => Math.Abs(r!.GetValue<float>() - .60f) < .005f))),
-                    "Finisher squash ignored ranged/mod-character exclusions or native melee feedback.");
+                Require(heldFrames.All(e => e!["impactPose"]!["victimShapes"] is JsonArray shapes
+                    && shapes.Count > 0 && shapes.All(shape => {
+                        bool compressed = shape!["alabama"]!.GetValue<bool>() && shape["nativeMonster"]!.GetValue<bool>();
+                        return Math.Abs(shape["xRatio"]!.GetValue<float>() - (compressed ? 1.2f : 1f)) < .005f
+                            && Math.Abs(shape["yRatio"]!.GetValue<float>() - (compressed ? .55f : 1f)) < .005f;
+                    })), "Finisher changed victim proportions outside Alabama's authored compression.");
             }
         }
     }

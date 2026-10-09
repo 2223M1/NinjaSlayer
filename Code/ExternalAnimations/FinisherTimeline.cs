@@ -1,6 +1,4 @@
 using Godot;
-using MegaCrit.Sts2.Core.Entities.Creatures;
-using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -39,12 +37,4 @@ internal static class FinisherTimeline
     public const float EnhancedEnemyTiltDegrees = 3f;
     public const float ReverseVictimRotationDegrees = 15f;
     public const float ImpactVfxTargetMargin = 160f;
-    public static readonly Vector2 JumpDeathSquash = new(1.2f, 0.55f);
-    public static readonly Vector2 DefaultDeathSquash = new(0.55f, 1.2f);
-    internal static Vector2 MeleeSquash(FinisherPreviewProfile profile) =>
-        profile == FinisherPreviewProfile.A ? DefaultDeathSquash : new(0.50f, 1.20f);
-
-    internal static bool AllowsDeathSquash(Creature victim) =>
-        victim.Player?.Character is not INinjaSlayerCharacter
-        && victim.Monster?.GetType().Assembly != typeof(FinisherTimeline).Assembly;
 }

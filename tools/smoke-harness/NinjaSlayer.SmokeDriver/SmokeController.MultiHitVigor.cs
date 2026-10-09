@@ -93,6 +93,8 @@ internal sealed partial class SmokeController
         var actor = NCombatRoom.Instance!.GetCreatureNode(player.Creature)!;
         var baselineRoot = actor.GetGlobalTransform();
         var baselineVisuals = actor.Visuals.Transform;
+        Node2D aimPose = actor.Visuals.GetNode<Node2D>("%AimPose");
+        var baselinePose = aimPose.Transform;
         var observer = new Harmony("NinjaSlayer.SmokeDriver.MultiHitVigor");
         observer.Patch(AccessTools.Method(typeof(Hook), nameof(Hook.BeforeAttack)),
             prefix: new HarmonyMethod(typeof(MultiHitVigorProbe), nameof(MultiHitVigorProbe.BeforeAttack)));
@@ -103,9 +105,9 @@ internal sealed partial class SmokeController
         try
         {
             foreach (bool upgraded in new[] { false, true })
-            foreach (var speed in new[] { FastModeType.Normal, FastModeType.Fast })
+            foreach (var speed in new[] { FastModeType.Normal, FastModeType.Fast, FastModeType.Instant })
             foreach (var model in new CardModel[] { ModelDb.Card<StormFist>(), ModelDb.Card<DragonRoundhouseKick>(),
-                         ModelDb.Card<PalmThrust>(), ModelDb.Card<PressTheAttack>(), ModelDb.Card<AntiAirBangBangFist>(), ModelDb.Card<TornadoFist>() })
+                         ModelDb.Card<PalmThrust>(), ModelDb.Card<PressTheAttack>(), ModelDb.Card<Endurance>(), ModelDb.Card<AntiAirBangBangFist>(), ModelDb.Card<TornadoFist>() })
             {
                 SaveManager.Instance.PrefsSave.FastMode = speed;
                 foreach (var old in player.Piles.Where(p => p.Type is PileType.Hand or PileType.Draw or PileType.Discard)
@@ -116,6 +118,8 @@ internal sealed partial class SmokeController
                 await CardPileCmd.Add(card, PileType.Hand);
                 player.PlayerCombatState!.LoseEnergy(player.PlayerCombatState.Energy);
                 player.PlayerCombatState.GainEnergy(4);
+                if (player.Creature.GetPower<NinjaSlayer.Powers.KaratePower>() is { } karate)
+                    await PowerCmd.Remove(karate);
                 await PowerCmd.Apply<VigorPower>(new MegaCrit.Sts2.Core.GameActions.Multiplayer.BlockingPlayerChoiceContext(),
                     player.Creature, 7, player.Creature, null);
                 MultiHitVigorProbe.Card = card;
@@ -128,9 +132,9 @@ internal sealed partial class SmokeController
                 if (action.Exception != null) throw action.Exception;
                 var hits = MultiHitVigorProbe.Commands.SelectMany(a => a.Results).ToArray();
                 int expectedHits = card switch { StormFist => 4, DragonRoundhouseKick => 2,
-                    PalmThrust => upgraded ? 3 : 2, PressTheAttack => 3, AntiAirBangBangFist => 3, TornadoFist => 8, _ => throw new InvalidOperationException() };
+                    PalmThrust => upgraded ? 3 : 2, PressTheAttack => 1, Endurance => 3, AntiAirBangBangFist => 3, TornadoFist => 8, _ => throw new InvalidOperationException() };
                 int damage = 10 + (card switch { StormFist => upgraded ? 14 : 10, DragonRoundhouseKick => upgraded ? 9 : 7,
-                    PalmThrust => 6, PressTheAttack => upgraded ? 6 : 5, AntiAirBangBangFist => upgraded ? 11 : 8, TornadoFist => upgraded ? 6 : 4,
+                    PalmThrust => 6, PressTheAttack => upgraded ? 10 : 7, Endurance => upgraded ? 5 : 4, AntiAirBangBangFist => upgraded ? 11 : 8, TornadoFist => upgraded ? 6 : 4,
                     _ => throw new InvalidOperationException() });
                 int targets = card.TargetType == TargetType.AllEnemies ? combat.HittableEnemies.Count : 1;
                 Require(MultiHitVigorProbe.Commands.Count == 1 && hits.Length == expectedHits
@@ -139,7 +143,21 @@ internal sealed partial class SmokeController
                 Require(MultiHitVigorProbe.AnimationGates == expectedHits
                     && MultiHitVigorProbe.DamageGates.SequenceEqual(Enumerable.Range(1, expectedHits).SelectMany(i => Enumerable.Repeat(i, targets))),
                     "Damage did not follow exactly one completed animation hit gate per native hit.");
-                await WaitFrames(45);
+                if (card is Endurance)
+                    Require(player.Creature.GetPowerAmount<NinjaSlayer.Powers.KaratePower>() == (upgraded ? 5 : 4)
+                        && !player.Creature.HasPower<NinjaSlayer.Powers.EndurancePower>(), "Endurance must grant Karate after its hits without its former delayed power.");
+                if (card is PalmThrust or Endurance && speed != FastModeType.Instant)
+                {
+                    // The native card action has completed; its visible tail must
+                    // still move for longer than the former 0.1s return.
+                    await _tree.ToSignal(_tree.CreateTimer(.2), SceneTreeTimer.SignalName.Timeout);
+                    Require(!aimPose.Transform.IsEqualApprox(baselinePose), "The settled attack snapped to idle before its vanilla visual tail finished.");
+                    _checkpoints.Write("attack-tail.after-settlement", data: new JsonObject {
+                        ["card"] = card.Id.ToString(), ["speed"] = speed.ToString(), ["upgraded"] = upgraded });
+                }
+                await WaitUntilAsync(() => actor.GetGlobalTransform().IsEqualApprox(baselineRoot)
+                    && actor.Visuals.Transform.IsEqualApprox(baselineVisuals) && aimPose.Transform.IsEqualApprox(baselinePose),
+                    "Attack visual tail did not return to idle.");
                 Require(actor.GetGlobalTransform().IsEqualApprox(baselineRoot) && actor.Visuals.Transform.IsEqualApprox(baselineVisuals),
                     "Multi-hit attack did not restore the body/root pose.");
                 _checkpoints.Write("multihit.resolved", data: new JsonObject { ["card"] = card.Id.ToString(),
