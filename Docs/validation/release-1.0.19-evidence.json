@@ -1,0 +1,1006 @@
+{
+  "version": "1.0.19",
+  "sourceRevision": "a5b1cead30f7d7e1f96eae903285abe653f1ade3",
+  "verifiedAtUtc": "2026-10-09T05:05:31.164Z",
+  "pullRequests": [
+    195,
+    196,
+    197
+  ],
+  "ci": {
+    "conclusion": "success",
+    "databaseId": 37885137730,
+    "headSha": "a5b1cead30f7d7e1f96eae903285abe653f1ade3",
+    "status": "completed",
+    "url": "https://github.com/2223M1/NinjaSlayer/actions/runs/37885137730"
+  },
+  "realClientValidationPolicy": "Isolated Windows preview client, exact published unified package.",
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "3e94d549098875b1c9d221ef8c066db91dfc3a8a6e1a3114cd4dbd9c67ecde6f",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "225af5a58a1dfb6d3ee5bc058084bbdfa3eceac94527943d0e151923c2940825",
+    "7923d668705a7676d613af57adb9eececf83c44955d0eb86478f7ab8d155fd56",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "f48da8e61ed564c3fae769bd814e554f741b99c177472b726a057bff29d37d1e",
+    "f3060a2e47ab2bc15cc8e700d23de0c6fbf79b8b3d44ce1e8c60a48a188f71bb",
+    "a42269faf5967b7a268bac55a8a4e72f4abb5221ae80f094c8745fab96e58ef7",
+    "6f4cef7facc818d7327df740e06b43e5982908032b1c0d21fe899326baa1f26f",
+    "152baf299bab67b8b705790f2a5522a864f0e9f333377652b8a1f65dfc641297"
+  ],
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+      "bytes": 317440
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "sha256": "3e94d549098875b1c9d221ef8c066db91dfc3a8a6e1a3114cd4dbd9c67ecde6f",
+      "bytes": 2215424
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "sha256": "225af5a58a1dfb6d3ee5bc058084bbdfa3eceac94527943d0e151923c2940825",
+      "bytes": 126464
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "sha256": "7923d668705a7676d613af57adb9eececf83c44955d0eb86478f7ab8d155fd56",
+      "bytes": 2219008
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+      "bytes": 1097
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "sha256": "f48da8e61ed564c3fae769bd814e554f741b99c177472b726a057bff29d37d1e",
+      "bytes": 522
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "sha256": "f3060a2e47ab2bc15cc8e700d23de0c6fbf79b8b3d44ce1e8c60a48a188f71bb",
+      "bytes": 24576
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "sha256": "a42269faf5967b7a268bac55a8a4e72f4abb5221ae80f094c8745fab96e58ef7",
+      "bytes": 363
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "sha256": "6f4cef7facc818d7327df740e06b43e5982908032b1c0d21fe899326baa1f26f",
+      "bytes": 211570472
+    },
+    {
+      "path": "SHA256SUMS",
+      "sha256": "152baf299bab67b8b705790f2a5522a864f0e9f333377652b8a1f65dfc641297",
+      "bytes": 1008
+    }
+  ],
+  "previewAttestations": [
+    {
+      "schemaVersion": 6,
+      "candidateSha": "a5b1cead30f7d7e1f96eae903285abe653f1ade3",
+      "bundleVersion": "1.0.19",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [],
+      "bundleSha256": "152baf299bab67b8b705790f2a5522a864f0e9f333377652b8a1f65dfc641297",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "feedback119-event-reload",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-09T04:47:38.0650050+00:00"
+    },
+    {
+      "schemaVersion": 6,
+      "candidateSha": "a5b1cead30f7d7e1f96eae903285abe653f1ade3",
+      "bundleVersion": "1.0.19",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [],
+      "bundleSha256": "152baf299bab67b8b705790f2a5522a864f0e9f333377652b8a1f65dfc641297",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "feedback119-combat-and-victim-shapes",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-09T04:51:07.7954517+00:00"
+    },
+    {
+      "schemaVersion": 6,
+      "candidateSha": "a5b1cead30f7d7e1f96eae903285abe653f1ade3",
+      "bundleVersion": "1.0.19",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [],
+      "bundleSha256": "152baf299bab67b8b705790f2a5522a864f0e9f333377652b8a1f65dfc641297",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "singleplayer-double-boss-reload",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-09T04:53:11.5186293+00:00"
+    },
+    {
+      "schemaVersion": 6,
+      "candidateSha": "a5b1cead30f7d7e1f96eae903285abe653f1ade3",
+      "bundleVersion": "1.0.19",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [],
+      "bundleSha256": "152baf299bab67b8b705790f2a5522a864f0e9f333377652b8a1f65dfc641297",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "strike-synergy",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-09T04:54:02.6764621+00:00"
+    },
+    {
+      "schemaVersion": 6,
+      "candidateSha": "a5b1cead30f7d7e1f96eae903285abe653f1ade3",
+      "bundleVersion": "1.0.19",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [],
+      "bundleSha256": "152baf299bab67b8b705790f2a5522a864f0e9f333377652b8a1f65dfc641297",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "release113",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-09T04:55:54.8401218+00:00"
+    },
+    {
+      "schemaVersion": 6,
+      "candidateSha": "a5b1cead30f7d7e1f96eae903285abe653f1ade3",
+      "bundleVersion": "1.0.19",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [],
+      "bundleSha256": "152baf299bab67b8b705790f2a5522a864f0e9f333377652b8a1f65dfc641297",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "multihit-vigor",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-09T04:58:09.0373056+00:00"
+    },
+    {
+      "schemaVersion": 6,
+      "candidateSha": "a5b1cead30f7d7e1f96eae903285abe653f1ade3",
+      "bundleVersion": "1.0.19",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [],
+      "bundleSha256": "152baf299bab67b8b705790f2a5522a864f0e9f333377652b8a1f65dfc641297",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "runtime-content-export",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-09T05:02:36.8320825+00:00"
+    }
+  ],
+  "additionalValidation": {
+    "victimShapes": [
+      {
+        "speed": "Normal",
+        "alabama": false,
+        "samples": 15,
+        "shapeError": 0,
+        "headFloorError": 0,
+        "headMeshFloorError": 0,
+        "windupCompressed": false
+      },
+      {
+        "speed": "Normal",
+        "alabama": true,
+        "samples": 15,
+        "shapeError": 0,
+        "headFloorError": 0,
+        "headMeshFloorError": 0,
+        "windupCompressed": true
+      },
+      {
+        "speed": "Fast",
+        "alabama": false,
+        "samples": 15,
+        "shapeError": 0,
+        "headFloorError": 0,
+        "headMeshFloorError": 0,
+        "windupCompressed": false
+      },
+      {
+        "speed": "Fast",
+        "alabama": true,
+        "samples": 14,
+        "shapeError": 0,
+        "headFloorError": 0,
+        "headMeshFloorError": 0,
+        "windupCompressed": true
+      },
+      {
+        "speed": "Instant",
+        "alabama": false,
+        "samples": 15,
+        "shapeError": 0,
+        "headFloorError": 0,
+        "headMeshFloorError": 0,
+        "windupCompressed": false
+      },
+      {
+        "speed": "Instant",
+        "alabama": true,
+        "samples": 14,
+        "shapeError": 0,
+        "headFloorError": 0,
+        "headMeshFloorError": 0,
+        "windupCompressed": true
+      }
+    ],
+    "renderedCardCases": [
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+        "upgraded": false,
+        "speed": "Normal",
+        "hits": 4,
+        "targetsPerHit": 1,
+        "damagePerTarget": 20,
+        "animationGates": 4
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+        "upgraded": false,
+        "speed": "Normal",
+        "hits": 2,
+        "targetsPerHit": 2,
+        "damagePerTarget": 17,
+        "animationGates": 2
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "upgraded": false,
+        "speed": "Normal",
+        "hits": 2,
+        "targetsPerHit": 1,
+        "damagePerTarget": 16,
+        "animationGates": 2
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PRESS_THE_ATTACK",
+        "upgraded": false,
+        "speed": "Normal",
+        "hits": 1,
+        "targetsPerHit": 1,
+        "damagePerTarget": 17,
+        "animationGates": 1
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "upgraded": false,
+        "speed": "Normal",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 14,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+        "upgraded": false,
+        "speed": "Normal",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 18,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+        "upgraded": false,
+        "speed": "Normal",
+        "hits": 8,
+        "targetsPerHit": 2,
+        "damagePerTarget": 14,
+        "animationGates": 8
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+        "upgraded": false,
+        "speed": "Fast",
+        "hits": 4,
+        "targetsPerHit": 1,
+        "damagePerTarget": 20,
+        "animationGates": 4
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+        "upgraded": false,
+        "speed": "Fast",
+        "hits": 2,
+        "targetsPerHit": 2,
+        "damagePerTarget": 17,
+        "animationGates": 2
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "upgraded": false,
+        "speed": "Fast",
+        "hits": 2,
+        "targetsPerHit": 1,
+        "damagePerTarget": 16,
+        "animationGates": 2
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PRESS_THE_ATTACK",
+        "upgraded": false,
+        "speed": "Fast",
+        "hits": 1,
+        "targetsPerHit": 1,
+        "damagePerTarget": 17,
+        "animationGates": 1
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "upgraded": false,
+        "speed": "Fast",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 14,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+        "upgraded": false,
+        "speed": "Fast",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 18,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+        "upgraded": false,
+        "speed": "Fast",
+        "hits": 8,
+        "targetsPerHit": 2,
+        "damagePerTarget": 14,
+        "animationGates": 8
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+        "upgraded": false,
+        "speed": "Instant",
+        "hits": 4,
+        "targetsPerHit": 1,
+        "damagePerTarget": 20,
+        "animationGates": 4
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+        "upgraded": false,
+        "speed": "Instant",
+        "hits": 2,
+        "targetsPerHit": 2,
+        "damagePerTarget": 17,
+        "animationGates": 2
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "upgraded": false,
+        "speed": "Instant",
+        "hits": 2,
+        "targetsPerHit": 1,
+        "damagePerTarget": 16,
+        "animationGates": 2
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PRESS_THE_ATTACK",
+        "upgraded": false,
+        "speed": "Instant",
+        "hits": 1,
+        "targetsPerHit": 1,
+        "damagePerTarget": 17,
+        "animationGates": 1
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "upgraded": false,
+        "speed": "Instant",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 14,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+        "upgraded": false,
+        "speed": "Instant",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 18,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+        "upgraded": false,
+        "speed": "Instant",
+        "hits": 8,
+        "targetsPerHit": 2,
+        "damagePerTarget": 14,
+        "animationGates": 8
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+        "upgraded": true,
+        "speed": "Normal",
+        "hits": 4,
+        "targetsPerHit": 1,
+        "damagePerTarget": 24,
+        "animationGates": 4
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+        "upgraded": true,
+        "speed": "Normal",
+        "hits": 2,
+        "targetsPerHit": 2,
+        "damagePerTarget": 19,
+        "animationGates": 2
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "upgraded": true,
+        "speed": "Normal",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 16,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PRESS_THE_ATTACK",
+        "upgraded": true,
+        "speed": "Normal",
+        "hits": 1,
+        "targetsPerHit": 1,
+        "damagePerTarget": 20,
+        "animationGates": 1
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "upgraded": true,
+        "speed": "Normal",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 15,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+        "upgraded": true,
+        "speed": "Normal",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 21,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+        "upgraded": true,
+        "speed": "Normal",
+        "hits": 8,
+        "targetsPerHit": 2,
+        "damagePerTarget": 16,
+        "animationGates": 8
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+        "upgraded": true,
+        "speed": "Fast",
+        "hits": 4,
+        "targetsPerHit": 1,
+        "damagePerTarget": 24,
+        "animationGates": 4
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+        "upgraded": true,
+        "speed": "Fast",
+        "hits": 2,
+        "targetsPerHit": 2,
+        "damagePerTarget": 19,
+        "animationGates": 2
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "upgraded": true,
+        "speed": "Fast",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 16,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PRESS_THE_ATTACK",
+        "upgraded": true,
+        "speed": "Fast",
+        "hits": 1,
+        "targetsPerHit": 1,
+        "damagePerTarget": 20,
+        "animationGates": 1
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "upgraded": true,
+        "speed": "Fast",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 15,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+        "upgraded": true,
+        "speed": "Fast",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 21,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+        "upgraded": true,
+        "speed": "Fast",
+        "hits": 8,
+        "targetsPerHit": 2,
+        "damagePerTarget": 16,
+        "animationGates": 8
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+        "upgraded": true,
+        "speed": "Instant",
+        "hits": 4,
+        "targetsPerHit": 1,
+        "damagePerTarget": 24,
+        "animationGates": 4
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+        "upgraded": true,
+        "speed": "Instant",
+        "hits": 2,
+        "targetsPerHit": 2,
+        "damagePerTarget": 19,
+        "animationGates": 2
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "upgraded": true,
+        "speed": "Instant",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 16,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PRESS_THE_ATTACK",
+        "upgraded": true,
+        "speed": "Instant",
+        "hits": 1,
+        "targetsPerHit": 1,
+        "damagePerTarget": 20,
+        "animationGates": 1
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "upgraded": true,
+        "speed": "Instant",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 15,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+        "upgraded": true,
+        "speed": "Instant",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 21,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+        "upgraded": true,
+        "speed": "Instant",
+        "hits": 8,
+        "targetsPerHit": 2,
+        "damagePerTarget": 16,
+        "animationGates": 8
+      }
+    ],
+    "renderedSettledAttackTails": [
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "speed": "Normal",
+        "upgraded": false
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "speed": "Normal",
+        "upgraded": false
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "speed": "Fast",
+        "upgraded": false
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "speed": "Fast",
+        "upgraded": false
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "speed": "Normal",
+        "upgraded": true
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "speed": "Normal",
+        "upgraded": true
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "speed": "Fast",
+        "upgraded": true
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "speed": "Fast",
+        "upgraded": true
+      }
+    ],
+    "vanillaAttackClips": {
+      "hosts": [
+        "0.107.1",
+        "0.111.0"
+      ],
+      "attack": 1.1666666666666667,
+      "heavy": 1.5333333333333334,
+      "idleMix": 0.05,
+      "damageWaitUnchanged": true
+    },
+    "userCardEdits": {
+      "tauntBlock": [
+        15,
+        18
+      ],
+      "endurance": {
+        "cost": 2,
+        "damage": [
+          4,
+          5
+        ],
+        "hits": 3,
+        "karate": [
+          4,
+          5
+        ]
+      },
+      "pressTheAttack": {
+        "cost": 1,
+        "damage": [
+          7,
+          10
+        ],
+        "hits": 1,
+        "draw": [
+          4,
+          5
+        ]
+      }
+    }
+  },
+  "validation": {
+    "logicTests": 371,
+    "repository": true,
+    "compatibility": true,
+    "buildBoundaries": true,
+    "dualHostDllContracts": true,
+    "dualHostPatchTransactions": true,
+    "dualHostTwoProcessEnet": true,
+    "nativeFeedbackSaveRarities": {
+      "stable": 399,
+      "preview": 393
+    },
+    "publicFeedbackAudited": 117,
+    "autoAnthony": "0.3.138",
+    "previewRealClient": true,
+    "localizationLanguages": [
+      "deu",
+      "eng",
+      "esp",
+      "fra",
+      "ind",
+      "ita",
+      "jpn",
+      "kor",
+      "pol",
+      "ptb",
+      "rus",
+      "spa",
+      "tha",
+      "tur",
+      "zhs",
+      "zht"
+    ],
+    "nativeStrikeTags": true,
+    "renderedStrikeCases": [
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STRIKE_NINJA_SLAYER",
+        "upgraded": false,
+        "speed": "Normal",
+        "damage": 10
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_CHOP_STRIKE",
+        "upgraded": false,
+        "speed": "Normal",
+        "damage": 15
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STRIKE_STRIKE",
+        "upgraded": false,
+        "speed": "Normal",
+        "damage": 12
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STRIKE_STRIKE",
+        "upgraded": false,
+        "speed": "Normal",
+        "damage": 12
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_CHOP",
+        "upgraded": false,
+        "speed": "Normal",
+        "damage": 4
+      },
+      {
+        "card": "CARD.PERFECTED_STRIKE",
+        "upgraded": false,
+        "speed": "Normal",
+        "damage": 22
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STRIKE_NINJA_SLAYER",
+        "upgraded": true,
+        "speed": "Normal",
+        "damage": 13
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_CHOP_STRIKE",
+        "upgraded": true,
+        "speed": "Normal",
+        "damage": 17
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STRIKE_STRIKE",
+        "upgraded": true,
+        "speed": "Normal",
+        "damage": 14
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STRIKE_STRIKE",
+        "upgraded": true,
+        "speed": "Normal",
+        "damage": 14
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_CHOP",
+        "upgraded": true,
+        "speed": "Normal",
+        "damage": 7
+      },
+      {
+        "card": "CARD.PERFECTED_STRIKE",
+        "upgraded": true,
+        "speed": "Normal",
+        "damage": 46
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STRIKE_NINJA_SLAYER",
+        "upgraded": false,
+        "speed": "Fast",
+        "damage": 10
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_CHOP_STRIKE",
+        "upgraded": false,
+        "speed": "Fast",
+        "damage": 15
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STRIKE_STRIKE",
+        "upgraded": false,
+        "speed": "Fast",
+        "damage": 12
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STRIKE_STRIKE",
+        "upgraded": false,
+        "speed": "Fast",
+        "damage": 12
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_CHOP",
+        "upgraded": false,
+        "speed": "Fast",
+        "damage": 4
+      },
+      {
+        "card": "CARD.PERFECTED_STRIKE",
+        "upgraded": false,
+        "speed": "Fast",
+        "damage": 22
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STRIKE_NINJA_SLAYER",
+        "upgraded": true,
+        "speed": "Fast",
+        "damage": 13
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_CHOP_STRIKE",
+        "upgraded": true,
+        "speed": "Fast",
+        "damage": 17
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STRIKE_STRIKE",
+        "upgraded": true,
+        "speed": "Fast",
+        "damage": 14
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STRIKE_STRIKE",
+        "upgraded": true,
+        "speed": "Fast",
+        "damage": 14
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_CHOP",
+        "upgraded": true,
+        "speed": "Fast",
+        "damage": 7
+      },
+      {
+        "card": "CARD.PERFECTED_STRIKE",
+        "upgraded": true,
+        "speed": "Fast",
+        "damage": 46
+      }
+    ],
+    "preservedWorkshopLanguages": 16
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "tags": "Characters,english,schinese,tchinese,german,latam,french,Indonesian,italian,japanese,korean,Polish,brazilian,russian,spanish,thai,turkish",
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "remoteDescriptionVerified": true,
+    "localizedLanguages": [
+      "english",
+      "schinese",
+      "tchinese",
+      "german",
+      "latam",
+      "french",
+      "indonesian",
+      "italian",
+      "japanese",
+      "koreana",
+      "polish",
+      "brazilian",
+      "russian",
+      "spanish",
+      "thai",
+      "turkish"
+    ],
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "galleryUnchanged": true,
+    "mainPreviewBefore": "https://images.steamusercontent.com/ugc/13765530479187689089/F5A5A0550ED077F95747BF804BDCBE2119369C6A/",
+    "mainPreviewAfter": "https://images.steamusercontent.com/ugc/13765530479187689089/F5A5A0550ED077F95747BF804BDCBE2119369C6A/",
+    "latestChangeNoteTimestamp": 1791522247,
+    "downloadBytes": 216476390
+  },
+  "notRun": [
+    "Complete stable 0.107.1 client gameplay",
+    "macOS/Linux gameplay",
+    "Two independent rendered multiplayer clients / cross-machine transport",
+    "Historical third-party combinations without complete reproducer",
+    "Actual CFC binary coexistence (binary not installed)"
+  ],
+  "websiteCatalog": {
+    "exportedFromVerifiedWorkshopDownload": true,
+    "version": "1.0.19",
+    "sourceRevision": "a5b1cead30f7d7e1f96eae903285abe653f1ade3",
+    "fingerprint": "6816e63077dec2788ce83f50af8ec67c6fb62d3daa2c1a42fdaffefcd6973aa6",
+    "attestation": {
+      "schemaVersion": 6,
+      "candidateSha": "a5b1cead30f7d7e1f96eae903285abe653f1ade3",
+      "bundleVersion": "1.0.19",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [],
+      "bundleSha256": "152baf299bab67b8b705790f2a5522a864f0e9f333377652b8a1f65dfc641297",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "runtime-content-export",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-09T05:10:56.0984244+00:00"
+    }
+  }
+}

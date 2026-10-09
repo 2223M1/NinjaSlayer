@@ -1,0 +1,125 @@
+{
+  "sourceRevision": "a5b1cead30f7d7e1f96eae903285abe653f1ade3",
+  "rows": [
+    {
+      "id": "423f3c69-a288-40a2-8d6e-d63b48020199",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-09T05:05:53.401Z"
+    },
+    {
+      "id": "c552502b-a9bc-4a92-8950-11bd161c8da5",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-09T05:06:16.017Z"
+    },
+    {
+      "id": "3ccec4f8-99d3-45ed-8723-eeaf465baafa",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-09T05:06:21.268Z"
+    },
+    {
+      "id": "c67af293-8dfd-48f7-b0bc-457c0c1c30af",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-09T05:06:26.973Z"
+    },
+    {
+      "id": "46a2bbaa-499f-4824-b502-2bc050c5f1ab",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-09T05:06:32.908Z"
+    },
+    {
+      "id": "490f0970-872c-450e-b270-b7c436bb1d9c",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-09T05:06:38.523Z"
+    },
+    {
+      "id": "e00a0b6b-7feb-4d60-b150-2337d7495028",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-09T05:06:43.989Z"
+    },
+    {
+      "id": "7fa925ad-6f6c-4791-ad37-09cd69975e80",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-09T05:06:51.377Z"
+    },
+    {
+      "id": "6e9c2644-cf0f-406d-8bf2-fa238216b3a6",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-09T05:06:56.934Z"
+    },
+    {
+      "id": "6f4ba53d-f4d0-4311-b80a-6be8e3410b84",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-09T05:07:02.345Z"
+    },
+    {
+      "id": "8b6125aa-4804-4662-ae8a-abcb9797c3f4",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-09T05:07:07.563Z"
+    },
+    {
+      "id": "e596d906-7a08-40e2-b98f-bee49ee41a21",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-09T05:07:12.797Z"
+    },
+    {
+      "id": "04a95959-d075-45e9-b022-d1c91f1869bd",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-09T05:07:17.676Z"
+    },
+    {
+      "id": "081278fb-c93d-4180-b70d-36461e0d910a",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-09T05:07:22.724Z"
+    },
+    {
+      "id": "0ba2cfb1-852b-44ad-b456-7ddff27e2f5a",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-09T05:07:39.531Z"
+    }
+  ]
+}
