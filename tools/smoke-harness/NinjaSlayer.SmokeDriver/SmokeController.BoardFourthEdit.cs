@@ -76,7 +76,7 @@ internal sealed partial class SmokeController
                     {
                         await PowerCmd.Apply<KaratePower>(choice, selected, 3, selected, null);
                         await Play(card, selected);
-                        Require(player.Creature.Block == (upgraded ? 19 : 16) && selected.GetPowerAmount<KaratePower>() == 7
+                        Require(player.Creature.Block == (upgraded ? 20 : 17) && selected.GetPowerAmount<KaratePower>() == 7
                             && !player.Creature.HasPower<KaratePower>() && combat.HittableEnemies.Where(e => e != selected).All(e => !e.HasPower<KaratePower>()),
                             "Rendered Taunt did not apply Karate only to the selected enemy while blocking its owner.");
                     }

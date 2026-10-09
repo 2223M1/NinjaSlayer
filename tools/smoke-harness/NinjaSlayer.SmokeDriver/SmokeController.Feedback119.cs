@@ -130,6 +130,7 @@ internal sealed partial class SmokeController
     private async Task VerifyFeedbackCombat()
     {
         SaveManager.Instance.SetFtuesEnabled(false);
+        await VerifyFinisherVictimShapes();
         var choice = new BlockingPlayerChoiceContext();
         foreach (FastModeType speed in new[] { FastModeType.Normal, FastModeType.Fast, FastModeType.Instant })
         foreach (bool swallow in new[] { false, true })
@@ -191,7 +192,6 @@ internal sealed partial class SmokeController
             await NGame.Instance.ReturnToMainMenuAfterRun();
             await WaitFrames(30);
         }
-        await VerifyFinisherVictimShapes();
         _checkpoints.Write("feedback119.combat-completed");
         _tree.Quit(0);
     }
@@ -209,9 +209,11 @@ internal sealed partial class SmokeController
                 ActModel.GetDefaultList(), [], _configuration.Seed, GameMode.Standard, 0);
             await RunManager.Instance.EnterAct(0);
             await SaveManager.Instance.SaveRun(null);
-            await RunManager.Instance.EnterRoomDebug(RoomType.Monster, model: ModelDb.Encounter<GremlinMercNormal>().ToMutable());
+            await RunManager.Instance.EnterRoomDebug(RoomType.Monster, model: ModelDb.Encounter<MawlerNormal>().ToMutable());
             Player player = run.Players[0];
             await WaitUntilAsync(() => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play, "Victim shape fixture did not begin.");
+            if (alabama) await PowerCmd.Apply<KaratePower>(new BlockingPlayerChoiceContext(), player.Creature, 1, player.Creature, null);
+            await WaitFrames(90);
             var state = CombatManager.Instance.DebugOnlyGetState()!;
             var enemy = state.Enemies[0];
             await CreatureCmd.SetCurrentHp(enemy, 1);
@@ -219,7 +221,7 @@ internal sealed partial class SmokeController
             Node2D body = node.Body;
             Transform2D initial = body.Transform;
             int samples = 0;
-            float shapeError = 0, headError = 0;
+            float shapeError = 0, headError = 0, meshHeadError = 0;
             bool sawWindupCompression = false;
             void Sample()
             {
@@ -234,12 +236,44 @@ internal sealed partial class SmokeController
                 float elapsed = (float)AccessTools.Field(sessionType, "_activeSeconds").GetValue(session)! - start;
                 if (elapsed is < .10f or > .35f) return;
                 samples++;
+                if (samples == 3 && !_configuration.NoScreenshots)
+                {
+                    using Image frame = _tree.Root.GetTexture().GetImage();
+                    frame.SavePng(Path.Combine(Path.GetDirectoryName(_configuration.CheckpointPath)!, $"victim-{speed}-{alabama}.png"));
+                }
                 shapeError = Math.Max(shapeError, Math.Max(Math.Abs(x - (alabama ? 1.2f : 1f)), Math.Abs(y - (alabama ? .55f : 1f))));
                 if (alabama && body.GetNodeOrNull<Marker2D>("AlabamaGroundContact") is { } contact)
                 {
                     // Compare in creature coordinates so camera zoom and shake cancel.
                     Vector2 head = node.GetGlobalTransformWithCanvas().AffineInverse() * contact.GetGlobalTransformWithCanvas().Origin;
                     headError = Math.Max(headError, Math.Abs(head.Y));
+                    using GodotObject skeleton = body.Call("get_skeleton").AsGodotObject();
+                    var slots = skeleton.Call("get_slots").AsGodotArray<GodotObject>();
+                    var hidden = new List<(GodotObject Slot, Variant Attachment)>();
+                    try
+                    {
+                        foreach (GodotObject slot in slots)
+                        {
+                            using GodotObject data = slot.Call("get_data").AsGodotObject();
+                            if (data.Call("get_slot_name").AsString().Contains("head", StringComparison.OrdinalIgnoreCase)) continue;
+                            hidden.Add((slot, slot.Call("get_attachment")));
+                            slot.Call("set_attachment", default(Variant));
+                        }
+                        Rect2 headMesh = skeleton.Call("get_bounds").AsRect2();
+                        Require(headMesh.HasArea(), "The real-client fixture must expose a visible head mesh.");
+                        Transform2D toCreature = node.GetGlobalTransformWithCanvas().AffineInverse() * body.GetGlobalTransformWithCanvas();
+                        Rect2 actualHead = toCreature * headMesh;
+                        meshHeadError = Math.Max(meshHeadError, Math.Abs(actualHead.End.Y));
+                    }
+                    finally
+                    {
+                        foreach (var (slot, attachment) in hidden)
+                        {
+                            slot.Call("set_attachment", attachment);
+                            attachment.Dispose();
+                        }
+                        foreach (GodotObject slot in slots) slot.Dispose();
+                    }
                 }
             }
             FinisherSmokeObserver.Reset();
@@ -255,13 +289,13 @@ internal sealed partial class SmokeController
             }
             finally { _tree.ProcessFrame -= Sample; }
             Require(samples > 0 && shapeError < .01f, $"Victim proportions changed: {speed}, Alabama={alabama}, samples={samples}, error={shapeError}.");
-            Require(!alabama || sawWindupCompression && headError < .5f,
-                $"Alabama lost its windup compression or crown-floor contact: {speed}, windup={sawWindupCompression}, gap={headError}.");
+            Require(!alabama || sawWindupCompression && headError < .5f && meshHeadError < .5f,
+                $"Alabama lost its windup compression or crown-floor contact: {speed}, windup={sawWindupCompression}, markerGap={headError}, headMeshGap={meshHeadError}.");
             var sessionResult = FinisherSmokeObserver.Snapshots().Single();
             Require(sessionResult.CompletionObserved && sessionResult.ResourcesReleased && sessionResult.CompletionFailure == null
                 && sessionResult.SuccessfulKills.Values.Sum() == 1, "Victim shape change broke single-death cleanup.");
             observations.Add(new System.Text.Json.Nodes.JsonObject { ["speed"] = speed.ToString(), ["alabama"] = alabama,
-                ["samples"] = samples, ["shapeError"] = shapeError, ["headFloorError"] = headError, ["windupCompressed"] = sawWindupCompression });
+                ["samples"] = samples, ["shapeError"] = shapeError, ["headFloorError"] = headError, ["headMeshFloorError"] = meshHeadError, ["windupCompressed"] = sawWindupCompression });
             _checkpoints.Write($"feedback119.victim-shape.{speed}.{alabama}");
             await NGame.Instance.ReturnToMainMenuAfterRun();
             await WaitFrames(30);

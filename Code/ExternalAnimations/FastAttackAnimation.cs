@@ -78,7 +78,7 @@ public static class FastAttackAnimation
                 peakSeconds,
                 FinisherActionTrajectory.FastProgress,
                 reverseDirection,
-                CombatActionTimingRuntime.ReturnSeconds);
+                CombatActionTimingRuntime.AttackReturnSeconds(peakSeconds));
             return;
         }
 
@@ -102,7 +102,7 @@ public static class FastAttackAnimation
             return;
         }
 
-        StartReturn(creatureNode, peakPosition, originalPos, CombatActionTimingRuntime.ReturnSeconds);
+        StartReturn(creatureNode, peakPosition, originalPos, CombatActionTimingRuntime.AttackReturnSeconds(peakSeconds));
     }
 
     private static async Task<bool> TweenPosition(

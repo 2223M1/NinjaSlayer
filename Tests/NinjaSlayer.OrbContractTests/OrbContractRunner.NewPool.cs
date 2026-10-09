@@ -463,18 +463,24 @@ public partial class OrbContractRunner
 
     private static async Task VerifyTurnAndSelectionEffects()
     {
-        foreach (bool attackFirst in new[] { false, true })
+        foreach (bool upgraded in new[] { false, true })
         {
             using var combat = new OrbCombat();
-            if (attackFirst) await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
-            await CardCmd.AutoPlay(Choice, AddCard<Endurance>(combat), null);
+            var untouched = combat.AddEnemy();
+            var owner = combat.Player.Creature;
+            await PowerCmd.Apply<StrengthPower>(Choice, owner, 3, owner, null);
+            await PowerCmd.Apply<VigorPower>(Choice, owner, 7, owner, null);
+            var card = AddCard<Endurance>(combat, upgraded: upgraded);
+            await CardCmd.AutoPlay(Choice, card, combat.Enemy);
+            Require(combat.Enemy.CurrentHp == 1000 - 3 * (upgraded ? 15 : 14) && untouched.CurrentHp == 1000
+                && owner.GetPowerAmount<KaratePower>() == (upgraded ? 5 : 4) && !owner.HasPower<VigorPower>()
+                && !owner.HasPower<EndurancePower>(), "Endurance must resolve three selected-target hits before granting Karate, with native Strength/Vigor and no delayed power.");
 #if NINJASLAYER_CHANNEL_STABLE
-            await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
+            await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [owner]);
 #else
-            await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
+            await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [owner]);
 #endif
-            Require(combat.Player.Creature.GetPowerAmount<KaratePower>() == (attackFirst ? 1 : 4)
-                && !combat.Player.Creature.HasPower<EndurancePower>(), "Endurance must include attacks played before it and expire this turn.");
+            Require(owner.GetPowerAmount<KaratePower>() == (upgraded ? 5 : 4), "Endurance must not grant a second turn-end reward.");
         }
         using (var combat = new OrbCombat())
         {
@@ -525,7 +531,7 @@ public partial class OrbContractRunner
                 && combat.Player.Creature.Block == 11 && tea.Pile?.Type == PileType.Exhaust,
                 "Sudden Guard must consume tea, grant eleven Block and weaken only its selected target.");
         }
-        GD.Print("PASS Endurance turn history, Strong Chop attack counter, two-card copying, retention, Shuriken Storm and selected-target Weak");
+        GD.Print("PASS Endurance three hits, post-attack Karate and no delayed reward, Strong Chop attack counter, two-card copying, retention, Shuriken Storm and selected-target Weak");
     }
 
     private sealed class SelectCards(Func<CardModel[], IEnumerable<CardModel>> select) : ICardSelector

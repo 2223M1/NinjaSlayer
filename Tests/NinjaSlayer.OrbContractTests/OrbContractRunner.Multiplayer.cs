@@ -203,6 +203,38 @@ public partial class OrbContractRunner
             await FinishFixture(fixture);
         }
         GD.Print("PASS native ENet Glam Kindle: both owners, base+upgrade, two replays, owned draws/statuses and teammate continuation.");
+        foreach (Player player in run.Players)
+        foreach (bool upgraded in new[] { false, true })
+        {
+            foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
+            await PowerCmd.Apply<StrengthPower>(Choice, player.Creature, 3, player.Creature, null);
+            await PowerCmd.Apply<VigorPower>(Choice, player.Creature, 7, player.Creature, null);
+            var endurance = combat.State.CreateCard<Endurance>(player);
+            if (upgraded) endurance.UpgradeInternal();
+            await CardPileCmd.Add(endurance, PileType.Hand);
+            await PlayerCmd.SetEnergy(10, player);
+            int before = completed;
+            decimal enemyHp = combat.Enemy.CurrentHp;
+            Player teammate = player == first ? second : first;
+            decimal teammateKarate = teammate.Creature.GetPowerAmount<KaratePower>();
+            string fixture = $"endurance-{player.NetId}-{upgraded}";
+            File.WriteAllText(Path.Combine(directory, $"{role}.{fixture}"), "ready");
+            await WaitNetwork(() => File.Exists(Path.Combine(directory, $"host.{fixture}"))
+                && File.Exists(Path.Combine(directory, $"client.{fixture}")), "both Endurance fixtures");
+            if (player.NetId == _network.NetId)
+                RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(endurance, combat.Enemy));
+            await WaitNetwork(() => completed > before, "native Endurance action");
+            Require(combat.Enemy.CurrentHp == enemyHp - 3 * (upgraded ? 15 : 14)
+                && player.Creature.GetPowerAmount<KaratePower>() == (upgraded ? 5 : 4)
+                && teammate.Creature.GetPowerAmount<KaratePower>() == teammateKarate
+                && !player.Creature.HasPower<VigorPower>() && !player.Creature.HasPower<EndurancePower>()
+                && endurance.Pile?.Type == PileType.Discard && player.PlayerCombatState!.Energy == 8,
+                "Endurance damage, two-energy cost or post-hit Karate diverged between owners.");
+            await FinishFixture(fixture);
+        }
+        foreach (Player player in run.Players)
+            foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
+        GD.Print("PASS native ENet Endurance: both owners, base/upgrade, three Vigor hits, two energy and owned post-hit Karate.");
         openingSelector.Dispose();
 #if !NINJASLAYER_CHANNEL_STABLE
         int localSelections = 0;

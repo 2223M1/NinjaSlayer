@@ -382,7 +382,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         float backdropFrom = _backdropIntensity;
         float actorReturnSeconds = AlabamaOwnsRecovery ? 0f : _continuousPlayerApproach
             ? IsAlabamaDrop ? AlabamaDropAnimation.StandUpDuration : NinjaSlayerAimPose.IsSomersaultHeavy(CardPlay?.Card)
-                ? SlowAttackAnimation.SomersaultHalfSeconds : CombatActionTimingRuntime.ReturnSeconds
+                ? SlowAttackAnimation.SomersaultHalfSeconds : _actorReturnSeconds
             : ReturnSeconds;
         float cameraReturnSeconds = ReturnSeconds;
         bool measuredCamera = _measuredCameraTask != null;

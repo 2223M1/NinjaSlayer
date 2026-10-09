@@ -135,7 +135,7 @@ public partial class OrbContractRunner
                         var returning = (Tween)AccessTools.Field(motion.GetType(), "Tween").GetValue(motion)!;
                         returning.Pause();
                         returning.CustomStep(.05f);
-                        Require(Math.Abs(Travel().Length() - distance / 2f) < .1f, "Combo recovery does not use the standard recovery duration.");
+                        Require(Math.Abs(Travel().Length() - distance / 2f) < .1f, "Combo recovery must preserve the per-hit return.");
                         returning.CustomStep(.051f);
                     }
                     await recovery;
@@ -148,7 +148,13 @@ public partial class OrbContractRunner
                 {
                     var finalReturn = (Tween)AccessTools.Property(State().GetType(), "ActiveTween").GetValue(State())!;
                     finalReturn.Pause();
-                    finalReturn.CustomStep(.2f * scale + .001f);
+                    float tail = (distance == 90f ? 35f / 30f : 46f / 30f) - gate;
+                    finalReturn.CustomStep(tail / 2f);
+                    Require(Math.Abs(Travel().Length() - distance / 2f) < .1f,
+                        "The final attack's real motion must still be halfway through its vanilla visual tail after gameplay settles.");
+                    Require(!pose.Transform.IsEqualApprox(Transform2D.Identity),
+                        "Visual recovery must not snap to idle when gameplay completes.");
+                    finalReturn.CustomStep(tail / 2f + .001f);
                 }
                 await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
                 Require(pose.Transform.IsEqualApprox(Transform2D.Identity), "Combo final recovery retained its kick pose.");

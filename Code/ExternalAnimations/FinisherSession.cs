@@ -85,6 +85,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private bool _actionStarted;
     private bool _actionPeakReached;
     private float _actionPeakSeconds = CombatActionTimingRuntime.SlowAttackSeconds;
+    private float _actorReturnSeconds = CombatActionTimingRuntime.VisualSeconds(0.1f);
     private Vector2 _impactPosition;
     private NinjaSlayerHoverTipSuppression? _hoverTipSuppression;
     private FinisherCardVisualSuppression? _cardVisualSuppression;
@@ -360,6 +361,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         Task kick = _actorAimPose.PrepareKick(CardPlay);
         float outbound = NinjaSlayerRapidAnimationCoordinator.StandardOutboundSeconds(attackDistance, seconds, preparation);
         bool slow = attackDistance >= NinjaSlayerCombatVisuals.SlowAttackLungeDistance;
+        _actorReturnSeconds = CombatActionTimingRuntime.AttackReturnSeconds(seconds, slow);
         // Use the same full action Tween and completion gate as ordinary combat,
         // including its peak hold. The first action is already at the endpoint.
         StartComboTravel(Vector2.Zero, seconds, p =>

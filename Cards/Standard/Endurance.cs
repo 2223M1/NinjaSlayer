@@ -2,6 +2,8 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using MegaCrit.Sts2.Core.ValueProps;
+using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 
@@ -9,19 +11,29 @@ namespace NinjaSlayer.Cards.Standard;
 
 public sealed class Endurance : NinjaSlayerUncommonCard
 {
-    protected override bool ShouldGlowGoldInternal =>
-        CombatState != null && EndurancePower.HasNotAttackedThisTurn(Owner);
+    public Endurance() : base(nameof(Endurance), 2, CardType.Attack, TargetType.AnyEnemy) { }
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+        [new DamageVar(4, ValueProp.Move), new RepeatVar(3), new KarateVar(4)];
 
-    public Endurance() : base(nameof(Endurance), 1, CardType.Skill, TargetType.Self) { }
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new KarateVar(1), new DynamicVar("LaterKarate", 3)];
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+            .WithHitCount(DynamicVars.Repeat.IntValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
+            .FromCard(this, cardPlay)
+#endif
+            .WithHeavyBluntHitFx()
+            .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
+            .Targeting(cardPlay.Target!)
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
         await PowerCmd.Apply<KaratePower>(choiceContext, Owner.Creature, DynamicVars.Karate().BaseValue, Owner.Creature, this);
-        await PowerCmd.Apply<EndurancePower>(choiceContext, Owner.Creature, DynamicVars["LaterKarate"].BaseValue, Owner.Creature, this);
     }
+
     protected override void OnUpgrade()
     {
+        DynamicVars.Damage.UpgradeValueBy(1);
         DynamicVars.Karate().UpgradeValueBy(1);
-        DynamicVars["LaterKarate"].UpgradeValueBy(1);
     }
 }

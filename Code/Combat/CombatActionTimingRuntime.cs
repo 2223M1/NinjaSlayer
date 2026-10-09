@@ -53,4 +53,9 @@ internal static class CombatActionTimingRuntime
     public static float VisualSeconds(float seconds) => CombatActionTiming.Presentation(CurrentSpeed, seconds);
 
     public static float ReturnSeconds => VisualSeconds(0.1f);
+
+    // Ironclad attack / attack_heavy in both supported hosts. The 0.05s idle
+    // mix ends at the clip's end; these are visual tails, not damage waits.
+    public static float AttackReturnSeconds(float peakSeconds, bool heavy = false) =>
+        VisualSeconds(Math.Max(0f, (heavy ? 46f / 30f : 35f / 30f) - peakSeconds));
 }

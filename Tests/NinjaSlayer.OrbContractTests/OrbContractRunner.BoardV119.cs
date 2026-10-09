@@ -58,9 +58,9 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<VigorPower>(Choice, combat.Player.Creature, 7, combat.Player.Creature, null);
             await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
             await CardCmd.AutoPlay(Choice, attack, combat.Enemy);
-            Require(combat.Enemy.CurrentHp == 1000 - 3 * (upgraded ? 16 : 15)
+            Require(combat.Enemy.CurrentHp == 1000 - (upgraded ? 20 : 17)
                 && !combat.Player.Creature.HasPower<VigorPower>(),
-                "Press the Attack must apply Strength and Vigor to all three hits, consuming Vigor once.");
+                "Press the Attack must apply Strength and Vigor to one hit, consuming Vigor once.");
         }
         foreach (bool upgraded in new[] { false, true })
         {
@@ -89,6 +89,6 @@ public partial class OrbContractRunner
             Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 7,
                 "A subsequent Skill must receive both base and upgraded Rekindle rewards.");
         }
-        GD.Print("PASS v1.19: status generation, stacked Naraku Life, creator isolation, full hand, three-hit Vigor, unconditional Uppercut and Kindle destination.");
+        GD.Print("PASS v1.19: status generation, stacked Naraku Life, creator isolation, full hand, single-hit Vigor, unconditional Uppercut and Kindle destination.");
     }
 }

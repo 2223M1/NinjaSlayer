@@ -202,15 +202,26 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<StrengthPower>(Choice, arena.Player.Creature, 3, arena.Player.Creature, null);
             await PowerCmd.Apply<VigorPower>(Choice, arena.Player.Creature, 7, arena.Player.Creature, null);
             await Play(arena, Create(arena, ModelDb.Card<PressTheAttack>(), upgraded));
-            Require(arena.Enemy.CurrentHp == 1000 - 3 * (10 + (upgraded ? 6 : 5))
-                && !arena.Player.Creature.HasPower<VigorPower>(), "Generated Press the Attack must share Vigor across three hits.");
+            Require(arena.Enemy.CurrentHp == 1000 - (10 + (upgraded ? 10 : 7))
+                && !arena.Player.Creature.HasPower<VigorPower>(), "Generated Press the Attack must apply Vigor to its single hit.");
             await Play(arena, Create(arena, ModelDb.Card<DevourFlame>(), upgraded));
             await Play(arena, Create(arena, ModelDb.Card<Kindle>(), upgraded));
             Require(PileType.Discard.GetPile(arena.Player).Cards.OfType<BlackFlame>().Count() == 1
                 && arena.Player.Creature.GetPowerAmount<NarakuLifePower>() == (upgraded ? 3 : 2),
                 "Generated Kindle must generate Black Flame in discard and trigger Devour Flame Naraku Life.");
         }
-        GD.Print("PASS v1.19 generated Press the Attack three-hit Vigor and Kindle discard/status Naraku Life.");
+        foreach (bool upgraded in new[] { false, true })
+        {
+            using var arena = new OrbCombat();
+            await PowerCmd.Apply<StrengthPower>(Choice, arena.Player.Creature, 3, arena.Player.Creature, null);
+            await PowerCmd.Apply<VigorPower>(Choice, arena.Player.Creature, 7, arena.Player.Creature, null);
+            await Play(arena, Create(arena, ModelDb.Card<Endurance>(), upgraded));
+            Require(arena.Enemy.CurrentHp == 1000 - 3 * (upgraded ? 15 : 14)
+                && arena.Player.Creature.GetPowerAmount<KaratePower>() == (upgraded ? 5 : 4)
+                && !arena.Player.Creature.HasPower<VigorPower>() && !arena.Player.Creature.HasPower<EndurancePower>(),
+                "Generated Endurance must preserve its three-hit Attack and post-hit Karate.");
+        }
+        GD.Print("PASS edited generated cards: single-hit Press the Attack, three-hit Endurance with Karate, and Kindle status/Naraku Life.");
         foreach (bool upgraded in new[] { false, true })
         {
             using var arena = new OrbCombat();
@@ -247,7 +258,7 @@ public partial class OrbContractRunner
                 Require(taunt.TargetType == TargetType.AnyEnemy, "Generated Taunt must require a selected enemy.");
                 await CardCmd.AutoPlay(Choice, taunt, second);
                 Require(second.GetPowerAmount<KaratePower>() == 4 && !arena.Enemy.HasPower<KaratePower>()
-                    && !arena.Player.Creature.HasPower<KaratePower>() && arena.Player.Creature.Block == (upgraded ? 17 : 14),
+                    && !arena.Player.Creature.HasPower<KaratePower>() && arena.Player.Creature.Block == (upgraded ? 18 : 15),
                     "Generated Taunt must apply Karate to its actual selected target, never a random enemy or owner.");
             }
             using (var arena = new OrbCombat())

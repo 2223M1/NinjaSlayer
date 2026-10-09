@@ -26,8 +26,8 @@ public partial class OrbContractRunner
             Require(card.TargetType == TargetType.AnyEnemy, "Taunt must expose native selected-enemy targeting.");
             await CardCmd.AutoPlay(Choice, card, target);
             Require(target.GetPowerAmount<KaratePower>() == 7 && untouched.GetPowerAmount<KaratePower>() == 5
-                && !combat.Player.Creature.HasPower<KaratePower>() && combat.Player.Creature.Block == (upgraded ? 19 : 16),
-                "Taunt must stack four Karate only on the chosen enemy and grant native Dexterity-modified 14/17 Block to its owner.");
+                && !combat.Player.Creature.HasPower<KaratePower>() && combat.Player.Creature.Block == (upgraded ? 20 : 17),
+                "Taunt must stack four Karate only on the chosen enemy and grant native Dexterity-modified 15/18 Block to its owner.");
         }
         foreach (bool upgraded in new[] { false, true })
         foreach (bool discardScry in new[] { false, true })
