@@ -12,7 +12,7 @@ param(
     [Parameter(Mandatory)][string]$RitsuLibModDirectory,
     [Parameter(Mandatory)][string]$OutputDirectory,
     [Parameter(Mandatory)][ValidateSet('stable', 'preview')][string]$Channel,
-    [ValidateSet('FirstCombatRestart', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossReload', 'TelemetryLoss', 'Catalog', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113', 'Release114', 'GlamKindle', 'StrikeSynergy')]
+    [ValidateSet('FirstCombatRestart', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossReload', 'Feedback119', 'FeedbackCombat', 'TelemetryLoss', 'Catalog', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113', 'Release114', 'GlamKindle', 'StrikeSynergy')]
     [string]$Mode = 'FirstCombatRestart',
     [ValidateRange(0, 7200)][int]$PhaseTimeoutSeconds = 0,
     [string]$Seed = 'NINJASLAYER_SMOKE_01',
@@ -140,7 +140,7 @@ function Stop-SmokeProcesses {
 function Invoke-SmokePhase {
     param(
         [Parameter(Mandatory)]
-        [ValidateSet('Fresh', 'Resume', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossFresh', 'BossResume', 'BossVerify', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113', 'Release114', 'GlamKindle', 'StrikeSynergy')]
+        [ValidateSet('Fresh', 'Resume', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossFresh', 'BossResume', 'BossVerify', 'FeedbackFresh', 'FeedbackResume', 'FeedbackVerify', 'FeedbackCombat', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113', 'Release114', 'GlamKindle', 'StrikeSynergy')]
         [string]$Phase,
         [Parameter(Mandatory)][int]$ExpectedExitCode
     )
@@ -172,6 +172,10 @@ function Invoke-SmokePhase {
             'Release114' { 23 }
             'GlamKindle' { 24 }
             'StrikeSynergy' { 25 }
+            'FeedbackFresh' { 26 }
+            'FeedbackResume' { 27 }
+            'FeedbackVerify' { 28 }
+            'FeedbackCombat' { 29 }
         }
         CheckpointPath = $checkpointPath
         AutoSlayLogPath = (Join-Path $OutputDirectory "autoslay-$($Phase.ToLowerInvariant()).log")
@@ -483,12 +487,17 @@ try {
         Invoke-SmokePhase -Phase Fresh -ExpectedExitCode 0
         Remove-Item Env:NINJASLAYER_CATALOG_OUTPUT, Env:NINJASLAYER_CATALOG_VERSION
     }
+    elseif ($Mode -eq 'Feedback119') {
+        Invoke-SmokePhase -Phase FeedbackFresh -ExpectedExitCode 20
+        Invoke-SmokePhase -Phase FeedbackResume -ExpectedExitCode 20
+        Invoke-SmokePhase -Phase FeedbackVerify -ExpectedExitCode 0
+    }
     elseif ($Mode -eq 'BossReload') {
         Invoke-SmokePhase -Phase BossFresh -ExpectedExitCode 20
         Invoke-SmokePhase -Phase BossResume -ExpectedExitCode 20
         Invoke-SmokePhase -Phase BossVerify -ExpectedExitCode 0
     }
-    elseif ($Mode -in @('ReverseFinisher', 'FullAutoSlay', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113', 'Release114', 'GlamKindle', 'StrikeSynergy')) {
+    elseif ($Mode -in @('ReverseFinisher', 'FullAutoSlay', 'FeedbackCombat', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113', 'Release114', 'GlamKindle', 'StrikeSynergy')) {
         Invoke-SmokePhase -Phase $Mode -ExpectedExitCode 0
     }
     elseif ($Mode -eq 'SawatariSameCombat') {
@@ -523,6 +532,12 @@ try {
     }
     elseif ($Mode -eq 'TelemetryLoss') {
         @('telemetry.run-ended', 'telemetry.captured', 'telemetry.loss-completed')
+    }
+    elseif ($Mode -eq 'Feedback119') {
+        @('feedback119.fresh', 'feedback119.process-reload', 'feedback119.intermission-exit', 'feedback119.rewards-next-rooms', 'feedback119.reload.Normal', 'feedback119.reload.Fast', 'feedback119.reload.Instant', 'feedback119.completed')
+    }
+    elseif ($Mode -eq 'FeedbackCombat') {
+        @('feedback119.death.Normal.damage', 'feedback119.death.Normal.swallow', 'feedback119.death.Fast.damage', 'feedback119.death.Fast.swallow', 'feedback119.death.Instant.damage', 'feedback119.death.Instant.swallow', 'feedback119.ink-reflection', 'feedback119.vantom-kill', 'feedback119.combat-completed')
     }
     elseif ($Mode -eq 'StrikeSynergy') {
         @('strike-synergy.completed')

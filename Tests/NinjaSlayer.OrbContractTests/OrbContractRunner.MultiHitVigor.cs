@@ -158,5 +158,38 @@ public partial class OrbContractRunner
                 "A nonlethal combo was incorrectly predicted as an early finisher.");
         }
         GD.Print("PASS explicit multi-hit finisher: Storm/Dragon/Palm/AntiAir base+upgrade, native command hits/targeting, Strength+Vigor, Block, nonlethal boundary and read-only prediction.");
+        foreach (int hp in new[] { 20, 21 })
+        {
+            using var combat = new OrbCombat(ninjaSlayer: true);
+            var run = MegaCrit.Sts2.Core.Runs.RunState.CreateForTest([combat.Player]);
+            AccessTools.Field(combat.State.GetType(), "<RunState>k__BackingField").SetValue(combat.State, run);
+            var card = combat.State.CreateCard<PalmThrust>(combat.Player);
+            var play = new CardPlay { Card = card,
+#if !NINJASLAYER_CHANNEL_STABLE
+                Player = combat.Player,
+#endif
+                Target = combat.Enemy, ResultPile = PileType.Discard,
+                Resources = new ResourceInfo { EnergySpent = 0, EnergyValue = 0, StarsSpent = 0, StarValue = 0 },
+                IsAutoPlay = false, PlayIndex = 0, PlayCount = 1 };
+            var command = DamageCmd.Attack(15).WithHitCount(3)
+#if NINJASLAYER_CHANNEL_STABLE
+                .FromCard(card)
+#else
+                .FromCard(card, play)
+#endif
+                .Targeting(combat.Enemy);
+            combat.Enemy.SetCurrentHpInternal(hp);
+            await PowerCmd.Apply<HardenedShellPower>(Choice, combat.Enemy, 20, combat.Enemy, null);
+            object spec = create!.Invoke(null, [command, card, play, null, null])!;
+            string predicted = AccessTools.Method(forecast, "Evaluate").Invoke(null,
+                new object?[] { combat.Player.Creature, new[] { combat.Enemy }, spec, command, null })!.ToString()!;
+            Require(predicted == (hp == 20 ? "Guaranteed" : "NotGuaranteed"),
+                "Hardened Shell's shared turn cap was reused for every forecast hit.");
+            Require(combat.Enemy.GetPower<HardenedShellPower>()!.DisplayAmount == 20,
+                "Forecast mutated the native shell counter.");
+            await command.Execute(Choice);
+            Require(combat.Enemy.CurrentHp == hp - 20, "Forecast differs from native cumulative shell damage.");
+        }
+        GD.Print("PASS native Hardened Shell cumulative cap: lethal at 20 HP, survives at 21 HP, read-only forecast.");
     }
 }

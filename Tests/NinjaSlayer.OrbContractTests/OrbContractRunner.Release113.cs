@@ -18,6 +18,22 @@ public partial class OrbContractRunner
     private static async Task VerifyRelease113Cards()
     {
         foreach (bool upgraded in new[] { false, true })
+        {
+            using var combat = new OrbCombat(ninjaSlayer: true);
+            await CardCmd.AutoPlay(Choice, AddCard<Macaco>(combat, upgraded: upgraded), null);
+            var owner = combat.Player.Creature;
+            int hp = owner.CurrentHp;
+            await CreatureCmd.GainBlock(owner, 4, MegaCrit.Sts2.Core.ValueProps.ValueProp.Unpowered, null);
+            int layers = upgraded ? 2 : 1;
+            for (int i = 0; i < layers; i++)
+                await CreatureCmd.Damage(Choice, owner, 10, MegaCrit.Sts2.Core.ValueProps.ValueProp.Move, combat.Enemy);
+            Require(owner.CurrentHp == hp && owner.Block == 4 && !owner.HasPower<EvasionPower>(),
+                "Macaco must evade each owned layer without losing HP or Block.");
+            await CreatureCmd.Damage(Choice, owner, 10, MegaCrit.Sts2.Core.ValueProps.ValueProp.Move, combat.Enemy);
+            Require(owner.CurrentHp == hp - 6 && owner.Block == 0, "Macaco incorrectly evaded after its last layer.");
+        }
+        GD.Print("PASS Macaco base/upgrade: native enemy damage consumes exactly one evasion layer per hit, protects HP/Block and expires.");
+        foreach (bool upgraded in new[] { false, true })
         foreach (int stock in new[] { 0, 1, 3 })
         {
             using var combat = new OrbCombat();

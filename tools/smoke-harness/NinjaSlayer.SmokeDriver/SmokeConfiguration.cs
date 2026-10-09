@@ -31,7 +31,11 @@ internal enum SmokePhase
     Release113,
     Release114,
     GlamKindle,
-    StrikeSynergy
+    StrikeSynergy,
+    FeedbackFresh,
+    FeedbackResume,
+    FeedbackVerify,
+    FeedbackCombat
 }
 
 internal sealed record SmokeConfiguration(

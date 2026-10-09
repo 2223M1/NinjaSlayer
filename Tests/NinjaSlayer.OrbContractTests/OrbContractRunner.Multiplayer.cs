@@ -198,6 +198,7 @@ public partial class OrbContractRunner
         openingSelector.Dispose();
 #if !NINJASLAYER_CHANNEL_STABLE
         int localSelections = 0;
+        bool selectCombatPile = false;
         using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
         {
             localSelections++;
@@ -205,7 +206,7 @@ public partial class OrbContractRunner
             var synchronizer = RunManager.Instance.PlayerChoiceSynchronizer;
             uint choiceId = synchronizer.ChoiceIds[run.Players.ToList().IndexOf(owner)] - 1;
             // Native LocalSelector bypasses the UI branch that sends its result.
-            synchronizer.SyncLocalChoice(owner, choiceId, options[0].Pile?.Type == PileType.Hand
+            synchronizer.SyncLocalChoice(owner, choiceId, selectCombatPile || options[0].Pile?.Type == PileType.Hand
                 ? PlayerChoiceResult.FromMutableCombatCards(options.Take(1))
                 : PlayerChoiceResult.FromIndexes([0]));
             return options.Take(1);
@@ -261,6 +262,32 @@ public partial class OrbContractRunner
         }
         Require(localSelections == 4, "Half-Moon may prompt only its local owner.");
         GD.Print("PASS synchronized Half-Moon exact-one tea selection, doubling and return for both players");
+        selectCombatPile = true;
+        foreach (Player player in run.Players)
+        {
+            foreach (var old in player.Piles.Where(p => p.Type != PileType.Deck).SelectMany(p => p.Cards).ToArray())
+                await CardPileCmd.RemoveFromCombat(old);
+            await PowerCmd.Apply<ResiliencePower>(Choice, player.Creature, 1, player.Creature, null);
+            await PowerCmd.Apply<StratagemPower>(Choice, player.Creature, 1, player.Creature, null);
+            for (int i = 0; i < 3; i++) await CardPileCmd.Add(combat.State.CreateCard<DefendIronclad>(player), PileType.Discard);
+            var card = combat.State.CreateCard<NarakusMight>(player);
+            await CardPileCmd.Add(card, PileType.Hand);
+            await PlayerCmd.SetEnergy(30, player);
+            int before = completed;
+            string fixture = $"resilience-{player.NetId}";
+            File.WriteAllText(Path.Combine(directory, role + "." + fixture), "ready");
+            await WaitNetwork(() => File.Exists(Path.Combine(directory, "host." + fixture))
+                && File.Exists(Path.Combine(directory, "client." + fixture)), "both Resilience fixtures");
+            if (player.NetId == _network.NetId)
+                RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(card, combat.Enemy));
+            await WaitNetwork(() => completed >= before + 2, "Resilience draw and native Stratagem hook action");
+            Require(PileType.Hand.GetPile(player).Cards.Count == 3 && PileType.Hand.GetPile(player).Cards.OfType<BlackFlame>().Count() == 1,
+                "Resilience shuffle/selection lost a draw, duplicated status generation or left the action paused.");
+            await PowerCmd.Remove(player.Creature.GetPower<ResiliencePower>()!);
+            await PowerCmd.Remove(player.Creature.GetPower<StratagemPower>()!);
+        }
+        Require(localSelections == 5, "Resilience's native selection must be made only by the owning peer.");
+        GD.Print("PASS synchronized Resilience status generation, empty-deck shuffle, Stratagem choice and both action queues.");
 #endif
         foreach (Player player in run.Players)
         {

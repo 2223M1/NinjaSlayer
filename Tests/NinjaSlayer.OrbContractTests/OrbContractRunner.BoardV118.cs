@@ -75,6 +75,15 @@ public partial class OrbContractRunner
             Require(combat.Enemy.GetPowerAmount<StrengthPower>() == -(upgraded ? 6 : 4)
                 && combat.Enemy.GetPowerAmount<WeakPower>() == (upgraded ? 2 : 1), "Grappling Hook must reduce Strength without requiring Karate.");
         }
+        using (var combat = new OrbCombat())
+        {
+            var kick = AddCard<HalfMoonCompassKick>(combat);
+            AddCard<Chado>(combat);
+            using var selection = CardSelectCmd.UseSelector(new SelectCards(options => options.OfType<Chado>().Take(1)));
+            await CreatureCmd.GainBlock(combat.Enemy, 15, MegaCrit.Sts2.Core.ValueProps.ValueProp.Unpowered, null);
+            await CardCmd.AutoPlay(Choice, kick, null);
+            Require(combat.Enemy.CurrentHp == 1000 && combat.Enemy.Block == 5, "Half-Moon bypassed native Block.");
+        }
         GD.Print("PASS v1.18: native Tornado X/Vigor/AOE, Half-Moon tea gating/copy/reset/exhaust, Naraku attack and fixed Grappling Hook.");
     }
 }

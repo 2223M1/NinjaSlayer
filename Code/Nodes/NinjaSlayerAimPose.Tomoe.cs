@@ -32,7 +32,7 @@ public partial class NinjaSlayerAimPose
         BeginAction(target, exclusive: true);
         SoarSpinAnimation.SuspendForCinematic(_actor.Entity);
         _chargeScale = Vector2.One;
-        Transform2D toLocal = _actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse();
+        Transform2D toLocal = ActorParentCanvas.AffineInverse();
         _tomoe = new TomoePose
         {
             Start = toLocal * start,
@@ -64,7 +64,7 @@ public partial class NinjaSlayerAimPose
         {
             var tail = new VisualMotion(this, MotionKind.Recovery, .15f, motion.Facing)
             {
-                Offset = _actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
+                Offset = ActorParentCanvas
                     .AffineInverse().BasisXform(from - CoreCanvas)
             };
             _presentations.Add(tail);
@@ -84,7 +84,7 @@ public partial class NinjaSlayerAimPose
             : 95f + 265f * Mathf.Pow(Mathf.Clamp((time - .155f) / .095f, 0f, 1f), 1.4f);
         float rotation = motion.StartAngle * (1f - approach) - motion.Facing * Mathf.DegToRad(degrees);
         motion.Angle = rotation;
-        Transform2D stage = _actor!.GetParent<CanvasItem>().GetGlobalTransformWithCanvas();
+        Transform2D stage = ActorParentCanvas;
         Vector2 start = stage * motion.Start;
         Vector2 target = stage * motion.Target;
         Vector2 reach = (foot - unposedCore).Rotated(-motion.Facing * Mathf.DegToRad(95f));

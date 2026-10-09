@@ -1,5 +1,7 @@
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Multiplayer;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
@@ -15,6 +17,9 @@ public sealed class ResiliencePower : NinjaSlayerCounterPower
     {
         if (creator?.Creature != Owner || card.Type != CardType.Status) return;
         Flash();
-        await CardPileCmd.Draw(new ThrowingPlayerChoiceContext(), Amount, creator);
+        // Drawing can shuffle into Stratagem or autoplay a card that asks for a
+        // choice. Let the native hook action synchronize that choice on all peers.
+        var context = new HookPlayerChoiceContext(this, LocalContext.NetId!.Value, CombatState, GameActionType.Combat);
+        await context.AssignTaskAndWaitForPauseOrCompletion(CardPileCmd.Draw(context, Amount, creator));
     }
 }
