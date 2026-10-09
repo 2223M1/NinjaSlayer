@@ -60,7 +60,9 @@ Curious what everyone picks and where runs fall? Visit [Ninja Slayer Intel](http
 
 ## Discord community
 
-[Join the community](https://discord.gg/3Dn9fxwF) for updates, build discussions, bug reports and suggestions. Chinese, English, Japanese and other languages are welcome.
+The previous invite expired. The link below is the new invitation.
+
+[Join the community](https://discord.gg/eHuQqjrAyf) for updates, build discussions, bug reports and suggestions. Chinese, English, Japanese and other languages are welcome.
 
 ## Author
 
