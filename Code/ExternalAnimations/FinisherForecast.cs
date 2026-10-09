@@ -551,6 +551,10 @@ internal static class FinisherForecast
             cardSource,
             HpLossHookPhase.BeforeOsty | HpLossHookPhase.AfterOsty,
             out _);
+        // The native hook reads the real turn's shell counter. Forecasting must
+        // also debit damage from earlier simulated hits without mutating that power.
+        if (target.GetPower<HardenedShellPower>() is { } shell)
+            hpLoss = Math.Min(hpLoss, Math.Max(0, shell.DisplayAmount - (target.CurrentHp - state.Hp)));
         states[targetIndex] = state with
         {
             Block = state.Block - blocked,

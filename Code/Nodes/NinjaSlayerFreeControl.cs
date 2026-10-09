@@ -111,7 +111,7 @@ internal sealed partial class NinjaSlayerFreeControl : Node
         if (Active) return;
         _usedInRun.Modify((RunState)Actor.Entity.Player!.RunState, data => data.Used = true);
         Pose.SyncNow();
-        _spaceToCanvas = Actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas();
+        _spaceToCanvas = Pose.ActorParentCanvas;
         _baseCore = _spaceToCanvas.AffineInverse() * Pose.CoreCanvas;
         ReadHull();
         Rect2 visible = GetViewport().GetVisibleRect();
@@ -203,7 +203,7 @@ internal sealed partial class NinjaSlayerFreeControl : Node
     internal void Compose(ref Vector2 coreCanvas)
     {
         if (!Active || _exclusiveDepth > 0) return;
-        _spaceToCanvas = Actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas();
+        _spaceToCanvas = Pose.ActorParentCanvas;
         _baselinePose = Pose.Transform;
         Transform2D free = PhysicsTransform * new Transform2D(0f, -_baseCore);
         Transform2D freeCanvas = _spaceToCanvas * free * _spaceToCanvas.AffineInverse();
@@ -263,7 +263,7 @@ internal sealed partial class NinjaSlayerFreeControl : Node
         _physicsRemainder = 0d;
         Vector2 baseline = FinisherApproach.AnimationPosition(Actor.Entity, Actor.Visuals);
         Vector2 visualTranslation = Actor.Visuals.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
-            .AffineInverse().BasisXform(Actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().BasisXform(translation));
+            .AffineInverse().BasisXform(Pose.ActorParentCanvas.BasisXform(translation));
         FinisherApproach.SetAnimationPosition(Actor.Entity, Actor.Visuals, baseline + visualTranslation);
         Pose.SyncNow();
         return new CinematicLease(this, baseline);

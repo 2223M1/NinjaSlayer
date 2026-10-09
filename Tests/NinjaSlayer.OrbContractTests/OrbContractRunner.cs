@@ -140,13 +140,13 @@ public partial class OrbContractRunner : Node
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_EARLY_AUTOPLAY") == "1")
                 PatchAutoplayBeforeFramework();
             RitsuLibFramework.Initialize();
-            using (RitsuLibFramework.BeginModDataRegistration("NinjaSlayer.OrbContracts"))
+            using (RitsuLibFramework.BeginModDataRegistration("NinjaSlayer"))
             {
-                NinjaSlayerRunData.Register("NinjaSlayer.OrbContracts");
-                AccessTools.Method(typeof(ShurikenOrb), "RegisterSavedData").Invoke(null, ["NinjaSlayer.OrbContracts"]);
+                NinjaSlayerRunData.Register("NinjaSlayer");
+                AccessTools.Method(typeof(ShurikenOrb), "RegisterSavedData").Invoke(null, ["NinjaSlayer"]);
                 AccessTools.Method(product.GetType("NinjaSlayer.Code.Nodes.NinjaSlayerFreeControl"), "RegisterSavedData")
-                    .Invoke(null, ["NinjaSlayer.OrbContracts"]);
-                AccessTools.Method(typeof(StrongShuriken), "RegisterSavedData").Invoke(null, ["NinjaSlayer.OrbContracts"]);
+                    .Invoke(null, ["NinjaSlayer"]);
+                AccessTools.Method(typeof(StrongShuriken), "RegisterSavedData").Invoke(null, ["NinjaSlayer"]);
             }
             ModTypeDiscoveryHub.RegisterModAssembly("NinjaSlayer", product);
             if (anthonyBridge is not null)

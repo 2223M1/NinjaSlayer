@@ -201,6 +201,8 @@ public sealed class TheMovingJungleEvent : ModEventTemplate
     {
         Func<Task>? start = _combatStartAfterReveal;
         _combatStartAfterReveal = null;
+        if (!RunManager.Instance.IsInProgress || !RunManager.Instance.EventSynchronizer.Events.Contains(this))
+            return Task.CompletedTask;
         return start == null ? Task.CompletedTask : start();
     }
 

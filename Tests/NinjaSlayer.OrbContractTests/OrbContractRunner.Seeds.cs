@@ -60,6 +60,7 @@ public partial class OrbContractRunner
             Require(results[seed] == await SeedTranscript(seed), "Identical single-player run changed its seed transcript.");
         }
         GD.Print("PASS single-player deterministic encounters, shuffle, rewards/rerolls, pity, potions and all 400 relic rarities");
+        await VerifyNativeSeedSave();
         await VerifySeedExclusions();
         GD.Print("PASS native characters, one-player Host/Client, two-player runs and original CFC ownership are untouched");
 #if !NINJASLAYER_CHANNEL_STABLE
@@ -78,6 +79,42 @@ public partial class OrbContractRunner
     }
 
     private static bool SkipSeedRoomPresentation(ref Task __result) { __result = Task.CompletedTask; return false; }
+
+    private static async Task VerifyNativeSeedSave()
+    {
+        string? fixture = System.Environment.GetEnvironmentVariable("NINJASLAYER_SEED_SAVE_FIXTURE");
+        if (fixture is null)
+        {
+            GD.Print("NOT RUN: native feedback save seed reload (no same-host fixture supplied).");
+            return;
+        }
+        string source = File.ReadAllText(fixture);
+        var files = new MegaCrit.Sts2.Core.Saves.Test.MockGodotFileIo("user://seed-save-contract");
+        var saves = new MegaCrit.Sts2.Core.Saves.Managers.RunSaveManager(1, files,
+            new MegaCrit.Sts2.Core.Saves.Migrations.MigrationManager(files), forceSynchronous: true);
+        string path = MegaCrit.Sts2.Core.Saves.Managers.RunSaveManager.GetRunSavePath(1,
+            MegaCrit.Sts2.Core.Saves.Managers.RunSaveManager.runSaveFileName);
+        files.WriteFile(path, source);
+        var loaded = saves.LoadRunSave();
+        Require(loaded.Success, "Native seed save fixture failed to load.");
+        RunState restored = RunState.FromSerializable(loaded.SaveData!);
+        var expected = System.Text.Json.Nodes.JsonNode.Parse(source)!["_ritsulib"]!["run_saved_data"]!["NinjaSlayer"]!["cfc_singleplayer_rng"]!["data"]!;
+        string actual = SeedJson(SeedData(restored));
+        Require(System.Text.Json.Nodes.JsonNode.DeepEquals(expected, System.Text.Json.Nodes.JsonNode.Parse(actual)),
+            "Native save import lost seed counters or remaining rarities.");
+        // Continue resaves SerializableRun before room entry; this boundary must
+        // retain the attached RitsuLib document without consuming any RNG.
+        await saves.SaveRun(loaded.SaveData!, false);
+        var reloaded = saves.LoadRunSave();
+        Require(reloaded.Success && SeedJson(SeedData(RunState.FromSerializable(reloaded.SaveData!))) == actual,
+            "Native Continue resave lost or consumed existing seed state.");
+        AccessTools.Property(typeof(RunManager), "State").SetValue(RunManager.Instance, restored);
+        var remaining = ((List<RelicRarity>)SeedValue(SeedData(restored), "RelicRarities")).ToArray();
+        Require(remaining.Length > 0, "Feedback fixture has no surviving relic sequence.");
+        foreach (RelicRarity rarity in remaining)
+            Require(RelicFactory.RollRarity(new Rng(7)) == rarity, "Reload changed the next native relic roll.");
+        GD.Print($"PASS native feedback save import/resave preserves counters and all {remaining.Length} remaining relic rarities.");
+    }
 
     private static RunState SeedRun(string seed, bool ninja = true, NetGameType mode = NetGameType.Singleplayer, int playerCount = 1)
     {

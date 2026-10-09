@@ -76,6 +76,50 @@ public partial class OrbContractRunner
         var contour = (System.Numerics.Vector2[])AccessTools.Field(typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.Combat.CombatBodyContours"), "NinjaSlayer").GetValue(null)!;
         try
         {
+            // Sandworm removal can start the native death visual while IsAlive
+            // is still true. During that interval the death pivot owns both sprites.
+            Sprite2D deathOverlay = pose.GetNode<Sprite2D>("NarakuVisualOverlay");
+            var deathPivot = new Node2D();
+            anchor.AddChild(deathPivot);
+            Transform2D bodyBeforeDeath = sprite.Transform, overlayBeforeDeath = deathOverlay.Transform;
+            sprite.Reparent(deathPivot);
+            deathOverlay.Reparent(deathPivot);
+            deathPivot.Rotation = -.6f;
+            Transform2D deathTransform = sprite.GlobalTransform;
+            try
+            {
+                Require(combat.Player.Creature.IsAlive, "Death ownership regression needs the native pre-death interval.");
+                Invoke("SyncNow");
+                await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+                Require(sprite.GlobalTransform.IsEqualApprox(deathTransform), "Aim pose overwrote the active death pivot.");
+            }
+            finally
+            {
+                sprite.Reparent(pose, false);
+                deathOverlay.Reparent(pose, false);
+                sprite.Transform = bodyBeforeDeath;
+                deathOverlay.Transform = overlayBeforeDeath;
+                deathPivot.Free();
+            }
+            Invoke("SyncNow");
+            GD.Print("PASS living-to-death rig handoff and restored aim siblings without missing overlay or pose drift.");
+            var nativePreview = new SubViewport { Size = new(800, 600) };
+            AddChild(nativePreview);
+            var previewActor = new AimContractCreature();
+            var previewRig = STS2RitsuLib.Scaffolding.Godot.RitsuGodotNodeFactories.CreateFromScenePath<NCreatureVisuals>(
+                "res://NinjaSlayer/scenes/creature_visuals/ninja_slayer.tscn")!;
+            AccessTools.Property(typeof(NCreature), "Entity").SetValue(previewActor, combat.Player.Creature);
+            AccessTools.Property(typeof(NCreature), "Visuals").SetValue(previewActor, previewRig);
+            previewActor.AddChild(previewRig);
+            nativePreview.AddChild(previewActor);
+            try
+            {
+                AccessTools.Method(poseType, "SyncNow").Invoke(previewRig.GetNode<Node2D>("%AimPose"), null);
+                Require(previewRig.VfxSpawnPosition.GlobalPosition.IsFinite(), "Native SubViewport preview produced an invalid pose.");
+                await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            }
+            finally { nativePreview.Free(); }
+            GD.Print("PASS direct native SubViewport creature preview.");
             VerifyFinisherApproach(actor, target);
             await VerifyRangedVisualFreeze(target);
             foreach (float side in new[] { -1f, 1f })

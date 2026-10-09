@@ -41,7 +41,7 @@ public partial class NinjaSlayerAimPose
             // belongs to that return, so it must not use the ordinary-action gate.
             var recovery = new VisualMotion(this, MotionKind.Recovery, seconds, FacingSign);
             _presentations.Add(recovery);
-            recovery.Offset = _actor!.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
+            recovery.Offset = ActorParentCanvas
                 .AffineInverse().BasisXform(_somersaultLift);
             recovery.Height = 70f;
         }

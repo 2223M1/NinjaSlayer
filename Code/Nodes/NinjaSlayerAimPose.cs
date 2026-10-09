@@ -20,6 +20,9 @@ public partial class NinjaSlayerAimPose : Node2D
     internal PlayerMacheteVisuals? Machetes { get; set; }
     internal bool HasCardDrag => _dragOwner != null;
     private NCreature? _actor;
+    // Native preview creatures may be direct children of a SubViewport.
+    internal Transform2D ActorParentCanvas => _actor!.GetGlobalTransformWithCanvas()
+        * _actor.GetTransform().AffineInverse();
     private Node2D _airborne = null!;
     private Marker2D _center = null!;
     private Marker2D _talk = null!;
@@ -233,7 +236,7 @@ public partial class NinjaSlayerAimPose : Node2D
         _actionBlend = exclusive ? 1f : 0f;
         _target = target ?? (_actor != null ? Focus(_actor.Entity) : null);
         _finisherTargetLocal = exclusive && _target?.GetCreatureNode() is { } focus
-            ? _actor!.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse()
+            ? ActorParentCanvas.AffineInverse()
                 * focus.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin
             : null;
         _busy = true;
@@ -312,8 +315,7 @@ public partial class NinjaSlayerAimPose : Node2D
         _contactTravel = Vector2.Zero;
         _chargeBack = 0f;
         SyncNow();
-        CanvasItem parent = _actor.GetParent<CanvasItem>();
-        Transform2D parentCanvas = parent.GetGlobalTransformWithCanvas();
+        Transform2D parentCanvas = ActorParentCanvas;
         Vector2 targetCanvas = target.GetCreatureNode()!.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin;
         Vector2 rootShift = parentCanvas.BasisXform(new(impactRootX - _actor.Position.X, 0f));
         float separation = Math.Abs(targetCanvas.X - (CoreCanvas.X + rootShift.X));
@@ -360,7 +362,7 @@ public partial class NinjaSlayerAimPose : Node2D
         SyncNow();
         Vector2 direction = TargetCanvas() - CoreCanvas;
         if (direction.LengthSquared() < 0.001f) direction = Vector2.Right * FacingSign;
-        return _actor!.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
+        return ActorParentCanvas
             .AffineInverse().BasisXform(direction).Normalized();
     }
 
@@ -512,7 +514,7 @@ public partial class NinjaSlayerAimPose : Node2D
         // would feed the contact pose back into itself on every render frame.
         if (_finisherTargetLocal is { } lastTarget)
         {
-            Transform2D parentCanvas = _actor!.GetParent<CanvasItem>().GetGlobalTransformWithCanvas();
+            Transform2D parentCanvas = ActorParentCanvas;
             if (_target?.GetCreatureNode() is { } victim && GodotObject.IsInstanceValid(victim)
                 && !victim.IsQueuedForDeletion())
             {
@@ -547,9 +549,12 @@ public partial class NinjaSlayerAimPose : Node2D
         if (IsInsideTree() && !CanProcess()) return;
         if (_actor == null || !GodotObject.IsInstanceValid(_actor) || _actor.Entity == null || _actor.Visuals == null || _actor.Entity.IsDead
             || !GodotObject.IsInstanceValid(_center)) return;
+        Sprite2D source = NinjaSlayerVisualRig.GetBodySprite(_actor.Visuals)!;
+        // Native removal (including Sandworm swallow) starts the death pose before
+        // IsDead changes. Its pivot owns the body and overlay until revival.
+        if (!ReferenceEquals(source.GetParent(), this)) return;
         _spin?.ApplyDegrees(_spinDegrees, _spinExposure);
         ApplyTurnProjection();
-        Sprite2D source = NinjaSlayerVisualRig.GetBodySprite(_actor.Visuals)!;
         NarakuVisualOverlay overlay = GetNode<NarakuVisualOverlay>("NarakuVisualOverlay");
         overlay.SyncForPose();
         Sprite2D body = overlay.Visible ? overlay : source;
@@ -590,7 +595,7 @@ public partial class NinjaSlayerAimPose : Node2D
         float standingY = NinjaSlayerFormCalibration.GroundY;
         float altitude = Math.Max(0f, -_airborne.Position.Y) + (FreeControl?.Altitude ?? 0f);
         float travelY = GroundedPoseMath.ClampDescent(_travel.Y, altitude);
-        Vector2 travelCanvas = _actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().BasisXform(new(_travel.X + _chargeBack, travelY));
+        Vector2 travelCanvas = ActorParentCanvas.BasisXform(new(_travel.X + _chargeBack, travelY));
         core += travelCanvas;
         float line = (parentCanvas * new Vector2(0f, standingY)).Y + travelCanvas.Y;
         float originalLine = line;
@@ -598,7 +603,7 @@ public partial class NinjaSlayerAimPose : Node2D
         if (FreeControl is { Active: true } freeControl) target = freeControl.UntransformTarget(target);
         if (_tornado)
             line = Mathf.Lerp(line, target.Y, _launch);
-        _effectiveTravelY = travelY + _actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
+        _effectiveTravelY = travelY + ActorParentCanvas
             .AffineInverse().BasisXform(new Vector2(0f, line - originalLine)).Y;
         float reference = FacingSign < 0f ? Mathf.Pi : 0f;
         Vector2 footDirection = (unposedBody * footPoint - (core - travelCanvas)) * _chargeScale;
@@ -617,7 +622,7 @@ public partial class NinjaSlayerAimPose : Node2D
         Vector2 finalCore = new(core.X, line - support);
         if (_exclusive && _contactOffset is { } localContact && !_tornado)
         {
-            Vector2 contact = _actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().BasisXform(localContact + _contactTravel);
+            Vector2 contact = ActorParentCanvas.BasisXform(localContact + _contactTravel);
             finalCore = target + contact;
             for (int i = 0; i < 64; i++)
             {
@@ -630,12 +635,11 @@ public partial class NinjaSlayerAimPose : Node2D
             float lowest = GroundedPoseMath.SupportY(offsets, rotation);
             finalCore.Y = Math.Min(target.Y + contact.Y, originalLine - lowest);
             _angle = rotation;
-            _effectiveTravelY = _actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
+            _effectiveTravelY = ActorParentCanvas
                 .AffineInverse().BasisXform(finalCore - new Vector2(finalCore.X, originalLine - lowest)).Y;
         }
         ComposePresentation(offsets, ref rotation, ref finalCore);
-        float groundCanvas = originalLine + _actor.GetParent<CanvasItem>()
-            .GetGlobalTransformWithCanvas().BasisXform(new Vector2(0f, altitude)).Y;
+        float groundCanvas = originalLine + ActorParentCanvas.BasisXform(new Vector2(0f, altitude)).Y;
         ComposeSomersault(offsets, groundCanvas, ref rotation, ref finalCore);
         Transform2D worldRotation = new(rotation, _chargeScale * _presentationScale, 0f, Vector2.Zero);
         _displayAngle = rotation;

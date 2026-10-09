@@ -820,8 +820,9 @@ internal sealed partial class SmokeController
                 cancellationToken);
             Sprite2D companionBody = room.GetCreatureNode(companion)!.Visuals.GetNode<Sprite2D>("%Visuals");
             Node2D weapons = companionBody.GetNode<Node2D>("WeaponRig");
-            Require(!companionBody.FlipH && weapons.Scale.X == 1f,
-                "Intermission must mirror Sawatari's held weapons with the body toward the player.");
+            await WaitUntilAsync(() => !companionBody.FlipH && weapons.Scale.X == 1f,
+                "Intermission must finish turning Sawatari and his weapons toward the player.",
+                cancellationToken, TimeSpan.FromSeconds(3));
             if (_configuration.ActionPreviewDirectory is { } previewDirectory)
                 SaveScreenshot(Path.Combine(previewDirectory, "sawatari-intermission-grips.png"));
             _checkpoints.Write("sawatari.intermission-weapon-facing");
@@ -1813,6 +1814,14 @@ internal sealed partial class SmokeController
             else if (_configuration.Phase == SmokePhase.ReverseFinisher)
             {
                 await RunReverseFinisherPhaseAsync();
+            }
+            else if (_configuration.Phase == SmokePhase.FeedbackCombat)
+            {
+                await VerifyFeedbackCombat();
+            }
+            else if (_configuration.Phase is SmokePhase.FeedbackFresh or SmokePhase.FeedbackResume or SmokePhase.FeedbackVerify)
+            {
+                await RunFeedback119Async();
             }
             else if (_configuration.Phase == SmokePhase.SawatariSameCombat)
             {

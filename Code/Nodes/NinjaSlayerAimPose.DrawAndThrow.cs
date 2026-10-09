@@ -83,7 +83,7 @@ public partial class NinjaSlayerAimPose
         Vector2 core = CoreCanvas;
         var motion = new VisualMotion(this, MotionKind.Recovery, seconds, FacingSign)
         {
-            Offset = _actor!.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
+            Offset = ActorParentCanvas
                 .AffineInverse().BasisXform(delta * core - core),
             Rotation = rotation,
             Height = height,
@@ -180,7 +180,7 @@ public partial class NinjaSlayerAimPose
         _presentationScale = Vector2.One;
         Vector2 baseline = core;
         float ground = core.Y + GroundedPoseMath.SupportY(offsets, rotation);
-        Transform2D parentCanvas = _actor!.GetParent<CanvasItem>().GetGlobalTransformWithCanvas();
+        Transform2D parentCanvas = ActorParentCanvas;
         ground += parentCanvas.BasisXform(new Vector2(0f, FreeControl?.Altitude ?? 0f)).Y;
         float angle = 0f;
         Vector2 shift = Vector2.Zero;
@@ -218,7 +218,7 @@ public partial class NinjaSlayerAimPose
                 case MotionKind.Debuff:
                     float phase = Mathf.Tau * (1f - Mathf.Pow(1f - p, 3f));
                     float shake = 10f * Mathf.Sin(phase * 4f) * Mathf.Sin(phase * 0.5f);
-                    shift += _actor.GetGlobalTransformWithCanvas().BasisXform(Vector2.Right * shake);
+                    shift += _actor!.GetGlobalTransformWithCanvas().BasisXform(Vector2.Right * shake);
                     break;
                 case MotionKind.Brace:
                 case MotionKind.Cast:
