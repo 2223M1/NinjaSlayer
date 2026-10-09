@@ -1,5 +1,7 @@
 using Godot;
 using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.ExternalAnimations;
@@ -29,6 +31,12 @@ internal sealed partial class NinjaSlayerAllyLayoutMotion : Node
 
     internal void OnLayout(Vector2 previousPosition, int companions)
     {
+        if (IsPulledBySandpit(_actor.Entity))
+        {
+            _actor.Position = previousPosition;
+            _pending = false;
+            return;
+        }
         Vector2 destination = _actor.Position;
         bool changed = companions != _companions;
         _companions = companions;
@@ -59,10 +67,17 @@ internal sealed partial class NinjaSlayerAllyLayoutMotion : Node
         || NinjaSlayerFinisherCinematic.IsMovementOwned(_actor.Entity)
         || NinjaSlayerAimPose.Get(_actor.Entity) is { IsBusy: true } or { IsReturning: true };
 
+    internal static bool IsPulledBySandpit(Creature creature) =>
+        creature.CombatState?.Creatures.Any(owner => owner.Powers.OfType<SandpitPower>()
+            .Any(power => power.Target == creature || power.Target == creature.PetOwner?.Creature)) == true;
+
     public override void _Process(double delta)
     {
         _presented = true;
         if (!_pending || CombatManager.Instance.IsPaused) return;
+        // The native Sandpit power moves the player and all pets together.
+        // A layout return queued before Liquify must not write over that motion.
+        if (IsPulledBySandpit(_actor.Entity)) { _pending = false; return; }
         if (_actor.Entity.IsDead || !_actor.IsVisibleInTree())
         {
             _pending = false;

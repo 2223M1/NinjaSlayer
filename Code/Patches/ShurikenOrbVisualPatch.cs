@@ -2,6 +2,7 @@ using Godot;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Nodes.Orbs;
 using NinjaSlayer.Orbs;
+using STS2RitsuLib.Scaffolding.Content;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
@@ -22,7 +23,8 @@ public sealed class ShurikenOrbVisualPatch : IPatchMethod
             return;
 
         // Vanilla creates every orb as a Spine scene. Our sprite owns its own animation.
-        ____sprite = __instance.Model.CreateSprite();
+        ____sprite = ((IModOrbSpriteFactory)__instance.Model).TryCreateOrbSprite()
+            ?? throw new InvalidOperationException("Shuriken's registered sprite factory returned no scene.");
         ____visualContainer.AddChild(____sprite);
         ____sprite.Position = Vector2.Zero;
         ____curTween?.Kill();

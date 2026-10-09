@@ -360,6 +360,13 @@ public partial class OrbContractRunner : Node
                 GetTree().Quit(0);
                 return;
             }
+            await VerifyFeedbackV120();
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_FEEDBACK_V120") is "1" or "orb" or "motion" or "sandpit")
+            {
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
             await VerifyCombatRegression();
             await VerifyRangedSources();
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_FINISHERS") == "1"

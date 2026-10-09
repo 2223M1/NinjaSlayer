@@ -65,7 +65,9 @@ public sealed class BlackFlame : NinjaSlayerStandaloneCardTemplate
 
     protected override async Task OnTurnEndInHand(PlayerChoiceContext choiceContext)
     {
-        if (!CombatManager.Instance.IsInProgress || CombatManager.Instance.IsEnding) return;
+        // Multiplayer keeps the room running after one player's death clears
+        // their piles; its previously queued turn-end cards can still arrive here.
+        if (!Owner.Creature.IsAlive || !CombatManager.Instance.IsInProgress || CombatManager.Instance.IsEnding) return;
         ICombatState combatState = CombatState
             ?? throw new InvalidOperationException("Black Flame requires combat.");
         List<Creature> enemies = combatState.Creatures

@@ -65,7 +65,7 @@ public partial class OrbContractRunner
                 float turn = Mathf.PosMod((body.RotationDegrees - initial) * handedness, 360f);
                 Require(turn is > 59f and <= 60.1f && Velocity() == 0f, $"Held impulse was {turn} degrees at {fps}fps/{mode}.");
                 Require(orb.Position.DistanceTo(hand) < .01f && labels.Position == labelPosition
-                    && labels.Scale == labelScale && labels.Rotation == 0f && labels.ZIndex == 4,
+                    && labels.Scale == labelScale && labels.Rotation == 0f && labels.ZIndex == 0,
                     "Inertial rotation moved the hand center or transformed its labels.");
                 Require(glow.RotationDegrees == body.RotationDegrees, "Contour glow did not rotate with the blade.");
             }

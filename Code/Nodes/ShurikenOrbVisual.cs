@@ -48,7 +48,6 @@ public partial class ShurikenOrbVisual : Node2D
         _orb = (ShurikenOrb)_orbNode.Model!;
         _creatureNode = FindCreatureNode();
         _labelContainer = _orbNode.GetNode<Control>("%LabelContainer");
-        _labelContainer.ZIndex = 4;
 #if NINJASLAYER_CHANNEL_STABLE
         _orb.Triggered += Pulse;
 #else

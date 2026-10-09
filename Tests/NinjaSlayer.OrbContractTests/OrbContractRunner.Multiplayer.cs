@@ -465,6 +465,37 @@ public partial class OrbContractRunner
                 && other.Creature.GetPowerAmount<KaratePower>() == otherKarate,
                 "Networked Fragment repeated or crossed player ownership.");
         }
+        combat.Enemy.SetMaxHpInternal(100000);
+        combat.Enemy.SetCurrentHpInternal(100000);
+        foreach (Player player in run.Players)
+        foreach (int energy in new[] { 4, 20, 60 })
+        {
+            var tornado = combat.State.CreateCard<TornadoFist>(player);
+            await CardPileCmd.Add(tornado, PileType.Hand);
+            await PlayerCmd.SetEnergy(energy, player);
+            int before = completed;
+            await FinishFixture($"tornado-ready-{player.NetId}-{energy}");
+            if (player.NetId == _network.NetId)
+                RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(tornado, null));
+            await WaitNetwork(() => completed > before, "high-X native Tornado action");
+            Require(tornado.Pile?.Type == PileType.Discard && player.PlayerCombatState!.Energy == 0,
+                "High-X Tornado did not complete through the native card/pile/energy flow.");
+            string state = JsonSerializer.Serialize(new
+            {
+                Enemies = combat.State.Enemies.Select(enemy => new { enemy.CurrentHp, enemy.Block }),
+                Random = run.Rng.ToSerializable(),
+                Players = run.Players.Select(p => new { p.NetId, p.Creature.CurrentHp,
+                    Powers = p.Creature.Powers.Select(power => new { power.Id, power.Amount }),
+                    p.PlayerCombatState!.Energy })
+            });
+            string name = $"tornado-{player.NetId}-{energy}";
+            File.WriteAllText(Path.Combine(directory, $"{role}.{name}.json"), state);
+            await FinishFixture(name);
+            Require(File.ReadAllText(Path.Combine(directory, $"host.{name}.json"))
+                == File.ReadAllText(Path.Combine(directory, $"client.{name}.json")),
+                "Host/client diverged after a high-X Tornado.");
+        }
+        GD.Print("PASS two-process native Tornado: both players, X=4/20/60, card/energy completion, HP/powers/RNG agreement after every action.");
         var snapshot = new
         {
             CaughtHands = caughtHands, ReturnedHands = returnedHands,
