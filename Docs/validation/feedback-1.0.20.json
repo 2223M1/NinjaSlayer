@@ -1,9 +1,9 @@
 {
-  "checkedAt": "2026-10-09T16:40:03.377Z",
+  "checkedAt": "2026-10-09T17:18:11.064Z",
   "previousBaseline": "feedback-1.0.19.json",
   "previousPublicCount": 117,
-  "newPublicCount": 15,
-  "totalPublicCount": 132,
+  "newPublicCount": 16,
+  "totalPublicCount": 133,
   "rows": [
     {
       "id": "2597b1ec-2e97-4dec-a729-dab1c36cc453",
@@ -98,6 +98,15 @@
       "group": "NonDefect",
       "conclusion": "预期行为／非故障请求",
       "evidence": "防御/反伤卡强度及消耗建议；已读公开原文，无可复现故障，不自动改平衡，保持原状态和作者回应。",
+      "attachments": null
+    },
+    {
+      "id": "7f29d0da-57c5-4c62-91e6-b20092d7a201",
+      "modVersion": "1.0.19",
+      "gameVersion": "v0.111.0",
+      "group": "NonDefect",
+      "conclusion": "预期行为／非故障请求",
+      "evidence": "发布前新增简短一般评价（公开原文miubi），未提供故障描述；已读公开原文，无可复现故障，不自动改平衡，保持原状态和作者回应。",
       "attachments": null
     },
     {

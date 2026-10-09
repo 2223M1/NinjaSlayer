@@ -1,0 +1,29 @@
+{
+  "sourceRevision": "a05f13fb2cf07aaf85e3514b81201938533881f2",
+  "rows": [
+    {
+      "id": "d945c99a-7a63-427f-918c-d41967298c09",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-09T17:29:28.092Z"
+    },
+    {
+      "id": "a53a37c6-e1da-4326-934b-3d4b6a079c5d",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-09T17:30:00.337Z"
+    },
+    {
+      "id": "402312ad-525c-4188-bbe0-a2d43750857d",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-09T17:30:05.085Z"
+    }
+  ]
+}
