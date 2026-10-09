@@ -1,0 +1,374 @@
+{
+  "version": "1.0.20",
+  "sourceRevision": "a05f13fb2cf07aaf85e3514b81201938533881f2",
+  "verifiedAtUtc": "2026-10-09T17:28:46.819Z",
+  "pullRequests": [
+    200
+  ],
+  "ci": {
+    "conclusion": "success",
+    "databaseId": 37963918890,
+    "headSha": "a05f13fb2cf07aaf85e3514b81201938533881f2",
+    "status": "completed",
+    "url": "https://github.com/2223M1/NinjaSlayer/actions/runs/37963918890"
+  },
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "620bc154f987f1ab4b29f71b7e43799ec31f0bb13af52d22421e5afbb2f3e340",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "ef4af387c3c5b5fc89940c9036e88c0434b6a9bb179b3e76b86199f7e61af47d",
+    "d4b8f563b61216e9a3c1a81c194185d1c6fd8df10c446309a9df59e475314c13",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "6cdeec1273187f10aaea73481129c5892ca5bda6eaba6becab9b2fb68c19c255",
+    "eff0d810b2881b4b35f76f0627f77d59f0a0da0f4a10af2de3d250f844218872",
+    "33231379a1e78f390bd6b3faa07440cd53aea42c95d0505495b349da56238034",
+    "2316d21f56347a97e04042a9262e1123258ab92baa37fc47e4826fb5ee91ce51",
+    "e9100fc98e2b946d15241aebd2cc12bb8d2ebfa5ab3f7f95db5c502fc4ff6bba"
+  ],
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "bytes": 2213888,
+      "sha256": "620bc154f987f1ab4b29f71b7e43799ec31f0bb13af52d22421e5afbb2f3e340"
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "bytes": 8,
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "bytes": 126464,
+      "sha256": "ef4af387c3c5b5fc89940c9036e88c0434b6a9bb179b3e76b86199f7e61af47d"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "bytes": 2217984,
+      "sha256": "d4b8f563b61216e9a3c1a81c194185d1c6fd8df10c446309a9df59e475314c13"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "bytes": 522,
+      "sha256": "6cdeec1273187f10aaea73481129c5892ca5bda6eaba6becab9b2fb68c19c255"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "bytes": 24576,
+      "sha256": "eff0d810b2881b4b35f76f0627f77d59f0a0da0f4a10af2de3d250f844218872"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "bytes": 363,
+      "sha256": "33231379a1e78f390bd6b3faa07440cd53aea42c95d0505495b349da56238034"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "bytes": 211568760,
+      "sha256": "2316d21f56347a97e04042a9262e1123258ab92baa37fc47e4826fb5ee91ce51"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 1008,
+      "sha256": "e9100fc98e2b946d15241aebd2cc12bb8d2ebfa5ab3f7f95db5c502fc4ff6bba"
+    }
+  ],
+  "previewAttestations": [
+    {
+      "schemaVersion": 6,
+      "candidateSha": "a05f13fb2cf07aaf85e3514b81201938533881f2",
+      "bundleVersion": "1.0.20",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [],
+      "bundleSha256": "e9100fc98e2b946d15241aebd2cc12bb8d2ebfa5ab3f7f95db5c502fc4ff6bba",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "feedback119-combat-and-victim-shapes",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-09T17:13:13.9222616+00:00"
+    },
+    {
+      "schemaVersion": 6,
+      "candidateSha": "a05f13fb2cf07aaf85e3514b81201938533881f2",
+      "bundleVersion": "1.0.20",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [],
+      "bundleSha256": "e9100fc98e2b946d15241aebd2cc12bb8d2ebfa5ab3f7f95db5c502fc4ff6bba",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "multihit-vigor",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-09T17:15:19.6611351+00:00"
+    },
+    {
+      "schemaVersion": 6,
+      "candidateSha": "a05f13fb2cf07aaf85e3514b81201938533881f2",
+      "bundleVersion": "1.0.20",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [],
+      "bundleSha256": "e9100fc98e2b946d15241aebd2cc12bb8d2ebfa5ab3f7f95db5c502fc4ff6bba",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "runtime-content-export",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-09T17:19:04.2942023+00:00"
+    },
+    {
+      "schemaVersion": 6,
+      "candidateSha": "a05f13fb2cf07aaf85e3514b81201938533881f2",
+      "bundleVersion": "1.0.20",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [
+        {
+          "version": "0.3.0",
+          "id": "litterthespire"
+        }
+      ],
+      "bundleSha256": "e9100fc98e2b946d15241aebd2cc12bb8d2ebfa5ab3f7f95db5c502fc4ff6bba",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "feedback119-combat-and-victim-shapes",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-09T17:14:23.6468616+00:00"
+    },
+    {
+      "schemaVersion": 6,
+      "candidateSha": "a05f13fb2cf07aaf85e3514b81201938533881f2",
+      "bundleVersion": "1.0.20",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [
+        {
+          "id": "ClymandSaru_zhubao_q",
+          "version": "0.2.7"
+        }
+      ],
+      "bundleSha256": "e9100fc98e2b946d15241aebd2cc12bb8d2ebfa5ab3f7f95db5c502fc4ff6bba",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "feedback119-combat-and-victim-shapes",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-09T17:20:46.6575626+00:00"
+    }
+  ],
+  "validation": {
+    "logicTests": 371,
+    "publicFeedbackAudited": 133,
+    "newPublicFeedbackAudited": 16,
+    "feedbackCheckedAt": "2026-10-09T17:18:11.064Z",
+    "dualHostProductContracts": true,
+    "dualHostPatchTransactions": true,
+    "dualHostNativeEnet": true,
+    "tornadoEnergyCases": [
+      4,
+      20,
+      60
+    ],
+    "sandpitSpacing": [
+      {
+        "speed": "Normal",
+        "initialSpacingX": -291.20398,
+        "finalSpacingX": -291.20398,
+        "playerMovementX": 267.64795
+      },
+      {
+        "speed": "Fast",
+        "initialSpacingX": -291.20398,
+        "finalSpacingX": -291.20398,
+        "playerMovementX": 267.64795
+      },
+      {
+        "speed": "Instant",
+        "initialSpacingX": -291.20398,
+        "finalSpacingX": -291.20398,
+        "playerMovementX": 267.64795
+      }
+    ],
+    "victimShapes": [
+      {
+        "speed": "Normal",
+        "alabama": false,
+        "samples": 14,
+        "meshSamples": 0,
+        "meshKind": null,
+        "shapeError": 0,
+        "headFloorError": 0,
+        "headMeshFloorError": 0,
+        "windupCompressed": false
+      },
+      {
+        "speed": "Normal",
+        "alabama": true,
+        "samples": 15,
+        "meshSamples": 15,
+        "meshKind": "full-body-crown",
+        "shapeError": 0,
+        "headFloorError": 0,
+        "headMeshFloorError": 0.000061035156,
+        "windupCompressed": true
+      },
+      {
+        "speed": "Fast",
+        "alabama": false,
+        "samples": 15,
+        "meshSamples": 0,
+        "meshKind": null,
+        "shapeError": 0,
+        "headFloorError": 0,
+        "headMeshFloorError": 0,
+        "windupCompressed": false
+      },
+      {
+        "speed": "Fast",
+        "alabama": true,
+        "samples": 15,
+        "meshSamples": 15,
+        "meshKind": "full-body-crown",
+        "shapeError": 0,
+        "headFloorError": 0,
+        "headMeshFloorError": 0.000061035156,
+        "windupCompressed": true
+      },
+      {
+        "speed": "Instant",
+        "alabama": false,
+        "samples": 15,
+        "meshSamples": 0,
+        "meshKind": null,
+        "shapeError": 0,
+        "headFloorError": 0,
+        "headMeshFloorError": 0,
+        "windupCompressed": false
+      },
+      {
+        "speed": "Instant",
+        "alabama": true,
+        "samples": 15,
+        "meshSamples": 15,
+        "meshKind": "full-body-crown",
+        "shapeError": 0,
+        "headFloorError": 0,
+        "headMeshFloorError": 0.000061035156,
+        "windupCompressed": true
+      }
+    ]
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "tags": "Characters,english,schinese,tchinese,german,latam,french,Indonesian,italian,japanese,korean,Polish,brazilian,russian,spanish,thai,turkish",
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "remoteDescriptionVerified": true,
+    "localizedLanguages": [
+      "english",
+      "schinese",
+      "tchinese",
+      "german",
+      "latam",
+      "french",
+      "indonesian",
+      "italian",
+      "japanese",
+      "koreana",
+      "polish",
+      "brazilian",
+      "russian",
+      "spanish",
+      "thai",
+      "turkish"
+    ],
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "galleryUnchanged": true,
+    "downloadBytes": 216472118
+  },
+  "notRun": [
+    "Complete stable client gameplay",
+    "Android/macOS/Linux gameplay",
+    "Two rendered multiplayer clients",
+    "Historical ClymandSaru_zhubao_q 0.1.5; current 0.2.7 coexistence tested",
+    "Actual CFC binary coexistence; random-sequence code unchanged"
+  ],
+  "unresolvedFeedback": [
+    "2597b1ec-2e97-4dec-a729-dab1c36cc453",
+    "f3282ce5-6d19-4f63-b36a-70aec6517747"
+  ],
+  "websiteCatalog": {
+    "exportedFromVerifiedWorkshopDownload": true,
+    "version": "1.0.20",
+    "sourceRevision": "a05f13fb2cf07aaf85e3514b81201938533881f2",
+    "fingerprint": "12e5ce97b5adf19310c99c5e39800ebb057f88c4abaa89b4503014338fa92fe9",
+    "attestation": {
+      "schemaVersion": 6,
+      "candidateSha": "a05f13fb2cf07aaf85e3514b81201938533881f2",
+      "bundleVersion": "1.0.20",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [],
+      "bundleSha256": "e9100fc98e2b946d15241aebd2cc12bb8d2ebfa5ab3f7f95db5c502fc4ff6bba",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "runtime-content-export",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-09T17:32:28.7955613+00:00"
+    }
+  }
+}
