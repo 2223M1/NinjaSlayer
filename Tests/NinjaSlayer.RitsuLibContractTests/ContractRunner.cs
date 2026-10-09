@@ -1741,7 +1741,6 @@ public partial class ContractRunner : Node
                 _session,
                 "_committedDeaths",
                 new HashSet<Creature>(ReferenceEqualityComparer.Instance));
-            SetNewFieldValue(_session, "_deathSquashStates");
             SetNewFieldValue(_session, "_deathKickVisuals");
             SetInstanceField(_session, "_vfxBaselineChildIds", new HashSet<ulong>());
             SetInstanceField(_session, "_completion",
