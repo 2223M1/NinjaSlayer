@@ -1,8 +1,20 @@
 {
   "baseline": "https://2223m1.github.io/NinjaSlayer/data.json",
   "snapshot": "2026-10-08T23:58:58.393Z",
-  "count": 116,
+  "count": 117,
   "rows": [
+    {
+      "id": "7d8de647-5fdb-40ce-a7ca-20ac0a4245c5",
+      "modVersion": "1.0.18",
+      "gameVersion": "v0.111.0",
+      "category": "feedback",
+      "statusAtBaseline": "unresolved",
+      "group": "NonDefect",
+      "conclusion": "预期行为／非故障请求",
+      "condition": "发布前新增的韩语一般评价",
+      "evidence": "已读公开原文，为表达游戏体验有趣的好评，未报告故障；不修改状态或作者回应。",
+      "attachments": {}
+    },
     {
       "id": "423f3c69-a288-40a2-8d6e-d63b48020199",
       "modVersion": "1.0.18",
@@ -2081,5 +2093,7 @@
       "evidence": "已读原文；强度、无限构筑、内容愿望或一般评价，不自动转为平衡变更，保留原状态。",
       "attachments": {}
     }
-  ]
+  ],
+  "baselineCount": 116,
+  "prepublicationCheck": "2026-10-09T04:24:52.053Z"
 }
