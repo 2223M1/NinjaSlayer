@@ -45,6 +45,12 @@ public partial class OrbContractRunner
         MegaCrit.Sts2.Core.Saves.SaveManager.Instance.InitPrefsDataForTest();
         MegaCrit.Sts2.Core.Localization.LocManager.Initialize();
         string directory = System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_DIRECTORY")!;
+        async Task FinishFixture(string name)
+        {
+            File.WriteAllText(Path.Combine(directory, $"{role}.finished-{name}"), "checked");
+            await WaitNetwork(() => File.Exists(Path.Combine(directory, $"host.finished-{name}"))
+                && File.Exists(Path.Combine(directory, $"client.finished-{name}")), $"both peers checked {name}");
+        }
         ushort port = ushort.Parse(System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_PORT")!);
 #if !NINJASLAYER_CHANNEL_STABLE
         var version = new PeerVersionInfo
@@ -144,6 +150,7 @@ public partial class OrbContractRunner
             await WaitNetwork(() => completed >= expected, $"native card action {expected}");
             Require(card.Pile?.Type == destinations[step],
                 $"Action {expected} resolved to the wrong pile.");
+            await FinishFixture($"opening-{step}");
         }
         Require(first.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 2
             && first.PlayerCombatState.OrbQueue.Capacity == 1 && second.PlayerCombatState!.OrbQueue.Capacity == 0
@@ -193,6 +200,7 @@ public partial class OrbContractRunner
                 RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(next, null));
             await WaitNetwork(() => completed >= expected, "teammate following Glam Kindle");
             Require(next.Pile?.Type == PileType.Discard, "Teammate queue did not resolve after Glam Kindle.");
+            await FinishFixture(fixture);
         }
         GD.Print("PASS native ENet Glam Kindle: both owners, base+upgrade, two replays, owned draws/statuses and teammate continuation.");
         openingSelector.Dispose();
@@ -237,6 +245,7 @@ public partial class OrbContractRunner
                 "Native synchronized choices must resolve both Sly cards and the nested discard.");
             Require(player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 6,
                 "Nested discard chains must finish before each Sly card replenishes its stock.");
+            await FinishFixture(fixture);
         }
         Require(localSelections == 3, "Only the local player may make the three synchronized choices.");
         GD.Print("PASS synchronized hand discard and nested Scry/Sly choices");
@@ -259,6 +268,7 @@ public partial class OrbContractRunner
             Require(tea.Pile?.Type == PileType.Exhaust && spare.Pile?.Type == PileType.Hand
                 && kick.Pile?.Type == PileType.Hand && kick.DynamicVars.Damage.BaseValue == 20,
                 "Half-Moon must synchronize exactly one selected tea, damage doubling and return on both peers.");
+            await FinishFixture(fixture);
         }
         Require(localSelections == 4, "Half-Moon may prompt only its local owner.");
         GD.Print("PASS synchronized Half-Moon exact-one tea selection, doubling and return for both players");
@@ -285,6 +295,7 @@ public partial class OrbContractRunner
                 "Resilience shuffle/selection lost a draw, duplicated status generation or left the action paused.");
             await PowerCmd.Remove(player.Creature.GetPower<ResiliencePower>()!);
             await PowerCmd.Remove(player.Creature.GetPower<StratagemPower>()!);
+            await FinishFixture(fixture);
         }
         Require(localSelections == 5, "Resilience's native selection must be made only by the owning peer.");
         GD.Print("PASS synchronized Resilience status generation, empty-deck shuffle, Stratagem choice and both action queues.");
@@ -310,6 +321,7 @@ public partial class OrbContractRunner
                     RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(card, null));
                 await WaitNetwork(() => completed > before, "native converted volley action");
                 if (card is StarlessNight) await AddStock(player, 1);
+                await FinishFixture(fixture);
             }
             var tokens = player.PlayerCombatState.AllCards.OfType<StrongShuriken>().ToArray();
             Require(tokens.Length == 1 && tokens.All(card => card.SnapshotDamage == 8),
@@ -340,6 +352,7 @@ public partial class OrbContractRunner
             Require(player.PlayerCombatState.AllCards.OfType<StrongShuriken>().Count() == tokens
                 && !player.PlayerCombatState.OrbQueue.Orbs.OfType<ShurikenOrb>().Any(),
                 "Discard batches consume stock without generating tokens.");
+            await FinishFixture(fixture);
         }
         GD.Print("PASS synchronized Burning Blood batch cap and independent player allowances");
         var sawatari = (ForestSawatariMonster)ModelDb.Monster<ForestSawatariMonster>().ToMutable();
@@ -381,6 +394,7 @@ public partial class OrbContractRunner
             Require(card.Pile?.Type == PileType.Exhaust && sawatari.MacheteCount == index + 1,
                 "A synchronized Machete play must exhaust and return one knife.");
             returnedHands.Add(sawatari.HeldMachetes);
+            await FinishFixture($"machete-return-{index}");
         }
         Require(sawatari.NextMove.Id == ForestSawatariMonster.DualMoveId,
             "Returning both networked knives must immediately show the dual-attack intent.");
@@ -406,6 +420,7 @@ public partial class OrbContractRunner
                     RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(card, combat.Enemy));
                 await WaitNetwork(() => completed > before, "native Bamboo attack");
                 Require(bamboo.DisplayAmount == (index == 0 ? 1 : 0), "Networked Bamboo counter differs.");
+                await FinishFixture($"bamboo-{player.NetId}-{index}");
             }
             Require(player.Creature.GetPowerAmount<PlatingPower>() == 1, "Networked Bamboo did not grant Plating to its owner.");
             Player other = run.Players.Single(candidate => candidate != player);

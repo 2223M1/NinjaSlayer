@@ -474,50 +474,6 @@ public sealed class CombatLogicTests
     }
 
     [Fact]
-    public void DoomSquashKeepsHorizontalOriginAndAnchorsVerticalBottom()
-    {
-        Assert.Equal(
-            FinisherSquashAnchorKind.Center,
-            FinisherSquashAnchorPolicy.Resolve(scaleX: 0.55f, scaleY: 1.2f));
-        Assert.Equal(
-            FinisherSquashAnchorKind.BottomCenter,
-            FinisherSquashAnchorPolicy.Resolve(scaleX: 1.2f, scaleY: 0.55f));
-        Assert.Equal(
-            FinisherSquashAnchorKind.Center,
-            FinisherSquashAnchorPolicy.Resolve(scaleX: 1f, scaleY: 1f));
-    }
-
-    [Theory]
-    [InlineData(-0.55f, 0.2f, 0.15f, 1.2f)]
-    [InlineData(0.52f, 0.18f, -0.31f, 1.15f)]
-    public void DoomSquashCompensationKeepsItsAnchorUnderMirroringAndTilt(
-        float basisXx,
-        float basisXy,
-        float basisYx,
-        float basisYy)
-    {
-        var anchorInParent = new FinisherAnchorPoint(320f, 460f);
-        var anchorInBody = new FinisherAnchorPoint(-85f, 130f);
-        var basisX = new FinisherAnchorPoint(basisXx, basisXy);
-        var basisY = new FinisherAnchorPoint(basisYx, basisYy);
-
-        FinisherAnchorPoint position = FinisherSquashAnchorPolicy.ResolveCompensatedPosition(
-            anchorInParent,
-            anchorInBody,
-            basisX,
-            basisY);
-        float resolvedX = position.X
-            + basisX.X * anchorInBody.X
-            + basisY.X * anchorInBody.Y;
-        float resolvedY = position.Y
-            + basisX.Y * anchorInBody.X
-            + basisY.Y * anchorInBody.Y;
-
-        Assert.Equal(anchorInParent.X, resolvedX, 4);
-        Assert.Equal(anchorInParent.Y, resolvedY, 4);
-    }
-
-    [Fact]
     public void BossDismembermentBuildsDeterministicGaplessVoronoiCells()
     {
         var bounds = new BossFragmentRect(-180f, -240f, 360f, 480f);

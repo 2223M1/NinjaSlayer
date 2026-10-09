@@ -15,16 +15,6 @@ public partial class OrbContractRunner
 {
     private void VerifyFinisherApproach(NCreature actor, NCreature focus)
     {
-        Type timeline = typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.ExternalAnimations.FinisherTimeline", true)!;
-        bool CanSquash(Creature victim) => (bool)AccessTools.Method(timeline, "AllowsDeathSquash").Invoke(null, [victim])!;
-        Require(!CanSquash(actor.Entity) && CanSquash(focus.Entity),
-            "Finisher squash must exclude Ninja Slayer without disabling native monster squash.");
-        foreach (MonsterModel model in new MonsterModel[] { ModelDb.Monster<ForestSawatariMonster>(),
-            ModelDb.Monster<DarkNinjaMonster>(), ModelDb.Monster<YamotoKokiMonster>(),
-            ModelDb.Monster<YukanoMonster>(), ModelDb.Monster<OrigamiMissileMonster>() })
-            foreach (CombatSide side in new[] { CombatSide.Enemy, CombatSide.Player })
-                Require(!CanSquash(new Creature(model.ToMutable(), side, null)),
-                    "Mod character received finisher deformation: " + model.GetType().Name);
         var command = DamageCmd.Attack(1).WithHeavyBluntHitFx();
         Require(command.HitVfx == VfxCmd.heavyBluntPath
             && !(bool)AccessTools.Field(command.GetType(), "_spawnVfxOnCreatureCenter").GetValue(command)!,
@@ -43,7 +33,7 @@ public partial class OrbContractRunner
             foreach (float facing in new[] { -1f, 1f })
             {
                 focus.Position = actorRoot + new Vector2(facing * 600f, 0f);
-                var lease = (IDisposable)AccessTools.Method(type, "Create").Invoke(null, [actor, focus, Vector2.One])!;
+                var lease = (IDisposable)AccessTools.Method(type, "Create").Invoke(null, [actor, focus])!;
                 try
                 {
                     Require(actor.Visuals.Position.IsEqualApprox(baseline), "Finisher approach teleported on its first frame.");
@@ -76,7 +66,7 @@ public partial class OrbContractRunner
                 }
                 finally { lease.Dispose(); }
             }
-            using (var lease = (IDisposable)AccessTools.Method(type, "Create").Invoke(null, [actor, focus, Vector2.One])!)
+            using (var lease = (IDisposable)AccessTools.Method(type, "Create").Invoke(null, [actor, focus])!)
             {
                 AccessTools.Method(type, "Start").Invoke(lease, [.2f]);
                 var outbound = (Tween)AccessTools.Field(type, "_tween").GetValue(lease)!;
@@ -95,7 +85,7 @@ public partial class OrbContractRunner
             }
             foreach (float seconds in new[] { .25f, 0f })
             {
-                using var lease = (IDisposable)AccessTools.Method(type, "Create").Invoke(null, [actor, focus, Vector2.One])!;
+                using var lease = (IDisposable)AccessTools.Method(type, "Create").Invoke(null, [actor, focus])!;
                 AccessTools.Property(type, "ReturnDuration").SetValue(lease, seconds);
                 AccessTools.Method(type, "ApplyProgress").Invoke(lease, [1f]);
                 Vector2 peak = actor.Visuals.Position;
@@ -118,7 +108,7 @@ public partial class OrbContractRunner
             VerifyWeaponContact(actor, focus, type, bounds);
             var gameOverContainer = new Node2D();
             AddChild(gameOverContainer);
-            var handedOff = (IDisposable)AccessTools.Method(type, "Create").Invoke(null, [actor, focus, Vector2.One])!;
+            var handedOff = (IDisposable)AccessTools.Method(type, "Create").Invoke(null, [actor, focus])!;
             try
             {
                 AccessTools.Method(type, "ApplyProgress").Invoke(handedOff, [1f]);
@@ -176,7 +166,7 @@ public partial class OrbContractRunner
                 body.Scale = new(direction, 1f);
                 knife.Position = new(300, 0);
                 using var approach = (IDisposable)AccessTools.Method(approachType, "Create").Invoke(null,
-                    [actor, focus, Vector2.One])!;
+                    [actor, focus])!;
                 Vector2 origin = actor.Visuals.Position;
                 AccessTools.Method(approachType, "ApplyProgress").Invoke(approach, [0f]);
                 Require(actor.Visuals.Position.IsEqualApprox(origin), "Weapon reach adjustment teleported at startup.");
@@ -202,6 +192,6 @@ public partial class OrbContractRunner
             }
         }
         finally { actor.Visuals.RemoveChild(weapons); weapons.QueueFree(); body.QueueFree(); }
-        GD.Print("PASS mod victims remain rigid; complete held-weapon bounds, mirrored contact and combo retreat.");
+        GD.Print("PASS complete held-weapon bounds, mirrored contact and combo retreat.");
     }
 }

@@ -176,7 +176,7 @@ public sealed partial class ForestSawatariMonster
         {
             if (beforeHit == null)
             {
-                attackFrame.Approach = FinisherApproach.Create(actorNode, focus, FinisherTimeline.MeleeSquash(FinisherTimeline.PreviewProfile));
+                attackFrame.Approach = FinisherApproach.Create(actorNode, focus);
                 attackFrame.Approach.Start(CombatActionTimingRuntime.VisualSeconds(SawatariWeaponVisuals.DualCycleSeconds * 2f / 7f));
             }
             NinjaSlayerDeathClassifier.TryStartPredictedReverseFinisher(attackFrame, victim, [target]);

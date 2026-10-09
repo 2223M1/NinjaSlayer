@@ -35,7 +35,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private readonly FinisherDamageLedger _ledger;
     private readonly HashSet<Creature> _committedDeaths =
         new(ReferenceEqualityComparer.Instance);
-    private readonly Dictionary<Node2D, DeathSquashVisualState> _deathSquashStates = [];
     private readonly Dictionary<NCreature, DeathKickVisual> _deathKickVisuals = [];
     private readonly CombatCinematicCameraLease _camera;
     private readonly NCombatRoom _room;
@@ -51,7 +50,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private bool _impactCamera => _previewProfile != FinisherPreviewProfile.A;
     private float? _impactStartedAt;
     private Task? _measuredCameraTask;
-    private readonly Dictionary<Creature, Vector2> _impactAxes = [];
     private readonly TaskCompletionSource _completion =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
     private FinisherCameraFrame _cameraFrame = new([], false);
@@ -240,7 +238,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             FinisherImpactPositionResolver.ResolveImpactX(
                 _actorNode,
                 _focusNode,
-                GetDeathSquashMultiplier(_focusNode.Entity),
                 NinjaSlayerCombatVisuals.CloseRangeApproachGap),
             _actorNode.Position.Y);
         if (IsRanged)
@@ -249,11 +246,11 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
         else if (IsCompanionIai)
         {
-            _approach = FinisherApproach.Create(_actorNode, _focusNode, GetDeathSquashMultiplier(_focusNode.Entity));
+            _approach = FinisherApproach.Create(_actorNode, _focusNode);
         }
         else if (Scenario == FinisherScenarioKind.CompanionAttack && Actor.Monster is NinjaSlayer.Monsters.ForestSawatariMonster)
         {
-            _approach = FinisherApproach.Create(_actorNode, _focusNode, GetDeathSquashMultiplier(_focusNode.Entity));
+            _approach = FinisherApproach.Create(_actorNode, _focusNode);
             float peak = Actor.Monster is NinjaSlayer.Monsters.ForestSawatariMonster { ActThree: true }
                 ? SawatariWeaponVisuals.DualCycleSeconds * 2f / 7f
                 : SawatariBambooAnimation.CycleSeconds * SawatariBambooAnimation.PeakPhase;
@@ -268,7 +265,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         else if (Scenario == FinisherScenarioKind.NinjaSlayerAttack)
         {
             if (_continuousPlayerApproach)
-                _approach = FinisherApproach.Create(_actorNode, _focusNode, GetDeathSquashMultiplier(_focusNode.Entity));
+                _approach = FinisherApproach.Create(_actorNode, _focusNode);
             else if (AlabamaContact != null)
                 // The drop already reached contact before its damage-only command
                 // acquired this session. Placing it again duplicates the approach.
@@ -460,12 +457,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
         _primaryDamageCalls++;
         _impactWaveBaseline = new(_completedWaveVfx ?? _vfxBaselineChildIds);
-        foreach (Creature victim in _ledger.Victims)
-        {
-            if (_room.GetCreatureNode(victim) is not { } node) continue;
-            Vector2 axis = node.VfxSpawnPosition - _actorNode.VfxSpawnPosition;
-            if (axis.LengthSquared() > 0.0001f) _impactAxes[victim] = axis.Normalized();
-        }
         bool isFinalHit = _primaryDamageCalls >= ResolvedHits;
         _camera.PlayScreenShake(
             isFinalHit ? ShakeStrength.TooMuch : ShakeStrength.Medium,
@@ -534,11 +525,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         out FinisherProtectionToken? token)
     {
         token = null;
-        if (_room.GetCreatureNode(target) is { } targetNode)
-        {
-            Vector2 axis = targetNode.VfxSpawnPosition - _actorNode.VfxSpawnPosition;
-            if (axis.LengthSquared() > 0.0001f) _impactAxes[target] = axis.Normalized();
-        }
         if (_disposed
             || !IsCurrentCombatContext()
             || !_ledger.TryProtect(target, _committing, ref amount, out token))
@@ -617,7 +603,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         _impactStartedAt = _activeSeconds;
         _enhancedImpactTask = PlayEnhancedDoomPoseImpact([_focusNode], cancellationToken);
         await _enhancedImpactTask;
-        RestoreDeathSquashes(preserveAlabamaContact: true);
     }
 
     public ValueTask DisposeAsync() => new(
@@ -901,16 +886,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
         try
         {
-            RestoreDeathSquashes(preserveAlabamaContact: true);
-        }
-        catch (Exception ex)
-        {
-            Entry.Logger.Warn(
-                $"Finisher session {SessionId} could not restore a death squash before committing deaths: {ex}");
-        }
-
-        try
-        {
             foreach (Creature target in toKill)
                 if (_room.GetCreatureNode(target) is { } node)
                     AlabamaDropAnimation.ReleaseVictimBeforeDeath(node);
@@ -1035,7 +1010,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         Capture(() => _freeControlLease?.Dispose());
         Capture(() => _ledger.Clear(mayRestoreCurrentCombat));
         Capture(() => FinisherDeathContinuationRegistry.Clear(SessionId));
-        Capture(() => RestoreDeathSquashes());
         Capture(RestoreDeathKicks);
         Capture(DisposeEnhancedPresentation);
         if (GodotObject.IsInstanceValid(_room))
@@ -1227,7 +1201,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         var impactVisuals = new Dictionary<Node2D, ImpactVisualSnapshot>();
         CaptureImpactVisuals(targetNodes, impactVisuals);
         List<ProcessModeSnapshot> processes = CaptureImpactProcesses(targetNodes);
-        ApplyDeathSquashes(impactVisuals.Values);
         List<NCreature> frozenHurtTracks = [];
         FinisherImpactVfxFreezeLease? frozenImpactVfx = null;
 
@@ -1314,7 +1287,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         var impactVisuals = new Dictionary<Node2D, ImpactVisualSnapshot>();
         CaptureImpactVisuals(targetNodes, impactVisuals);
         List<ProcessModeSnapshot> processes = CaptureImpactProcesses(targetNodes);
-        ApplyDeathSquashes(impactVisuals.Values);
         List<NCreature> frozenHurtTracks = [];
         FinisherImpactVfxFreezeLease? frozenImpactVfx = null;
         FinisherImpactPresentation presentation = _presentation

@@ -59,7 +59,6 @@
     <Compile Include="..\..\Code\Combat\FinisherActionTrajectory.cs" Link="FinisherActionTrajectory.cs" />
     <Compile Include="..\..\Code\Combat\RapidAttackTrajectory.cs" Link="RapidAttackTrajectory.cs" />
     <Compile Include="..\..\Code\Combat\ShurikenOrbLayoutMath.cs" Link="ShurikenOrbLayoutMath.cs" />
-    <Compile Include="..\..\Code\Combat\FinisherSquashAnchorPolicy.cs" Link="FinisherSquashAnchorPolicy.cs" />
     <Compile Include="..\..\Code\Combat\FrameScopedCache.cs" Link="FrameScopedCache.cs" />
     <Compile Include="..\..\Code\Combat\KarateCombatPreviewContext.cs" Link="KarateCombatPreviewContext.cs" />
     <Compile Include="..\..\Code\Combat\KarateDamageMath.cs" Link="KarateDamageMath.cs" />

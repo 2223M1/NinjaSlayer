@@ -191,9 +191,84 @@ internal sealed partial class SmokeController
             await NGame.Instance.ReturnToMainMenuAfterRun();
             await WaitFrames(30);
         }
+        await VerifyFinisherVictimShapes();
         _checkpoints.Write("feedback119.combat-completed");
         _tree.Quit(0);
     }
+
+    private async Task VerifyFinisherVictimShapes()
+    {
+        Type registry = typeof(AlabamaDropAnimation).Assembly.GetType("NinjaSlayer.Code.ExternalAnimations.FinisherSessionRegistry", true)!;
+        Type sessionType = typeof(AlabamaDropAnimation).Assembly.GetType("NinjaSlayer.Code.ExternalAnimations.FinisherSession", true)!;
+        var observations = new System.Text.Json.Nodes.JsonArray();
+        foreach (FastModeType speed in new[] { FastModeType.Normal, FastModeType.Fast, FastModeType.Instant })
+        foreach (bool alabama in new[] { false, true })
+        {
+            SaveManager.Instance.PrefsSave.FastMode = speed;
+            var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(), true,
+                ActModel.GetDefaultList(), [], _configuration.Seed, GameMode.Standard, 0);
+            await RunManager.Instance.EnterAct(0);
+            await SaveManager.Instance.SaveRun(null);
+            await RunManager.Instance.EnterRoomDebug(RoomType.Monster, model: ModelDb.Encounter<GremlinMercNormal>().ToMutable());
+            Player player = run.Players[0];
+            await WaitUntilAsync(() => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play, "Victim shape fixture did not begin.");
+            var state = CombatManager.Instance.DebugOnlyGetState()!;
+            var enemy = state.Enemies[0];
+            await CreatureCmd.SetCurrentHp(enemy, 1);
+            NCreature node = enemy.GetCreatureNode()!;
+            Node2D body = node.Body;
+            Transform2D initial = body.Transform;
+            int samples = 0;
+            float shapeError = 0, headError = 0;
+            bool sawWindupCompression = false;
+            void Sample()
+            {
+                if (!GodotObject.IsInstanceValid(body) || !body.IsInsideTree()) return;
+                float x = body.Transform.X.Length() / initial.X.Length();
+                float y = body.Transform.Y.Length() / initial.Y.Length();
+                if (alabama && Math.Abs(x - 1.2f) < .01f && Math.Abs(y - .55f) < .01f
+                    && Math.Abs(Mathf.AngleDifference(initial.Rotation, body.Rotation)) < .1f)
+                    sawWindupCompression = true;
+                object? session = AccessTools.Method(registry, "GetActiveSession").Invoke(null, null);
+                if (session == null || AccessTools.Field(sessionType, "_impactStartedAt").GetValue(session) is not float start) return;
+                float elapsed = (float)AccessTools.Field(sessionType, "_activeSeconds").GetValue(session)! - start;
+                if (elapsed is < .10f or > .35f) return;
+                samples++;
+                shapeError = Math.Max(shapeError, Math.Max(Math.Abs(x - (alabama ? 1.2f : 1f)), Math.Abs(y - (alabama ? .55f : 1f))));
+                if (alabama && body.GetNodeOrNull<Marker2D>("AlabamaGroundContact") is { } contact)
+                {
+                    // Compare in creature coordinates so camera zoom and shake cancel.
+                    Vector2 head = node.GetGlobalTransformWithCanvas().AffineInverse() * contact.GetGlobalTransformWithCanvas().Origin;
+                    headError = Math.Max(headError, Math.Abs(head.Y));
+                }
+            }
+            FinisherSmokeObserver.Reset();
+            _tree.ProcessFrame += Sample;
+            try
+            {
+                CardModel card = alabama ? state.CreateCard<AlabamaDrop>(player) : state.CreateCard<StrikeNinjaSlayer>(player);
+                await CardPileCmd.Add(card, PileType.Hand);
+                await PlayerCmd.SetEnergy(10, player);
+                await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), card, enemy);
+                await CombatManager.Instance.CheckWinCondition();
+                await WaitUntilAsync(() => FindDescendant<NRewardsScreen>(_tree.Root) != null, "Victim shape fixture did not reach rewards.");
+            }
+            finally { _tree.ProcessFrame -= Sample; }
+            Require(samples > 0 && shapeError < .01f, $"Victim proportions changed: {speed}, Alabama={alabama}, samples={samples}, error={shapeError}.");
+            Require(!alabama || sawWindupCompression && headError < .5f,
+                $"Alabama lost its windup compression or crown-floor contact: {speed}, windup={sawWindupCompression}, gap={headError}.");
+            var sessionResult = FinisherSmokeObserver.Snapshots().Single();
+            Require(sessionResult.CompletionObserved && sessionResult.ResourcesReleased && sessionResult.CompletionFailure == null
+                && sessionResult.SuccessfulKills.Values.Sum() == 1, "Victim shape change broke single-death cleanup.");
+            observations.Add(new System.Text.Json.Nodes.JsonObject { ["speed"] = speed.ToString(), ["alabama"] = alabama,
+                ["samples"] = samples, ["shapeError"] = shapeError, ["headFloorError"] = headError, ["windupCompressed"] = sawWindupCompression });
+            _checkpoints.Write($"feedback119.victim-shape.{speed}.{alabama}");
+            await NGame.Instance.ReturnToMainMenuAfterRun();
+            await WaitFrames(30);
+        }
+        File.WriteAllText(Path.Combine(Path.GetDirectoryName(_configuration.CheckpointPath)!, "victim-shapes.json"), observations.ToJsonString());
+    }
+
 }
 
 internal static class Feedback119RouteProbe

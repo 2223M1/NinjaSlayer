@@ -116,7 +116,7 @@ public sealed class DarkCounterPower : NinjaSlayerPowerTemplate
             if (FinisherAttackCommandAdapter.PredictReverseVictim(command, [target], 0m, 1)
                 ?.GetCreatureNode() is { } focus && Owner.GetCreatureNode() is { } actor)
             {
-                approach = FinisherApproach.Create(actor, focus, Godot.Vector2.One);
+                approach = FinisherApproach.Create(actor, focus);
                 approach.ReturnDuration = SlowAttackAnimation.IaiReturnSeconds;
                 approach.Start(SlowAttackAnimation.IaiPeakSeconds);
             }
