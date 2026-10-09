@@ -45,16 +45,18 @@ public static class SlowAttackAnimation
             return;
         }
         await PlayLunge(creature, NinjaSlayerCombatVisuals.SlowAttackLungeDistance,
-            gate, StandardOutboundSeconds, CombatActionTimingRuntime.AttackReturnSeconds(gate, heavy: true));
+            gate, StandardOutboundSeconds, CombatActionTimingRuntime.AttackReturnSeconds(gate, heavy: true),
+            FinisherActionTrajectory.SlowProgress);
     }
 
     // Companion and counter triggers must not inherit the enclosing player's card pose.
     internal static Task PlayIai(Creature creature) =>
         FinisherApproach.TryPlayToPeak(creature, IaiPeakSeconds, out Task approach) ? approach
             : PlayLunge(creature, NinjaSlayerCombatVisuals.SlowAttackLungeDistance,
-                IaiPeakSeconds, IaiPeakSeconds, IaiReturnSeconds);
+                IaiPeakSeconds, IaiPeakSeconds, IaiReturnSeconds, FinisherActionTrajectory.SlowProgress);
 
-    private static async Task PlayLunge(Creature creature, float distance, float gate, float outbound, float recovery)
+    internal static async Task PlayLunge(Creature creature, float distance, float gate, float outbound, float recovery,
+        Func<float, float> trajectory, bool reverseDirection = false)
     {
         if (creature.GetCreatureNode() is not { } node || gate <= 0f)
         {
@@ -80,6 +82,7 @@ public static class SlowAttackAnimation
         float direction = creature.Monster is Monsters.YamotoKokiMonster
             ? node.Body.Transform.Determinant() < 0f ? -1f : 1f
             : creature.Side == CombatSide.Player ? 1f : -1f;
+        if (reverseDirection) direction = -direction;
         NinjaSlayerShadowController.Get(creature)?.BeginAction(ShadowActionKind.SlowAttack, outbound, recovery, hold: true);
         void Apply(float offset)
         {
@@ -87,7 +90,7 @@ public static class SlowAttackAnimation
             FinisherApproach.SetAnimationPosition(creature, visuals, baseline + Vector2.Right * (direction * distance * offset));
         }
         tween.TweenMethod(Callable.From<float>(elapsed =>
-            Apply(FinisherActionTrajectory.SlowProgress(Mathf.Clamp(elapsed / outbound, 0f, 1f)))), 0f, gate, gate);
+            Apply(trajectory(Mathf.Clamp(elapsed / outbound, 0f, 1f)))), 0f, gate, gate);
         tween.TweenCallback(Callable.From(() =>
         {
             NinjaSlayerShadowController.Get(creature)?.BeginReturn(recovery);

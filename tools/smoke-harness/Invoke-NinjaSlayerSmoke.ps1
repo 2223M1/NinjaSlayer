@@ -538,6 +538,11 @@ try {
     }
     elseif ($Mode -eq 'FeedbackCombat') {
         @('feedback119.death.Normal.damage', 'feedback119.death.Normal.swallow', 'feedback119.death.Fast.damage', 'feedback119.death.Fast.swallow', 'feedback119.death.Instant.damage', 'feedback119.death.Instant.swallow', 'feedback119.ink-reflection', 'feedback119.vantom-kill', 'feedback119.victim-shape.Normal.False', 'feedback119.victim-shape.Normal.True', 'feedback119.victim-shape.Fast.False', 'feedback119.victim-shape.Fast.True', 'feedback119.victim-shape.Instant.False', 'feedback119.victim-shape.Instant.True', 'feedback119.combat-completed')
+        foreach ($speed in @('Normal', 'Fast', 'Instant')) {
+            "feedback120.attack-return.$speed"
+            "feedback120.shuriken-pile.$speed"
+            "feedback120.sandpit-companions.$speed"
+        }
     }
     elseif ($Mode -eq 'StrikeSynergy') {
         @('strike-synergy.completed')

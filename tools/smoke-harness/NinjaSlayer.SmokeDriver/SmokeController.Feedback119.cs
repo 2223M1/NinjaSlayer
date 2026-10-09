@@ -130,6 +130,7 @@ internal sealed partial class SmokeController
     private async Task VerifyFeedbackCombat()
     {
         SaveManager.Instance.SetFtuesEnabled(false);
+        await VerifyFeedback120();
         await VerifyFinisherVictimShapes();
         var choice = new BlockingPlayerChoiceContext();
         foreach (FastModeType speed in new[] { FastModeType.Normal, FastModeType.Fast, FastModeType.Instant })

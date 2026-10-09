@@ -1,0 +1,421 @@
+{
+  "checkedAt": "2026-10-09T16:40:03.377Z",
+  "previousBaseline": "feedback-1.0.19.json",
+  "previousPublicCount": 117,
+  "newPublicCount": 15,
+  "totalPublicCount": 132,
+  "rows": [
+    {
+      "id": "2597b1ec-2e97-4dec-a729-dab1c36cc453",
+      "modVersion": "1.0.19",
+      "gameVersion": "v0.111.0",
+      "group": "TornadoAndBlackFlame",
+      "conclusion": "证据不足",
+      "evidence": "三人移动端龙卷卡死。截图为通关反馈页；附件entry-2.log:30490另证实玩家死亡清空牌堆后，已排队黑炎抛Black Flame requires combat。此黑炎生命周期缺陷有旧包失败基线并已修复，但不能据此关闭龙卷主诉。嵌套失步ZIP被原生日志收集按UTF-8文本重写损坏，缺少完整远端状态。",
+      "attachments": {
+        "logsSha256": "d3871aa46079a2a37cb466c82315399f0150387b374ef1e5cc9600d10c37c592",
+        "screenshotSha256": "5f50163178bb220a83fc51d111b4fabd7f8f8d930e17991e994e7ffe4882809e",
+        "files": [
+          {
+            "file": "entry-0.log",
+            "size": 7075820,
+            "sha256": "77323423b65a89dd9da6c5acd7f7f116528cfa7651120864ab81fa3336292ccc"
+          },
+          {
+            "file": "entry-1.log",
+            "size": 808225,
+            "sha256": "3f6f87f4e010858d2595c5dfbb1f738bc2f65550966ce462e9ef60a8e24de52a"
+          },
+          {
+            "file": "entry-2.log",
+            "size": 8326171,
+            "sha256": "02ef04c03dcc106680f6a3415cb3d23bc06fade2a8a0999bb22a28d951f0aeec"
+          },
+          {
+            "file": "entry-3.log",
+            "size": 1113436,
+            "sha256": "4646f54174c073aadcd757fbb584d4efdce119573a8e8f5992027e75a325b8b6"
+          },
+          {
+            "file": "entry-8.log",
+            "size": 8331426,
+            "sha256": "88f1c038b5ca2d0cf850cfba81b8ab44cc711b8103864758bb51526d765d627f"
+          },
+          {
+            "file": "entry-9.json",
+            "size": 49,
+            "sha256": "1a68ed9149b33aeee28cb3c4d102a8ccb23b1c3d1bcfc949e6f9c96ffd0a9973"
+          },
+          {
+            "file": "entry-10.json",
+            "size": 5892,
+            "sha256": "12b34c3fd94813eac79e0218bb53375f4b0d930f85ed6be39d322afba8aa4937"
+          },
+          {
+            "file": "entry-11.json",
+            "size": 90610,
+            "sha256": "c6bf3af0d00a9066fbd15aa9f7ee89de4ed19e906e1114e02f22d59548887fcd"
+          },
+          {
+            "file": "entry-12.json",
+            "size": 350,
+            "sha256": "ab749c5e61f784d3bf085268806be3cecc9cc7a566ae5d869aed50cd95ab0bba"
+          }
+        ]
+      }
+    },
+    {
+      "id": "402312ad-525c-4188-bbe0-a2d43750857d",
+      "modVersion": "1.0.18",
+      "gameVersion": "v0.107.1",
+      "group": "Discord",
+      "conclusion": "旧版已修复",
+      "evidence": "韩语反馈工坊Discord过期。此前提交6d125e33（PR199）已将16语言和官网统一至https://discord.gg/eHuQqjrAyf，并说明旧邀请过期；工坊回读证据保存在workshop-discord-20261009/verified.json。",
+      "attachments": null
+    },
+    {
+      "id": "543166da-fa61-42d8-9e02-e8a2f0723243",
+      "modVersion": "1.0.19",
+      "gameVersion": "v0.107.1",
+      "group": "NonDefect",
+      "conclusion": "预期行为／非故障请求",
+      "evidence": "联机体验好评；已读公开原文，无可复现故障，不自动改平衡，保持原状态和作者回应。",
+      "attachments": null
+    },
+    {
+      "id": "64412f0b-ac15-4728-9512-14588763d4e6",
+      "modVersion": "1.0.19",
+      "gameVersion": "v0.111.0",
+      "group": "NonDefect",
+      "conclusion": "预期行为／非故障请求",
+      "evidence": "整体强度评价；已读公开原文，无可复现故障，不自动改平衡，保持原状态和作者回应。",
+      "attachments": null
+    },
+    {
+      "id": "78cb2a66-83bf-4ba5-804b-a3b5ecd22c0a",
+      "modVersion": "1.0.19",
+      "gameVersion": "v0.111.0",
+      "group": "NonDefect",
+      "conclusion": "预期行为／非故障请求",
+      "evidence": "防御/反伤卡强度及消耗建议；已读公开原文，无可复现故障，不自动改平衡，保持原状态和作者回应。",
+      "attachments": null
+    },
+    {
+      "id": "88897b04-2c79-4abb-ae8f-1fcac51374f3",
+      "modVersion": "1.0.19",
+      "gameVersion": "v0.107.1",
+      "group": "Architect",
+      "conclusion": "预期行为",
+      "evidence": "选择原生Continue之后的既定演出；附件记录选中近战、镜头恢复、victory True及原生进度/历史保存完成。不作故障修复，不关闭为已修复。",
+      "attachments": {
+        "logsSha256": "a39c171ba23386200f47091f70a6f41521e5b5aee5ec9bcfedc5877b0c0874ad",
+        "screenshotSha256": "d2968ebfecf787cc60fc67607be20a6c74dc131b0d661a8575b7589f5182b895",
+        "files": [
+          {
+            "file": "entry-0.log",
+            "size": 4386422,
+            "sha256": "ef36afe871ae76fa6dc040a2ddad56b3302cd8aee32b3b572fc08a81eeb91faa"
+          },
+          {
+            "file": "entry-1.log",
+            "size": 630074,
+            "sha256": "5483fd81fff721de55563615b62c6b7b5e648697946d5c40e45d2985aeed98c4"
+          },
+          {
+            "file": "entry-2.log",
+            "size": 760605,
+            "sha256": "6738a06fafc9bd074228f5edcea739f0d7503d54e3e26841190ce5855fd54ddb"
+          },
+          {
+            "file": "entry-3.log",
+            "size": 2311174,
+            "sha256": "04fe679daefa25a5a2a76628a631401892b2aae780c86bd4d56a097676df6360"
+          },
+          {
+            "file": "entry-4.log",
+            "size": 3918576,
+            "sha256": "015e5020dcec9e6463a796713e0a627392bb93e02c77b9d710317ceb6c3fc93a"
+          },
+          {
+            "file": "entry-5.json",
+            "size": 52,
+            "sha256": "5d15769c50cb0f0a6b65562276daefa469a2cd7fc9275643ddbe2b682e3940ba"
+          },
+          {
+            "file": "entry-6.json",
+            "size": 4121,
+            "sha256": "d501263afdfc0015583ef6cfb8e1b3e20355a69354fe700c370c6fa822128434"
+          },
+          {
+            "file": "entry-7.json",
+            "size": 115068,
+            "sha256": "8cdbab99769a85a3c921b589b51eb48c70d4a8d6520c232cccb307afbefd8b85"
+          },
+          {
+            "file": "entry-8.json",
+            "size": 296,
+            "sha256": "425a17a814d3a8d784aaa6ffc9f55b69c37844e06fb3ca2397db42c4c8dd8e47"
+          }
+        ]
+      }
+    },
+    {
+      "id": "9705883c-b627-4c43-8719-bb6ab870a54d",
+      "modVersion": "1.0.19",
+      "gameVersion": "v0.111.0",
+      "group": "NonDefect",
+      "conclusion": "预期行为／非故障请求",
+      "evidence": "茶道费用、防御及强度建议；已读公开原文，无可复现故障，不自动改平衡，保持原状态和作者回应。",
+      "attachments": null
+    },
+    {
+      "id": "a53a37c6-e1da-4326-934b-3d4b6a079c5d",
+      "modVersion": "1.0.19",
+      "gameVersion": "v0.111.0",
+      "group": "AttackDrift",
+      "conclusion": "当前缺陷",
+      "evidence": "与Litter the Spire 0.3.0共存；日志角色来源X增长到两万余。该模组调用原生TriggerAnim(Attack,.1)，旧独立攻击将未结束的位移作为新基线。仅NinjaSlayer+RitsuLib连续12次也复现约359.867px右漂。删除独立root Tween，复用已有视觉收招与动作接管；三速度候选契约通过。",
+      "attachments": {
+        "logsSha256": "857f9b0b82c956707c48ad198d3b903d96af1542aab0608fda848bf7741b5579",
+        "screenshotSha256": "2ec9695b2cf7c56d583dc608c3ccd895e6213b534654f08e4a2c197df0b20b54",
+        "files": [
+          {
+            "file": "entry-0.log",
+            "size": 791870,
+            "sha256": "c973ef9dea819f3919379aa68d3e73486d02118ce6cd201f3cc8289404f1cca9"
+          },
+          {
+            "file": "entry-1.log",
+            "size": 670035,
+            "sha256": "9ef24f4d3d192472a9842147b46353de51e77f3ceb3d8850d247e874caddafcd"
+          },
+          {
+            "file": "entry-2.log",
+            "size": 792432,
+            "sha256": "bb05d3eb90cbaf4485d29e84f7096b993514d5337a07eb4d0b65afa87c302cd5"
+          },
+          {
+            "file": "entry-3.log",
+            "size": 628865,
+            "sha256": "a9be16fce4f17aa0a59ed4224fbe2610fd10adbdde9423d9ccb08cf905abb8b0"
+          },
+          {
+            "file": "entry-4.log",
+            "size": 2561541,
+            "sha256": "127fa23d29985fce6922de82ddebdcd0943ae5e42a8ecbdff5a7225e95007598"
+          },
+          {
+            "file": "entry-6.json",
+            "size": 52,
+            "sha256": "9739ad8352e422cdd47c1bdd54cd0895cf37b5473bb0d7f9ba7f1aa0d5630829"
+          },
+          {
+            "file": "entry-7.json",
+            "size": 9006,
+            "sha256": "dfa5f738323c2919432da3cffb5b5b7b053f7cfafefea42fb8f6d48eddf291a7"
+          },
+          {
+            "file": "entry-8.json",
+            "size": 308241,
+            "sha256": "efc35c1e64ca235fdceea466d74cc06810e535af3c2a9eb623a11453b992280c"
+          },
+          {
+            "file": "entry-9.json",
+            "size": 361,
+            "sha256": "8a61ab9438a3016e33e380917695fd21ff1b423471ff5ae2a1abef9c9910bd09"
+          }
+        ]
+      }
+    },
+    {
+      "id": "a87b1158-cd8a-48c9-b82a-79feb9bc4fe1",
+      "modVersion": "1.0.19",
+      "gameVersion": "v0.111.0",
+      "group": "NonDefect",
+      "conclusion": "预期行为／非故障请求",
+      "evidence": "一般好评；已读公开原文，无可复现故障，不自动改平衡，保持原状态和作者回应。",
+      "attachments": null
+    },
+    {
+      "id": "c34b900a-c2ff-4812-a125-d8e1fb69a08b",
+      "modVersion": "1.0.19",
+      "gameVersion": "v0.107.1",
+      "group": "NonDefect",
+      "conclusion": "预期行为／非故障请求",
+      "evidence": "第三幕小季强度建议；已读公开原文，无可复现故障，不自动改平衡，保持原状态和作者回应。",
+      "attachments": null
+    },
+    {
+      "id": "d8feb006-a36c-4088-9673-643c4064a2a0",
+      "modVersion": "1.0.19",
+      "gameVersion": "v0.111.0",
+      "group": "NonDefect",
+      "conclusion": "预期行为／非故障请求",
+      "evidence": "体系及新增事件建议；已读公开原文，无可复现故障，不自动改平衡，保持原状态和作者回应。",
+      "attachments": null
+    },
+    {
+      "id": "d945c99a-7a63-427f-918c-d41967298c09",
+      "modVersion": "1.0.19",
+      "gameVersion": "v0.107.1",
+      "group": "ShurikenFactory",
+      "conclusion": "当前缺陷",
+      "evidence": "猪煲Q版0.1.5的OrbModel.CreateSprite前缀抢占手里剑并加载不存在的原生路径；entry-4.log:1739直接记录。手里剑专用初始化改用RitsuLib公开IModOrbSpriteFactory，保留原生NOrb更新。旧包竞争工厂契约失败，新包通过。历史0.1.5未取得；实机对照使用当前0.2.7，不能等同原版本。",
+      "attachments": {
+        "logsSha256": "3009395c44355340329c6829731fc4cbac10a71aba9028a7d796959a654fd26b",
+        "screenshotSha256": "ca3c526f0c2e04afb10fa0bd9794f6ff86e1ec7411609cb48d1db4ff33c17bd7",
+        "files": [
+          {
+            "file": "entry-0.log",
+            "size": 356873,
+            "sha256": "9ce0fc77628e3ec539ef228ea86f7a8be738f834db1a36077e1298f91879cb27"
+          },
+          {
+            "file": "entry-1.log",
+            "size": 1804354,
+            "sha256": "30e43f327a5af7696074d5cf962b0b8a93e15638e3c6fa85a38b977107f5122f"
+          },
+          {
+            "file": "entry-2.log",
+            "size": 381280,
+            "sha256": "97f47dc5cc6ed3d8b1a20100ad1adee795e5dc2a9dd6900f0b6bf67940139bac"
+          },
+          {
+            "file": "entry-3.log",
+            "size": 942835,
+            "sha256": "317b0031d9de05cbc78067f4f0025665ecbe645a8c8a0ae846f694305f618397"
+          },
+          {
+            "file": "entry-4.log",
+            "size": 337823,
+            "sha256": "a14fde3db4543da763351eab454e81d0f98dfb8109b6b2e64561522555666a97"
+          },
+          {
+            "file": "entry-9.json",
+            "size": 52,
+            "sha256": "9739ad8352e422cdd47c1bdd54cd0895cf37b5473bb0d7f9ba7f1aa0d5630829"
+          },
+          {
+            "file": "entry-10.json",
+            "size": 4924,
+            "sha256": "9ee25228d64c3f070316a669f946bd31bda787aa51e1539dafe5fc32b855be5a"
+          },
+          {
+            "file": "entry-11.json",
+            "size": 351968,
+            "sha256": "cd00e720a6327fbeba7dec9aabfc6808b032232b3ccf5f5d67182944825da27c"
+          },
+          {
+            "file": "entry-12.json",
+            "size": 296,
+            "sha256": "45cf5a1ac31dbedfc245b01214f40d5dfba8557a0168a06b312ce8ac813a6524"
+          }
+        ]
+      }
+    },
+    {
+      "id": "dcf85538-f4ad-4385-88c0-18be276f10e5",
+      "modVersion": "1.0.19",
+      "gameVersion": "v0.107.1",
+      "group": "NonDefect",
+      "conclusion": "预期行为／非故障请求",
+      "evidence": "茶道防御及半血收益设计建议；已读公开原文，无可复现故障，不自动改平衡，保持原状态和作者回应。",
+      "attachments": null
+    },
+    {
+      "id": "f081441c-1959-48fd-8d27-91af9848f9d7",
+      "modVersion": "1.0.18",
+      "gameVersion": "v0.111.0",
+      "group": "NonDefect",
+      "conclusion": "预期行为／非故障请求",
+      "evidence": "呼吸回血评价；已读公开原文，无可复现故障，不自动改平衡，保持原状态和作者回应。",
+      "attachments": null
+    },
+    {
+      "id": "f3282ce5-6d19-4f63-b36a-70aec6517747",
+      "modVersion": "1.0.19",
+      "gameVersion": "v0.111.0",
+      "group": "TornadoDesync",
+      "conclusion": "证据不足",
+      "evidence": "两人移动端、RitsuLib0.6.2。entry-0.log在龙卷动作后出现checksum166/123/587失步，另有读敌动作失步；失步ZIP已被文本收集损坏。双宿主真实ENet两端各自执行X=4/20/60龙卷，逐次HP/能力/能量/RNG一致，未复现。未改龙卷玩法代码，不能归责移动端或第三方，保持未解决。",
+      "attachments": {
+        "logsSha256": "2d3455929cb6258d3f309bb09fa79c0ed4c54937b7e091a2513db474e06e748a",
+        "screenshotSha256": "e44158b28f6ed4f9f5cf9c668a2d73757a809ce92601f4c142fbbb59cd46d5d1",
+        "files": [
+          {
+            "file": "entry-0.log",
+            "size": 7843710,
+            "sha256": "1b9b46016692dd38f13ef30cce431fec9dab1ebdcfefbe42d96dfd8760a8ffc3"
+          },
+          {
+            "file": "entry-1.log",
+            "size": 3718895,
+            "sha256": "c2da23521c2da588a05d855c27a4514c4dcb59d43b43417a951fe7da2d509d22"
+          },
+          {
+            "file": "entry-2.log",
+            "size": 587646,
+            "sha256": "e34446cc13b6b44ce2c2fa32eac27ddb35e53de6ef03402e8df648321b860734"
+          },
+          {
+            "file": "entry-3.log",
+            "size": 512114,
+            "sha256": "6e1d628d502745c25cca5e5ad8fa0a6555994d8541c3604ad871b71a64c48bf0"
+          },
+          {
+            "file": "entry-4.log",
+            "size": 561837,
+            "sha256": "ca3faa22a4bf46f5a13d63e43a6ac67da3db631aa1f888a04dfdeaae79327cf2"
+          },
+          {
+            "file": "entry-9.json",
+            "size": 49,
+            "sha256": "1a68ed9149b33aeee28cb3c4d102a8ccb23b1c3d1bcfc949e6f9c96ffd0a9973"
+          },
+          {
+            "file": "entry-10.json",
+            "size": 6096,
+            "sha256": "c0aedd7839ae5f03467f59fb1852aa5d353b2b1fa04061ede7f22e54cdf0543a"
+          },
+          {
+            "file": "entry-11.json",
+            "size": 63741,
+            "sha256": "0e6770e77a4b791f06d67e0228bc4672f10871babce3680988af1555f6d37a03"
+          },
+          {
+            "file": "entry-12.json",
+            "size": 42269,
+            "sha256": "f9532d617dec96de2441c543c9b9361678ab26ca73bf261310734f249512482f"
+          },
+          {
+            "file": "entry-13.json",
+            "size": 350,
+            "sha256": "ab749c5e61f784d3bf085268806be3cecc9cc7a566ae5d869aed50cd95ab0bba"
+          }
+        ]
+      }
+    }
+  ],
+  "baselines": [
+    {
+      "name": "black-flame",
+      "sha256": "e78b836ff87010c1128cf1b7b0b58bb4faac52f881cd5a1cb8b709504c8ad292",
+      "bytes": 35234
+    },
+    {
+      "name": "orb-factory",
+      "sha256": "89423175faaf3dbf37cfdb8f8f6daf795faa8ced9a7a8827b87384d0d5a11394",
+      "bytes": 41284
+    },
+    {
+      "name": "drift",
+      "sha256": "8ae42235d536813c52d7fd5f85244b1ba00bbd79fcfe0af50d99b17ff321a5f1",
+      "bytes": 36383
+    },
+    {
+      "name": "sandpit",
+      "sha256": "d8ceaa7b2261234a7bf281b425a883d44933417e5635667c3d2c78bf283437f2",
+      "bytes": 35611
+    }
+  ]
+}

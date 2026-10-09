@@ -90,6 +90,9 @@ public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
             .ToList();
         Creature? player = allies.FirstOrDefault(node => node.Entity.IsPlayer)?.Entity;
         if (player?.CombatState is not { } combat) return;
+        // Sandpit's native creature-added hook already includes pets in its pull.
+        // Rebuilding absolute player slots here would undo the encounter's position.
+        if (allies.Any(node => NinjaSlayerAllyLayoutMotion.IsPulledBySandpit(node.Entity))) return;
         foreach (NCreature node in allies) node.Visuals.Modulate = Colors.White;
         NCombatRoom.PositionPlayersAndPets(allies,
             combat.Encounter?.GetCameraScaling() ?? room.SceneContainer.Scale.X, combat.Encounter?.FullyCenterPlayers ?? false);
@@ -110,5 +113,18 @@ public sealed class YamotoKokiDynamicAllyLayoutPatch : IPatchMethod
         new(typeof(NCombatRoom), nameof(NCombatRoom.RemoveCreatureNode))
     ];
 
-    public static void Postfix(NCombatRoom __instance) => YamotoKokiAllyLayoutPatch.Reflow(__instance);
+    public static void Prefix(NCombatRoom __instance, out Dictionary<NCreature, Vector2> __state) =>
+        __state = __instance.CreatureNodes
+            .Where(node => FriendlyCompanionTargeting.IsFriendlyCompanion(node.Entity)
+                && NinjaSlayerAllyLayoutMotion.IsPulledBySandpit(node.Entity))
+            .ToDictionary(node => node, node => node.Position);
+
+    public static void Postfix(NCombatRoom __instance, Dictionary<NCreature, Vector2> __state)
+    {
+        // AddCreature places all existing pets beside their owner. Preserve our
+        // companions' established spacing before Sandpit's native added hook
+        // applies the same pull to the player and their pets.
+        foreach (var (node, position) in __state) node.Position = position;
+        YamotoKokiAllyLayoutPatch.Reflow(__instance);
+    }
 }

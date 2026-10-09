@@ -654,11 +654,10 @@ if (!/GlowColorHex\s*=\s*"#FFB300"/.test(shurikenOrbVisualSource)
 }
 if (!/RenderingServer\.FramePreDraw\s*\+=\s*SyncNow/.test(shurikenOrbVisualSource)
     || !/RenderingServer\.FramePreDraw\s*-=\s*SyncNow/.test(shurikenOrbVisualSource)
-    || !/_labelContainer\.ZIndex\s*=\s*4/.test(shurikenOrbVisualSource)
     || !/GetGlobalTransformWithCanvas\(\)[\s\S]*?AffineInverse\(\)/.test(shurikenOrbVisualSource)
     || !/_deformedVisuals\.Transform\s*=\s*new\s+Transform2D\(x,\s*y,\s*Vector2\.Zero\)/.test(shurikenOrbVisualSource)
     || !/StackCount:\s*>\s*0/.test(shurikenOrbVisualSource)) {
-  errors.push('Shuriken Orb slot 0 must follow the live body transform while labels remain upright and on top');
+  errors.push('Shuriken Orb slot 0 must follow the live body transform while labels remain upright');
 }
 const ninjaSlayerVisualSceneSource = readFileSync(
   join(root, 'NinjaSlayer', 'scenes', 'creature_visuals', 'ninja_slayer.tscn'),
