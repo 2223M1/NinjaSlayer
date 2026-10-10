@@ -25,7 +25,7 @@
   "NINJA_SLAYER_EVENT_NARAKU_EVENT.pages.ACCEPTED.description": "후지키도는 자아의 고삐를 느슨하게 놓는다. 적흑의 불길이 몸을 채우고, 나라쿠의 웃음이 그의 숨결과 겹친다.",
   "NINJA_SLAYER_EVENT_NARAKU_EVENT.pages.SILENCED.description": "“닥쳐라, 나라쿠.” 후지키도는 자신의 이름을 말하고, 차도처럼 깊은 호흡으로 악몽에서 일어난다.",
   "NINJA_SLAYER_EVENT_GLORY_OF_KYOTO_EVENT.title": "교토의 영광",
-  "NINJA_SLAYER_EVENT_GLORY_OF_KYOTO_EVENT.pages.INITIAL.description": "석실에 검은 망토가 서 있다. 텅 비었다! 뒤에서 살의가 덮친다. “Domo, 닌자 슬레이어=상. 다크 닌자 desu.” “Domo, 다크 닌자=상. 닌자 슬레이어 desu.” 표창이 망토를 꿰뚫는다. GOURANGA! 본체는 이미 닌자 슬레이어의 착지점에서 기다린다! 데스 슬래시가 다가온다!",
+  "NINJA_SLAYER_EVENT_GLORY_OF_KYOTO_EVENT.pages.INITIAL.description": "석실에 검은 망토가 서 있다. 텅 비었다! 뒤에서 살의가 덮친다. “Domo, 닌자 슬레이어=상. 다크 닌자 desu.” “Domo, 다크 닌자=상. 닌자 슬레이어 desu.” 슈리켄이 망토를 꿰뚫는다. GOURANGA! 본체는 이미 닌자 슬레이어의 착지점에서 기다린다! 데스 슬래시가 다가온다!",
   "NINJA_SLAYER_EVENT_GLORY_OF_KYOTO_EVENT.pages.INITIAL.options.ESCAPE.title": "도주",
   "NINJA_SLAYER_EVENT_GLORY_OF_KYOTO_EVENT.pages.INITIAL.options.ESCAPE.description": "[gold]{Gold}[/gold] 골드를 얻습니다.",
   "NINJA_SLAYER_EVENT_GLORY_OF_KYOTO_EVENT.pages.INITIAL.options.STAY.title": "머무르기",

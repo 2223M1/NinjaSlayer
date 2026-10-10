@@ -1,5 +1,5 @@
 {
-  "NINJA_SLAYER_ORB_SHURIKEN_ORB.title": "표창",
-  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "카드를 버릴 때마다 표창이 무작위 적을 공격하고 표창을 1 잃습니다.\n발현 시, 각 중첩이 한 번씩 공격합니다.",
-  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue]중첩\n카드를 버릴 때마다 무작위 적에게 피해를 {Evoke} 주고 표창을 1 잃습니다.\n발현 시, 각 중첩이 무작위 적에게 피해를 {Evoke} 줍니다."
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.title": "슈리켄",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "카드를 버릴 때마다 슈리켄이 무작위 적을 공격하고 슈리켄을 1 잃습니다.\n발현 시, 각 중첩이 한 번씩 공격합니다.",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue]중첩\n카드를 버릴 때마다 무작위 적에게 피해를 {Evoke} 주고 슈리켄을 1 잃습니다.\n발현 시, 각 중첩이 무작위 적에게 피해를 {Evoke} 줍니다."
 }
