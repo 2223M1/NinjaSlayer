@@ -1763,6 +1763,10 @@ internal sealed partial class SmokeController
             {
                 await RunRelease113Async();
             }
+            else if (_configuration.Phase == SmokePhase.GuardCounter)
+            {
+                await RunGuardCounterAsync();
+            }
             else if (_configuration.Phase == SmokePhase.MultiHitVigor)
             {
                 await RunMultiHitVigorAsync();

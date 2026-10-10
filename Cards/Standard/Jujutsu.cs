@@ -1,4 +1,3 @@
-using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -16,19 +15,13 @@ public sealed class Jujutsu : NinjaSlayerCommonCard
     public Jujutsu()
         : base(nameof(Jujutsu), 1, CardType.Skill, TargetType.Self) { }
 
-    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
-    {
-        await PowerCmd.Apply<KaratePower>(
+    protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
+        PowerCmd.Apply<KaratePower>(
             choiceContext,
             Owner.Creature,
             DynamicVars.Karate().BaseValue,
             Owner.Creature,
             this);
-        await CardCmd.Discard(choiceContext, await CardSelectCmd.FromHandForDiscard(
-            choiceContext, Owner,
-            new CardSelectorPrefs(CardSelectorPrefs.DiscardSelectionPrompt, 1),
-            null, this));
-    }
 
     protected override void OnUpgrade() => DynamicVars.Karate().UpgradeValueBy(2);
 }

@@ -24,7 +24,7 @@ public partial class OrbContractRunner
         foreach (int handSize in new[] { 0, 1, 2 })
         {
             using var combat = new OrbCombat();
-            CardModel source = throwing ? AddCard<KunaiThrow>(combat) : AddCard<Jujutsu>(combat);
+            CardModel source = throwing ? AddCard<KunaiThrow>(combat) : AddCard<Survivor>(combat);
             CardModel? sly = handSize > 0 ? AddCard<ShurikenCreation>(combat) : null;
             CardModel? other = handSize > 1 ? AddCard<DefendIronclad>(combat) : null;
             using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>

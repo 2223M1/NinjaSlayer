@@ -171,6 +171,7 @@ public partial class OrbContractRunner : Node
             ModelDb.Init();
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_CATALOG_OUTPUT") is null)
                 ModelDb.Inject(typeof(EvokeObserver));
+                ModelDb.Inject(typeof(GuardAttackObserver));
             string? minionPath = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_MINION_DLL");
             Assembly? minion = minionPath is null ? null : System.Runtime.Loader.AssemblyLoadContext.GetLoadContext(typeof(Creature).Assembly)!
                 .LoadFromAssemblyPath(System.IO.Path.GetFullPath(minionPath));
@@ -343,6 +344,13 @@ public partial class OrbContractRunner : Node
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_V024") == "1")
             {
                 await VerifyV024();
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_GUARD") == "1")
+            {
+                await VerifyV17();
                 GD.Print("NinjaSlayer orb product contracts passed.");
                 GetTree().Quit(0);
                 return;

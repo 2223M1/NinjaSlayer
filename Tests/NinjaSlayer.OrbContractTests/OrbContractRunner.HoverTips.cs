@@ -86,8 +86,8 @@ public partial class OrbContractRunner
             Require(!starless.HoverTips.OfType<CardHoverTip>().Single().Card.IsUpgraded,
                 "Starless Night must preview an unupgraded token even when the power card is upgraded.");
             var guard = AddCard<KillingIntent>(combat, upgraded: upgraded);
-            Require(!guard.HoverTips.OfType<CardHoverTip>().Single().Card.IsUpgraded,
-                "Killing Intent must preview the generated Straight Ki's upgrade.");
+            Require(!guard.HoverTips.OfType<CardHoverTip>().Any(),
+                "Killing Intent counters directly and must not advertise a generated card.");
         }
         Require(ModelDb.Relic<IrcTerminalRelic>().HoverTips.OfType<CardHoverTip>().Any(tip => tip.Card is BusyLine),
             "IRC Terminal must expose its Busy Line card preview.");

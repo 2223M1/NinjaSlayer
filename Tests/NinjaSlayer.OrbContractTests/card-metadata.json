@@ -719,7 +719,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/CollapseFist.png",
     "Vars": {
-      "Damage": 10,
+      "Damage": 20,
       "Karate": 5
     }
   },
@@ -737,7 +737,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/CollapseFist.png",
     "Vars": {
-      "Damage": 14,
+      "Damage": 28,
       "Karate": 7
     }
   },
@@ -1576,7 +1576,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/KillingIntent.png",
     "Vars": {
-      "Block": 9
+      "Block": 9,
+      "Damage": 47
     }
   },
   {
@@ -1593,7 +1594,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/KillingIntent.png",
     "Vars": {
-      "Block": 12
+      "Block": 12,
+      "Damage": 56
     }
   },
   {

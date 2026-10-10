@@ -1,7 +1,6 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
-using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Powers;
@@ -14,9 +13,8 @@ public sealed class KillingIntent : NinjaSlayerRareCard
         CombatState?.HittableEnemies.Any(enemy => enemy.Monster?.IntendsToAttack == true) == true;
 
     public override bool GainsBlock => true;
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(9, ValueProp.Move)];
-    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
-        HoverTipFactory.FromCardWithCardHoverTips<StraightKi>();
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+        [new BlockVar(9, ValueProp.Move), new DamageVar(47, ValueProp.Move)];
 
     public KillingIntent()
         : base(nameof(KillingIntent), 2, CardType.Skill, TargetType.Self) { }
@@ -27,10 +25,14 @@ public sealed class KillingIntent : NinjaSlayerRareCard
         await PowerCmd.Apply<KillingIntentPower>(
             choiceContext,
             Owner.Creature,
-            1,
+            Math.Max(0, DynamicVars.Damage.BaseValue - Owner.Creature.GetPowerAmount<KillingIntentPower>()),
             Owner.Creature,
             this);
     }
 
-    protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(3);
+    protected override void OnUpgrade()
+    {
+        DynamicVars.Block.UpgradeValueBy(3);
+        DynamicVars.Damage.UpgradeValueBy(9);
+    }
 }

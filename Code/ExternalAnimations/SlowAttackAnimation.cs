@@ -33,8 +33,7 @@ public static class SlowAttackAnimation
         }
         if (somersault)
         {
-            await NinjaSlayerRapidAnimationCoordinator.PlayAttackToPeak(creature, 120f, gate,
-                p => p * p, somersault: true);
+            await PlaySomersault(creature);
             return;
         }
         if (RapidCardPresentationContext.IsActive && creature.Player?.Character is INinjaSlayerCharacter)
@@ -48,6 +47,10 @@ public static class SlowAttackAnimation
             gate, StandardOutboundSeconds, CombatActionTimingRuntime.AttackReturnSeconds(gate, heavy: true),
             FinisherActionTrajectory.SlowProgress);
     }
+
+    internal static Task PlaySomersault(Creature creature) =>
+        NinjaSlayerRapidAnimationCoordinator.PlayAttackToPeak(creature, 120f, SomersaultHalfSeconds,
+            p => p * p, somersault: true);
 
     // Companion and counter triggers must not inherit the enclosing player's card pose.
     internal static Task PlayIai(Creature creature) =>

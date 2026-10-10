@@ -35,7 +35,8 @@ internal enum SmokePhase
     FeedbackFresh,
     FeedbackResume,
     FeedbackVerify,
-    FeedbackCombat
+    FeedbackCombat,
+    GuardCounter
 }
 
 internal sealed record SmokeConfiguration(

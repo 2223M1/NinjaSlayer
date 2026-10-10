@@ -4,7 +4,6 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Events;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
-using MegaCrit.Sts2.Core.Map;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Content;
 using NinjaSlayer.Code.Nodes;
@@ -26,23 +25,9 @@ public sealed class YamotoKokiIsSoCuteEvent : ModEventTemplate
         new GoldVar(50)
     ];
 
-    public override bool IsAllowed(IRunState runState)
-    {
-        if (!NinjaSlayerContentAccess.HasNinjaSlayer(runState))
-        {
-            return false;
-        }
-
-        bool passedFixedTreasure = runState.MapPointHistory
-            .ElementAtOrDefault(runState.CurrentActIndex)?
-            .Any(entry => entry.MapPointType == MapPointType.Treasure) == true;
-        return runState.CurrentActIndex switch
-        {
-            1 => passedFixedTreasure,
-            2 => !passedFixedTreasure,
-            _ => false
-        };
-    }
+    public override bool IsAllowed(IRunState runState) =>
+        runState.CurrentActIndex == 1
+        && NinjaSlayerContentAccess.HasNinjaSlayer(runState);
 
     protected override IReadOnlyList<EventOption> GenerateInitialOptions() =>
     [
