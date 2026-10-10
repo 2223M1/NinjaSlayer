@@ -34,6 +34,8 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
         }
         if (NinjaComponentSources.PowerTypes.TryGetValue(context.RuntimeSpec.Variant, out Type? power))
         {
+            if (power == typeof(KillingIntentPower))
+                amount = Math.Max(0, amount - owner.Creature.GetPowerAmount<KillingIntentPower>());
             await PowerCmd.Apply(choice, (PowerModel)ModelDb.GetById<PowerModel>(ModelDb.GetId(power)).ToMutable(),
                 owner.Creature, amount, owner.Creature, card);
             return true;

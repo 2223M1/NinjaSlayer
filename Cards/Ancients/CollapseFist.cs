@@ -25,7 +25,7 @@ public sealed class CollapseFist : NinjaSlayerStandaloneCardTemplate
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
-        new DamageVar(10, ValueProp.Move),
+        new DamageVar(20, ValueProp.Move),
         new KarateVar(5)
     ];
 
@@ -53,7 +53,7 @@ public sealed class CollapseFist : NinjaSlayerStandaloneCardTemplate
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Damage.UpgradeValueBy(4);
+        DynamicVars.Damage.UpgradeValueBy(8);
         DynamicVars.Karate().UpgradeValueBy(2);
     }
 }

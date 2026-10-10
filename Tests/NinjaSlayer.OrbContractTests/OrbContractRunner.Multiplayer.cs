@@ -232,6 +232,41 @@ public partial class OrbContractRunner
                 "Endurance damage, two-energy cost or post-hit Karate diverged between owners.");
             await FinishFixture(fixture);
         }
+        foreach (Player injured in run.Players)
+        {
+            GuardIntent(combat.Enemy, true);
+            foreach (Player player in run.Players)
+            {
+                foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
+                player.Creature.LoseBlockInternal(player.Creature.Block);
+                await PlayerCmd.SetEnergy(10, player);
+                var guard = combat.State.CreateCard<KillingIntent>(player);
+                if (player == second) guard.UpgradeInternal();
+                await CardPileCmd.Add(guard, PileType.Hand);
+                int before = completed;
+                string fixture = $"guard-{injured.NetId}-{player.NetId}";
+                File.WriteAllText(Path.Combine(directory, $"{role}.{fixture}"), "ready");
+                await WaitNetwork(() => File.Exists(Path.Combine(directory, $"host.{fixture}"))
+                    && File.Exists(Path.Combine(directory, $"client.{fixture}")), "both guard fixtures");
+                if (player.NetId == _network.NetId)
+                    RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(guard, null));
+                await WaitNetwork(() => completed > before, "native guard action");
+                Require(player.Creature.Block == (player == second ? 12 : 9), "Guard block differs between peers.");
+                await FinishFixture(fixture);
+            }
+            await EndGuardSide(combat.State, CombatSide.Player, run.Players.Select(p => p.Creature).ToArray());
+            injured.Creature.LoseBlockInternal(injured.Creature.Block);
+            await CreatureCmd.Damage(Choice, injured.Creature, 1, ValueProp.Move, combat.Enemy);
+            GuardIntent(combat.Enemy, false);
+            int hp = combat.Enemy.CurrentHp;
+            await EndGuardSide(combat.State, CombatSide.Enemy, combat.Enemy);
+            Require(hp - combat.Enemy.CurrentHp == (injured == first ? 56 : 47)
+                && run.Players.All(p => !p.Creature.HasPower<KillingIntentPower>()
+                    && !p.PlayerCombatState!.AllCards.OfType<StraightKi>().Any()),
+                "Counter must respect each owner's damage qualification and avoid generated combat cards on both peers.");
+            await FinishFixture($"guard-counter-{injured.NetId}");
+        }
+        GD.Print("PASS native ENet guard card actions and enemy-turn counter: independent owners, base/upgrade, no generated cards.");
         foreach (Player player in run.Players)
             foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
         GD.Print("PASS native ENet Endurance: both owners, base/upgrade, three Vigor hits, two energy and owned post-hit Karate.");
@@ -255,7 +290,7 @@ public partial class OrbContractRunner
         {
             foreach (CardModel card in PileType.Hand.GetPile(player).Cards.ToArray())
                 await CardPileCmd.Add(card, PileType.Discard);
-            var discard = combat.State.CreateCard<Jujutsu>(player);
+            var discard = combat.State.CreateCard<Survivor>(player);
             var sly = combat.State.CreateCard<ShurikenCreation>(player);
             var nested = combat.State.CreateCard<ShurikenCreation>(player);
             var last = combat.State.CreateCard<DefendIronclad>(player);
@@ -273,7 +308,7 @@ public partial class OrbContractRunner
                 RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(discard, null));
             await WaitNetwork(() => completed > before, $"player {player.NetId} hand discard and nested Scry choices");
             Require(sly.Pile?.Type == PileType.Discard && nested.Pile?.Type == PileType.Discard
-                && last.Pile?.Type == PileType.Discard && discard.Pile?.Type == PileType.Exhaust,
+                && last.Pile?.Type == PileType.Discard && discard.Pile?.Type == PileType.Discard,
                 "Native synchronized choices must resolve both Sly cards and the nested discard.");
             Require(player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 6,
                 "Nested discard chains must finish before each Sly card replenishes its stock.");

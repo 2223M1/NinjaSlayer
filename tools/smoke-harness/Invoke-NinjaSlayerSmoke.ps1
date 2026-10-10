@@ -12,7 +12,7 @@ param(
     [Parameter(Mandatory)][string]$RitsuLibModDirectory,
     [Parameter(Mandatory)][string]$OutputDirectory,
     [Parameter(Mandatory)][ValidateSet('stable', 'preview')][string]$Channel,
-    [ValidateSet('FirstCombatRestart', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossReload', 'Feedback119', 'FeedbackCombat', 'TelemetryLoss', 'Catalog', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113', 'Release114', 'GlamKindle', 'StrikeSynergy')]
+    [ValidateSet('FirstCombatRestart', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossReload', 'Feedback119', 'FeedbackCombat', 'GuardCounter', 'TelemetryLoss', 'Catalog', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113', 'Release114', 'GlamKindle', 'StrikeSynergy')]
     [string]$Mode = 'FirstCombatRestart',
     [ValidateRange(0, 7200)][int]$PhaseTimeoutSeconds = 0,
     [string]$Seed = 'NINJASLAYER_SMOKE_01',
@@ -140,7 +140,7 @@ function Stop-SmokeProcesses {
 function Invoke-SmokePhase {
     param(
         [Parameter(Mandatory)]
-        [ValidateSet('Fresh', 'Resume', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossFresh', 'BossResume', 'BossVerify', 'FeedbackFresh', 'FeedbackResume', 'FeedbackVerify', 'FeedbackCombat', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113', 'Release114', 'GlamKindle', 'StrikeSynergy')]
+        [ValidateSet('Fresh', 'Resume', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossFresh', 'BossResume', 'BossVerify', 'FeedbackFresh', 'FeedbackResume', 'FeedbackVerify', 'FeedbackCombat', 'GuardCounter', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113', 'Release114', 'GlamKindle', 'StrikeSynergy')]
         [string]$Phase,
         [Parameter(Mandatory)][int]$ExpectedExitCode
     )
@@ -176,6 +176,7 @@ function Invoke-SmokePhase {
             'FeedbackResume' { 27 }
             'FeedbackVerify' { 28 }
             'FeedbackCombat' { 29 }
+            'GuardCounter' { 30 }
         }
         CheckpointPath = $checkpointPath
         AutoSlayLogPath = (Join-Path $OutputDirectory "autoslay-$($Phase.ToLowerInvariant()).log")
@@ -497,7 +498,7 @@ try {
         Invoke-SmokePhase -Phase BossResume -ExpectedExitCode 20
         Invoke-SmokePhase -Phase BossVerify -ExpectedExitCode 0
     }
-    elseif ($Mode -in @('ReverseFinisher', 'FullAutoSlay', 'FeedbackCombat', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113', 'Release114', 'GlamKindle', 'StrikeSynergy')) {
+    elseif ($Mode -in @('ReverseFinisher', 'FullAutoSlay', 'FeedbackCombat', 'GuardCounter', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102', 'Release103', 'GreetingBow', 'TomoeThrow', 'MultiHitVigor', 'Release113', 'Release114', 'GlamKindle', 'StrikeSynergy')) {
         Invoke-SmokePhase -Phase $Mode -ExpectedExitCode 0
     }
     elseif ($Mode -eq 'SawatariSameCombat') {
@@ -555,6 +556,9 @@ try {
     }
     elseif ($Mode -eq 'Release113') {
         @('release113.hive.Normal', 'release113.hive.Fast', 'release113.completed')
+    }
+    elseif ($Mode -eq 'GuardCounter') {
+        @('guard-counter.completed')
     }
     elseif ($Mode -eq 'MultiHitVigor') {
         @('multihit.completed')
@@ -629,6 +633,7 @@ try {
             'GreetingBow' { 'greetingbow' }
             'TomoeThrow' { 'tomoe-throw' }
             'MultiHitVigor' { 'multihit-vigor' }
+            'GuardCounter' { 'guard-counter' }
             'Release113' { 'release113' }
             'Release114' { 'release114' }
             'GlamKindle' { 'glam-kindle' }
