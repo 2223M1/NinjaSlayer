@@ -1,0 +1,315 @@
+{
+  "version": "1.0.21",
+  "sourceRevision": "5ded8b1bb090e8c9725ad90719e216388f6d9608",
+  "verifiedAtUtc": "2026-10-10T10:21:31.435Z",
+  "pullRequests": [
+    202,
+    203
+  ],
+  "ci": {
+    "conclusion": "success",
+    "databaseId": 38043571069,
+    "headSha": "5ded8b1bb090e8c9725ad90719e216388f6d9608",
+    "status": "completed",
+    "url": "https://github.com/2223M1/NinjaSlayer/actions/runs/38043571069"
+  },
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "c3a696bbaa7a7f02f2b85c67d52f86327311062db326a9f0348070d4334fb9ad",
+    "301bb5bbde018c079db0e47542c68a0ea148ead54cd67979afbfe7a8398bf2db",
+    "cfb4055af06eac4b76b6911f54a60d09572920c85a86808fc480d2ef56a34337",
+    "7fcf87f4e1f4f95bfe4a2a679b9d3e7dd3ceff796b6b485e6af0c2936456f1e5",
+    "63a1bd184b3a4feaf6d592cf20ab87649c6d0026888eced7415c423fc848d498",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "8e193f6b5ecfddb985193cd1165f1666673c48bc05b3e4b023902cb14e883821",
+    "1b0b50617f916ae1a05ce55ec80b8ea5b4222ce1d9895aefe272fe8eb6d17cdf",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "3ec4ee1d405194938a9c448c7c0be65d82779184d4b2de5789df49335a636c42"
+  ],
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "bytes": 24576,
+      "sha256": "c3a696bbaa7a7f02f2b85c67d52f86327311062db326a9f0348070d4334fb9ad"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "bytes": 363,
+      "sha256": "301bb5bbde018c079db0e47542c68a0ea148ead54cd67979afbfe7a8398bf2db"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "bytes": 211563684,
+      "sha256": "cfb4055af06eac4b76b6911f54a60d09572920c85a86808fc480d2ef56a34337"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 1008,
+      "sha256": "7fcf87f4e1f4f95bfe4a2a679b9d3e7dd3ceff796b6b485e6af0c2936456f1e5"
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "bytes": 2215424,
+      "sha256": "63a1bd184b3a4feaf6d592cf20ab87649c6d0026888eced7415c423fc848d498"
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "bytes": 126976,
+      "sha256": "8e193f6b5ecfddb985193cd1165f1666673c48bc05b3e4b023902cb14e883821"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "bytes": 2219008,
+      "sha256": "1b0b50617f916ae1a05ce55ec80b8ea5b4222ce1d9895aefe272fe8eb6d17cdf"
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "bytes": 8,
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "bytes": 522,
+      "sha256": "3ec4ee1d405194938a9c448c7c0be65d82779184d4b2de5789df49335a636c42"
+    }
+  ],
+  "previewAttestations": [
+    {
+      "schemaVersion": 6,
+      "candidateSha": "5ded8b1bb090e8c9725ad90719e216388f6d9608",
+      "bundleVersion": "1.0.21",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [],
+      "bundleSha256": "7fcf87f4e1f4f95bfe4a2a679b9d3e7dd3ceff796b6b485e6af0c2936456f1e5",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "guard-counter",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-10T10:07:14.4829602+00:00"
+    },
+    {
+      "schemaVersion": 6,
+      "candidateSha": "5ded8b1bb090e8c9725ad90719e216388f6d9608",
+      "bundleVersion": "1.0.21",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [],
+      "bundleSha256": "7fcf87f4e1f4f95bfe4a2a679b9d3e7dd3ceff796b6b485e6af0c2936456f1e5",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "runtime-content-export",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-10T10:10:44.4804597+00:00"
+    }
+  ],
+  "validation": {
+    "logicTests": 371,
+    "dualHostProductContracts": true,
+    "dualHostPatchTransactions": true,
+    "dualHostNativeEnet": true,
+    "previewAutoAnthonyPublicBridge": true,
+    "counterCases": [
+      {
+        "speed": "Normal",
+        "upgraded": false,
+        "animations": 1,
+        "targets": 2,
+        "damagePerTarget": 63,
+        "remainingKarate": 2
+      },
+      {
+        "speed": "Fast",
+        "upgraded": false,
+        "animations": 1,
+        "targets": 2,
+        "damagePerTarget": 63,
+        "remainingKarate": 2
+      },
+      {
+        "speed": "Instant",
+        "upgraded": false,
+        "animations": 1,
+        "targets": 2,
+        "damagePerTarget": 63,
+        "remainingKarate": 2
+      },
+      {
+        "speed": "Normal",
+        "upgraded": true,
+        "animations": 1,
+        "targets": 2,
+        "damagePerTarget": 73,
+        "remainingKarate": 2
+      },
+      {
+        "speed": "Fast",
+        "upgraded": true,
+        "animations": 1,
+        "targets": 2,
+        "damagePerTarget": 73,
+        "remainingKarate": 2
+      },
+      {
+        "speed": "Instant",
+        "upgraded": true,
+        "animations": 1,
+        "targets": 2,
+        "damagePerTarget": 73,
+        "remainingKarate": 2
+      }
+    ],
+    "logHashes": [
+      {
+        "name": "anthony-preview.log",
+        "sha256": "0a3d8b7be9ad7e2a02ee5696bfd8ddad02c9b8477ec47cacc609b2c75a4a7e3b"
+      },
+      {
+        "name": "contracts-stable.log",
+        "sha256": "9c6e8fe36ca1ed475df38ed0f129391f9f16722c63dcd73f7d906db25554eb3b"
+      },
+      {
+        "name": "patch-stable.log",
+        "sha256": "e4b37ad0655c7e877745273c8b9cd5c4ae9b75081ac24a118de75c1c8184d629"
+      },
+      {
+        "name": "enet-stable-5ded8b1bb090/host.log",
+        "sha256": "1fc9a7582c97e12d81432c1b60dc85c89676e2b3e1908ffd1aebd91e80ce2951"
+      },
+      {
+        "name": "enet-stable-5ded8b1bb090/client.log",
+        "sha256": "2d3ff0370f392861e81a931bc2419656578ba9e920a06f2a898add20ab0c22c3"
+      },
+      {
+        "name": "contracts-preview.log",
+        "sha256": "bc3dbc72f63f38cf2455e22de66c07a1d3718dfc5dc33ed7ff617c8f0236a48e"
+      },
+      {
+        "name": "patch-preview.log",
+        "sha256": "7a291a3c16e804eb858a1e7c2616ad1239a6303fa04ecfba24a60d0bb50b1805"
+      },
+      {
+        "name": "enet-preview-5ded8b1bb090/host.log",
+        "sha256": "30459da6ac6c38bbde77d0c6db83f08e43ac8515a7adfeffe0efe0f86d3afbd7"
+      },
+      {
+        "name": "enet-preview-5ded8b1bb090/client.log",
+        "sha256": "6a3d5ed74168acece63c8f0e04af2aa1aa3b6861933197f8f1df18fff49ccf0a"
+      }
+    ],
+    "oldPackageFailure": {
+      "version": "1.0.20",
+      "sourceRevision": "a05f13fb2cf07aaf85e3514b81201938533881f2",
+      "sha256": "a35df2a1b5f28cfa4057a362fd4805d98e80f8f20a74fb29ada058e28d5199cc",
+      "assertion": "Counter no attack must expire at enemy turn end."
+    }
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "tags": "Characters,english,schinese,tchinese,german,latam,french,Indonesian,italian,japanese,korean,Polish,brazilian,russian,spanish,thai,turkish",
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "remoteDescriptionVerified": true,
+    "localizedLanguages": [
+      "english",
+      "schinese",
+      "tchinese",
+      "german",
+      "latam",
+      "french",
+      "indonesian",
+      "italian",
+      "japanese",
+      "koreana",
+      "polish",
+      "brazilian",
+      "russian",
+      "spanish",
+      "thai",
+      "turkish"
+    ],
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "galleryUnchanged": true,
+    "downloadBytes": 216470114
+  },
+  "notRun": [
+    "Complete stable client gameplay",
+    "Android/macOS/Linux gameplay",
+    "Two rendered multiplayer clients"
+  ],
+  "scope": "Explicit gameplay and Korean localization changes. Existing unresolved feedback states were not changed.",
+  "catalog": {
+    "fingerprint": "1e7add1dfb3063e71fd090995e3ffcb3d2789e289a8eea77177006d3040f7195",
+    "exportedFromVerifiedWorkshopDownload": true,
+    "attestation": {
+      "schemaVersion": 6,
+      "candidateSha": "5ded8b1bb090e8c9725ad90719e216388f6d9608",
+      "bundleVersion": "1.0.21",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [],
+      "bundleSha256": "7fcf87f4e1f4f95bfe4a2a679b9d3e7dd3ceff796b6b485e6af0c2936456f1e5",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "runtime-content-export",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-10T10:25:23.6468023+00:00"
+    },
+    "counts": {
+      "eng": 1671,
+      "zhs": 1671,
+      "zht": 1671,
+      "deu": 1671,
+      "esp": 1671,
+      "fra": 1671,
+      "ind": 1671,
+      "ita": 1671,
+      "jpn": 1671,
+      "kor": 1671,
+      "pol": 1671,
+      "ptb": 1671,
+      "rus": 1671,
+      "spa": 1671,
+      "tha": 1671,
+      "tur": 1671
+    }
+  }
+}
