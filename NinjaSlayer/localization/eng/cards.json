@@ -116,7 +116,7 @@
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.title": "Dragon Flying Kick",
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.description": "Deal {Damage:diff()} damage.\n[gold]Chado Breathing[/gold] {Breath:diff()}.\nDraw until your [gold]Hand[/gold] is full.",
   "NINJA_SLAYER_CARD_KILLING_INTENT.title": "Killing Intent·Straight Ki",
-  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "Gain {Block:diff()} [gold]Block[/gold].\nAt the end of the enemy turn, if you blocked all attack damage, counter once, dealing {Damage:diff()} damage to all enemies that intended to attack at the end of your turn.",
+  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "Gain {Block:diff()} [gold]Block[/gold].\nAt the end of the enemy turn, if you blocked all attack damage, deal {Damage:diff()} damage to the attackers.",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.title": "Straight Ki",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.description": "Deal {Damage:diff()} damage.",
   "NINJA_SLAYER_CARD_FURIN_KAZAN.title": "Furin Kazan",

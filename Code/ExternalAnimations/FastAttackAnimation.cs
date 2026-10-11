@@ -78,12 +78,12 @@ public static class FastAttackAnimation
                 peakSeconds,
                 FinisherActionTrajectory.FastProgress,
                 reverseDirection,
-                CombatActionTimingRuntime.AttackReturnSeconds(peakSeconds));
+                CombatActionTimingRuntime.AttackReturnSeconds());
             return;
         }
 
         await SlowAttackAnimation.PlayLunge(creature, NinjaSlayerCombatVisuals.AttackLungeDistance,
-            peakSeconds, Math.Min(peakSeconds, 0.075f), CombatActionTimingRuntime.AttackReturnSeconds(peakSeconds),
+            peakSeconds, Math.Min(peakSeconds, 0.075f), CombatActionTimingRuntime.AttackReturnSeconds(),
             FinisherActionTrajectory.FastProgress, reverseDirection);
     }
 }

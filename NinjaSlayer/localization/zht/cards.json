@@ -116,7 +116,7 @@
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.title": "龍·飛踢",
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.description": "造成{Damage:diff()}點傷害。\n[gold]茶道呼吸[/gold]{Breath:diff()}。\n抽牌直到抽滿[gold]手牌[/gold]。",
   "NINJA_SLAYER_CARD_KILLING_INTENT.title": "殺氣·直氣",
-  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "獲得{Block:diff()}點[gold]格擋[/gold]。\n在敵方回合結束時，若你格擋了所有攻擊傷害，對你回合結束時具有攻擊意圖的所有敵人造成{Damage:diff()}點傷害，僅反擊一次。",
+  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "獲得{Block:diff()}點[gold]格擋[/gold]。\n在敵方回合結束時，若你格擋了所有攻擊傷害，對攻擊者造成{Damage:diff()}點傷害。",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.title": "直氣",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.description": "造成{Damage:diff()}點傷害。",
   "NINJA_SLAYER_CARD_STRONG_SHURIKEN.title": "強·手裏劍",

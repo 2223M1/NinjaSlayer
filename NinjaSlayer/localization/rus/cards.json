@@ -116,7 +116,7 @@
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.title": "Летящий удар дракона",
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.description": "Наносит {Damage:diff()} урона.\n[gold]Дыхание Тядо[/gold] {Breath:diff()}.\nВы добираете карты, пока [gold]рука[/gold] не заполнится.",
   "NINJA_SLAYER_CARD_KILLING_INTENT.title": "Жажда убийства·Прямое Ки",
-  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "Дает {Block:diff()} [gold]защиты[/gold].\nВ конце хода врагов, если вы заблокировали весь урон от атак, контратакуйте один раз: нанесите {Damage:diff()} урона всем врагам, которые намеревались атаковать в конце вашего хода.",
+  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "Дает {Block:diff()} [gold]защиты[/gold].\nВ конце хода врагов, если вы заблокировали весь урон от атак, нанесите {Damage:diff()} урона атакующим.",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.title": "Прямое Ки",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.description": "Наносит {Damage:diff()} урона.",
   "NINJA_SLAYER_CARD_FURIN_KAZAN.title": "Фурин Кадзан",

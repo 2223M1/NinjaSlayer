@@ -116,7 +116,7 @@
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.title": "Coup de pied volant du dragon",
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.description": "Infligez {Damage:diff()} dégâts.\n[gold]Respiration Chado[/gold] {Breath:diff()}.\nPiochez jusqu'à remplir votre [gold]Main[/gold].",
   "NINJA_SLAYER_CARD_KILLING_INTENT.title": "Intention meurtrière·Ki direct",
-  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "Gagnez {Block:diff()} d'[gold]Armure[/gold].\nÀ la fin du tour ennemi, si vous avez bloqué tous les dégâts d’attaque, ripostez une fois : infligez {Damage:diff()} dégâts à tous les ennemis qui prévoyaient d’attaquer à la fin de votre tour.",
+  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "Gagnez {Block:diff()} d'[gold]Armure[/gold].\nÀ la fin du tour ennemi, si vous avez bloqué tous les dégâts d’attaque, infligez {Damage:diff()} dégâts aux attaquants.",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.title": "Ki direct",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.description": "Infligez {Damage:diff()} dégâts.",
   "NINJA_SLAYER_CARD_FURIN_KAZAN.title": "Furin Kazan",

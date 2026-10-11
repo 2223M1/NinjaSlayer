@@ -116,7 +116,7 @@
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.title": "Latające kopnięcie smoka",
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.description": "Zadaj {Damage:diff()} pkt. obrażeń.\n[gold]Oddech Chado[/gold] {Breath:diff()}.\nDobieraj, aż twoja [gold]ręka[/gold] będzie pełna.",
   "NINJA_SLAYER_CARD_KILLING_INTENT.title": "Żądza mordu·Proste Ki",
-  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "Zyskaj {Block:diff()} pkt. [gold]Bloku[/gold].\nNa koniec tury wroga, jeśli zablokowano wszystkie obrażenia od ataków, kontratakuj raz, zadając {Damage:diff()} obrażeń wszystkim wrogom, którzy zamierzali zaatakować na koniec twojej tury.",
+  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "Zyskaj {Block:diff()} pkt. [gold]Bloku[/gold].\nNa koniec tury wroga, jeśli zablokowano wszystkie obrażenia od ataków, zadaj atakującym {Damage:diff()} obrażeń.",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.title": "Proste Ki",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.description": "Zadaj {Damage:diff()} pkt. obrażeń.",
   "NINJA_SLAYER_CARD_FURIN_KAZAN.title": "Furin Kazan",

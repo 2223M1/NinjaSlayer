@@ -116,7 +116,7 @@
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.title": "เตะเหินมังกร",
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.description": "สร้างความเสียหาย {Damage:diff()}\n[gold]การหายใจชาโด[/gold] {Breath:diff()}\nจั่วการ์ดจน[gold]มือ[/gold]เต็ม",
   "NINJA_SLAYER_CARD_KILLING_INTENT.title": "จิตสังหาร·คิตรง",
-  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "ได้รับ {Block:diff()} [gold]บล็อก[/gold]\nเมื่อจบเทิร์นศัตรู หากคุณบล็อกความเสียหายจากการโจมตีทั้งหมด ให้สวนกลับหนึ่งครั้ง สร้างความเสียหาย {Damage:diff()} แก่ศัตรูทุกตัวที่มีเจตนาโจมตีเมื่อจบเทิร์นของคุณ",
+  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "ได้รับ {Block:diff()} [gold]บล็อก[/gold]\nเมื่อจบเทิร์นศัตรู หากคุณบล็อกความเสียหายจากการโจมตีทั้งหมด สร้างความเสียหาย {Damage:diff()} แก่ผู้โจมตี",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.title": "คิตรง",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.description": "สร้างความเสียหาย {Damage:diff()}",
   "NINJA_SLAYER_CARD_FURIN_KAZAN.title": "ฟูรินคาซัน",

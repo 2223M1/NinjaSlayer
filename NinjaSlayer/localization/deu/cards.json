@@ -116,7 +116,7 @@
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.title": "Drachen-Sprungtritt",
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.description": "Füge {Damage:diff()} Schaden zu.\n[gold]Chado-Atmung[/gold] {Breath:diff()}.\nZiehe Karten, bis deine [gold]Hand[/gold] voll ist.",
   "NINJA_SLAYER_CARD_KILLING_INTENT.title": "Mordlust·Gerades Ki",
-  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "Erhalte {Block:diff()} [gold]Block[/gold].\nWenn du allen Angriffsschaden geblockt hast, kontere am Ende des gegnerischen Zuges einmal: Füge allen Gegnern, die am Ende deines Zuges angreifen wollten, {Damage:diff()} Schaden zu.",
+  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "Erhalte {Block:diff()} [gold]Block[/gold].\nFüge am Ende des gegnerischen Zuges den Angreifern {Damage:diff()} Schaden zu, wenn du allen Angriffsschaden geblockt hast.",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.title": "Gerades Ki",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.description": "Füge {Damage:diff()} Schaden zu.",
   "NINJA_SLAYER_CARD_FURIN_KAZAN.title": "Furin Kazan",

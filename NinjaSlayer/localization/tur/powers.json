@@ -29,7 +29,7 @@
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.title": "Naraku Biçimi",
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.description": "Her Atak oynadığında [gold]Kara Alev[/gold] hasarını tüm düşmanlara {Amount} kez uygula.\n[gold]Kara Alev Cehennemi[/gold] her tetiklemede uygulanır.",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.title": "Öldürme Niyeti·Düz Ki",
-  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "Düşman turunun sonunda tüm saldırı hasarını engellediysen bir kez karşı saldırı yaparak kendi turunun sonunda saldırmaya niyetli olan tüm düşmanlara {Amount} hasar ver.",
+  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "Düşman turunun sonunda tüm saldırı hasarını engellediysen saldıranlara {Amount} hasar ver.",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.title": "Bıçak Süpürüşü",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.description": "[gold]Shuriken[/gold] yüklerin bu tur TÜM düşmanları vurur.",
   "NINJA_SLAYER_POWER_WATCHFUL_BLADES_POWER.title": "Tetikteki Bıçaklar",

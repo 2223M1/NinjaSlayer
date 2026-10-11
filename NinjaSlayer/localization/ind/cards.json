@@ -116,7 +116,7 @@
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.title": "Tendangan Terbang Naga",
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.description": "Lakukan {Damage:diff()} kerusakan.\n[gold]Pernapasan Chado[/gold] {Breath:diff()}.\nAmbil kartu sampai [gold]Tangan[/gold] kamu penuh.",
   "NINJA_SLAYER_CARD_KILLING_INTENT.title": "Niat Membunuh·Ki Lurus",
-  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "Dapatkan {Block:diff()} [gold]Blok[/gold].\nDi akhir giliran musuh, jika kamu memblokir semua kerusakan serangan, lakukan satu serangan balik yang memberikan {Damage:diff()} kerusakan kepada semua musuh yang berniat menyerang di akhir giliranmu.",
+  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "Dapatkan {Block:diff()} [gold]Blok[/gold].\nDi akhir giliran musuh, jika kamu memblokir semua kerusakan serangan, berikan {Damage:diff()} kerusakan kepada para penyerang.",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.title": "Ki Lurus",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.description": "Lakukan {Damage:diff()} kerusakan.",
   "NINJA_SLAYER_CARD_FURIN_KAZAN.title": "Furin Kazan",

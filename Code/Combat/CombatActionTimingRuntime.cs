@@ -54,8 +54,7 @@ internal static class CombatActionTimingRuntime
 
     public static float ReturnSeconds => VisualSeconds(0.1f);
 
-    // Ironclad attack / attack_heavy in both supported hosts. The 0.05s idle
-    // mix ends at the clip's end; these are visual tails, not damage waits.
-    public static float AttackReturnSeconds(float peakSeconds, bool heavy = false) =>
-        VisualSeconds(Math.Max(0f, (heavy ? 46f / 30f : 35f / 30f) - peakSeconds));
+    // Visual recovery after gameplay settles, independent of the damage gate.
+    public static float AttackReturnSeconds(bool heavy = false) =>
+        Resolve(heavy ? 0.7f : 0.5f, heavy ? 0.5f : 0.3f);
 }

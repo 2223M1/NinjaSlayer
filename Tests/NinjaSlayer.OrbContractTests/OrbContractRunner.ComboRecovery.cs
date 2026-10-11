@@ -148,10 +148,12 @@ public partial class OrbContractRunner
                 {
                     var finalReturn = (Tween)AccessTools.Property(State().GetType(), "ActiveTween").GetValue(State())!;
                     finalReturn.Pause();
-                    float tail = (distance == 90f ? 35f / 30f : 46f / 30f) - gate;
+                    float tail = speed == FastModeType.Fast
+                        ? distance == 90f ? .3f : .5f
+                        : distance == 90f ? .5f : .7f;
                     finalReturn.CustomStep(tail / 2f);
                     Require(Math.Abs(Travel().Length() - distance / 2f) < .1f,
-                        "The final attack's real motion must still be halfway through its vanilla visual tail after gameplay settles.");
+                        $"{speed} attack at {distance}px must reach half of its real return in {tail / 2f}s after gameplay settles.");
                     Require(!pose.Transform.IsEqualApprox(Transform2D.Identity),
                         "Visual recovery must not snap to idle when gameplay completes.");
                     finalReturn.CustomStep(tail / 2f + .001f);

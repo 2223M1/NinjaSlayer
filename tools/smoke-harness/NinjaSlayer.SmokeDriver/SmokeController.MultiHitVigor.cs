@@ -151,7 +151,7 @@ internal sealed partial class SmokeController
                     // The native card action has completed; its visible tail must
                     // still move for longer than the former 0.1s return.
                     await _tree.ToSignal(_tree.CreateTimer(.2), SceneTreeTimer.SignalName.Timeout);
-                    Require(!aimPose.Transform.IsEqualApprox(baselinePose), "The settled attack snapped to idle before its vanilla visual tail finished.");
+                    Require(!aimPose.Transform.IsEqualApprox(baselinePose), "The settled attack snapped to idle before its visual recovery finished.");
                     _checkpoints.Write("attack-tail.after-settlement", data: new JsonObject {
                         ["card"] = card.Id.ToString(), ["speed"] = speed.ToString(), ["upgraded"] = upgraded });
                 }
