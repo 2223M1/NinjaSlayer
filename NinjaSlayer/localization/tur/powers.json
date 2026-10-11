@@ -85,6 +85,6 @@
   "NINJA_SLAYER_POWER_ONE_MIND_ONE_BODY_POWER.smartDescription": "[gold]Karate[/gold] her tetiklendiğinde {Amount} [gold]Naraku Canı[/gold] elde et.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "Bir turda en az 3 Atak oynarsan sonraki turunun başında fazladan {Amount} kart çek.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "Zanshin",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.title": "Savaşa Hazır",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.description": "Geçen tur [gold]Shuriken[/gold] fırlattıysan turunun başında fazladan {Amount} {Amount:plural:kart|kart} çek."
+  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.title": "Savunma Duruşu",
+  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.description": "[gold]Karate[/gold] etkini her tetiklediğinde {Amount} [gold]Blok[/gold] kazan."
 }

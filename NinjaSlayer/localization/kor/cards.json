@@ -186,6 +186,6 @@
   "NINJA_SLAYER_CARD_ZANSHIN.title": "잔심",
   "NINJA_SLAYER_CARD_RECOVER.title": "회수",
   "NINJA_SLAYER_CARD_RECOVER.selectionScreenPrompt": "[gold]뽑을 카드 더미[/gold] 맨 위에 놓을 카드를 고르세요.",
-  "NINJA_SLAYER_CARD_BATTLE_READY.description": "지난 턴에 [gold]슈리켄[/gold]을 발사했다면, 내 턴 시작 시 카드를 추가로 {Cards:diff()}장 뽑습니다.",
-  "NINJA_SLAYER_CARD_BATTLE_READY.title": "전투 준비"
+  "NINJA_SLAYER_CARD_BATTLE_READY.description": "내 [gold]카라테[/gold]가 발동할 때마다 [gold]방어도[/gold]를 {Block:diff()} 얻습니다.",
+  "NINJA_SLAYER_CARD_BATTLE_READY.title": "수세"
 }

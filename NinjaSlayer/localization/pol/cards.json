@@ -186,6 +186,6 @@
   "NINJA_SLAYER_CARD_ZANSHIN.title": "Zanshin",
   "NINJA_SLAYER_CARD_RECOVER.title": "Odzyskanie",
   "NINJA_SLAYER_CARD_RECOVER.selectionScreenPrompt": "Wybierz kartę do umieszczenia na wierzchu [gold]stosu rozgrywającego[/gold].",
-  "NINJA_SLAYER_CARD_BATTLE_READY.description": "Jeśli wystrzeliłeś [gold]Shuriken[/gold] w poprzedniej turze, na początku twojej tury dobierz dodatkowo {Cards:diff()} {Cards:plural:kartę|karty|kart}.",
-  "NINJA_SLAYER_CARD_BATTLE_READY.title": "Gotowy do walki"
+  "NINJA_SLAYER_CARD_BATTLE_READY.description": "Za każdym razem, gdy aktywuje się twoje [gold]Karate[/gold], zyskaj {Block:diff()} pkt. [gold]Bloku[/gold].",
+  "NINJA_SLAYER_CARD_BATTLE_READY.title": "Postawa obronna"
 }

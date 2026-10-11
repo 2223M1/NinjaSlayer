@@ -186,6 +186,6 @@
   "NINJA_SLAYER_CARD_ZANSHIN.title": "Zanshin",
   "NINJA_SLAYER_CARD_RECOVER.title": "Recuperar",
   "NINJA_SLAYER_CARD_RECOVER.selectionScreenPrompt": "Elige una carta para colocarla encima de tu [gold]mazo de robo[/gold].",
-  "NINJA_SLAYER_CARD_BATTLE_READY.description": "Si lanzaste [gold]shuriken[/gold] el turno anterior, roba {Cards:diff()} carta{Cards:plural:|s} adicional{Cards:plural:|es} al comienzo de tu turno.",
-  "NINJA_SLAYER_CARD_BATTLE_READY.title": "Listo para combatir"
+  "NINJA_SLAYER_CARD_BATTLE_READY.description": "Cada vez que se activa tu [gold]Karate[/gold], obtienes {Block:diff()} de [gold]bloqueo[/gold].",
+  "NINJA_SLAYER_CARD_BATTLE_READY.title": "Postura defensiva"
 }

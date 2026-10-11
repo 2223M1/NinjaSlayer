@@ -1,6 +1,7 @@
-using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.HoverTips;
+using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Content;
-using NinjaSlayer.Orbs;
 using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
@@ -8,12 +9,11 @@ namespace NinjaSlayer.Powers;
 public sealed class BattleReadyPower : NinjaSlayerCounterPower
 {
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(BattleReadyPower));
-    public override decimal ModifyHandDraw(Player player, decimal count) =>
-        player == Owner.Player && ShurikenOrb.FiredLastTurn(player) ? count + Amount : count;
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<KaratePower>()];
 
-    public override Task AfterModifyingHandDraw()
+    internal Task AfterKarate()
     {
         Flash();
-        return Task.CompletedTask;
+        return CreatureCmd.GainBlock(Owner, Amount, ValueProp.Unpowered, null);
     }
 }

@@ -48,9 +48,82 @@ public partial class OrbContractRunner
         await VerifyChadoGeneration();
         await VerifyOpeningChadoRetention();
         await VerifyStrongShurikenRetention();
+        await VerifyGuardStanceAndCrossGuard();
         await VerifyBlackFlameTurnEnd();
         await VerifyNarakuForms();
         VerifyNarakuEventEligibility();
+    }
+
+    private static async Task VerifyGuardStanceAndCrossGuard()
+    {
+        foreach (bool upgraded in new[] { false, true })
+        {
+            using var combat = new OrbCombat();
+            var owner = combat.Player.Creature;
+            var guard = AddCard<BattleReady>(combat, upgraded: upgraded);
+            Require(guard.EnergyCost.GetWithModifiers(CostModifiers.Local) == 1,
+                "Guard Stance costs one energy before and after upgrade.");
+            await CardCmd.AutoPlay(Choice, guard, null);
+            await PowerCmd.Apply<DexterityPower>(Choice, owner, 100, owner, null);
+            await PowerCmd.Apply<FrailPower>(Choice, owner, 2, combat.Enemy, null);
+            await PowerCmd.Apply<KaratePower>(Choice, owner, 4, owner, null);
+            var other = MegaCrit.Sts2.Core.Entities.Players.Player.CreateForNewRun<MegaCrit.Sts2.Core.Models.Characters.Ironclad>(UnlockState.all, 2);
+            combat.State.AddPlayer(other);
+            other.ResetCombatState();
+            await PowerCmd.Apply<BattleReadyPower>(Choice, other.Creature, 7, other.Creature, null);
+            await CreatureCmd.GainBlock(combat.Enemy, 100, ValueProp.Unpowered, null);
+            await CreatureCmd.Damage(Choice, new[] { combat.Enemy, combat.AddEnemy() }, 1, ValueProp.Move, owner);
+            int amount = upgraded ? 2 : 1;
+            Require(owner.Block == amount && other.Creature.Block == 0 && owner.GetPowerAmount<KaratePower>() == 3,
+                "Guard Stance grants its owner's fixed Block once per AOE wave, including blocked hits.");
+            await CardCmd.AutoPlay(Choice, AddCard<PalmThrust>(combat, upgraded: true), null);
+            Require(owner.Block == 4 * amount && !owner.HasPower<KaratePower>(),
+                "Each multihit Karate trigger grants Block, including the last Karate stack.");
+            await CreatureCmd.Damage(Choice, combat.Enemy, 1, ValueProp.Move, owner);
+            await PowerCmd.Apply<KaratePower>(Choice, owner, 2, owner, null);
+            await CreatureCmd.Damage(Choice, combat.Enemy, 0, ValueProp.Move, owner);
+            await CreatureCmd.Damage(Choice, combat.Enemy, 1, ValueProp.Unpowered, owner);
+            await AddStock(combat.Player, 1);
+            await CardCmd.Discard(Choice, combat.Card());
+            Require(owner.Block == 4 * amount && owner.GetPowerAmount<KaratePower>() == 2,
+                "No Karate, zero damage, unpowered damage and stock Shuriken must not trigger Guard Stance.");
+            await CardCmd.AutoPlay(Choice, AddCard<BattleReady>(combat, upgraded: !upgraded), null);
+            await CreatureCmd.Damage(Choice, combat.Enemy, 1, ValueProp.Move, owner);
+            Require(owner.Block == 4 * amount + 3 && other.Creature.Block == 0,
+                "Base and upgraded Guard Stance stack to three Block without rewarding another player.");
+            combat.Player.PlayerCombatState!.IncrementTurnNumber();
+            Require(owner.GetPower<BattleReadyPower>()!.ModifyHandDraw(combat.Player, 5) == 5,
+                "Guard Stance does not retain Battle Ready's former stock-Shuriken draw bonus.");
+        }
+        foreach (bool upgraded in new[] { false, true })
+        {
+            using var combat = new OrbCombat();
+            var card = AddCard<CrossGuard>(combat, upgraded: upgraded);
+            var ordinary = combat.Card();
+            var restored = CardModel.FromSerializable(card.ToSerializable());
+            Require(new[] { card, card.CreateClone(), restored }.All(c => c.Keywords.Contains(CardKeyword.Retain)),
+                "Cross Guard's native Retain survives upgrades, cloning and saves.");
+            var context = new MegaCrit.Sts2.Core.GameActions.Multiplayer.HookPlayerChoiceContext(
+                combat.Player, 1, MegaCrit.Sts2.Core.Entities.Multiplayer.GameActionType.Combat);
+            for (int turn = 0; turn < 2; turn++)
+            {
+#if NINJASLAYER_CHANNEL_STABLE
+                object[] arguments = [combat.Player, context];
+#else
+                object[] arguments = [AccessTools.Field(typeof(CombatManager), "_turnState").GetValue(CombatManager.Instance)!, combat.Player, context];
+#endif
+                await (Task)AccessTools.Method(typeof(CombatManager), "FlushPlayerHand").Invoke(CombatManager.Instance, arguments)!;
+                Require(card.Pile?.Type == PileType.Hand && ordinary.Pile?.Type == PileType.Discard,
+                    "Cross Guard must survive consecutive native end-turn hand flushes.");
+            }
+            await CardCmd.AutoPlay(Choice, card, null);
+            var next = AddCard<MegaCrit.Sts2.Core.Models.Cards.StrikeIronclad>(combat);
+            await CardCmd.AutoPlay(Choice, next, combat.Enemy);
+            Require(combat.Player.Creature.Block == (upgraded ? 9 : 6) && next.Pile?.Type == PileType.Draw
+                && !combat.Player.Creature.HasPower<ReboundPower>(),
+                "Retained Cross Guard preserves its Block and one-use native Rebound.");
+        }
+        GD.Print("PASS Guard Stance base/upgrade, AOE, multihit, stacking, exclusions and ownership; Cross Guard native retention, saves and Rebound");
     }
 
     private static async Task VerifyStrongShurikenRetention()

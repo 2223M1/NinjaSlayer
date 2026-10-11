@@ -76,9 +76,9 @@ internal sealed partial class SmokeController
         for (int i = 0; i < 5; i++) await Add<Wound>(PileType.Draw);
         await CardCmd.AutoPlay(choice, await Add<BattleReady>(), null);
         await (Task)AccessTools.Method(typeof(ShurikenOrb), "AddStock").Invoke(null, [choice, player, 3])!;
-        Require(PileType.Hand.GetPile(player).Cards.OfType<Wound>().Count() == 1
+        Require(PileType.Hand.GetPile(player).Cards.OfType<Wound>().Count() == 0
             && PileType.Hand.GetPile(player).Cards.OfType<StrongShuriken>().Count() == 1,
-            "Three additional layers trigger one draw and one snapshot token.");
+            "Three additional layers create one snapshot token without drawing.");
         await Snapshot("stock-gain-powers");
         _checkpoints.Write("v115.live-stock-gain-replenishment");
         Task playing;

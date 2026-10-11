@@ -186,6 +186,6 @@
   "NINJA_SLAYER_CARD_ZANSHIN.title": "Zanshin",
   "NINJA_SLAYER_CARD_RECOVER.title": "Zurückholen",
   "NINJA_SLAYER_CARD_RECOVER.selectionScreenPrompt": "Wähle eine Karte, die du oben auf deinen [gold]Nachziehstapel[/gold] legst.",
-  "NINJA_SLAYER_CARD_BATTLE_READY.description": "Wenn du im letzten Zug [gold]Shuriken[/gold] abgefeuert hast, ziehe zu Beginn deines Zuges {Cards:diff()} zusätzliche Karte{Cards:plural:|n}.",
-  "NINJA_SLAYER_CARD_BATTLE_READY.title": "Kampfbereit"
+  "NINJA_SLAYER_CARD_BATTLE_READY.description": "Immer wenn dein [gold]Karate[/gold] ausgelöst wird, erhalte {Block:diff()} [gold]Block[/gold].",
+  "NINJA_SLAYER_CARD_BATTLE_READY.title": "Abwehrhaltung"
 }

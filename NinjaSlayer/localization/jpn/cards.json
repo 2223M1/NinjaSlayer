@@ -186,6 +186,6 @@
   "NINJA_SLAYER_CARD_ZANSHIN.title": "ザンシン",
   "NINJA_SLAYER_CARD_RECOVER.title": "拾い直す",
   "NINJA_SLAYER_CARD_RECOVER.selectionScreenPrompt": "[gold]山札[/gold]の一番上に置くカードを1枚選ぶ。",
-  "NINJA_SLAYER_CARD_BATTLE_READY.description": "前のターンに[gold]スリケン[/gold]を発射していた場合、ターン開始時にカードを追加で{Cards:diff()}枚引く。",
-  "NINJA_SLAYER_CARD_BATTLE_READY.title": "戦闘準備"
+  "NINJA_SLAYER_CARD_BATTLE_READY.description": "自分の[gold]カラテ[/gold]が発動するたび、{Block:diff()}[gold]ブロック[/gold]を得る。",
+  "NINJA_SLAYER_CARD_BATTLE_READY.title": "守勢"
 }

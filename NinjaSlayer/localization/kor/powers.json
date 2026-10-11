@@ -85,6 +85,6 @@
   "NINJA_SLAYER_POWER_ONE_MIND_ONE_BODY_POWER.smartDescription": "[gold]카라테[/gold]가 발동할 때마다 [gold]나라쿠 생명[/gold]을 {Amount} 얻습니다.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "한 턴에 공격 카드를 3장 이상 사용했다면, 내 다음 턴 시작 시 카드를 추가로 {Amount}장 뽑습니다.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "잔심",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.title": "전투 준비",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.description": "지난 턴에 [gold]슈리켄[/gold]을 발사했다면, 내 턴 시작 시 카드를 추가로 {Amount}장 뽑습니다."
+  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.title": "수세",
+  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.description": "내 [gold]카라테[/gold]가 발동할 때마다 [gold]방어도[/gold]를 {Amount} 얻습니다."
 }
