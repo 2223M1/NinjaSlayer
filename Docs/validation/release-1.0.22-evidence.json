@@ -1,0 +1,681 @@
+{
+  "version": "1.0.22",
+  "sourceRevision": "9233a89dd6884859aa9e90999ab5d217e45180d0",
+  "verifiedAtUtc": "2026-10-11T06:45:31.741Z",
+  "pullRequests": [
+    205
+  ],
+  "ci": {
+    "conclusion": "success",
+    "databaseId": 38117595178,
+    "headSha": "9233a89dd6884859aa9e90999ab5d217e45180d0",
+    "status": "completed",
+    "url": "https://github.com/2223M1/NinjaSlayer/actions/runs/38117595178",
+    "workflowName": "CI"
+  },
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "61ba54664a9705393abf03c084f56f15699924627e6d0e2150feb43088d5d652",
+    "8e3bba3eb1abd6951cec87ef847dfedf14d97e826a7414b2fad37382afe20ee5",
+    "04e3c92014c4421df006c148344c88038126a3ede74b468a5d84965e0022426c",
+    "68c1158b5b9ae626d9984982493c090911e12c5b4f81777d7563c8fe25164ea4",
+    "429e44c30919da3a3016f73bd128d60b4b394b9a5ea014ebe571c267c2a70718",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "a332f9297d4c280b215ec73c9b6b6788f3eaec04ec8fee7a05dfa4628c4169eb",
+    "e5884f23dcc195e56a28dca5628b53f90caf303279d644b7d667ab04dab8ea73",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "de4b126694c172608d7d3f46e4c166ed427c1ba737701b64c04df30038418985"
+  ],
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "bytes": 24576,
+      "sha256": "61ba54664a9705393abf03c084f56f15699924627e6d0e2150feb43088d5d652"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "bytes": 363,
+      "sha256": "8e3bba3eb1abd6951cec87ef847dfedf14d97e826a7414b2fad37382afe20ee5"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "bytes": 211561316,
+      "sha256": "04e3c92014c4421df006c148344c88038126a3ede74b468a5d84965e0022426c"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 1008,
+      "sha256": "68c1158b5b9ae626d9984982493c090911e12c5b4f81777d7563c8fe25164ea4"
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "bytes": 2215424,
+      "sha256": "429e44c30919da3a3016f73bd128d60b4b394b9a5ea014ebe571c267c2a70718"
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "bytes": 126976,
+      "sha256": "a332f9297d4c280b215ec73c9b6b6788f3eaec04ec8fee7a05dfa4628c4169eb"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "bytes": 2219008,
+      "sha256": "e5884f23dcc195e56a28dca5628b53f90caf303279d644b7d667ab04dab8ea73"
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "bytes": 8,
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "bytes": 522,
+      "sha256": "de4b126694c172608d7d3f46e4c166ed427c1ba737701b64c04df30038418985"
+    }
+  ],
+  "previewAttestations": [
+    {
+      "schemaVersion": 6,
+      "candidateSha": "9233a89dd6884859aa9e90999ab5d217e45180d0",
+      "bundleVersion": "1.0.22",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [],
+      "bundleSha256": "68c1158b5b9ae626d9984982493c090911e12c5b4f81777d7563c8fe25164ea4",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "multihit-vigor",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-11T06:33:03.7729951+00:00"
+    },
+    {
+      "schemaVersion": 6,
+      "candidateSha": "9233a89dd6884859aa9e90999ab5d217e45180d0",
+      "bundleVersion": "1.0.22",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [],
+      "bundleSha256": "68c1158b5b9ae626d9984982493c090911e12c5b4f81777d7563c8fe25164ea4",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "runtime-content-export",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-11T06:36:38.6346580+00:00"
+    }
+  ],
+  "validation": {
+    "logicTests": 371,
+    "dualHostProductContracts": true,
+    "dualHostPatchTransactions": true,
+    "dualHostNativeEnet": true,
+    "previewAutoAnthonyPublicBridge": true,
+    "multiHitCases": [
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+        "upgraded": false,
+        "speed": "Normal",
+        "hits": 4,
+        "targetsPerHit": 1,
+        "damagePerTarget": 20,
+        "animationGates": 4
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+        "upgraded": false,
+        "speed": "Normal",
+        "hits": 2,
+        "targetsPerHit": 2,
+        "damagePerTarget": 17,
+        "animationGates": 2
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "upgraded": false,
+        "speed": "Normal",
+        "hits": 2,
+        "targetsPerHit": 1,
+        "damagePerTarget": 16,
+        "animationGates": 2
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PRESS_THE_ATTACK",
+        "upgraded": false,
+        "speed": "Normal",
+        "hits": 1,
+        "targetsPerHit": 1,
+        "damagePerTarget": 17,
+        "animationGates": 1
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "upgraded": false,
+        "speed": "Normal",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 14,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+        "upgraded": false,
+        "speed": "Normal",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 18,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+        "upgraded": false,
+        "speed": "Normal",
+        "hits": 8,
+        "targetsPerHit": 2,
+        "damagePerTarget": 14,
+        "animationGates": 8
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+        "upgraded": false,
+        "speed": "Fast",
+        "hits": 4,
+        "targetsPerHit": 1,
+        "damagePerTarget": 20,
+        "animationGates": 4
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+        "upgraded": false,
+        "speed": "Fast",
+        "hits": 2,
+        "targetsPerHit": 2,
+        "damagePerTarget": 17,
+        "animationGates": 2
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "upgraded": false,
+        "speed": "Fast",
+        "hits": 2,
+        "targetsPerHit": 1,
+        "damagePerTarget": 16,
+        "animationGates": 2
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PRESS_THE_ATTACK",
+        "upgraded": false,
+        "speed": "Fast",
+        "hits": 1,
+        "targetsPerHit": 1,
+        "damagePerTarget": 17,
+        "animationGates": 1
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "upgraded": false,
+        "speed": "Fast",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 14,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+        "upgraded": false,
+        "speed": "Fast",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 18,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+        "upgraded": false,
+        "speed": "Fast",
+        "hits": 8,
+        "targetsPerHit": 2,
+        "damagePerTarget": 14,
+        "animationGates": 8
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+        "upgraded": false,
+        "speed": "Instant",
+        "hits": 4,
+        "targetsPerHit": 1,
+        "damagePerTarget": 20,
+        "animationGates": 4
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+        "upgraded": false,
+        "speed": "Instant",
+        "hits": 2,
+        "targetsPerHit": 2,
+        "damagePerTarget": 17,
+        "animationGates": 2
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "upgraded": false,
+        "speed": "Instant",
+        "hits": 2,
+        "targetsPerHit": 1,
+        "damagePerTarget": 16,
+        "animationGates": 2
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PRESS_THE_ATTACK",
+        "upgraded": false,
+        "speed": "Instant",
+        "hits": 1,
+        "targetsPerHit": 1,
+        "damagePerTarget": 17,
+        "animationGates": 1
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "upgraded": false,
+        "speed": "Instant",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 14,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+        "upgraded": false,
+        "speed": "Instant",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 18,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+        "upgraded": false,
+        "speed": "Instant",
+        "hits": 8,
+        "targetsPerHit": 2,
+        "damagePerTarget": 14,
+        "animationGates": 8
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+        "upgraded": true,
+        "speed": "Normal",
+        "hits": 4,
+        "targetsPerHit": 1,
+        "damagePerTarget": 24,
+        "animationGates": 4
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+        "upgraded": true,
+        "speed": "Normal",
+        "hits": 2,
+        "targetsPerHit": 2,
+        "damagePerTarget": 19,
+        "animationGates": 2
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "upgraded": true,
+        "speed": "Normal",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 16,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PRESS_THE_ATTACK",
+        "upgraded": true,
+        "speed": "Normal",
+        "hits": 1,
+        "targetsPerHit": 1,
+        "damagePerTarget": 20,
+        "animationGates": 1
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "upgraded": true,
+        "speed": "Normal",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 15,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+        "upgraded": true,
+        "speed": "Normal",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 21,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+        "upgraded": true,
+        "speed": "Normal",
+        "hits": 8,
+        "targetsPerHit": 2,
+        "damagePerTarget": 16,
+        "animationGates": 8
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+        "upgraded": true,
+        "speed": "Fast",
+        "hits": 4,
+        "targetsPerHit": 1,
+        "damagePerTarget": 24,
+        "animationGates": 4
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+        "upgraded": true,
+        "speed": "Fast",
+        "hits": 2,
+        "targetsPerHit": 2,
+        "damagePerTarget": 19,
+        "animationGates": 2
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "upgraded": true,
+        "speed": "Fast",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 16,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PRESS_THE_ATTACK",
+        "upgraded": true,
+        "speed": "Fast",
+        "hits": 1,
+        "targetsPerHit": 1,
+        "damagePerTarget": 20,
+        "animationGates": 1
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "upgraded": true,
+        "speed": "Fast",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 15,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+        "upgraded": true,
+        "speed": "Fast",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 21,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+        "upgraded": true,
+        "speed": "Fast",
+        "hits": 8,
+        "targetsPerHit": 2,
+        "damagePerTarget": 16,
+        "animationGates": 8
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+        "upgraded": true,
+        "speed": "Instant",
+        "hits": 4,
+        "targetsPerHit": 1,
+        "damagePerTarget": 24,
+        "animationGates": 4
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+        "upgraded": true,
+        "speed": "Instant",
+        "hits": 2,
+        "targetsPerHit": 2,
+        "damagePerTarget": 19,
+        "animationGates": 2
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "upgraded": true,
+        "speed": "Instant",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 16,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PRESS_THE_ATTACK",
+        "upgraded": true,
+        "speed": "Instant",
+        "hits": 1,
+        "targetsPerHit": 1,
+        "damagePerTarget": 20,
+        "animationGates": 1
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "upgraded": true,
+        "speed": "Instant",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 15,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+        "upgraded": true,
+        "speed": "Instant",
+        "hits": 3,
+        "targetsPerHit": 1,
+        "damagePerTarget": 21,
+        "animationGates": 3
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+        "upgraded": true,
+        "speed": "Instant",
+        "hits": 8,
+        "targetsPerHit": 2,
+        "damagePerTarget": 16,
+        "animationGates": 8
+      }
+    ],
+    "settledRecoveryCases": [
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "speed": "Normal",
+        "upgraded": false
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "speed": "Normal",
+        "upgraded": false
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "speed": "Fast",
+        "upgraded": false
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "speed": "Fast",
+        "upgraded": false
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "speed": "Normal",
+        "upgraded": true
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "speed": "Normal",
+        "upgraded": true
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+        "speed": "Fast",
+        "upgraded": true
+      },
+      {
+        "card": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "speed": "Fast",
+        "upgraded": true
+      }
+    ],
+    "logHashes": [
+      {
+        "name": "anthony-preview.log",
+        "sha256": "c4b394200366ea61bb4e87ffd5dfe4718830dc4c0a7ac9f5df428f3f1c010561"
+      },
+      {
+        "name": "contracts-stable.log",
+        "sha256": "f5f0d695bf93dbf73a33845214bf3971b794792a1a7beb00f9eeb2ce056ac7f0"
+      },
+      {
+        "name": "patch-stable.log",
+        "sha256": "aa329345fe2c96127628898f688fc8e60730107d28714d2f70ced8534a56accf"
+      },
+      {
+        "name": "enet-stable-9233a89dd688/host.log",
+        "sha256": "a16211349508d94bc545742b77f302116d7a9cb2841c3a778268df2813d4df19"
+      },
+      {
+        "name": "enet-stable-9233a89dd688/client.log",
+        "sha256": "e1010e53e30f43531ba017313159b0f13d3d29814fa77827b348baf55fdee747"
+      },
+      {
+        "name": "contracts-preview.log",
+        "sha256": "d553e5628f47ffd26c4c04f4799c4031451c13374b214f86f5d30b91d48e6bf5"
+      },
+      {
+        "name": "patch-preview.log",
+        "sha256": "6432c7dd61b94042abe4f43f9324e03f80b580614c10b073f407340c8a8750d8"
+      },
+      {
+        "name": "enet-preview-9233a89dd688/host.log",
+        "sha256": "6bf9dcff34a66131a046b26ded72f3572879c746e3361721d6bc4a36378720a3"
+      },
+      {
+        "name": "enet-preview-9233a89dd688/client.log",
+        "sha256": "112ffa53f55fc50ab40c43b1369217a154c1cb8410cad1b13dfdbd175812c315"
+      }
+    ]
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "tags": "Characters,english,schinese,tchinese,german,latam,french,Indonesian,italian,japanese,korean,Polish,brazilian,russian,spanish,thai,turkish",
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "remoteDescriptionVerified": true,
+    "localizedLanguages": [
+      "english",
+      "schinese",
+      "tchinese",
+      "german",
+      "latam",
+      "french",
+      "indonesian",
+      "italian",
+      "japanese",
+      "koreana",
+      "polish",
+      "brazilian",
+      "russian",
+      "spanish",
+      "thai",
+      "turkish"
+    ],
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "galleryUnchanged": true,
+    "downloadBytes": 216467746
+  },
+  "notRun": [
+    "Complete stable client gameplay",
+    "Android/macOS/Linux gameplay",
+    "Two rendered multiplayer clients"
+  ],
+  "scope": "Attack recovery tuning and concise Killing Intent descriptions in 16 languages. Existing unresolved feedback states were not changed.",
+  "catalog": {
+    "fingerprint": "0076e7e34577128784466eb57942d0c2c363ddcd544d1560bce5013cc78010df",
+    "exportedFromVerifiedWorkshopDownload": true,
+    "attestation": {
+      "schemaVersion": 6,
+      "candidateSha": "9233a89dd6884859aa9e90999ab5d217e45180d0",
+      "bundleVersion": "1.0.22",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.7",
+      "additionalMods": [],
+      "bundleSha256": "68c1158b5b9ae626d9984982493c090911e12c5b4f81777d7563c8fe25164ea4",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "runtime-content-export",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-11T06:49:15.4831136+00:00"
+    },
+    "counts": {
+      "eng": 1671,
+      "zhs": 1671,
+      "zht": 1671,
+      "deu": 1671,
+      "esp": 1671,
+      "fra": 1671,
+      "ind": 1671,
+      "ita": 1671,
+      "jpn": 1671,
+      "kor": 1671,
+      "pol": 1671,
+      "ptb": 1671,
+      "rus": 1671,
+      "spa": 1671,
+      "tha": 1671,
+      "tur": 1671
+    }
+  }
+}
