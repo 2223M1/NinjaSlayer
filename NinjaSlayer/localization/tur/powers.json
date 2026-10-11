@@ -86,5 +86,5 @@
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "Bir turda en az 3 Atak oynarsan sonraki turunun başında fazladan {Amount} kart çek.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "Zanshin",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Savunma Duruşu",
-  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "[gold]Karate[/gold] etkini her tetiklediğinde {Amount} [gold]Blok[/gold] kazan."
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Herhangi bir karakterin [gold]Karate[/gold] etkisi tetiklendiğinde {Amount} [gold]Blok[/gold] kazan."
 }

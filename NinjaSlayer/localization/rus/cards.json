@@ -186,6 +186,6 @@
   "NINJA_SLAYER_CARD_ZANSHIN.title": "Дзансин",
   "NINJA_SLAYER_CARD_RECOVER.title": "Вернуть",
   "NINJA_SLAYER_CARD_RECOVER.selectionScreenPrompt": "Выберите карту, чтобы положить наверх [gold]стопки добора[/gold].",
-  "NINJA_SLAYER_CARD_GUARD_STANCE.description": "Каждый раз, когда срабатывает ваше [gold]Карате[/gold], вы получаете {Block:diff()} [gold]защиты[/gold].",
+  "NINJA_SLAYER_CARD_GUARD_STANCE.description": "Каждый раз, когда срабатывает чьё-либо [gold]карате[/gold], вы получаете {Block:diff()} [gold]защиты[/gold].",
   "NINJA_SLAYER_CARD_GUARD_STANCE.title": "Защитная стойка"
 }

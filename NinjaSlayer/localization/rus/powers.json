@@ -86,5 +86,5 @@
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "Если вы разыграли не менее 3 Атак за ход, в начале следующего хода возьмите дополнительные карты: {Amount}.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "Дзансин",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Защитная стойка",
-  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Каждый раз, когда срабатывает ваше [gold]Карате[/gold], вы получаете {Amount} [gold]защиты[/gold]."
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Каждый раз, когда срабатывает чьё-либо [gold]карате[/gold], вы получаете {Amount} [gold]защиты[/gold]."
 }

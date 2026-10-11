@@ -74,10 +74,10 @@ public partial class OrbContractRunner
             await CreatureCmd.GainBlock(combat.Enemy, 100, ValueProp.Unpowered, null);
             await CreatureCmd.Damage(Choice, new[] { combat.Enemy, combat.AddEnemy() }, 1, ValueProp.Move, owner);
             int amount = upgraded ? 2 : 1;
-            Require(owner.Block == amount && other.Creature.Block == 0 && owner.GetPowerAmount<KaratePower>() == 3,
-                "Guard Stance grants its owner's fixed Block once per AOE wave, including blocked hits.");
+            Require(owner.Block == amount && other.Creature.Block == 7 && owner.GetPowerAmount<KaratePower>() == 3,
+                "Every Guard Stance holder gains their own fixed Block once per AOE Karate wave, including blocked hits.");
             await CardCmd.AutoPlay(Choice, AddCard<PalmThrust>(combat, upgraded: true), null);
-            Require(owner.Block == 4 * amount && !owner.HasPower<KaratePower>(),
+            Require(owner.Block == 4 * amount && other.Creature.Block == 28 && !owner.HasPower<KaratePower>(),
                 "Each multihit Karate trigger grants Block, including the last Karate stack.");
             await CreatureCmd.Damage(Choice, combat.Enemy, 1, ValueProp.Move, owner);
             await PowerCmd.Apply<KaratePower>(Choice, owner, 2, owner, null);
@@ -89,8 +89,16 @@ public partial class OrbContractRunner
                 "No Karate, zero damage, unpowered damage and stock Shuriken must not trigger Guard Stance.");
             await CardCmd.AutoPlay(Choice, AddCard<GuardStance>(combat, upgraded: !upgraded), null);
             await CreatureCmd.Damage(Choice, combat.Enemy, 1, ValueProp.Move, owner);
-            Require(owner.Block == 4 * amount + 3 && other.Creature.Block == 0,
-                "Base and upgraded Guard Stance stack to three Block without rewarding another player.");
+            Require(owner.Block == 4 * amount + 3 && other.Creature.Block == 35,
+                "Each Guard Stance holder receives their own stacked amount when another creature's Karate triggers.");
+            await PowerCmd.Remove<DexterityPower>(owner);
+            await PowerCmd.Remove<FrailPower>(owner);
+            await CardCmd.AutoPlay(Choice, AddCard<NinjaTaunt>(combat), combat.Enemy);
+            decimal beforeEnemyAttack = owner.Block;
+            await CreatureCmd.Damage(Choice, owner, 1, ValueProp.Move, combat.Enemy);
+            Require(owner.Block == beforeEnemyAttack - 5 + 3 && other.Creature.Block == 42
+                && combat.Enemy.GetPowerAmount<KaratePower>() == 3,
+                "Enemy Karate granted by Ninja Taunt must reward every living Guard Stance holder after its damage resolves.");
             combat.Player.PlayerCombatState!.IncrementTurnNumber();
             Require(owner.GetPower<GuardStancePower>()!.ModifyHandDraw(combat.Player, 5) == 5,
                 "Guard Stance does not retain Battle Ready's former stock-Shuriken draw bonus.");

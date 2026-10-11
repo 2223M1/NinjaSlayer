@@ -86,5 +86,5 @@
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "Jeśli zagrasz co najmniej 3 Ataki w jednej turze, dobierz dodatkowo {Amount} {Amount:plural:kartę|karty|kart}.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "Zanshin",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Postawa obronna",
-  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Za każdym razem, gdy aktywuje się twoje [gold]Karate[/gold], zyskaj {Amount} pkt. [gold]Bloku[/gold]."
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Za każdym razem, gdy aktywuje się czyjeś [gold]Karate[/gold], zyskaj {Amount} pkt. [gold]Bloku[/gold]."
 }

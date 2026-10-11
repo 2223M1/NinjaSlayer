@@ -86,5 +86,5 @@
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "如果你在一回合内打出了至少3张攻击牌，在下个回合开始时额外抽{Amount}张牌。",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "残心",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "守势",
-  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "每当你的[gold]空手道[/gold]触发时，获得{Amount}点[gold]格挡[/gold]。"
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "每当有[gold]空手道[/gold]触发时，获得{Amount}点[gold]格挡[/gold]。"
 }

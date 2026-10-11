@@ -86,5 +86,5 @@
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "Si vous jouez au moins 3 Attaques en un tour, piochez {Amount} cartes supplémentaires au début de votre prochain tour.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "Zanshin",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Posture défensive",
-  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Chaque fois que votre [gold]Karaté[/gold] se déclenche, gagnez {Amount} d'[gold]Armure[/gold]."
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Chaque fois que le [gold]Karaté[/gold] de n'importe quel personnage se déclenche, gagnez {Amount} d'[gold]Armure[/gold]."
 }

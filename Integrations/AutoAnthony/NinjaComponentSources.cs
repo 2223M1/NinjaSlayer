@@ -56,7 +56,7 @@ internal static class NinjaComponentSources
         new(typeof(KarateBulwark), "坚壁", "Karate Bulwark", c => [Custom("karate_to_plating", "失去所有空手道，获得等量覆甲。", "Lose all Karate. Gain that much Plating.", 1, fixedRule: true)]),
         new(typeof(Recover), "重拾", "Recover", c => [Custom("exhaust_to_top", "选择消耗堆中的[[amount]]张牌，将其放到抽牌堆顶部。", "Choose [[amount]] cards in your Exhaust Pile. Put them on top of your draw pile.", 1)]),
         new(typeof(Discern), "取舍", "Discern", c => [Custom("scry_exhaust_breath", "预见[[amount]]，消耗选中的牌，每消耗1张牌，茶道呼吸1。", "Scry [[amount]], exhausting selected cards. Chado Breathing 1 for each card exhausted this way.", V(c,"Cards"))]),
-        new(typeof(GuardStance), "守势", "Guard Stance", c => [Power<GuardStancePower>(V(c,"Block"), "每当你的空手道触发时，获得[[amount]]点格挡。", "Whenever your Karate triggers, gain [[amount]] Block.", persistent: true)]),
+        new(typeof(GuardStance), "守势", "Guard Stance", c => [Power<GuardStancePower>(V(c,"Block"), "每当有空手道触发时，获得[[amount]]点格挡。", "Whenever any Karate triggers, gain [[amount]] Block.", persistent: true)]),
         new(typeof(GatherMomentum), "蓄势", "Gather Momentum", c => [Power<GatherMomentumPower>(V(c,"VigorPower"), "每当茶道被消耗时，获得[[amount]]点活力。", "Whenever Chado is Exhausted, gain [[amount]] Vigor.", persistent: true)]),
         new(typeof(Training), "修行", "Training", c => [Power<TrainingPower>(V(c,"Karate"), "在你的回合开始时，获得[[amount]]层空手道，丢弃1张牌。", "At the start of your turn, gain [[amount]] Karate and discard 1 card.", persistent: true)]),
         new(typeof(Composure), "从容", "Composure", c => [Power<ComposurePower>(V(c,"Block"), "每当有一张牌被丢弃时，获得[[amount]]点格挡。", "Whenever you discard a card, gain [[amount]] Block.", persistent: true)]),
