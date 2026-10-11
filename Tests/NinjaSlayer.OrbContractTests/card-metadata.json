@@ -1429,7 +1429,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_NINJA_TAUNT",
     "Upgraded": false,
-    "Cost": 1,
+    "Cost": 0,
     "X": false,
     "Type": "Skill",
     "Rarity": "Common",
@@ -1440,14 +1440,14 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/NinjaTaunt.png",
     "Vars": {
-      "Block": 15,
+      "Block": 13,
       "Karate": 4
     }
   },
   {
     "Id": "CARD.NINJA_SLAYER_CARD_NINJA_TAUNT",
     "Upgraded": true,
-    "Cost": 1,
+    "Cost": 0,
     "X": false,
     "Type": "Skill",
     "Rarity": "Common",
@@ -1458,7 +1458,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/NinjaTaunt.png",
     "Vars": {
-      "Block": 18,
+      "Block": 16,
       "Karate": 4
     }
   },

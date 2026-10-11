@@ -13,11 +13,11 @@ public sealed class NinjaTaunt : NinjaSlayerCommonCard
 {
     public override bool GainsBlock => true;
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new BlockVar(15, ValueProp.Move), new KarateVar(4)];
+        [new BlockVar(13, ValueProp.Move), new KarateVar(4)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<KaratePower>()];
 
     public NinjaTaunt()
-        : base(nameof(NinjaTaunt), 1, CardType.Skill, TargetType.AnyEnemy) { }
+        : base(nameof(NinjaTaunt), 0, CardType.Skill, TargetType.AnyEnemy) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

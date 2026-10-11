@@ -265,7 +265,7 @@ public partial class OrbContractRunner
                 Require(taunt.TargetType == TargetType.AnyEnemy, "Generated Taunt must require a selected enemy.");
                 await CardCmd.AutoPlay(Choice, taunt, second);
                 Require(second.GetPowerAmount<KaratePower>() == 4 && !arena.Enemy.HasPower<KaratePower>()
-                    && !arena.Player.Creature.HasPower<KaratePower>() && arena.Player.Creature.Block == (upgraded ? 18 : 15),
+                    && !arena.Player.Creature.HasPower<KaratePower>() && arena.Player.Creature.Block == (upgraded ? 16 : 13),
                     "Generated Taunt must apply Karate to its actual selected target, never a random enemy or owner.");
             }
             using (var arena = new OrbCombat())
