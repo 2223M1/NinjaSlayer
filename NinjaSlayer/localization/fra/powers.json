@@ -85,6 +85,6 @@
   "NINJA_SLAYER_POWER_ONE_MIND_ONE_BODY_POWER.smartDescription": "Chaque fois que votre [gold]Karaté[/gold] se déclenche, gagnez {Amount} de [gold]Vie de Naraku[/gold].",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "Si vous jouez au moins 3 Attaques en un tour, piochez {Amount} cartes supplémentaires au début de votre prochain tour.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "Zanshin",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.title": "Prêt au combat",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.description": "Si vous avez lancé des [gold]Shuriken[/gold] au dernier tour, piochez {Amount} carte{Amount:plural:|s} supplémentaire{Amount:plural:|s} au début de votre tour."
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Posture défensive",
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Chaque fois que votre [gold]Karaté[/gold] se déclenche, gagnez {Amount} d'[gold]Armure[/gold]."
 }

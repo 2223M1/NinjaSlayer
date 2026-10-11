@@ -186,6 +186,6 @@
   "NINJA_SLAYER_CARD_ZANSHIN.title": "Zanshin",
   "NINJA_SLAYER_CARD_RECOVER.title": "Pulihkan",
   "NINJA_SLAYER_CARD_RECOVER.selectionScreenPrompt": "Pilih kartu untuk diletakkan di atas [gold]Tumpukan Ambil[/gold] kamu.",
-  "NINJA_SLAYER_CARD_BATTLE_READY.description": "Jika kamu menembakkan [gold]Shuriken[/gold] giliran lalu, ambil {Cards:diff()} kartu tambahan pada awal giliranmu.",
-  "NINJA_SLAYER_CARD_BATTLE_READY.title": "Siap Tempur"
+  "NINJA_SLAYER_CARD_GUARD_STANCE.description": "Setiap kali [gold]Karate[/gold] milikmu terpicu, dapatkan {Block:diff()} [gold]Blok[/gold].",
+  "NINJA_SLAYER_CARD_GUARD_STANCE.title": "Sikap Bertahan"
 }

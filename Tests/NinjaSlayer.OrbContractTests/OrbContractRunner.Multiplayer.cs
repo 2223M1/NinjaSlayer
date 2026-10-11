@@ -206,6 +206,40 @@ public partial class OrbContractRunner
         foreach (Player player in run.Players)
         foreach (bool upgraded in new[] { false, true })
         {
+            foreach (Player participant in run.Players)
+                foreach (var power in participant.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
+            Player teammate = player == first ? second : first;
+            await PowerCmd.Apply<GuardStancePower>(Choice, teammate.Creature, 7, teammate.Creature, null);
+            var guard = combat.State.CreateCard<GuardStance>(player);
+            if (upgraded) guard.UpgradeInternal();
+            var palm = combat.State.CreateCard<PalmThrust>(player);
+            palm.UpgradeInternal();
+            await CardPileCmd.Add(guard, PileType.Hand);
+            await CardPileCmd.Add(palm, PileType.Hand);
+            await PowerCmd.Apply<KaratePower>(Choice, player.Creature, 3, player.Creature, null);
+            await PlayerCmd.SetEnergy(10, player);
+            decimal block = player.Creature.Block;
+            decimal teammateBlock = teammate.Creature.Block;
+            string fixture = $"guard-stance-{player.NetId}-{upgraded}";
+            int before = completed;
+            File.WriteAllText(Path.Combine(directory, $"{role}.{fixture}"), "ready");
+            await WaitNetwork(() => File.Exists(Path.Combine(directory, $"host.{fixture}"))
+                && File.Exists(Path.Combine(directory, $"client.{fixture}")), "both Guard Stance fixtures");
+            if (player.NetId == _network.NetId)
+                RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(guard, null));
+            await WaitNetwork(() => completed > before, "native Guard Stance action");
+            if (player.NetId == _network.NetId)
+                RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(palm, null));
+            await WaitNetwork(() => completed >= before + 2, "native Guard Stance multihit follow-up");
+            Require(player.Creature.Block == block + (upgraded ? 6 : 3)
+                && teammate.Creature.Block == teammateBlock && !player.Creature.HasPower<KaratePower>(),
+                "Guard Stance base/upgrade must grant three owned Karate rewards identically on both peers.");
+            await FinishFixture(fixture);
+        }
+        GD.Print("PASS native ENet Guard Stance: both owners, base/upgrade, multihit rewards and teammate isolation.");
+        foreach (Player player in run.Players)
+        foreach (bool upgraded in new[] { false, true })
+        {
             foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
             await PowerCmd.Apply<StrengthPower>(Choice, player.Creature, 3, player.Creature, null);
             await PowerCmd.Apply<VigorPower>(Choice, player.Creature, 7, player.Creature, null);

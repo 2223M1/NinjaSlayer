@@ -186,6 +186,6 @@
   "NINJA_SLAYER_CARD_ZANSHIN.title": "Zanshin",
   "NINJA_SLAYER_CARD_RECOVER.title": "Recuperar",
   "NINJA_SLAYER_CARD_RECOVER.selectionScreenPrompt": "Escolha uma carta para colocar no topo da sua [gold]Pilha de Compra[/gold].",
-  "NINJA_SLAYER_CARD_BATTLE_READY.description": "Se lançou [gold]Shuriken[/gold] no turno anterior, compre {Cards:diff()} {Cards:plural:carta|cartas} {Cards:plural:adicional|adicionais} no início do seu turno.",
-  "NINJA_SLAYER_CARD_BATTLE_READY.title": "Pronto para o Combate"
+  "NINJA_SLAYER_CARD_GUARD_STANCE.description": "Sempre que seu [gold]Karatê[/gold] for ativado, ganhe {Block:diff()} de [gold]Proteção[/gold].",
+  "NINJA_SLAYER_CARD_GUARD_STANCE.title": "Postura Defensiva"
 }

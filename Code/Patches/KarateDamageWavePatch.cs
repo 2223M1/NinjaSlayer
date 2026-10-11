@@ -121,6 +121,8 @@ public sealed class KarateDamageWavePatch : IPatchMethod
 
         int amountBeforeConsumption = karate.Amount;
         await PowerCmd.ModifyAmount(choiceContext, karate, -1, dealer, cardSource);
+        if (dealer.GetPower<GuardStancePower>() is { } guard)
+            await guard.AfterKarate();
         if (dealer.GetPower<OneMindOneBodyPower>() is { } soul)
             await soul.AfterKarate(choiceContext);
         if (CombatManager.Instance.IsEnding && karate.Amount == amountBeforeConsumption)

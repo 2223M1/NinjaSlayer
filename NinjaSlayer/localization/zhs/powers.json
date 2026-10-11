@@ -85,6 +85,6 @@
   "NINJA_SLAYER_POWER_ONE_MIND_ONE_BODY_POWER.smartDescription": "每当你的[gold]空手道[/gold]触发时，获得{Amount}点[gold]奈落生命[/gold]。",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "如果你在一回合内打出了至少3张攻击牌，在下个回合开始时额外抽{Amount}张牌。",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "残心",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.title": "备战",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.description": "如果你在上个回合发射过[gold]手里剑[/gold]，在你的回合开始时额外抽{Amount}张牌。"
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "守势",
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "每当你的[gold]空手道[/gold]触发时，获得{Amount}点[gold]格挡[/gold]。"
 }

@@ -186,6 +186,6 @@
   "NINJA_SLAYER_CARD_ZANSHIN.title": "残心",
   "NINJA_SLAYER_CARD_RECOVER.title": "重拾",
   "NINJA_SLAYER_CARD_RECOVER.selectionScreenPrompt": "选择1张牌，放到你的[gold]抽牌堆[/gold]顶部。",
-  "NINJA_SLAYER_CARD_BATTLE_READY.description": "如果你在上个回合激发过[gold]手里剑[/gold]，在你的回合开始时额外抽{Cards:diff()}张牌。",
-  "NINJA_SLAYER_CARD_BATTLE_READY.title": "备战"
+  "NINJA_SLAYER_CARD_GUARD_STANCE.description": "每当你的[gold]空手道[/gold]触发时，获得{Block:diff()}点[gold]格挡[/gold]。",
+  "NINJA_SLAYER_CARD_GUARD_STANCE.title": "守势"
 }

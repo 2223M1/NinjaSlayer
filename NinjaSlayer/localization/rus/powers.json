@@ -85,6 +85,6 @@
   "NINJA_SLAYER_POWER_ONE_MIND_ONE_BODY_POWER.smartDescription": "При срабатывании [gold]карате[/gold] получаете {Amount} [gold]жизни Нараку[/gold].",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "Если вы разыграли не менее 3 Атак за ход, в начале следующего хода возьмите дополнительные карты: {Amount}.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "Дзансин",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.title": "Готовность к бою",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.description": "Если вы выпускали [gold]сюрикены[/gold] на прошлом ходу, в начале вашего хода возьмите еще {Amount} {Amount:plural(ru):карту|карты|карт}."
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Защитная стойка",
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Каждый раз, когда срабатывает ваше [gold]Карате[/gold], вы получаете {Amount} [gold]защиты[/gold]."
 }
