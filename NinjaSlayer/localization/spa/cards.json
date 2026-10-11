@@ -116,7 +116,7 @@
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.title": "Patada voladora del dragón",
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.description": "Inflige {Damage:diff()} de daño.\n[gold]Respiración Chado[/gold] {Breath:diff()}.\nRoba hasta llenar tu [gold]Mano[/gold].",
   "NINJA_SLAYER_CARD_KILLING_INTENT.title": "Intención asesina·Ki directo",
-  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "Gana {Block:diff()} de [gold]Bloqueo[/gold].\nAl final del turno enemigo, si has bloqueado todo el daño de ataque, contraataca una vez e inflige {Damage:diff()} de daño a todos los enemigos que tenían intención de atacar al final de tu turno.",
+  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "Gana {Block:diff()} de [gold]Bloqueo[/gold].\nAl final del turno enemigo, si has bloqueado todo el daño de ataque, inflige {Damage:diff()} de daño a los atacantes.",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.title": "Ki directo",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.description": "Inflige {Damage:diff()} de daño.",
   "NINJA_SLAYER_CARD_FURIN_KAZAN.title": "Furin Kazan",

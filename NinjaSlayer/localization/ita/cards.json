@@ -116,7 +116,7 @@
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.title": "Calcio volante del drago",
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.description": "Infliggi {Damage:diff()} di danno.\n[gold]Respirazione Chado[/gold] {Breath:diff()}.\nPesca fino a riempire la tua [gold]mano[/gold].",
   "NINJA_SLAYER_CARD_KILLING_INTENT.title": "Intento omicida·Ki diretto",
-  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "Ottieni {Block:diff()} di [gold]Blocco[/gold].\nAlla fine del turno nemico, se hai bloccato tutti i danni da attacco, contrattacca una sola volta, infliggendo {Damage:diff()} danni a tutti i nemici che intendevano attaccare alla fine del tuo turno.",
+  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "Ottieni {Block:diff()} di [gold]Blocco[/gold].\nAlla fine del turno nemico, se hai bloccato tutti i danni da attacco, infliggi {Damage:diff()} danni agli attaccanti.",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.title": "Ki diretto",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.description": "Infliggi {Damage:diff()} di danno.",
   "NINJA_SLAYER_CARD_FURIN_KAZAN.title": "Furin Kazan",

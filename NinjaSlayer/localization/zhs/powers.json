@@ -29,7 +29,7 @@
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.title": "奈落形态",
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.description": "每打出1张攻击牌，对所有敌人触发{Amount}次[gold]黑炎[/gold]伤害。\n每次均受[gold]烈焰[/gold]加成。",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.title": "杀气·直气",
-  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "在敌方回合结束时，若你格挡了所有攻击伤害，对你回合结束时具有攻击意图的所有敌人造成{Amount}点伤害，仅反击一次。",
+  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "在敌方回合结束时，若你格挡了所有攻击伤害，对攻击者造成{Amount}点伤害。",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.title": "飞刃席卷",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.description": "本回合你的每发[gold]手里剑[/gold]命中所有敌人。",
   "NINJA_SLAYER_POWER_WATCHFUL_BLADES_POWER.title": "伺机备刃",

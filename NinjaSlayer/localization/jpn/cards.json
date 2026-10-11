@@ -116,7 +116,7 @@
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.title": "ドラゴン・トビゲリ",
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.description": "{Damage:diff()}ダメージを与える。\n[gold]チャドー呼吸[/gold]{Breath:diff()}。\n[gold]手札[/gold]が上限に達するまでカードを引く。",
   "NINJA_SLAYER_CARD_KILLING_INTENT.title": "殺気·直気",
-  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "{Block:diff()}[gold]ブロック[/gold]を得る。\n敵のターン終了時、攻撃ダメージをすべて防いでいた場合、自分のターン終了時に攻撃を予定していた敵全体に{Damage:diff()}ダメージを与える。反撃は1回のみ。",
+  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "{Block:diff()}[gold]ブロック[/gold]を得る。\n敵のターン終了時、攻撃ダメージをすべて防いでいた場合、攻撃者に{Damage:diff()}ダメージを与える。",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.title": "直気",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.description": "{Damage:diff()}ダメージを与える。",
   "NINJA_SLAYER_CARD_STRONG_SHURIKEN.title": "強スリケン",

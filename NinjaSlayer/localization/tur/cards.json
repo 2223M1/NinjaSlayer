@@ -116,7 +116,7 @@
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.title": "Ejderha Uçan Tekmesi",
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.description": "{Damage:diff()} hasar ver.\n[gold]Chado Nefesi[/gold] {Breath:diff()}.\n[gold]El[/gold]in dolana kadar kart çek.",
   "NINJA_SLAYER_CARD_KILLING_INTENT.title": "Öldürme Niyeti·Düz Ki",
-  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "{Block:diff()} [gold]Blok[/gold] elde et.\nDüşman turunun sonunda tüm saldırı hasarını engellediysen bir kez karşı saldırı yaparak kendi turunun sonunda saldırmaya niyetli olan tüm düşmanlara {Damage:diff()} hasar ver.",
+  "NINJA_SLAYER_CARD_KILLING_INTENT.description": "{Block:diff()} [gold]Blok[/gold] elde et.\nDüşman turunun sonunda tüm saldırı hasarını engellediysen saldıranlara {Damage:diff()} hasar ver.",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.title": "Düz Ki",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.description": "{Damage:diff()} hasar ver.",
   "NINJA_SLAYER_CARD_FURIN_KAZAN.title": "Furin Kazan",

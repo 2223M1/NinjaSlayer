@@ -40,11 +40,11 @@ public static class SlowAttackAnimation
         {
             await NinjaSlayerRapidAnimationCoordinator.PlayAttackToPeak(creature,
                 NinjaSlayerCombatVisuals.SlowAttackLungeDistance, gate, FinisherActionTrajectory.SlowProgress,
-                returnSeconds: CombatActionTimingRuntime.AttackReturnSeconds(gate, heavy: true));
+                returnSeconds: CombatActionTimingRuntime.AttackReturnSeconds(heavy: true));
             return;
         }
         await PlayLunge(creature, NinjaSlayerCombatVisuals.SlowAttackLungeDistance,
-            gate, StandardOutboundSeconds, CombatActionTimingRuntime.AttackReturnSeconds(gate, heavy: true),
+            gate, StandardOutboundSeconds, CombatActionTimingRuntime.AttackReturnSeconds(heavy: true),
             FinisherActionTrajectory.SlowProgress);
     }
 

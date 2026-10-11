@@ -29,7 +29,7 @@
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.title": "나라쿠 형상",
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.description": "공격 카드를 사용할 때마다 모든 적에게 [gold]검은 불꽃[/gold] 피해를 {Amount}번 발동합니다.\n각 발동에 [gold]지옥같은 불꽃[/gold]이 적용됩니다.",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.title": "살의·직선 기",
-  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "적 턴 종료 시, 모든 공격 피해를 막았다면 내 턴 종료 시 공격 의도였던 모든 적에게 피해를 {Amount} 줍니다. 반격은 한 번만 합니다.",
+  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "적 턴 종료 시, 모든 공격 피해를 막았다면 공격한 적들에게 피해를 {Amount} 줍니다.",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.title": "칼날 휩쓸기",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.description": "이번 턴에 [gold]슈리켄[/gold]이 모든 적을 공격합니다.",
   "NINJA_SLAYER_POWER_WATCHFUL_BLADES_POWER.title": "기회를 노리는 칼날",
