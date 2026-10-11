@@ -8,12 +8,12 @@ using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Cards.Standard;
 
-public sealed class BattleReady : NinjaSlayerUncommonCard
+public sealed class GuardStance : NinjaSlayerUncommonCard
 {
-    public BattleReady() : base(nameof(BattleReady), 1, CardType.Power, TargetType.Self) { }
+    public GuardStance() : base(nameof(GuardStance), 1, CardType.Power, TargetType.Self) { }
     protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(1, ValueProp.Unpowered)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<KaratePower>()];
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
-        PowerCmd.Apply<BattleReadyPower>(choiceContext, Owner.Creature, DynamicVars.Block.BaseValue, Owner.Creature, this);
+        PowerCmd.Apply<GuardStancePower>(choiceContext, Owner.Creature, DynamicVars.Block.BaseValue, Owner.Creature, this);
     protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(1);
 }

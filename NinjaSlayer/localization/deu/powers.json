@@ -85,6 +85,6 @@
   "NINJA_SLAYER_POWER_ONE_MIND_ONE_BODY_POWER.smartDescription": "Wenn dein [gold]Karate[/gold] ausgelöst wird, erhalte {Amount} [gold]Naraku-Leben[/gold].",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "Wenn du in einem Zug mindestens 3 Angriffe ausspielst, ziehe zu Beginn deines nächsten Zuges {Amount} zusätzliche Karten.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "Zanshin",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.title": "Abwehrhaltung",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.description": "Immer wenn dein [gold]Karate[/gold] ausgelöst wird, erhalte {Amount} [gold]Block[/gold]."
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Abwehrhaltung",
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Immer wenn dein [gold]Karate[/gold] ausgelöst wird, erhalte {Amount} [gold]Block[/gold]."
 }

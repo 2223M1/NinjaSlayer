@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dxrohmb6hu5nq"
-path="res://.godot/imported/BattleReadyPower.png-a5097eacdf21b97cc2c5d31dd5b64029.ctex"
+uid="uid://dn1q501h7vvkd"
+path="res://.godot/imported/GuardStance.png-6f77b2baa068f3d30d560c83a8b4d647.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://NinjaSlayer/images/powers/BattleReadyPower.png"
-dest_files=["res://.godot/imported/BattleReadyPower.png-a5097eacdf21b97cc2c5d31dd5b64029.ctex"]
+source_file="res://NinjaSlayer/images/cards/GuardStance.png"
+dest_files=["res://.godot/imported/GuardStance.png-6f77b2baa068f3d30d560c83a8b4d647.ctex"]
 
 [params]
 

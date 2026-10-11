@@ -186,6 +186,6 @@
   "NINJA_SLAYER_CARD_ZANSHIN.title": "ซันชิน",
   "NINJA_SLAYER_CARD_RECOVER.title": "นำกลับ",
   "NINJA_SLAYER_CARD_RECOVER.selectionScreenPrompt": "เลือกการ์ดเพื่อวางไว้บนสุดของ[gold]กองจั่ว[/gold]",
-  "NINJA_SLAYER_CARD_BATTLE_READY.description": "ทุกครั้งที่ [gold]คาราเต้[/gold] ของคุณทำงาน ได้รับ [gold]บล็อก[/gold] {Block:diff()} หน่วย",
-  "NINJA_SLAYER_CARD_BATTLE_READY.title": "ท่าป้องกัน"
+  "NINJA_SLAYER_CARD_GUARD_STANCE.description": "ทุกครั้งที่ [gold]คาราเต้[/gold] ของคุณทำงาน ได้รับ [gold]บล็อก[/gold] {Block:diff()} หน่วย",
+  "NINJA_SLAYER_CARD_GUARD_STANCE.title": "ท่าป้องกัน"
 }

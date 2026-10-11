@@ -60,7 +60,7 @@ public partial class OrbContractRunner
         {
             using var combat = new OrbCombat();
             var owner = combat.Player.Creature;
-            var guard = AddCard<BattleReady>(combat, upgraded: upgraded);
+            var guard = AddCard<GuardStance>(combat, upgraded: upgraded);
             Require(guard.EnergyCost.GetWithModifiers(CostModifiers.Local) == 1,
                 "Guard Stance costs one energy before and after upgrade.");
             await CardCmd.AutoPlay(Choice, guard, null);
@@ -70,7 +70,7 @@ public partial class OrbContractRunner
             var other = MegaCrit.Sts2.Core.Entities.Players.Player.CreateForNewRun<MegaCrit.Sts2.Core.Models.Characters.Ironclad>(UnlockState.all, 2);
             combat.State.AddPlayer(other);
             other.ResetCombatState();
-            await PowerCmd.Apply<BattleReadyPower>(Choice, other.Creature, 7, other.Creature, null);
+            await PowerCmd.Apply<GuardStancePower>(Choice, other.Creature, 7, other.Creature, null);
             await CreatureCmd.GainBlock(combat.Enemy, 100, ValueProp.Unpowered, null);
             await CreatureCmd.Damage(Choice, new[] { combat.Enemy, combat.AddEnemy() }, 1, ValueProp.Move, owner);
             int amount = upgraded ? 2 : 1;
@@ -87,12 +87,12 @@ public partial class OrbContractRunner
             await CardCmd.Discard(Choice, combat.Card());
             Require(owner.Block == 4 * amount && owner.GetPowerAmount<KaratePower>() == 2,
                 "No Karate, zero damage, unpowered damage and stock Shuriken must not trigger Guard Stance.");
-            await CardCmd.AutoPlay(Choice, AddCard<BattleReady>(combat, upgraded: !upgraded), null);
+            await CardCmd.AutoPlay(Choice, AddCard<GuardStance>(combat, upgraded: !upgraded), null);
             await CreatureCmd.Damage(Choice, combat.Enemy, 1, ValueProp.Move, owner);
             Require(owner.Block == 4 * amount + 3 && other.Creature.Block == 0,
                 "Base and upgraded Guard Stance stack to three Block without rewarding another player.");
             combat.Player.PlayerCombatState!.IncrementTurnNumber();
-            Require(owner.GetPower<BattleReadyPower>()!.ModifyHandDraw(combat.Player, 5) == 5,
+            Require(owner.GetPower<GuardStancePower>()!.ModifyHandDraw(combat.Player, 5) == 5,
                 "Guard Stance does not retain Battle Ready's former stock-Shuriken draw bonus.");
         }
         foreach (bool upgraded in new[] { false, true })

@@ -186,6 +186,6 @@
   "NINJA_SLAYER_CARD_ZANSHIN.title": "Zanshin",
   "NINJA_SLAYER_CARD_RECOVER.title": "Recover",
   "NINJA_SLAYER_CARD_RECOVER.selectionScreenPrompt": "Choose a card to put on top of your [gold]Draw Pile[/gold].",
-  "NINJA_SLAYER_CARD_BATTLE_READY.description": "Whenever your [gold]Karate[/gold] triggers, gain {Block:diff()} [gold]Block[/gold].",
-  "NINJA_SLAYER_CARD_BATTLE_READY.title": "Guard Stance"
+  "NINJA_SLAYER_CARD_GUARD_STANCE.description": "Whenever your [gold]Karate[/gold] triggers, gain {Block:diff()} [gold]Block[/gold].",
+  "NINJA_SLAYER_CARD_GUARD_STANCE.title": "Guard Stance"
 }

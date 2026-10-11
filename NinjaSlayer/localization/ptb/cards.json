@@ -186,6 +186,6 @@
   "NINJA_SLAYER_CARD_ZANSHIN.title": "Zanshin",
   "NINJA_SLAYER_CARD_RECOVER.title": "Recuperar",
   "NINJA_SLAYER_CARD_RECOVER.selectionScreenPrompt": "Escolha uma carta para colocar no topo da sua [gold]Pilha de Compra[/gold].",
-  "NINJA_SLAYER_CARD_BATTLE_READY.description": "Sempre que seu [gold]Karatê[/gold] for ativado, ganhe {Block:diff()} de [gold]Proteção[/gold].",
-  "NINJA_SLAYER_CARD_BATTLE_READY.title": "Postura Defensiva"
+  "NINJA_SLAYER_CARD_GUARD_STANCE.description": "Sempre que seu [gold]Karatê[/gold] for ativado, ganhe {Block:diff()} de [gold]Proteção[/gold].",
+  "NINJA_SLAYER_CARD_GUARD_STANCE.title": "Postura Defensiva"
 }

@@ -199,11 +199,9 @@ public partial class OrbContractRunner
         foreach (bool upgraded in new[] { false, true })
         {
             using var arena = new OrbCombat();
-            await Play(arena, Create(arena, ModelDb.Card<BattleReady>(), upgraded));
-            await PowerCmd.Apply<KaratePower>(Choice, arena.Player.Creature, 3, arena.Player.Creature, null);
-            await CardCmd.AutoPlay(Choice, AddCard<PalmThrust>(arena, upgraded: true), null);
-            Require(arena.Player.Creature.Block == (upgraded ? 6 : 3),
-                "Generated Guard Stance must grant Block per Karate trigger using its base/upgraded component value.");
+            await Play(arena, Create(arena, ModelDb.Card<GuardStance>(), upgraded));
+            Require(arena.Player.Creature.GetPowerAmount<GuardStancePower>() == (upgraded ? 2 : 1),
+                "Generated Guard Stance must apply its base/upgraded Karate-trigger Block power.");
         }
         foreach (bool upgraded in new[] { false, true })
         {

@@ -186,6 +186,6 @@
   "NINJA_SLAYER_CARD_ZANSHIN.title": "Zanshin",
   "NINJA_SLAYER_CARD_RECOVER.title": "Geri Al",
   "NINJA_SLAYER_CARD_RECOVER.selectionScreenPrompt": "[gold]Çekme Deste[/gold]'nin üstüne koymak için bir kart seç.",
-  "NINJA_SLAYER_CARD_BATTLE_READY.description": "[gold]Karate[/gold] etkini her tetiklediğinde {Block:diff()} [gold]Blok[/gold] kazan.",
-  "NINJA_SLAYER_CARD_BATTLE_READY.title": "Savunma Duruşu"
+  "NINJA_SLAYER_CARD_GUARD_STANCE.description": "[gold]Karate[/gold] etkini her tetiklediğinde {Block:diff()} [gold]Blok[/gold] kazan.",
+  "NINJA_SLAYER_CARD_GUARD_STANCE.title": "Savunma Duruşu"
 }

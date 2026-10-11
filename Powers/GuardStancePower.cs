@@ -6,9 +6,9 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
 
-public sealed class BattleReadyPower : NinjaSlayerCounterPower
+public sealed class GuardStancePower : NinjaSlayerCounterPower
 {
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(BattleReadyPower));
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("DiscardDefensePower");
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<KaratePower>()];
 
     internal Task AfterKarate()

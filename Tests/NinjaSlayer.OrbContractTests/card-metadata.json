@@ -2483,7 +2483,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_BATTLE_READY",
+    "Id": "CARD.NINJA_SLAYER_CARD_GUARD_STANCE",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -2494,13 +2494,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/BattleReady.png",
+    "Portrait": "res://NinjaSlayer/images/cards/GuardStance.png",
     "Vars": {
       "Block": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_BATTLE_READY",
+    "Id": "CARD.NINJA_SLAYER_CARD_GUARD_STANCE",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -2511,7 +2511,7 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/BattleReady.png",
+    "Portrait": "res://NinjaSlayer/images/cards/GuardStance.png",
     "Vars": {
       "Block": 2
     }

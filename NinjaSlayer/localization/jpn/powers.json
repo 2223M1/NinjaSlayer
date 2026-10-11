@@ -85,6 +85,6 @@
   "NINJA_SLAYER_POWER_ONE_MIND_ONE_BODY_POWER.smartDescription": "[gold]カラテ[/gold]が発動するたび、{Amount}[gold]ナラク生命[/gold]を得る。",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "1ターン中にアタックを3枚以上プレイした場合、次のターン開始時にカードを追加で{Amount}枚引く。",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "ザンシン",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.title": "守勢",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.description": "自分の[gold]カラテ[/gold]が発動するたび、{Amount}[gold]ブロック[/gold]を得る。"
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "守勢",
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "自分の[gold]カラテ[/gold]が発動するたび、{Amount}[gold]ブロック[/gold]を得る。"
 }

@@ -56,7 +56,7 @@ public static class NinjaSlayerCardRules
         "StarlessNight",
         "HiddenEdge",
         "Moonsault",
-        "BattleReady",
+        "GuardStance",
         "BladeBarrier",
         "Kindle",
         "NarakusMight",

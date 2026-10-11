@@ -85,6 +85,6 @@
   "NINJA_SLAYER_POWER_ONE_MIND_ONE_BODY_POWER.smartDescription": "Whenever your [gold]Karate[/gold] triggers, gain {Amount} [gold]Naraku Life[/gold].",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "If you play at least 3 Attacks in a turn, draw {Amount} additional cards at the start of your next turn.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "Zanshin",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.title": "Guard Stance",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.description": "Whenever your [gold]Karate[/gold] triggers, gain {Amount} [gold]Block[/gold]."
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Guard Stance",
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Whenever your [gold]Karate[/gold] triggers, gain {Amount} [gold]Block[/gold]."
 }

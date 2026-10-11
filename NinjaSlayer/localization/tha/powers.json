@@ -85,6 +85,6 @@
   "NINJA_SLAYER_POWER_ONE_MIND_ONE_BODY_POWER.smartDescription": "ทุกครั้งที่[gold]คาราเต้[/gold]ของคุณทำงาน ได้รับ {Amount} [gold]พลังชีวิตนาราคุ[/gold]",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "ถ้าคุณเล่นการ์ดโจมตีอย่างน้อย 3 ใบในหนึ่งเทิร์น จั่วการ์ดเพิ่ม {Amount} ใบเมื่อเริ่มเทิร์นถัดไป",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "ซันชิน",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.title": "ท่าป้องกัน",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.description": "ทุกครั้งที่ [gold]คาราเต้[/gold] ของคุณทำงาน ได้รับ [gold]บล็อก[/gold] {Amount} หน่วย"
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "ท่าป้องกัน",
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "ทุกครั้งที่ [gold]คาราเต้[/gold] ของคุณทำงาน ได้รับ [gold]บล็อก[/gold] {Amount} หน่วย"
 }

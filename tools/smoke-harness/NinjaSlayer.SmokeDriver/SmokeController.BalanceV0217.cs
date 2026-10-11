@@ -74,7 +74,7 @@ internal sealed partial class SmokeController
         Require(token.Pile?.Type == PileType.Exhaust, "Snapshot Shuriken finishes its native throw in Exhaust.");
         await ClearCards();
         for (int i = 0; i < 5; i++) await Add<Wound>(PileType.Draw);
-        await CardCmd.AutoPlay(choice, await Add<BattleReady>(), null);
+        await CardCmd.AutoPlay(choice, await Add<GuardStance>(), null);
         await (Task)AccessTools.Method(typeof(ShurikenOrb), "AddStock").Invoke(null, [choice, player, 3])!;
         Require(PileType.Hand.GetPile(player).Cards.OfType<Wound>().Count() == 0
             && PileType.Hand.GetPile(player).Cards.OfType<StrongShuriken>().Count() == 1,
@@ -120,7 +120,7 @@ internal sealed partial class SmokeController
 
         await ClearCards();
         foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
-        foreach (var type in new[] { typeof(PressTheAttack), typeof(Zanshin), typeof(BattleReady), typeof(Recover),
+        foreach (var type in new[] { typeof(PressTheAttack), typeof(Zanshin), typeof(GuardStance), typeof(Recover),
             typeof(StrikeStrike), typeof(KillingIntent), typeof(StarlessNight) })
             await CardPileCmd.Add(combat.CreateCard(ModelDb.GetById<CardModel>(ModelDb.GetId(type)), player), PileType.Hand);
         await Snapshot("new-cards");

@@ -85,6 +85,6 @@
   "NINJA_SLAYER_POWER_ONE_MIND_ONE_BODY_POWER.smartDescription": "Sempre que seu [gold]Karatê[/gold] ativar, receba {Amount} de [gold]Vida de Naraku[/gold].",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "Se jogar pelo menos 3 Ataques em um turno, compre {Amount} cartas adicionais no início do próximo turno.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "Zanshin",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.title": "Postura Defensiva",
-  "NINJA_SLAYER_POWER_BATTLE_READY_POWER.description": "Sempre que seu [gold]Karatê[/gold] for ativado, ganhe {Amount} de [gold]Proteção[/gold]."
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Postura Defensiva",
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Sempre que seu [gold]Karatê[/gold] for ativado, ganhe {Amount} de [gold]Proteção[/gold]."
 }

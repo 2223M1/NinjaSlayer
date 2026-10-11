@@ -42,7 +42,6 @@ public partial class OrbContractRunner
             combat.State.RoundNumber++;
             combat.Player.PlayerCombatState!.IncrementTurnNumber();
             Require(!shield.ShouldGlowGold, "Gain glow expires on turn change.");
-
         }
         foreach (bool upgraded in new[] { false, true })
         {
