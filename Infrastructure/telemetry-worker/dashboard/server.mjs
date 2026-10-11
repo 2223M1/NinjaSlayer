@@ -47,7 +47,7 @@ export async function createDashboardServer({ feedbackReader = { loadFeedback, r
   async function refresh() {
     const jobs = await Promise.allSettled([
       config.key ? loadTelemetry(config).then(result => {
-        telemetry = normalizeEvents(result.results);
+        telemetry = result;
         sources.telemetry = { state: 'ready', label: 'PostHog', at: new Date().toISOString(), truncated: result.truncated };
       }) : Promise.resolve(),
       feedbackReader.loadFeedback().then(result => {

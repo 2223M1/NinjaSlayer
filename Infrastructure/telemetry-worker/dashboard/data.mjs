@@ -38,69 +38,87 @@ function readCombats(payload, rooms, playerIds) {
 }
 
 export function normalizeEvents(input) {
-  const rows = input?.batch ?? input?.results ?? input;
-  if (!Array.isArray(rows)) throw new Error('请选择 RitsuLib batch、PostHog 查询结果或事件数组 JSON。');
-  const byRun = new Map(), conflicted = new Set();
-  let rejected = 0, duplicates = 0, invalidCombats = 0;
-  for (const row of rows) {
-    const properties = Array.isArray(row) ? row[2] : row?.properties;
-    let p;
-    try { p = typeof properties === 'string' ? parseData(properties) : properties; }
-    catch { rejected++; continue; }
-    const history = p?.payload?.applicant_payload?.run_history;
-    if ((!Array.isArray(row) && row?.event !== 'run_history.completed') || p?.applicant_id !== 'NinjaSlayer'
-        || p.is_abandoned !== false || typeof p.is_victory !== 'boolean'
-        || !Array.isArray(history?.players) || !history.players.every(validPlayer)
-        || !Array.isArray(history.map_point_history) || !history.map_point_history.every(Array.isArray)
-        || typeof history.rng?.seed !== 'string' || !Number.isFinite(history.start_time)
-        || !Number.isInteger(history.ascension)) {
-      rejected++; continue;
-    }
-    const players = history.players.filter(player => player.character_id === CHARACTER);
-    const at = p.occurred_at_utc ?? (Array.isArray(row) ? row[1] : row.timestamp);
-    const ids = history.players.map(player => String(player.net_id));
-    const rooms = history.map_point_history.flat();
-    if (!players.length || new Set(ids).size !== ids.length || !Number.isFinite(Date.parse(at))
-        || rooms.some(room => !room || !Array.isArray(room.rooms) || room.rooms.some(entry => typeof entry?.room_type !== 'string')
-          || !Array.isArray(room.player_stats)
-          || room.player_stats.some(stat => !stat || !ids.includes(String(stat.player_id))
-            || (stat.card_choices != null && (!Array.isArray(stat.card_choices)
-              || stat.card_choices.some(choice => typeof choice?.card?.id !== 'string' || typeof choice.was_picked !== 'boolean')))
-            || (stat.cards_removed != null && (!Array.isArray(stat.cards_removed) || stat.cards_removed.some(card => typeof card?.id !== 'string')))
-            || (stat.upgraded_cards != null && (!Array.isArray(stat.upgraded_cards) || stat.upgraded_cards.some(id => typeof id !== 'string')))))) {
-      rejected++; continue;
-    }
-    const identity = JSON.stringify([history.rng.seed, history.start_time, [...ids].sort()]);
-    const balance = p.payload.private_contributions?.NinjaSlayer?.ninja_slayer_balance_context;
-    const metrics = ['ninja_slayer_run_history_v2', 'ninja_slayer_run_history_v3'].includes(balance?.balance_schema)
-      ? readCombats(p.payload.applicant_payload.mod_payload, rooms, new Set(ids)) : { combats: [], invalid: 0 };
-    invalidCombats += metrics.invalid;
-    const run = {
-      at, version: balance?.version ?? '未记录', reloads: history.num_reloads ?? null,
-      ascension: history.ascension, win: p.is_victory, floor: rooms.length,
-      players, playerCount: history.players.length, rooms, combats: metrics.combats,
-      actFloors: history.map_point_history.map(act => act.length),
-    };
-    const previous = byRun.get(identity);
-    if (previous) {
-      duplicates++;
-      if (previous.reloads !== null && run.reloads !== null && previous.reloads > run.reloads) continue;
-      if (previous.reloads !== run.reloads) conflicted.delete(identity);
-      if (previous.win !== run.win && previous.reloads === run.reloads) conflicted.add(identity);
-      if (previous.reloads === run.reloads && previous.win === run.win) {
-        for (const combat of previous.combats) {
-          const current = run.combats.find(item => item.floor === combat.floor && item.room_index === combat.room_index);
-          if (!current) run.combats.push(combat);
-          else for (const player of combat.players)
-            if (!current.players.some(item => item.player_id === player.player_id)) current.players.push(player);
-        }
+  const samples = new RunHistorySamples();
+  samples.add(input);
+  return samples.snapshot();
+}
+
+export class RunHistorySamples {
+  byRun = new Map();
+  conflicted = new Set();
+  rejected = 0;
+  duplicates = 0;
+  invalidCombats = 0;
+
+  add(input) {
+    const rows = input?.batch ?? input?.results ?? input;
+    if (!Array.isArray(rows)) throw new Error('请选择 RitsuLib batch、PostHog 查询结果或事件数组 JSON。');
+    const { byRun, conflicted } = this;
+    let rejected = 0, duplicates = 0, invalidCombats = 0;
+    for (const row of rows) {
+      const properties = Array.isArray(row) ? row[2] : row?.properties;
+      let p;
+      try { p = typeof properties === 'string' ? parseData(properties) : properties; }
+      catch { rejected++; continue; }
+      const history = p?.payload?.applicant_payload?.run_history;
+      if ((!Array.isArray(row) && row?.event !== 'run_history.completed') || p?.applicant_id !== 'NinjaSlayer'
+          || p.is_abandoned !== false || typeof p.is_victory !== 'boolean'
+          || !Array.isArray(history?.players) || !history.players.every(validPlayer)
+          || !Array.isArray(history.map_point_history) || !history.map_point_history.every(Array.isArray)
+          || typeof history.rng?.seed !== 'string' || !Number.isFinite(history.start_time)
+          || !Number.isInteger(history.ascension)) {
+        rejected++; continue;
       }
-      // Always retain the merged contributors. Higher-reload outcomes replace all earlier attempts.
+      const players = history.players.filter(player => player.character_id === CHARACTER);
+      const at = p.occurred_at_utc ?? (Array.isArray(row) ? row[1] : row.timestamp);
+      const ids = history.players.map(player => String(player.net_id));
+      const rooms = history.map_point_history.flat();
+      if (!players.length || new Set(ids).size !== ids.length || !Number.isFinite(Date.parse(at))
+          || rooms.some(room => !room || !Array.isArray(room.rooms) || room.rooms.some(entry => typeof entry?.room_type !== 'string')
+            || !Array.isArray(room.player_stats)
+            || room.player_stats.some(stat => !stat || !ids.includes(String(stat.player_id))
+              || (stat.card_choices != null && (!Array.isArray(stat.card_choices)
+                || stat.card_choices.some(choice => typeof choice?.card?.id !== 'string' || typeof choice.was_picked !== 'boolean')))
+              || (stat.cards_removed != null && (!Array.isArray(stat.cards_removed) || stat.cards_removed.some(card => typeof card?.id !== 'string')))
+              || (stat.upgraded_cards != null && (!Array.isArray(stat.upgraded_cards) || stat.upgraded_cards.some(id => typeof id !== 'string')))))) {
+        rejected++; continue;
+      }
+      const identity = JSON.stringify([history.rng.seed, history.start_time, [...ids].sort()]);
+      const balance = p.payload.private_contributions?.NinjaSlayer?.ninja_slayer_balance_context;
+      const metrics = ['ninja_slayer_run_history_v2', 'ninja_slayer_run_history_v3'].includes(balance?.balance_schema)
+        ? readCombats(p.payload.applicant_payload.mod_payload, rooms, new Set(ids)) : { combats: [], invalid: 0 };
+      invalidCombats += metrics.invalid;
+      const run = {
+        at, version: balance?.version ?? '未记录', reloads: history.num_reloads ?? null,
+        ascension: history.ascension, win: p.is_victory, floor: rooms.length,
+        players, playerCount: history.players.length, rooms, combats: metrics.combats,
+        actFloors: history.map_point_history.map(act => act.length),
+      };
+      const previous = byRun.get(identity);
+      if (previous) {
+        duplicates++;
+        if (previous.reloads !== null && run.reloads !== null && previous.reloads > run.reloads) continue;
+        if (previous.reloads !== run.reloads) conflicted.delete(identity);
+        if (previous.win !== run.win && previous.reloads === run.reloads) conflicted.add(identity);
+        if (previous.reloads === run.reloads && previous.win === run.win) {
+          for (const combat of previous.combats) {
+            const current = run.combats.find(item => item.floor === combat.floor && item.room_index === combat.room_index);
+            if (!current) run.combats.push(combat);
+            else for (const player of combat.players)
+              if (!current.players.some(item => item.player_id === player.player_id)) current.players.push(player);
+          }
+        }
+        // Always retain the merged contributors. Higher-reload outcomes replace all earlier attempts.
+      }
+      byRun.set(identity, run);
     }
-    byRun.set(identity, run);
+    this.rejected += rejected; this.duplicates += duplicates; this.invalidCombats += invalidCombats;
   }
-  return { runs: [...byRun].filter(([id]) => !conflicted.has(id)).map(([, run]) => run),
-    rejected, duplicates, conflicts: conflicted.size, invalidCombats };
+
+  snapshot() {
+    return { runs: [...this.byRun].filter(([id]) => !this.conflicted.has(id)).map(([, run]) => run),
+      rejected: this.rejected, duplicates: this.duplicates, conflicts: this.conflicted.size, invalidCombats: this.invalidCombats };
+  }
 }
 
 export function summarize(runs, catalog, filters = {}, now = Date.now()) {

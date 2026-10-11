@@ -1,7 +1,6 @@
 import { mkdir, writeFile, readFile, copyFile, cp } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { createHash } from 'node:crypto';
-import { normalizeEvents } from './data.mjs';
 import { useCurrentCatalog } from './public-data.mjs';
 import { chartSchemaVersion, publishSnapshot, publicFeedback, readCatalog, readCurrentRelease } from './publish.mjs';
 import { loadTelemetry } from './posthog.mjs';
@@ -27,7 +26,7 @@ const config = { host: process.env.POSTHOG_QUERY_HOST || 'https://us.posthog.com
 if (config.key && config.projectId) {
   try {
     const result = await loadTelemetry(config);
-    Object.assign(snapshot, publishSnapshot(normalizeEvents(result.results), catalog));
+    Object.assign(snapshot, publishSnapshot(result, catalog));
     snapshot.sources.telemetry = { state: 'ready', label: 'PostHog', at: new Date().toISOString(), truncated: result.truncated };
   } catch (error) {
     if (!snapshot.sources.telemetry.at || snapshot.chartSchemaVersion !== chartSchemaVersion) throw error;
