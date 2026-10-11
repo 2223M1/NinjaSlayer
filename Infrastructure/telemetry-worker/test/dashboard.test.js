@@ -170,13 +170,47 @@ test('PostHog pagination freezes its time boundary and keeps secrets out of fail
     calls.push({ url, ...options, body: JSON.parse(options.body) });
     return new Response(JSON.stringify({ results: calls.length === 1 ? Array(1000).fill(['id', 'timestamp', '{}']) : [] }));
   });
-  assert.equal(result.results.length, 1000); assert.equal(result.truncated, false);
+  assert.equal(result.rejected, 1000); assert.equal(result.truncated, false);
   assert.match(calls[1].body.query.query, /uuid < 'id'/);
   assert.ok(!calls[1].body.query.query.includes('OFFSET'));
   assert.equal(calls[0].body.query.query.match(/timestamp < ('[^']+')/)[1], calls[1].body.query.query.match(/timestamp < ('[^']+')/)[1]);
   assert.equal(calls[0].headers.Authorization, `Bearer ${key}`);
   await assert.rejects(loadTelemetry({ host: 'https://us.posthog.com', projectId: '42', key }, async () => new Response(key, { status: 403 })), error => !error.message.includes(key));
   await assert.rejects(loadTelemetry({ host: 'https://evil.invalid', projectId: '42', key }));
+});
+
+test('PostHog pages preserve cross-page conflicts, higher-reload replacements and UInt64 players', async () => {
+  const recovered = event();
+  recovered.properties.payload.applicant_payload.run_history.num_reloads = 2;
+  const rows = [...Array(998).fill(null), event(), event({ won: false }), recovered, event({ seed: 'other' })]
+    .map((row, index) => [String(index), row?.timestamp ?? '2026-09-12T10:00:00Z', JSON.stringify(row?.properties ?? null)]);
+  const expected = normalizeEvents(rows);
+  let page = 0;
+  const actual = await loadTelemetry({ host: 'https://us.posthog.com', projectId: '42', key: 'test' }, async () =>
+    new Response(JSON.stringify({ results: rows.slice(page++ * 1000, page * 1000) })));
+  assert.deepEqual(actual, { ...expected, truncated: false });
+  assert.equal(actual.runs.length, 2);
+  assert.equal(actual.duplicates, 2);
+  assert.equal(actual.conflicts, 0);
+  assert.equal(actual.runs[0].players[0].net_id, playerId);
+  assert.ok(!Object.hasOwn(actual, 'results'), 'raw upload envelopes must not remain in the aggregate');
+});
+
+test('paged telemetry releases rejected upload envelopes within a bounded heap', async () => {
+  const source = `
+    import { loadTelemetry } from ${JSON.stringify(new URL('../dashboard/posthog.mjs', import.meta.url).href)};
+    let pages = 0;
+    const result = await loadTelemetry({ host: 'https://us.posthog.com', projectId: '42', key: 'test' }, async () => {
+      pages++;
+      return new Response(JSON.stringify({ results: Array.from({ length: 1000 }, (_, i) => [
+        pages + '/' + i, '2026-10-11T00:00:00Z', JSON.stringify({ unused: pages + '/' + i + ':' + 'x'.repeat(8192) })
+      ]) }));
+    });
+    console.log(JSON.stringify({ pages, rejected: result.rejected, truncated: result.truncated }));
+  `;
+  const { stdout } = await promisify(execFile)(process.execPath,
+    ['--max-old-space-size=128', '--input-type=module', '--eval', source]);
+  assert.deepEqual(JSON.parse(stdout), { pages: 50, rejected: 50000, truncated: true });
 });
 
 test('local dashboard serves real catalog and imports; refuses cross-origin reads and never returns credentials', async t => {
