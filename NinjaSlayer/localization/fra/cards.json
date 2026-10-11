@@ -186,6 +186,6 @@
   "NINJA_SLAYER_CARD_ZANSHIN.title": "Zanshin",
   "NINJA_SLAYER_CARD_RECOVER.title": "Récupérer",
   "NINJA_SLAYER_CARD_RECOVER.selectionScreenPrompt": "Choisissez une carte à placer au-dessus de votre [gold]Pioche[/gold].",
-  "NINJA_SLAYER_CARD_GUARD_STANCE.description": "Chaque fois que votre [gold]Karaté[/gold] se déclenche, gagnez {Block:diff()} d'[gold]Armure[/gold].",
+  "NINJA_SLAYER_CARD_GUARD_STANCE.description": "Chaque fois que le [gold]Karaté[/gold] de n'importe quel personnage se déclenche, gagnez {Block:diff()} d'[gold]Armure[/gold].",
   "NINJA_SLAYER_CARD_GUARD_STANCE.title": "Posture défensive"
 }

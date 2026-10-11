@@ -86,5 +86,5 @@
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "Jika kamu memainkan setidaknya 3 Serangan dalam satu giliran, ambil {Amount} kartu tambahan pada awal giliran berikutnya.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "Zanshin",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Sikap Bertahan",
-  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Setiap kali [gold]Karate[/gold] milikmu terpicu, dapatkan {Amount} [gold]Blok[/gold]."
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Setiap kali [gold]Karate[/gold] siapa pun terpicu, dapatkan {Amount} [gold]Blok[/gold]."
 }

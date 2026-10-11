@@ -86,5 +86,5 @@
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "1ターン中にアタックを3枚以上プレイした場合、次のターン開始時にカードを追加で{Amount}枚引く。",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "ザンシン",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "守勢",
-  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "自分の[gold]カラテ[/gold]が発動するたび、{Amount}[gold]ブロック[/gold]を得る。"
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "誰かの[gold]カラテ[/gold]が発動するたび、{Amount}[gold]ブロック[/gold]を得る。"
 }

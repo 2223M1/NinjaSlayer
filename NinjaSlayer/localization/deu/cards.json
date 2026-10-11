@@ -186,6 +186,6 @@
   "NINJA_SLAYER_CARD_ZANSHIN.title": "Zanshin",
   "NINJA_SLAYER_CARD_RECOVER.title": "Zurückholen",
   "NINJA_SLAYER_CARD_RECOVER.selectionScreenPrompt": "Wähle eine Karte, die du oben auf deinen [gold]Nachziehstapel[/gold] legst.",
-  "NINJA_SLAYER_CARD_GUARD_STANCE.description": "Immer wenn dein [gold]Karate[/gold] ausgelöst wird, erhalte {Block:diff()} [gold]Block[/gold].",
+  "NINJA_SLAYER_CARD_GUARD_STANCE.description": "Immer wenn [gold]Karate[/gold] bei einem beliebigen Charakter ausgelöst wird, erhalte {Block:diff()} [gold]Block[/gold].",
   "NINJA_SLAYER_CARD_GUARD_STANCE.title": "Abwehrhaltung"
 }

@@ -232,11 +232,11 @@ public partial class OrbContractRunner
                 RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(palm, null));
             await WaitNetwork(() => completed >= before + 2, "native Guard Stance multihit follow-up");
             Require(player.Creature.Block == block + (upgraded ? 6 : 3)
-                && teammate.Creature.Block == teammateBlock && !player.Creature.HasPower<KaratePower>(),
-                "Guard Stance base/upgrade must grant three owned Karate rewards identically on both peers.");
+                && teammate.Creature.Block == teammateBlock + 21 && !player.Creature.HasPower<KaratePower>(),
+                "Guard Stance must reward both holders using their own amounts identically on both peers.");
             await FinishFixture(fixture);
         }
-        GD.Print("PASS native ENet Guard Stance: both owners, base/upgrade, multihit rewards and teammate isolation.");
+        GD.Print("PASS native ENet Guard Stance: both owners, base/upgrade and multihit rewards for every holder.");
         foreach (Player player in run.Players)
         foreach (bool upgraded in new[] { false, true })
         {

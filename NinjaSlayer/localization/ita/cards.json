@@ -186,6 +186,6 @@
   "NINJA_SLAYER_CARD_ZANSHIN.title": "Zanshin",
   "NINJA_SLAYER_CARD_RECOVER.title": "Recuperare",
   "NINJA_SLAYER_CARD_RECOVER.selectionScreenPrompt": "Scegli una carta da mettere in cima al tuo [gold]mazzo di pesca[/gold].",
-  "NINJA_SLAYER_CARD_GUARD_STANCE.description": "Ogni volta che il tuo [gold]Karate[/gold] si attiva, ottieni {Block:diff()} di [gold]Blocco[/gold].",
+  "NINJA_SLAYER_CARD_GUARD_STANCE.description": "Ogni volta che si attiva il [gold]Karate[/gold] di chiunque, ottieni {Block:diff()} di [gold]Blocco[/gold].",
   "NINJA_SLAYER_CARD_GUARD_STANCE.title": "Postura difensiva"
 }

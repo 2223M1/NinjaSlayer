@@ -86,5 +86,5 @@
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "Se giochi almeno 3 Attacchi in un turno, pesca {Amount} carte aggiuntive all’inizio del tuo prossimo turno.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "Zanshin",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Postura difensiva",
-  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Ogni volta che il tuo [gold]Karate[/gold] si attiva, ottieni {Amount} di [gold]Blocco[/gold]."
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Ogni volta che si attiva il [gold]Karate[/gold] di chiunque, ottieni {Amount} di [gold]Blocco[/gold]."
 }

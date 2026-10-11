@@ -113,6 +113,7 @@ public sealed class KarateDamageWavePatch : IPatchMethod
         }
 
         using var _ = ScreenShakeSuppressionContext.Suppress();
+        var combatState = dealer.CombatState!;
         if (targets.Count > 0)
         {
             var damage = await CreatureCmd.Damage(choiceContext, targets, extraDamage, ValueProp.Unpowered, dealer);
@@ -121,8 +122,11 @@ public sealed class KarateDamageWavePatch : IPatchMethod
 
         int amountBeforeConsumption = karate.Amount;
         await PowerCmd.ModifyAmount(choiceContext, karate, -1, dealer, cardSource);
-        if (dealer.GetPower<GuardStancePower>() is { } guard)
-            await guard.AfterKarate();
+        foreach (Creature creature in combatState.Creatures.ToArray())
+        {
+            if (!creature.IsDead && creature.GetPower<GuardStancePower>() is { } guard)
+                await guard.AfterKarate();
+        }
         if (dealer.GetPower<OneMindOneBodyPower>() is { } soul)
             await soul.AfterKarate(choiceContext);
         if (CombatManager.Instance.IsEnding && karate.Amount == amountBeforeConsumption)
