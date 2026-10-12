@@ -1,0 +1,127 @@
+{
+  "version": "1.0.25",
+  "sourceRevision": "38c786e508d40c4f2a0d9368e4db49b05630d706",
+  "verifiedAtUtc": "2026-10-12T02:21:42.696431+00:00",
+  "pullRequests": [
+    208,
+    209,
+    210
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "0d7cf612761d27bd540b4060ab698c1158fe4cb15d2176119436ed139d5848e7",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "740a820fc3dfaad78548c8da70b77f6f94f9e6663813f9d9f41857af83992468",
+    "b796aff5f93f9689998e5b648d047e86ffcbddff876332e0450801779680a9d9",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "c0071e2b03272b0f1e7a04977fc0773b3ffafb50a5dabd4414939c73c82e10a3",
+    "9e4c4ba2510e8482702e577bb425b020b521f07eefb571171f3872cb94126a55",
+    "28896bc1ce18ce66443ec23014bad59c724beb6b01a1559903c5440fcb2a5aaa",
+    "218c1181228417d734a08ad8061be728895703fccdd868f542e65bcc443798ca",
+    "2c78dbc7b7ad1c50a76d85dc70a5504de8fe95fe2e2a853a429edda32da6decb"
+  ],
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "bytes": 2215424,
+      "sha256": "0d7cf612761d27bd540b4060ab698c1158fe4cb15d2176119436ed139d5848e7"
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "bytes": 8,
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "bytes": 126464,
+      "sha256": "740a820fc3dfaad78548c8da70b77f6f94f9e6663813f9d9f41857af83992468"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "bytes": 2219008,
+      "sha256": "b796aff5f93f9689998e5b648d047e86ffcbddff876332e0450801779680a9d9"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "bytes": 522,
+      "sha256": "c0071e2b03272b0f1e7a04977fc0773b3ffafb50a5dabd4414939c73c82e10a3"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "bytes": 24576,
+      "sha256": "9e4c4ba2510e8482702e577bb425b020b521f07eefb571171f3872cb94126a55"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "bytes": 363,
+      "sha256": "28896bc1ce18ce66443ec23014bad59c724beb6b01a1559903c5440fcb2a5aaa"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "bytes": 211496640,
+      "sha256": "218c1181228417d734a08ad8061be728895703fccdd868f542e65bcc443798ca"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 1008,
+      "sha256": "2c78dbc7b7ad1c50a76d85dc70a5504de8fe95fe2e2a853a429edda32da6decb"
+    }
+  ],
+  "workshop": {
+    "itemId": "3776911445",
+    "remotePackageVerified": true,
+    "remotePackageSource": "Steam-managed installed Workshop download; matches every file of the uploaded bundle",
+    "remoteChangeNoteVerified": true,
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "changeNoteTimestamp": 1791732863
+  },
+  "notRun": [
+    "Additional gameplay contracts",
+    "Rendered client gameplay",
+    "Additional multiplayer gameplay"
+  ],
+  "scope": "Synchronize the already-published 1.0.25 package to the website. No game rebuild or Workshop upload.",
+  "catalog": {
+    "fingerprint": "fc746780f236a9472bc3f860a00d17f7dcdb8dbf24ae0f0951cc5d19aa87736c",
+    "exportedFromVerifiedWorkshopDownload": true,
+    "method": "Production catalog exporter in headless preview host, exact native localization overlay; no gameplay run",
+    "counts": {
+      "eng": 1671,
+      "zhs": 1671,
+      "zht": 1671,
+      "deu": 1671,
+      "esp": 1671,
+      "fra": 1671,
+      "ind": 1671,
+      "ita": 1671,
+      "jpn": 1671,
+      "kor": 1671,
+      "pol": 1671,
+      "ptb": 1671,
+      "rus": 1671,
+      "spa": 1671,
+      "tha": 1671,
+      "tur": 1671
+    }
+  },
+  "github": {
+    "productMergeCommit": "90660bcd05d8d4b1117a70cfc7e68946e835b4e3",
+    "productPullRequest": 210
+  }
+}
