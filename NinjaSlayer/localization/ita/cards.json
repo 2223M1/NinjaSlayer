@@ -56,7 +56,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "Preparare shuriken",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "Ottieni {Block:diff()} di [gold]Blocco[/gold].\nOttieni {Stock:diff()} di [gold]Shuriken[/gold].",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "Guardia incrociata",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Ottieni {Block:diff()} di [gold]Blocco[/gold].\nMetti la prossima carta che giochi in questo turno in cima al tuo [gold]mazzo di pesca[/gold].",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Ottieni {Block:diff()} di [gold]Blocco[/gold].\nRimetti nella tua mano la prossima carta che giochi in questo turno.",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.title": "Montante destro",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.description": "Infliggi {Damage:diff()} di danno.\nSe l'ultima carta che hai giocato era un'Abilità, applica {WeakPower:diff()} di [gold]Debolezza[/gold].",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "Barriera di lame",

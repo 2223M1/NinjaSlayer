@@ -29,7 +29,7 @@
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.title": "ナラク形態",
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.description": "アタックをプレイするたび、敵全体に[gold]黒い炎[/gold]のダメージを{Amount}回与える。\n各ダメージは[gold]烈火[/gold]で増加する。",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.title": "殺気·直気",
-  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "敵のターン終了時、攻撃ダメージをすべて防いでいた場合、攻撃者に{Amount}ダメージを与える。",
+  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "敵のターン終了時、攻撃ダメージをすべて防いでいた場合、攻撃者に{Damage}ダメージを与える。 これを{Amount}回繰り返す。",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.title": "飛刃一掃",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.description": "このターン、[gold]スリケン[/gold]は敵全体に命中する。",
   "NINJA_SLAYER_POWER_WATCHFUL_BLADES_POWER.title": "機を窺う刃",
@@ -86,5 +86,7 @@
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "1ターン中にアタックを3枚以上プレイした場合、次のターン開始時にカードを追加で{Amount}枚引く。",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "ザンシン",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "守勢",
-  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "誰かの[gold]カラテ[/gold]が発動するたび、{Amount}[gold]ブロック[/gold]を得る。"
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "誰かの[gold]カラテ[/gold]が発動するたび、{Amount}[gold]ブロック[/gold]を得る。",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.title": "クロスガード",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "このターン、次にプレイするカードを手札に戻す。 これを{Amount}回繰り返す。"
 }

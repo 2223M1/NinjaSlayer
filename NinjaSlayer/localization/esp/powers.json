@@ -29,7 +29,7 @@
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.title": "Forma de Naraku",
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.description": "Cada vez que juegas un ataque, activa {Amount} veces el daño de [gold]Llama negra[/gold] contra todos los enemigos.\n[gold]Infierno de llama negra[/gold] se aplica a cada activación.",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.title": "Intención asesina·Ki directo",
-  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "Al final del turno enemigo, si bloqueaste todo el daño de ataque, inflige {Amount} de daño a los atacantes.",
+  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "Al final del turno enemigo, si bloqueaste todo el daño de ataque, inflige {Damage} de daño a los atacantes. Repite {Amount} veces.",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.title": "Barrido de cuchillas",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.description": "Tus [gold]shuriken[/gold] golpean a TODOS los enemigos este turno.",
   "NINJA_SLAYER_POWER_WATCHFUL_BLADES_POWER.title": "Cuchillas vigilantes",
@@ -86,5 +86,7 @@
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "Si juegas al menos 3 ataques en un turno, roba {Amount} cartas adicionales al comienzo de tu próximo turno.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "Zanshin",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Postura defensiva",
-  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Cada vez que se activa el [gold]Karate[/gold] de cualquier personaje, obtienes {Amount} de [gold]bloqueo[/gold]."
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Cada vez que se activa el [gold]Karate[/gold] de cualquier personaje, obtienes {Amount} de [gold]bloqueo[/gold].",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.title": "Guardia cruzada",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Devuelve a tu mano la próxima carta que juegues este turno. Repite {Amount} veces."
 }

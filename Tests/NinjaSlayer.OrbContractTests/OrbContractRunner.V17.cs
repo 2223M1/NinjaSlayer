@@ -41,7 +41,7 @@ public partial class OrbContractRunner
         MegaCrit.Sts2.Core.Context.LocalContext.NetId = 1;
         foreach (string scenario in new[] { "no attack", "intent appears", "intent disappears", "blocked",
             "partial multihit", "damage", "self", "dot", "shield", "overflow", "buffer", "heal", "reapply",
-            "upgraded", "full hand", "before play", "dead target" })
+            "upgraded", "stacked", "full hand", "before play", "dead target" })
         {
             using var combat = new OrbCombat();
             var player = combat.Player.Creature;
@@ -67,10 +67,14 @@ public partial class OrbContractRunner
                 await CardCmd.AutoPlay(Choice, AddCard<KillingIntent>(combat, upgraded: true), null);
                 await CardCmd.AutoPlay(Choice, AddCard<KillingIntent>(combat), null);
             }
+            if (scenario == "stacked")
+                await CardCmd.AutoPlay(Choice, AddCard<KillingIntent>(combat), null);
+            Require(player.GetPowerAmount<KillingIntentPower>() == (scenario == "upgraded" ? 3 : scenario is "stacked" or "reapply" ? 2 : 1),
+                "Killing Intent Amount must count this turn's card applications.");
             await EndGuardSide(combat.State, CombatSide.Player, player);
             // Next intent does not replace the targets captured before the enemy actions.
             GuardIntent(combat.Enemy, false);
-            if (scenario is "damage" or "self" or "dot" or "shield" or "overflow" or "buffer" or "heal" or "blocked")
+            if (scenario is "damage" or "self" or "dot" or "shield" or "overflow" or "buffer" or "heal" or "blocked" or "stacked")
                 await CreatureCmd.Damage(Choice, player, 2,
                     scenario is "self" or "dot" ? ValueProp.Unpowered : ValueProp.Move,
                     scenario == "self" ? player : scenario == "dot" ? null! : combat.Enemy);
@@ -87,8 +91,8 @@ public partial class OrbContractRunner
             Require(player.HasPower<KillingIntentPower>(), "Counter must wait until the enemy turn ends.");
             await EndGuardSide(combat.State, CombatSide.Enemy, combat.Enemy);
             bool eligible = scenario is "intent appears" or "blocked" or "buffer" or "upgraded"
-                or "full hand" or "before play" or "self" or "dot";
-            int expected = eligible ? scenario == "upgraded" ? 56 : 47 : 0;
+                or "full hand" or "before play" or "self" or "dot" or "stacked";
+            int expected = eligible ? scenario == "upgraded" ? 168 : scenario == "stacked" ? 94 : 47 : 0;
             Require(hp - combat.Enemy.CurrentHp == expected,
                 $"Killing Intent {scenario}: expected {expected}, got {hp - combat.Enemy.CurrentHp} damage.");
             Require(!player.HasPower<KillingIntentPower>(), $"Counter {scenario} must expire at enemy turn end.");
@@ -98,6 +102,7 @@ public partial class OrbContractRunner
                 "Counter must not generate or play a Straight Ki card, including with a full hand.");
         }
 
+        foreach (bool stacked in new[] { false, true })
         using (var combat = new OrbCombat())
         {
             var player = combat.Player.Creature;
@@ -107,6 +112,7 @@ public partial class OrbContractRunner
             GuardIntent(second, true);
             GuardIntent(buffing, false);
             await CardCmd.AutoPlay(Choice, AddCard<KillingIntent>(combat), null);
+            if (stacked) await CardCmd.AutoPlay(Choice, AddCard<KillingIntent>(combat, upgraded: true), null);
             await EndGuardSide(combat.State, CombatSide.Player, player);
             GuardIntent(combat.Enemy, false);
             GuardIntent(second, false);
@@ -120,12 +126,12 @@ public partial class OrbContractRunner
             var observer = await PowerCmd.Apply<GuardAttackObserver>(Choice, player, 1, player, null);
             await EndGuardSide(combat.State, CombatSide.Enemy, combat.Enemy, second, buffing);
             // floor((47 + 3 Strength + 4 Vigor) * .75 Weak * 1.5 Vulnerable) + 3 Karate.
-            Require(combat.Enemy.CurrentHp == 937 && second.CurrentHp == 937 && buffing.CurrentHp == 1000,
-                "One counter must apply native modifiers to both snapshotted attackers, excluding the new attack intent.");
-            Require(player.GetPowerAmount<KaratePower>() == 2 && !player.HasPower<VigorPower>(),
-                "One AoE counter must consume Karate and Vigor once for the entire batch.");
-            Require(observer!.Attacks == 1 && observer.Waves == 1 && observer.Targets == 2,
-                "Counter must publish one native attack with one two-target result wave.");
+            Require(combat.Enemy.CurrentHp == (stacked ? 859 : 937) && second.CurrentHp == (stacked ? 859 : 937) && buffing.CurrentHp == 1000,
+                "Each counter must apply native modifiers to both snapshotted attackers, excluding the new attack intent.");
+            Require(player.GetPowerAmount<KaratePower>() == (stacked ? 1 : 2) && !player.HasPower<VigorPower>(),
+                "Each AoE counter consumes one Karate; Vigor only affects the first counter.");
+            Require(observer!.Attacks == (stacked ? 2 : 1) && observer.Waves == (stacked ? 2 : 1) && observer.Targets == (stacked ? 4 : 2),
+                "Every stack must publish its own native attack and two-target result wave.");
         }
 
         foreach (bool upgraded in new[] { false, true })

@@ -56,7 +56,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "Shuriken bereithalten",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "Erhalte {Block:diff()} [gold]Block[/gold].\nErhalte {Stock:diff()} [gold]Shuriken[/gold].",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "Kreuzabwehr",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Erhalte {Block:diff()} [gold]Block[/gold].\nLege die nächste Karte, die du in diesem Zug ausspielst, oben auf deinen [gold]Nachziehstapel[/gold].",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Erhalte {Block:diff()} [gold]Block[/gold].\nNimm die nächste Karte, die du in diesem Zug ausspielst, auf deine Hand zurück.",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.title": "Rechter Aufwärtshaken",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.description": "Füge {Damage:diff()} Schaden zu.\nWenn deine zuletzt ausgespielte Karte eine Fertigkeit war, wende {WeakPower:diff()} [gold]Schwach[/gold] an.",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "Klingenbarriere",

@@ -130,11 +130,30 @@ public partial class OrbContractRunner
             await CardCmd.AutoPlay(Choice, ordinary, null);
             var next = AddCard<MegaCrit.Sts2.Core.Models.Cards.StrikeIronclad>(combat);
             await CardCmd.AutoPlay(Choice, next, combat.Enemy);
-            Require(combat.Player.Creature.Block == (upgraded ? 10 : 7) && next.Pile?.Type == PileType.Draw
-                && !combat.Player.Creature.HasPower<ReboundPower>(),
-                "Cross Guard grants 7/10 Block and preserves one-use native Rebound.");
+            Require(combat.Player.Creature.Block == (upgraded ? 9 : 6) && next.Pile?.Type == PileType.Hand
+                && !combat.Player.Creature.HasPower<CrossGuardPower>(),
+                "Cross Guard grants 6/9 Block and returns the next played card to hand once.");
         }
-        GD.Print("PASS Guard Stance base/upgrade, AOE, multihit, stacking, exclusions and ownership; Ninja Taunt native retention; Cross Guard 7/10 Block and Rebound");
+        using (var combat = new OrbCombat())
+        {
+            var owner = combat.Player.Creature;
+            await CardCmd.AutoPlay(Choice, AddCard<CrossGuard>(combat), null);
+            var exhaust = AddCard<MegaCrit.Sts2.Core.Models.Cards.Adrenaline>(combat);
+            await CardCmd.AutoPlay(Choice, exhaust, null);
+            Require(exhaust.Pile?.Type == PileType.Hand && !owner.HasPower<CrossGuardPower>(),
+                "Cross Guard returns the next Exhaust card through the native result-pile hook.");
+            await CardCmd.AutoPlay(Choice, AddCard<CrossGuard>(combat), null);
+            var powerCard = AddCard<MegaCrit.Sts2.Core.Models.Cards.Inflame>(combat);
+            await CardCmd.AutoPlay(Choice, powerCard, null);
+            Require(powerCard.Pile?.Type == PileType.Hand && owner.HasPower<StrengthPower>(),
+                "Cross Guard returns the next Power card after its effect resolves.");
+            await CardCmd.AutoPlay(Choice, AddCard<CrossGuard>(combat), null);
+            await EndGuardSide(combat.State, MegaCrit.Sts2.Core.Entities.Creatures.CombatSide.Player, owner);
+            Require(!owner.HasPower<CrossGuardPower>(), "Unused Cross Guard expires at this turn's end.");
+            await CardCmd.AutoPlay(Choice, exhaust, null);
+            Require(exhaust.Pile?.Type == PileType.Exhaust, "Expired Cross Guard cannot return a later card.");
+        }
+        GD.Print("PASS Guard Stance base/upgrade, AOE, multihit, stacking, exclusions and ownership; Ninja Taunt native retention; Cross Guard 6/9 Block and return to hand");
     }
 
     private static async Task VerifyStrongShurikenRetention()

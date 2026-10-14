@@ -56,7 +56,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "Siapkan Shuriken",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "Dapatkan {Block:diff()} [gold]Blok[/gold].\nDapatkan {Stock:diff()} [gold]Shuriken[/gold].",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "Tangkisan Silang",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Dapatkan {Block:diff()} [gold]Blok[/gold].\nLetakkan kartu berikutnya yang kamu mainkan giliran ini di atas [gold]Tumpukan Ambil[/gold] kamu.",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Dapatkan {Block:diff()} [gold]Blok[/gold].\nKembalikan kartu berikutnya yang kamu mainkan giliran ini ke tanganmu.",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.title": "Uppercut Kanan",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.description": "Lakukan {Damage:diff()} kerusakan.\nJika kartu yang sebelumnya kamu mainkan adalah Teknik, terapkan {WeakPower:diff()} [gold]Lemah[/gold].",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "Penghalang Bilah",

@@ -603,7 +603,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/CrossGuard.png",
     "Vars": {
-      "Block": 7
+      "Block": 6
     }
   },
   {
@@ -620,7 +620,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/CrossGuard.png",
     "Vars": {
-      "Block": 10
+      "Block": 9
     }
   },
   {

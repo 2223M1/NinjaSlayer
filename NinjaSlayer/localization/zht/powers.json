@@ -29,7 +29,7 @@
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.title": "奈落形態",
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.description": "每打出1張攻擊牌，對所有敵人觸發{Amount}次[gold]黑炎[/gold]傷害。\n每次均受[gold]烈焰[/gold]加成。",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.title": "殺氣·直氣",
-  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "在敵方回合結束時，若你格擋了所有攻擊傷害，對攻擊者造成{Amount}點傷害。",
+  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "在敵方回合結束時，若你格擋了所有攻擊傷害，對攻擊者造成{Damage}點傷害。 重複{Amount}次。",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.title": "飛刃席捲",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.description": "本回合你的每發[gold]手裏劍[/gold]命中所有敵人。",
   "NINJA_SLAYER_POWER_WATCHFUL_BLADES_POWER.title": "伺機備刃",
@@ -86,5 +86,7 @@
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "如果你在一回合內打出了至少3張攻擊牌，在下個回合開始時額外抽{Amount}張牌。",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "殘心",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "守勢",
-  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "每當有[gold]空手道[/gold]觸發時，獲得{Amount}點[gold]格擋[/gold]。"
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "每當有[gold]空手道[/gold]觸發時，獲得{Amount}點[gold]格擋[/gold]。",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.title": "交叉防禦",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "將你在本回合打出的下一張牌放置到你的手牌。 重複{Amount}次。"
 }

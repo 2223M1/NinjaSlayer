@@ -22,12 +22,16 @@ public sealed class KillingIntent : NinjaSlayerRareCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
-        await PowerCmd.Apply<KillingIntentPower>(
+        decimal damage = Math.Max(DynamicVars.Damage.BaseValue,
+            Owner.Creature.GetPower<KillingIntentPower>()?.DynamicVars.Damage.BaseValue ?? 0);
+        var power = await PowerCmd.Apply<KillingIntentPower>(
             choiceContext,
             Owner.Creature,
-            Math.Max(0, DynamicVars.Damage.BaseValue - Owner.Creature.GetPowerAmount<KillingIntentPower>()),
+            1,
             Owner.Creature,
             this);
+        if (power != null)
+            power.DynamicVars.Damage.BaseValue = damage;
     }
 
     protected override void OnUpgrade()

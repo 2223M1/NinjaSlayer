@@ -56,7 +56,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "Подготовить сюрикены",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "Дает {Block:diff()} [gold]защиты[/gold].\nДает {Stock:diff()} [gold]{Stock:plural(ru):сюрикен|сюрикена|сюрикенов}[/gold].",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "Перекрёстная защита",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Дает {Block:diff()} [gold]защиты[/gold].\nПоместите следующую разыгранную на этом ходу карту наверх [gold]стопки добора[/gold].",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Дает {Block:diff()} [gold]защиты[/gold].\nВерните в руку следующую карту, разыгранную на этом ходу.",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.title": "Правый апперкот",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.description": "Наносит {Damage:diff()} урона.\nЕсли предыдущая разыгранная карта — Навык, накладывает {WeakPower:diff()} [gold]слабости[/gold].",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "Барьер лезвий",

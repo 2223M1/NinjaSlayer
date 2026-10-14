@@ -29,7 +29,7 @@
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.title": "Postać Naraku",
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.description": "Za każdym razem, gdy zagrasz Atak, wywołaj obrażenia [gold]Czarnego płomienia[/gold] przeciw wszystkim wrogom {Amount} {Amount:plural:raz|razy|razy}.\n[gold]Piekło czarnych płomieni[/gold] działa przy każdym wywołaniu.",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.title": "Żądza mordu·Proste Ki",
-  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "Na koniec tury wroga, jeśli zablokowano wszystkie obrażenia od ataków, zadaj atakującym {Amount} obrażeń.",
+  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "Na koniec tury wroga, jeśli zablokowano wszystkie obrażenia od ataków, zadaj atakującym {Damage} obrażeń. Powtórz {Amount} razy.",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.title": "Zamach ostrzami",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.description": "Twoje [gold]Shurikeny[/gold] trafiają WSZYSTKICH wrogów w tej turze.",
   "NINJA_SLAYER_POWER_WATCHFUL_BLADES_POWER.title": "Czujne ostrza",
@@ -86,5 +86,7 @@
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "Jeśli zagrasz co najmniej 3 Ataki w jednej turze, dobierz dodatkowo {Amount} {Amount:plural:kartę|karty|kart}.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "Zanshin",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Postawa obronna",
-  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Za każdym razem, gdy aktywuje się czyjeś [gold]Karate[/gold], zyskaj {Amount} pkt. [gold]Bloku[/gold]."
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Za każdym razem, gdy aktywuje się czyjeś [gold]Karate[/gold], zyskaj {Amount} pkt. [gold]Bloku[/gold].",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.title": "Krzyżowa garda",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Przywróć do ręki następną kartę zagraną w tej turze. Powtórz {Amount} razy."
 }

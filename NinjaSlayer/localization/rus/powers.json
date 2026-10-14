@@ -29,7 +29,7 @@
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.title": "Форма Нараку",
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.description": "При розыгрыше Атаки урон [gold]Чёрного пламени[/gold] по всем врагам срабатывает {Amount} {Amount:plural(ru):раз|раза|раз}.\n[gold]Ад чёрного пламени[/gold] применяется к каждому срабатыванию.",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.title": "Жажда убийства·Прямое Ки",
-  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "В конце хода врагов, если вы заблокировали весь урон от атак, нанесите {Amount} урона атакующим.",
+  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "В конце хода врагов, если вы заблокировали весь урон от атак, нанесите {Damage} урона атакующим. Повторите {Amount} раз.",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.title": "Взмах лезвий",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.description": "Ваши [gold]сюрикены[/gold] поражают ВСЕХ врагов на этом ходу.",
   "NINJA_SLAYER_POWER_WATCHFUL_BLADES_POWER.title": "Бдительные лезвия",
@@ -86,5 +86,7 @@
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "Если вы разыграли не менее 3 Атак за ход, в начале следующего хода возьмите дополнительные карты: {Amount}.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "Дзансин",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Защитная стойка",
-  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Каждый раз, когда срабатывает чьё-либо [gold]карате[/gold], вы получаете {Amount} [gold]защиты[/gold]."
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Каждый раз, когда срабатывает чьё-либо [gold]карате[/gold], вы получаете {Amount} [gold]защиты[/gold].",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.title": "Перекрёстная защита",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Верните в руку следующую карту, разыгранную на этом ходу. Повторите {Amount} раз."
 }
