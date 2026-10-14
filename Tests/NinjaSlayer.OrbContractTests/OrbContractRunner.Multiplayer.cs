@@ -274,19 +274,24 @@ public partial class OrbContractRunner
                 foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
                 player.Creature.LoseBlockInternal(player.Creature.Block);
                 await PlayerCmd.SetEnergy(10, player);
-                var guard = combat.State.CreateCard<KillingIntent>(player);
-                if (player == second) guard.UpgradeInternal();
-                await CardPileCmd.Add(guard, PileType.Hand);
-                int before = completed;
-                string fixture = $"guard-{injured.NetId}-{player.NetId}";
-                File.WriteAllText(Path.Combine(directory, $"{role}.{fixture}"), "ready");
-                await WaitNetwork(() => File.Exists(Path.Combine(directory, $"host.{fixture}"))
-                    && File.Exists(Path.Combine(directory, $"client.{fixture}")), "both guard fixtures");
-                if (player.NetId == _network.NetId)
-                    RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(guard, null));
-                await WaitNetwork(() => completed > before, "native guard action");
-                Require(player.Creature.Block == (player == second ? 12 : 9), "Guard block differs between peers.");
-                await FinishFixture(fixture);
+                for (int cast = 0; cast < 2; cast++)
+                {
+                    var guard = combat.State.CreateCard<KillingIntent>(player);
+                    if (player == second) guard.UpgradeInternal();
+                    await CardPileCmd.Add(guard, PileType.Hand);
+                    int before = completed;
+                    string fixture = $"guard-{injured.NetId}-{player.NetId}-{cast}";
+                    File.WriteAllText(Path.Combine(directory, $"{role}.{fixture}"), "ready");
+                    await WaitNetwork(() => File.Exists(Path.Combine(directory, $"host.{fixture}"))
+                        && File.Exists(Path.Combine(directory, $"client.{fixture}")), "both guard fixtures");
+                    if (player.NetId == _network.NetId)
+                        RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(guard, null));
+                    await WaitNetwork(() => completed > before, "native guard action");
+                    Require(player.Creature.Block == (cast + 1) * (player == second ? 12 : 9)
+                        && player.Creature.GetPowerAmount<KillingIntentPower>() == cast + 1,
+                        "Guard Block or current-turn counter stacks differ between peers.");
+                    await FinishFixture(fixture);
+                }
             }
             await EndGuardSide(combat.State, CombatSide.Player, run.Players.Select(p => p.Creature).ToArray());
             injured.Creature.LoseBlockInternal(injured.Creature.Block);
@@ -294,13 +299,13 @@ public partial class OrbContractRunner
             GuardIntent(combat.Enemy, false);
             int hp = combat.Enemy.CurrentHp;
             await EndGuardSide(combat.State, CombatSide.Enemy, combat.Enemy);
-            Require(hp - combat.Enemy.CurrentHp == (injured == first ? 56 : 47)
+            Require(hp - combat.Enemy.CurrentHp == (injured == first ? 112 : 94)
                 && run.Players.All(p => !p.Creature.HasPower<KillingIntentPower>()
                     && !p.PlayerCombatState!.AllCards.OfType<StraightKi>().Any()),
                 "Counter must respect each owner's damage qualification and avoid generated combat cards on both peers.");
             await FinishFixture($"guard-counter-{injured.NetId}");
         }
-        GD.Print("PASS native ENet guard card actions and enemy-turn counter: independent owners, base/upgrade, no generated cards.");
+        GD.Print("PASS native ENet guard card actions and stacked enemy-turn counters: independent owners, base/upgrade, current-turn expiry, no generated cards.");
         foreach (Player player in run.Players)
             foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
         GD.Print("PASS native ENet Endurance: both owners, base/upgrade, three Vigor hits, two energy and owned post-hit Karate.");

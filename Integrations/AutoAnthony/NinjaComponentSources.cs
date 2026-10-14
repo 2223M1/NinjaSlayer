@@ -44,7 +44,7 @@ internal static class NinjaComponentSources
         new(typeof(ChopStrike), "Chop打击", "Chop Strike", c => [Damage(c), Power<ChopStrikePower>(V(c,"Karate"), "下个回合获得[[amount]]层空手道。", "Gain [[amount]] Karate next turn.")]),
         new(typeof(RegulateBreath), "调息", "Regulate Breath", c => [Block(c), Power<ChadoNextTurnPower>(V(c,"Breath"), "下个回合，茶道呼吸[[amount]]。", "Next turn, Chado Breathing [[amount]].")]),
         new(typeof(MotionAndStillness), "动静相生", "Motion and Stillness", c => [Damage(c), Power<MotionAndStillnessPower>(V(c,"Breath"), "本回合每打出一张技能牌，茶道呼吸[[amount]]。", "Whenever you play a Skill this turn, Chado Breathing [[amount]].")]),
-        new(typeof(CrossGuard), "交叉防御", "Cross Guard", c => [Block(c), Power<ReboundPower>(1, "你打出的下一张牌回到抽牌堆顶部。", "The next card you play goes on top of your draw pile.", fixedRule: true)]),
+        new(typeof(CrossGuard), "交叉防御", "Cross Guard", c => [Block(c), Power<CrossGuardPower>(1, "将你在本回合打出的下一张牌放置到你的手牌。", "Put the next card you play this turn into your hand.", fixedRule: true)]),
         new(typeof(HiddenEdge), "藏锋", "Hidden Edge", c => [Builtin("D:GainFocus", "获得[[amount]]点集中。", "Gain [[amount]] Focus.", "amount", V(c,"FocusPower")), Builtin("D:GainDexterity", "获得[[amount]]点敏捷。", "Gain [[amount]] Dexterity.", "amount", V(c,"DexterityPower"))]),
         new(typeof(ClearMind), "澄明", "Clear Mind", c => [Power<ArtifactPower>(V(c,"ArtifactPower"), "获得[[amount]]层人工制品。", "Gain [[amount]] Artifact.")]),
         new(typeof(PalmThrust), "掌打", "Palm Thrust", c => [RandomDamage(c)]),

@@ -56,7 +56,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "เตรียมชุริเค็น",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "ได้รับ {Block:diff()} [gold]บล็อก[/gold]\nได้รับ {Stock:diff()} [gold]ชุริเค็น[/gold]",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "ป้องกันไขว้",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "ได้รับ {Block:diff()} [gold]บล็อก[/gold]\nนำการ์ดใบถัดไปที่คุณเล่นในเทิร์นนี้ไปไว้บนสุดของ[gold]กองจั่ว[/gold]",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "ได้รับ {Block:diff()} [gold]บล็อก[/gold]\nนำการ์ดใบถัดไปที่คุณเล่นในเทิร์นนี้กลับขึ้นมือ",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.title": "อัปเปอร์คัตขวา",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.description": "สร้างความเสียหาย {Damage:diff()}\nถ้าการ์ดที่คุณเล่นก่อนหน้านี้เป็นทักษะ สร้าง {WeakPower:diff()} [gold]ความอ่อนแอ[/gold]",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "กำแพงคมมีด",

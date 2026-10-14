@@ -11,6 +11,7 @@ namespace NinjaSlayer.Cards.Standard;
 
 public sealed class NinjaTaunt : NinjaSlayerCommonCard
 {
+    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Retain];
     public override bool GainsBlock => true;
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new BlockVar(13, ValueProp.Move), new KarateVar(4)];

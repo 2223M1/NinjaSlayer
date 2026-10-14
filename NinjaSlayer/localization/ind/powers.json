@@ -29,7 +29,7 @@
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.title": "Wujud Naraku",
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.description": "Setiap kali kamu memainkan Serangan, picu kerusakan [gold]Api Hitam[/gold] ke semua musuh {Amount} kali.\n[gold]Kobaran Api Hitam[/gold] berlaku pada setiap pemicuan.",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.title": "Niat Membunuh·Ki Lurus",
-  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "Di akhir giliran musuh, jika kamu memblokir semua kerusakan serangan, berikan {Amount} kerusakan kepada para penyerang.",
+  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "Di akhir giliran musuh, jika kamu memblokir semua kerusakan serangan, serang balik para penyerang dengan Ki Lurus sekali per tumpukan.",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.title": "Sapuan Bilah",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.description": "[gold]Shuriken[/gold] kamu mengenai SEMUA musuh giliran ini.",
   "NINJA_SLAYER_POWER_WATCHFUL_BLADES_POWER.title": "Bilah Waspada",
@@ -86,5 +86,9 @@
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "Jika kamu memainkan setidaknya 3 Serangan dalam satu giliran, ambil {Amount} kartu tambahan pada awal giliran berikutnya.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "Zanshin",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Sikap Bertahan",
-  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Setiap kali [gold]Karate[/gold] siapa pun terpicu, dapatkan {Amount} [gold]Blok[/gold]."
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Setiap kali [gold]Karate[/gold] siapa pun terpicu, dapatkan {Amount} [gold]Blok[/gold].",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.title": "Tangkisan Silang",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Kembalikan kartu berikutnya yang kamu mainkan giliran ini ke tanganmu.",
+  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.smartDescription": "Di akhir giliran musuh, jika kamu memblokir semua kerusakan serangan, berikan {Damage} kerusakan kepada para penyerang. Ulangi {Amount} kali.",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "Kembalikan kartu berikutnya yang kamu mainkan giliran ini ke tanganmu. Ulangi {Amount} kali."
 }

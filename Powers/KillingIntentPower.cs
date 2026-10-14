@@ -3,6 +3,7 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
@@ -17,6 +18,7 @@ public sealed class KillingIntentPower : NinjaSlayerPowerTemplate
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("KillingIntentPower");
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(47, ValueProp.Move)];
 
     private bool _receivedDamage;
     private Creature[] _attackers = [];
@@ -42,12 +44,17 @@ public sealed class KillingIntentPower : NinjaSlayerPowerTemplate
             return;
         }
 
-        // Consume the whole response before resolving it, including lethal retaliation.
+        // Consume this turn's stacks before resolving them, including lethal retaliation.
+        int responses = Amount;
+        decimal damage = DynamicVars.Damage.BaseValue;
         await PowerCmd.Remove(this);
         if (_receivedDamage || !Owner.IsAlive || CombatManager.Instance.IsOverOrEnding) return;
-        Creature[] targets = _attackers.Where(enemy => enemy.IsAlive && enemy.IsHittable
-            && ReferenceEquals(enemy.CombatState, Owner.CombatState)).ToArray();
-        if (targets.Length == 0) return;
-        await KillingIntentCounter.Execute(choiceContext, Owner, targets, Amount);
+        for (int i = 0; i < responses && Owner.IsAlive && !CombatManager.Instance.IsOverOrEnding; i++)
+        {
+            Creature[] targets = _attackers.Where(enemy => enemy.IsAlive && enemy.IsHittable
+                && ReferenceEquals(enemy.CombatState, Owner.CombatState)).ToArray();
+            if (targets.Length == 0) break;
+            await KillingIntentCounter.Execute(choiceContext, Owner, targets, damage);
+        }
     }
 }

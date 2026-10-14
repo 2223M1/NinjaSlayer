@@ -29,7 +29,7 @@
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.title": "Naraku Biçimi",
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.description": "Her Atak oynadığında [gold]Kara Alev[/gold] hasarını tüm düşmanlara {Amount} kez uygula.\n[gold]Kara Alev Cehennemi[/gold] her tetiklemede uygulanır.",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.title": "Öldürme Niyeti·Düz Ki",
-  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "Düşman turunun sonunda tüm saldırı hasarını engellediysen saldıranlara {Amount} hasar ver.",
+  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "Düşman turunun sonunda tüm saldırı hasarını engellediysen her yük için saldıranlara Düz Ki ile bir kez karşı saldırı yap.",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.title": "Bıçak Süpürüşü",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.description": "[gold]Shuriken[/gold] yüklerin bu tur TÜM düşmanları vurur.",
   "NINJA_SLAYER_POWER_WATCHFUL_BLADES_POWER.title": "Tetikteki Bıçaklar",
@@ -86,5 +86,9 @@
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "Bir turda en az 3 Atak oynarsan sonraki turunun başında fazladan {Amount} kart çek.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "Zanshin",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Savunma Duruşu",
-  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Herhangi bir karakterin [gold]Karate[/gold] etkisi tetiklendiğinde {Amount} [gold]Blok[/gold] kazan."
+  "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Herhangi bir karakterin [gold]Karate[/gold] etkisi tetiklendiğinde {Amount} [gold]Blok[/gold] kazan.",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.title": "Çapraz Savunma",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Bu tur oynadığın sonraki kartı eline geri al.",
+  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.smartDescription": "Düşman turunun sonunda tüm saldırı hasarını engellediysen saldıranlara {Damage} hasar ver. {Amount} kez tekrarla.",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "Bu tur oynadığın sonraki kartı eline geri al. {Amount} kez tekrarla."
 }

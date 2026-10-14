@@ -56,7 +56,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "Préparer les shuriken",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "Gagnez {Block:diff()} d'[gold]Armure[/gold].\nGagnez {Stock:diff()} de [gold]Shuriken[/gold].",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "Garde croisée",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Gagnez {Block:diff()} d'[gold]Armure[/gold].\nLa prochaine carte que vous jouez ce tour-ci est placée au-dessus de votre [gold]Pioche[/gold].",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Gagnez {Block:diff()} d'[gold]Armure[/gold].\nRemettez dans votre main la prochaine carte que vous jouez ce tour-ci.",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.title": "Uppercut droit",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.description": "Infligez {Damage:diff()} dégâts.\nSi votre dernière carte jouée était une Compétence, appliquez {WeakPower:diff()} [gold]Affaibli[/gold].",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "Barrière de lames",

@@ -56,7 +56,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "Przygotowanie shurikenów",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "Zyskaj {Block:diff()} pkt. [gold]Bloku[/gold].\nZyskaj {Stock:diff()} [gold]{Stock:plural:Shuriken|Shurikeny|Shurikenów}[/gold].",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "Krzyżowa garda",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Zyskaj {Block:diff()} pkt. [gold]Bloku[/gold].\nUmieść następną kartę zagraną w tej turze na wierzchu [gold]stosu rozgrywającego[/gold].",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Zyskaj {Block:diff()} pkt. [gold]Bloku[/gold].\nPrzywróć do ręki następną kartę zagraną w tej turze.",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.title": "Prawy podbródkowy",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.description": "Zadaj {Damage:diff()} pkt. obrażeń.\nJeśli poprzednio zagrana karta była Umiejętnością, nałóż {WeakPower:diff()} pkt. [gold]Słabości[/gold].",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "Bariera ostrzy",

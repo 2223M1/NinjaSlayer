@@ -135,6 +135,20 @@ public partial class OrbContractRunner
         }
         GD.Print("PASS all 84 source definitions: base/upgraded construction and native card serialization.");
 
+        using (var arena = new OrbCombat())
+        {
+            await Play(arena, Create(arena, ModelDb.Card<KillingIntent>()));
+            await Play(arena, Create(arena, ModelDb.Card<KillingIntent>(), true));
+            await Play(arena, Create(arena, ModelDb.Card<KillingIntent>()));
+            Require(arena.Player.Creature.GetPowerAmount<KillingIntentPower>() == 3
+                && arena.Player.Creature.GetPower<KillingIntentPower>()!.DynamicVars.Damage.BaseValue == 56,
+                "Generated Killing Intent components add one counter each and preserve the highest damage.");
+            await Play(arena, Create(arena, ModelDb.Card<CrossGuard>()));
+            var returned = Create(arena, ModelDb.Card<StrikeNinjaSlayer>());
+            await Play(arena, returned);
+            Require(returned.Pile?.Type == PileType.Hand && !arena.Player.Creature.HasPower<CrossGuardPower>(),
+                "Generated Cross Guard returns the next card to hand once.");
+        }
         foreach (bool upgraded in new[] { false, true })
         {
             using var arena = new OrbCombat();

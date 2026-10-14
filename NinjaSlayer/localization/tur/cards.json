@@ -56,7 +56,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "Shuriken Hazırla",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "{Block:diff()} [gold]Blok[/gold] elde et.\n{Stock:diff()} [gold]Shuriken[/gold] elde et.",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "Çapraz Savunma",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "{Block:diff()} [gold]Blok[/gold] elde et.\nBu tur oynadığın sonraki kartı [gold]Çekme Deste[/gold]'nin üstüne koy.",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "{Block:diff()} [gold]Blok[/gold] elde et.\nBu tur oynadığın sonraki kartı eline geri al.",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.title": "Sağ Aparkat",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.description": "{Damage:diff()} hasar ver.\nÖnceki oynadığın kart Beceriyse {WeakPower:diff()} [gold]Zayıf[/gold] uygula.",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "Bıçak Bariyeri",

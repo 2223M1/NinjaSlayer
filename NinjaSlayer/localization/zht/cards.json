@@ -56,7 +56,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "備鏢",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "獲得{Block:diff()}點[gold]格擋[/gold]。\n獲得{Stock:diff()}層[gold]手裏劍[/gold]。",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "交叉防禦",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "獲得{Block:diff()}點[gold]格擋[/gold]。\n將你本回合打出的下一張牌放到你的[gold]抽牌堆[/gold]頂部。",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "獲得{Block:diff()}點[gold]格擋[/gold]。\n將你在本回合打出的下一張牌放置到你的手牌。",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.title": "右·上勾拳",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.description": "造成{Damage:diff()}點傷害。\n如果你上一張打出的牌是技能牌，給予該敵人{WeakPower:diff()}層[gold]虛弱[/gold]。",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "飛刃屏障",

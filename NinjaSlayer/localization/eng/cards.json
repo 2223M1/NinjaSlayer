@@ -56,7 +56,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "Ready Shuriken",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "Gain {Block:diff()} [gold]Block[/gold].\nGain {Stock:diff()} [gold]Shuriken[/gold].",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "Cross Guard",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Gain {Block:diff()} [gold]Block[/gold].\nPut the next card you play this turn on top of your [gold]Draw Pile[/gold].",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Gain {Block:diff()} [gold]Block[/gold].\nPut the next card you play this turn into your hand.",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.title": "Right Uppercut",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.description": "Deal {Damage:diff()} damage.\nIf your previously played card was a Skill, apply {WeakPower:diff()} [gold]Weak[/gold].",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "Blade Barrier",

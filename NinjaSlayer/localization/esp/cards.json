@@ -56,7 +56,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "Preparar shuriken",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "Obtienes {Block:diff()} de [gold]bloqueo[/gold].\nObtienes {Stock:diff()} de [gold]shuriken[/gold].",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "Guardia cruzada",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Obtienes {Block:diff()} de [gold]bloqueo[/gold].\nColoca la próxima carta que juegues este turno encima de tu [gold]mazo de robo[/gold].",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Obtienes {Block:diff()} de [gold]bloqueo[/gold].\nDevuelve a tu mano la próxima carta que juegues este turno.",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.title": "Uppercut derecho",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.description": "Infliges {Damage:diff()} de daño.\nSi tu última carta jugada fue una habilidad, aplica {WeakPower:diff()} de [gold]debilitamiento[/gold].",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "Barrera de cuchillas",

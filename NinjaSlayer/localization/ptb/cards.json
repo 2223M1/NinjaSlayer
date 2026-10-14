@@ -56,7 +56,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "Preparar Shuriken",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "Receba {Block:diff()} de [gold]Proteção[/gold].\nReceba {Stock:diff()} [gold]Shuriken[/gold].",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "Guarda Cruzada",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Receba {Block:diff()} de [gold]Proteção[/gold].\nColoque a próxima carta que jogar neste turno no topo da sua [gold]Pilha de Compra[/gold].",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Receba {Block:diff()} de [gold]Proteção[/gold].\nDevolva à sua mão a próxima carta que jogar neste turno.",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.title": "Uppercut Direito",
   "NINJA_SLAYER_CARD_RIGHT_UPPERCUT.description": "Cause {Damage:diff()} de dano.\nSe a carta jogada anteriormente foi uma Técnica, aplique {WeakPower:diff()} de [gold]Fraqueza[/gold].",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "Barreira de Lâminas",
