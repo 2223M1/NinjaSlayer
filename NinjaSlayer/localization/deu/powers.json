@@ -29,7 +29,7 @@
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.title": "Naraku-Form",
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.description": "Wenn du einen Angriff ausspielst, löse {Amount}-mal den Schaden von [gold]Schwarze Flamme[/gold] gegen alle Gegner aus.\n[gold]Schwarzes Flammeninferno[/gold] gilt für jede Auslösung.",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.title": "Mordlust·Gerades Ki",
-  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "Füge am Ende des gegnerischen Zuges den Angreifern {Damage} Schaden zu, wenn du allen Angriffsschaden geblockt hast. Wiederhole dies {Amount} Mal.",
+  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "Wenn du allen Angriffsschaden geblockt hast, kontere die Angreifer am Ende des gegnerischen Zuges einmal pro Stapel mit Straight Ki.",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.title": "Klingensturm",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.description": "Deine [gold]Shuriken[/gold] treffen in diesem Zug ALLE Gegner.",
   "NINJA_SLAYER_POWER_WATCHFUL_BLADES_POWER.title": "Wachsame Klingen",
@@ -88,5 +88,7 @@
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Abwehrhaltung",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Immer wenn [gold]Karate[/gold] bei einem beliebigen Charakter ausgelöst wird, erhalte {Amount} [gold]Block[/gold].",
   "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.title": "Kreuzabwehr",
-  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Nimm die nächste Karte, die du in diesem Zug ausspielst, auf deine Hand zurück. Wiederhole dies {Amount} Mal."
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Nimm die nächste Karte, die du in diesem Zug ausspielst, auf deine Hand zurück.",
+  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.smartDescription": "Füge am Ende des gegnerischen Zuges den Angreifern {Damage} Schaden zu, wenn du allen Angriffsschaden geblockt hast. Wiederhole dies {Amount} Mal.",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "Nimm die nächste Karte, die du in diesem Zug ausspielst, auf deine Hand zurück. Wiederhole dies {Amount} Mal."
 }

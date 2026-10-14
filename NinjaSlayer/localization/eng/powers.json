@@ -29,7 +29,7 @@
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.title": "Naraku Form",
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.description": "Whenever you play an Attack, trigger [gold]Black Flame[/gold] damage against all enemies {Amount} time(s).\n[gold]BlackFlameInferno[/gold] applies to each trigger.",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.title": "Killing Intent·Straight Ki",
-  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "At the end of the enemy turn, if you blocked all attack damage, deal {Damage} damage to the attackers. Repeat {Amount} times.",
+  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "At the end of the enemy turn, if you blocked all attack damage, counter the attackers with Straight Ki once per stack.",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.title": "Blade Sweep",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.description": "Your [gold]Shuriken[/gold] hit ALL enemies this turn.",
   "NINJA_SLAYER_POWER_WATCHFUL_BLADES_POWER.title": "Watchful Blades",
@@ -88,5 +88,7 @@
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Guard Stance",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Whenever any [gold]Karate[/gold] triggers, gain {Amount} [gold]Block[/gold].",
   "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.title": "Cross Guard",
-  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Put the next card you play this turn into your hand. Repeat {Amount} times."
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Put the next card you play this turn into your hand.",
+  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.smartDescription": "At the end of the enemy turn, if you blocked all attack damage, deal {Damage} damage to the attackers. Repeat {Amount} times.",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "Put the next card you play this turn into your hand. Repeat {Amount} times."
 }

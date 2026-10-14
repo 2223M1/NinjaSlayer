@@ -71,6 +71,10 @@ public partial class OrbContractRunner
                 await CardCmd.AutoPlay(Choice, AddCard<KillingIntent>(combat), null);
             Require(player.GetPowerAmount<KillingIntentPower>() == (scenario == "upgraded" ? 3 : scenario is "stacked" or "reapply" ? 2 : 1),
                 "Killing Intent Amount must count this turn's card applications.");
+            var counterTip = player.GetPower<KillingIntentPower>()!.HoverTips
+                .OfType<MegaCrit.Sts2.Core.HoverTips.HoverTip>().First();
+            Require(counterTip.IsSmart && counterTip.Description.Contains(scenario is "upgraded" or "reapply" ? "56" : "47")
+                && !counterTip.Description.Contains('{'), "Live power tooltip must render counter damage independently of stack count.");
             await EndGuardSide(combat.State, CombatSide.Player, player);
             // Next intent does not replace the targets captured before the enemy actions.
             GuardIntent(combat.Enemy, false);

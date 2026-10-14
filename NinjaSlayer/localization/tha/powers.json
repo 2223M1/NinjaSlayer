@@ -29,7 +29,7 @@
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.title": "ร่างนาราคุ",
   "NINJA_SLAYER_POWER_NARAKU_FORM_POWER.description": "ทุกครั้งที่คุณเล่นการ์ดโจมตี กระตุ้นความเสียหาย[gold]เปลวไฟดำ[/gold]แก่ศัตรูทั้งหมด {Amount} ครั้ง\n[gold]นรกเปลวไฟดำ[/gold]มีผลต่อการกระตุ้นแต่ละครั้ง",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.title": "จิตสังหาร·คิตรง",
-  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "เมื่อจบเทิร์นศัตรู หากคุณบล็อกความเสียหายจากการโจมตีทั้งหมด สร้างความเสียหาย {Damage} แก่ผู้โจมตี ทำซ้ำ {Amount} ครั้ง",
+  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.description": "เมื่อจบเทิร์นศัตรู หากคุณบล็อกความเสียหายจากการโจมตีทั้งหมด ใช้คิตรงโจมตีสวนผู้โจมตีหนึ่งครั้งต่อชั้น",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.title": "กวาดคมมีด",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.description": "[gold]ชุริเค็น[/gold]ของคุณโจมตีศัตรูทั้งหมดในเทิร์นนี้",
   "NINJA_SLAYER_POWER_WATCHFUL_BLADES_POWER.title": "คมมีดเฝ้ารอ",
@@ -88,5 +88,7 @@
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "ท่าป้องกัน",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "ทุกครั้งที่ [gold]คาราเต้[/gold] ของใครก็ตามทำงาน ได้รับ [gold]บล็อก[/gold] {Amount} หน่วย",
   "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.title": "ป้องกันไขว้",
-  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "นำการ์ดใบถัดไปที่คุณเล่นในเทิร์นนี้กลับขึ้นมือ ทำซ้ำ {Amount} ครั้ง"
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "นำการ์ดใบถัดไปที่คุณเล่นในเทิร์นนี้กลับขึ้นมือ",
+  "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.smartDescription": "เมื่อจบเทิร์นศัตรู หากคุณบล็อกความเสียหายจากการโจมตีทั้งหมด สร้างความเสียหาย {Damage} แก่ผู้โจมตี ทำซ้ำ {Amount} ครั้ง",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "นำการ์ดใบถัดไปที่คุณเล่นในเทิร์นนี้กลับขึ้นมือ ทำซ้ำ {Amount} ครั้ง"
 }
