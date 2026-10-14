@@ -1,0 +1,169 @@
+{
+  "version": "1.1.0",
+  "sourceRevision": "4b83de9e61e8466219c87ce036a24689b077d800",
+  "verifiedAtUtc": "2026-10-14T04:23:27.339Z",
+  "pullRequests": [
+    214,
+    215
+  ],
+  "ci": {
+    "conclusion": "success",
+    "databaseId": 38510323402,
+    "headSha": "4b83de9e61e8466219c87ce036a24689b077d800",
+    "status": "completed",
+    "url": "https://github.com/2223M1/NinjaSlayer/actions/runs/38510323402"
+  },
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "bytes": 24576,
+      "sha256": "191e0b447f84eb4742fe480b72c4a5d401359ff752ebad8263a2a17c754c4351"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "bytes": 362,
+      "sha256": "14e9c736e11d585dbdbc722ec1fb1e6a331b9fb5b65a57fe6a7b5e52d04782e0"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "bytes": 212448388,
+      "sha256": "2b120a27cba38fe87af4d6bcadfa4dae077c832356aba255f2fe3badec695a1a"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 1008,
+      "sha256": "2b75cc7e0393ed0d2e1f7e17e0444dce5221c421925fb91f0d7586cd89377b85"
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "bytes": 2217984,
+      "sha256": "eac83233692108563cf9130b3ff1ddfe09853a312ccb068bc23e2a716dc05cd7"
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "bytes": 126464,
+      "sha256": "df4b3609da891f1b70317bc76d9d3eea40c38290a7c0342b6eccfe2c3443c06b"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "bytes": 2221568,
+      "sha256": "7995f595907bc6d5b6621af3ce0fc941c887dee23365b3e220111cd85a25a4b6"
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "bytes": 8,
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "bytes": 522,
+      "sha256": "c93b6e224a2f833f0af2d0448713eac61ad82210b237507aa16aba99a520d95e"
+    }
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "191e0b447f84eb4742fe480b72c4a5d401359ff752ebad8263a2a17c754c4351",
+    "14e9c736e11d585dbdbc722ec1fb1e6a331b9fb5b65a57fe6a7b5e52d04782e0",
+    "2b120a27cba38fe87af4d6bcadfa4dae077c832356aba255f2fe3badec695a1a",
+    "2b75cc7e0393ed0d2e1f7e17e0444dce5221c421925fb91f0d7586cd89377b85",
+    "eac83233692108563cf9130b3ff1ddfe09853a312ccb068bc23e2a716dc05cd7",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "df4b3609da891f1b70317bc76d9d3eea40c38290a7c0342b6eccfe2c3443c06b",
+    "7995f595907bc6d5b6621af3ce0fc941c887dee23365b3e220111cd85a25a4b6",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "c93b6e224a2f833f0af2d0448713eac61ad82210b237507aa16aba99a520d95e"
+  ],
+  "validation": {
+    "dualHostTargetedContracts": true,
+    "dualHostNativeEnet": true,
+    "all16LanguagePackagedDescriptions": true,
+    "autoAnthonyPublicComponents": true,
+    "crossGuardReturnToHand": true,
+    "killingIntentStacks": true,
+    "logs": [
+      {
+        "name": "contracts-stable.log",
+        "sha256": "76397bb48b361a8f20f402e4a62505ddc0bd01a7463771420ba6847a9326c586"
+      },
+      {
+        "name": "network-stable/host.log",
+        "sha256": "599c6764a8c7ae51791bd12784f59e7752ced61947faa8c0ccff32a43773ddbb"
+      },
+      {
+        "name": "network-stable/client.log",
+        "sha256": "93639ef64e5814248cecf3ef158b47c659732e3c76d9b4057e382ed5d5941da3"
+      },
+      {
+        "name": "contracts-preview.log",
+        "sha256": "22b46c9784e446c9ab59acded4000dab1e96e946bfbeac2e3cd88b0cc2f3121b"
+      },
+      {
+        "name": "network-preview/host.log",
+        "sha256": "b3553a98203b3a97a889dfe497822f2139ff8d00619a4987f4419b19924918b9"
+      },
+      {
+        "name": "network-preview/client.log",
+        "sha256": "9fb5476d76c382d54e0a1c24b80ee58af14bac1e3978dddee9a8b01e3bd42024"
+      },
+      {
+        "name": "anthony-preview.log",
+        "sha256": "f8eeac2f7280fa2615f0d05365fa6220f484db2af73414f2846ebb98bb035a26"
+      }
+    ]
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "remoteDescriptionVerified": true,
+    "localizedLanguages": [
+      "english",
+      "schinese",
+      "japanese",
+      "tchinese",
+      "german",
+      "latam",
+      "french",
+      "indonesian",
+      "italian",
+      "koreana",
+      "polish",
+      "brazilian",
+      "russian",
+      "spanish",
+      "thai",
+      "turkish"
+    ],
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "galleryUnchanged": true,
+    "downloadBytes": 217359425
+  },
+  "notRun": [
+    "Full graphical client replay",
+    "Mobile/macOS/Linux gameplay",
+    "Full third-party mod environment"
+  ],
+  "scope": "Rename the verified 1.0.27 changes to 1.1.0; retain all card behavior and localization.",
+  "versionRenameFrom": "1.0.27",
+  "resourcePackReusedFrom": "1.0.27"
+}
