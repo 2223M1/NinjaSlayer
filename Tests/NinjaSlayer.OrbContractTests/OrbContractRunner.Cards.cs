@@ -106,11 +106,14 @@ public partial class OrbContractRunner
         foreach (bool upgraded in new[] { false, true })
         {
             using var combat = new OrbCombat();
-            var card = AddCard<CrossGuard>(combat, upgraded: upgraded);
-            var ordinary = combat.Card();
+            var card = AddCard<NinjaTaunt>(combat, upgraded: upgraded);
+            var ordinary = AddCard<CrossGuard>(combat, upgraded: upgraded);
             var restored = CardModel.FromSerializable(card.ToSerializable());
             Require(new[] { card, card.CreateClone(), restored }.All(c => c.Keywords.Contains(CardKeyword.Retain)),
-                "Cross Guard's native Retain survives upgrades, cloning and saves.");
+                "Ninja Taunt's native Retain survives upgrades, cloning and saves.");
+            Require(new[] { ordinary, ordinary.CreateClone(), CardModel.FromSerializable(ordinary.ToSerializable()) }
+                    .All(c => !c.Keywords.Contains(CardKeyword.Retain)),
+                "Cross Guard no longer retains after upgrades, cloning or saves.");
             var context = new MegaCrit.Sts2.Core.GameActions.Multiplayer.HookPlayerChoiceContext(
                 combat.Player, 1, MegaCrit.Sts2.Core.Entities.Multiplayer.GameActionType.Combat);
             for (int turn = 0; turn < 2; turn++)
@@ -122,16 +125,16 @@ public partial class OrbContractRunner
 #endif
                 await (Task)AccessTools.Method(typeof(CombatManager), "FlushPlayerHand").Invoke(CombatManager.Instance, arguments)!;
                 Require(card.Pile?.Type == PileType.Hand && ordinary.Pile?.Type == PileType.Discard,
-                    "Cross Guard must survive consecutive native end-turn hand flushes.");
+                    "Ninja Taunt stays in hand while Cross Guard is discarded by native end-turn hand flushes.");
             }
-            await CardCmd.AutoPlay(Choice, card, null);
+            await CardCmd.AutoPlay(Choice, ordinary, null);
             var next = AddCard<MegaCrit.Sts2.Core.Models.Cards.StrikeIronclad>(combat);
             await CardCmd.AutoPlay(Choice, next, combat.Enemy);
-            Require(combat.Player.Creature.Block == (upgraded ? 9 : 6) && next.Pile?.Type == PileType.Draw
+            Require(combat.Player.Creature.Block == (upgraded ? 10 : 7) && next.Pile?.Type == PileType.Draw
                 && !combat.Player.Creature.HasPower<ReboundPower>(),
-                "Retained Cross Guard preserves its Block and one-use native Rebound.");
+                "Cross Guard grants 7/10 Block and preserves one-use native Rebound.");
         }
-        GD.Print("PASS Guard Stance base/upgrade, AOE, multihit, stacking, exclusions and ownership; Cross Guard native retention, saves and Rebound");
+        GD.Print("PASS Guard Stance base/upgrade, AOE, multihit, stacking, exclusions and ownership; Ninja Taunt native retention; Cross Guard 7/10 Block and Rebound");
     }
 
     private static async Task VerifyStrongShurikenRetention()

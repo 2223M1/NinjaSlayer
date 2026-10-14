@@ -599,13 +599,11 @@
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [
-      "Retain"
-    ],
+    "Keywords": [],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/CrossGuard.png",
     "Vars": {
-      "Block": 6
+      "Block": 7
     }
   },
   {
@@ -618,13 +616,11 @@
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [
-      "Retain"
-    ],
+    "Keywords": [],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/CrossGuard.png",
     "Vars": {
-      "Block": 9
+      "Block": 10
     }
   },
   {
@@ -1438,7 +1434,9 @@
     "Target": "AnyEnemy",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Retain"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/NinjaTaunt.png",
     "Vars": {
@@ -1456,7 +1454,9 @@
     "Target": "AnyEnemy",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Retain"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/NinjaTaunt.png",
     "Vars": {
