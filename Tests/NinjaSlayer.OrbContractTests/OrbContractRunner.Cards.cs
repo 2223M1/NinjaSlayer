@@ -148,7 +148,7 @@ public partial class OrbContractRunner
             Require(powerCard.Pile?.Type == PileType.Hand && owner.HasPower<StrengthPower>(),
                 "Cross Guard returns the next Power card after its effect resolves.");
             await CardCmd.AutoPlay(Choice, AddCard<CrossGuard>(combat), null);
-            await EndGuardSide(combat.State, MegaCrit.Sts2.Core.Entities.Creatures.CombatSide.Player, owner);
+            await EndGuardSide(combat.State, CombatSide.Player, owner);
             Require(!owner.HasPower<CrossGuardPower>(), "Unused Cross Guard expires at this turn's end.");
             await CardCmd.AutoPlay(Choice, exhaust, null);
             Require(exhaust.Pile?.Type == PileType.Exhaust, "Expired Cross Guard cannot return a later card.");
