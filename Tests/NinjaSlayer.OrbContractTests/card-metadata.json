@@ -497,7 +497,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_CHADO",
     "Upgraded": true,
-    "Cost": 1,
+    "Cost": 0,
     "X": false,
     "Type": "Status",
     "Rarity": "Token",
@@ -1257,7 +1257,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/FlameGuard.png",
     "Vars": {
-      "Block": 15
+      "Block": 10,
+      "NarakuLife": 4
     }
   },
   {
@@ -1274,7 +1275,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/FlameGuard.png",
     "Vars": {
-      "Block": 18
+      "Block": 12,
+      "NarakuLife": 5
     }
   },
   {

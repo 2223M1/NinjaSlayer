@@ -286,6 +286,14 @@ public partial class OrbContractRunner : Node
             SaveManager.Instance.InitSettingsDataForTest();
             SaveManager.Instance.InitPrefsDataForTest();
             MegaCrit.Sts2.Core.Localization.LocManager.Initialize();
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_FEEDBACK_20261014") is { } feedbackMode)
+            {
+                if (feedbackMode != "tornado") await VerifyOctoberFeedbackCardsAndEvents();
+                await VerifyAimPose();
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
             await VerifyFriendlyHive();
             await VerifyRelease113Cards();
             await VerifyNarakuPanels();

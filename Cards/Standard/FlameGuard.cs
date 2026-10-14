@@ -5,13 +5,16 @@ using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Commands;
+using NinjaSlayer.Content;
+using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Cards.Standard;
 
 public sealed class FlameGuard : NinjaSlayerCommonCard
 {
     public override bool GainsBlock => true;
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(15, ValueProp.Move)];
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+        [new BlockVar(10, ValueProp.Move), new NarakuLifeVar(4)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromCard<BlackFlame>()];
 
@@ -21,8 +24,14 @@ public sealed class FlameGuard : NinjaSlayerCommonCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
+        await PowerCmd.Apply<NarakuLifePower>(choiceContext, Owner.Creature,
+            DynamicVars.NarakuLife().BaseValue, Owner.Creature, this);
         await NinjaSlayerCardCmd.AddGeneratedCard<BlackFlame>(Owner, PileType.Draw);
     }
 
-    protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(3);
+    protected override void OnUpgrade()
+    {
+        DynamicVars.Block.UpgradeValueBy(2);
+        DynamicVars.NarakuLife().UpgradeValueBy(1);
+    }
 }

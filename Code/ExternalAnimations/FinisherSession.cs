@@ -178,7 +178,9 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             foreach (Creature victim in _ledger.Victims.Where(victim =>
                          victim.Player?.Character is INinjaSlayerCharacter))
             {
-                NinjaSlayerRapidAnimationCoordinator.CancelAndRestore(victim);
+                // A forecast can be invalidated by defenses or damage hooks. Keep
+                // persistent power visuals until this victim's death is confirmed.
+                NinjaSlayerRapidAnimationCoordinator.CancelOrdinaryActions(victim);
             }
         }
 
@@ -718,6 +720,9 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         _ledger.ReleasePendingProtections(mayRestoreCurrentCombat: true);
         bool guaranteedClearMatchedRuntime = IsCompletionConditionSatisfied();
         List<Creature> toKill = _ledger.LivingDeferredDeaths();
+        if (Scenario == FinisherScenarioKind.EnemyExecutesNinjaSlayer)
+            foreach (Creature victim in toKill.Where(victim => victim.Player?.Character is INinjaSlayerCharacter))
+                NinjaSlayerRapidAnimationCoordinator.CancelAndRestore(victim);
         if (!guaranteedClearMatchedRuntime)
         {
             Entry.Logger.Warn(

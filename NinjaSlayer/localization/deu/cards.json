@@ -22,7 +22,7 @@
   "NINJA_SLAYER_CARD_STILLNESS.title": "Stille",
   "NINJA_SLAYER_CARD_STILLNESS.description": "[gold]Chado-Atmung[/gold] {Breath}.\nDein [gold]Chado[/gold] erhält [gold]Behalten[/gold] für {Turns:diff()} {Turns:plural:Zug|Züge}.",
   "NINJA_SLAYER_CARD_FLAME_GUARD.title": "Flammenwache",
-  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "Erhalte {Block:diff()} [gold]Block[/gold].\nFüge 1 [gold]Schwarze Flamme[/gold] deinem [gold]Nachziehstapel[/gold] hinzu.",
+  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "Erhalte {Block:diff()} [gold]Block[/gold].\nErhalte {NarakuLife:diff()} [gold]Naraku-Leben[/gold].\nFüge 1 [gold]Schwarze Flamme[/gold] deinem [gold]Nachziehstapel[/gold] hinzu.",
   "NINJA_SLAYER_CARD_BS1260_KICK.title": "BS1260-Tritt",
   "NINJA_SLAYER_CARD_BS1260_KICK.description": "Füge {Damage:diff()} Schaden zu.\nFüge 1 [gold]Schwarze Flamme[/gold] deiner [gold]Hand[/gold] hinzu.",
   "NINJA_SLAYER_CARD_KUNAI_THROW.title": "Kunai-Wurf",

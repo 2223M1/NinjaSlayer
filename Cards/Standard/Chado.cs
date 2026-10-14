@@ -37,5 +37,5 @@ public sealed class Chado : NinjaSlayerStandaloneCardTemplate
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
         PlayerCmd.GainEnergy(DynamicVars.Energy.BaseValue, Owner);
 
-    protected override void OnUpgrade() { }
+    protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
 }

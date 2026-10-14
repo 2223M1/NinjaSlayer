@@ -76,6 +76,11 @@ public partial class OrbContractRunner
         var contour = (System.Numerics.Vector2[])AccessTools.Field(typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.Combat.CombatBodyContours"), "NinjaSlayer").GetValue(null)!;
         try
         {
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_FEEDBACK_20261014") != null)
+            {
+                await VerifySurvivingReverseFinisherTornado(combat, actor, target);
+                return;
+            }
             // Sandworm removal can start the native death visual while IsAlive
             // is still true. During that interval the death pivot owns both sprites.
             Sprite2D deathOverlay = pose.GetNode<Sprite2D>("NarakuVisualOverlay");

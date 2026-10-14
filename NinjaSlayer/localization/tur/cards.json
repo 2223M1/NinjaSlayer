@@ -22,7 +22,7 @@
   "NINJA_SLAYER_CARD_STILLNESS.title": "Durgunluk",
   "NINJA_SLAYER_CARD_STILLNESS.description": "[gold]Chado Nefesi[/gold] {Breath}.\n[gold]Chado[/gold] kartlarını {Turns:diff()} {Turns:plural:tur|tur} [gold]Sakla[/gold].",
   "NINJA_SLAYER_CARD_FLAME_GUARD.title": "Alev Muhafızı",
-  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "{Block:diff()} [gold]Blok[/gold] elde et.\n[gold]Çekme Deste[/gold]'ne 1 [gold]Kara Alev[/gold] ekle.",
+  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "{Block:diff()} [gold]Blok[/gold] elde et.\n{NarakuLife:diff()} [gold]Naraku Canı[/gold] elde et.\n[gold]Çekme Deste[/gold]'ne 1 [gold]Kara Alev[/gold] ekle.",
   "NINJA_SLAYER_CARD_BS1260_KICK.title": "BS1260 Tekmesi",
   "NINJA_SLAYER_CARD_BS1260_KICK.description": "{Damage:diff()} hasar ver.\n[gold]El[/gold]ine 1 [gold]Kara Alev[/gold] ekle.",
   "NINJA_SLAYER_CARD_KUNAI_THROW.title": "Kunai Atışı",

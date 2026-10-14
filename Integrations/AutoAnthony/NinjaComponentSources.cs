@@ -31,7 +31,7 @@ internal static class NinjaComponentSources
         new(typeof(Adapt), "应变", "Adapt", c => [Draw(c), Power<ReboundPower>(1, "将你本回合打出的下一张牌放到抽牌堆顶部。", "Put the next card you play this turn on top of your Draw Pile.", fixedRule: true)]),
         new(typeof(SpiralJump), "螺旋回转跳", "Spiral Jump", c => [AreaDamage(c), Custom("fire_stock", "激发并清空全部手里剑。", "Fire and consume all Shuriken.", 1, fixedRule: true)]),
         new(typeof(BS1260Kick), "BS1260踢", "BS1260 Kick", c => [Damage(c), BlackFlame(1, false)]),
-        new(typeof(FlameGuard), "炎甲", "Flame Guard", c => [Block(c), BlackFlame(1, true)]),
+        new(typeof(FlameGuard), "炎甲", "Flame Guard", c => [Block(c), Custom("naraku", "获得[[amount]]点奈落生命。", "Gain [[amount]] Naraku HP.", V(c,"NarakuLife")), BlackFlame(1, true)]),
         new(typeof(BackBridge), "后拱桥", "Back Bridge", c => [Block(c), Karate(c)]),
         new(typeof(NarakusMight), "奈落之力", "Naraku's Might", c => [Damage(c), Builtin("T:V", "给予[[amount]]层易伤。", "Apply [[amount]] Vulnerable.", "amount", V(c,"VulnerablePower"), true), BlackFlame(1, false)]),
         new(typeof(KunaiThrow), "投掷苦无", "Kunai Throw", c => [Damage(c), Scry(c,"Cards"), Discard(1)]),
