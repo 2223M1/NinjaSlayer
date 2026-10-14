@@ -22,7 +22,7 @@
   "NINJA_SLAYER_CARD_STILLNESS.title": "สงบนิ่ง",
   "NINJA_SLAYER_CARD_STILLNESS.description": "[gold]การหายใจชาโด[/gold] {Breath}\n[gold]คงสภาพ[/gold][gold]ชาโด[/gold]ของคุณเป็นเวลา {Turns:diff()} เทิร์น",
   "NINJA_SLAYER_CARD_FLAME_GUARD.title": "เกราะเปลวไฟ",
-  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "ได้รับ {Block:diff()} [gold]บล็อก[/gold]\nเพิ่ม [gold]เปลวไฟดำ[/gold] 1 ใบลงใน[gold]กองจั่ว[/gold]",
+  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "ได้รับ {Block:diff()} [gold]บล็อก[/gold]\nได้รับ {NarakuLife:diff()} [gold]พลังชีวิตนาราคุ[/gold]\nเพิ่ม [gold]เปลวไฟดำ[/gold] 1 ใบลงใน[gold]กองจั่ว[/gold]",
   "NINJA_SLAYER_CARD_BS1260_KICK.title": "เตะ BS1260",
   "NINJA_SLAYER_CARD_BS1260_KICK.description": "สร้างความเสียหาย {Damage:diff()}\nเพิ่ม [gold]เปลวไฟดำ[/gold] 1 ใบลงใน[gold]มือ[/gold]",
   "NINJA_SLAYER_CARD_KUNAI_THROW.title": "ขว้างคุไน",

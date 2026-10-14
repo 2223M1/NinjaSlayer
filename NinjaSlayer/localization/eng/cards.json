@@ -22,7 +22,7 @@
   "NINJA_SLAYER_CARD_STILLNESS.title": "Stillness",
   "NINJA_SLAYER_CARD_STILLNESS.description": "[gold]Chado Breathing[/gold] {Breath}.\n[gold]Retain[/gold] your [gold]Chado[/gold] for {Turns:diff()} {Turns:plural:turn|turns}.",
   "NINJA_SLAYER_CARD_FLAME_GUARD.title": "Flame Guard",
-  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "Gain {Block:diff()} [gold]Block[/gold].\nAdd 1 [gold]Black Flame[/gold] into your [gold]Draw Pile[/gold].",
+  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "Gain {Block:diff()} [gold]Block[/gold].\nGain {NarakuLife:diff()} [gold]Naraku Life[/gold].\nAdd 1 [gold]Black Flame[/gold] into your [gold]Draw Pile[/gold].",
   "NINJA_SLAYER_CARD_BS1260_KICK.title": "BS1260 Kick",
   "NINJA_SLAYER_CARD_BS1260_KICK.description": "Deal {Damage:diff()} damage.\nAdd 1 [gold]Black Flame[/gold] into your [gold]Hand[/gold].",
   "NINJA_SLAYER_CARD_KUNAI_THROW.title": "Kunai Throw",

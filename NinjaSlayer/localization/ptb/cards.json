@@ -22,7 +22,7 @@
   "NINJA_SLAYER_CARD_STILLNESS.title": "Quietude",
   "NINJA_SLAYER_CARD_STILLNESS.description": "[gold]Respiração Chado[/gold] {Breath}.\n[gold]Mantenha[/gold] suas cartas [gold]Chado[/gold] por {Turns:diff()} {Turns:plural:turno|turnos}.",
   "NINJA_SLAYER_CARD_FLAME_GUARD.title": "Guarda de Chamas",
-  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "Receba {Block:diff()} de [gold]Proteção[/gold].\nAdicione 1 [gold]Chama Negra[/gold] à sua [gold]Pilha de Compra[/gold].",
+  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "Receba {Block:diff()} de [gold]Proteção[/gold].\nReceba {NarakuLife:diff()} de [gold]Vida de Naraku[/gold].\nAdicione 1 [gold]Chama Negra[/gold] à sua [gold]Pilha de Compra[/gold].",
   "NINJA_SLAYER_CARD_BS1260_KICK.title": "Chute BS1260",
   "NINJA_SLAYER_CARD_BS1260_KICK.description": "Cause {Damage:diff()} de dano.\nAdicione 1 [gold]Chama Negra[/gold] à sua [gold]Mão[/gold].",
   "NINJA_SLAYER_CARD_KUNAI_THROW.title": "Arremesso de Kunai",

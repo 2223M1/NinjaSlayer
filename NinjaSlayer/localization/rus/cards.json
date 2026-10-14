@@ -22,7 +22,7 @@
   "NINJA_SLAYER_CARD_STILLNESS.title": "Неподвижность",
   "NINJA_SLAYER_CARD_STILLNESS.description": "[gold]Дыхание Тядо[/gold] {Breath}.\n[gold]Оставляйте[/gold] свои карты [gold]Тядо[/gold] в течение {Turns:diff()} {Turns:plural(ru):хода|ходов|ходов}.",
   "NINJA_SLAYER_CARD_FLAME_GUARD.title": "Огненная защита",
-  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "Дает {Block:diff()} [gold]защиты[/gold].\nДобавляет 1 [gold]Чёрное пламя[/gold] в [gold]стопку добора[/gold].",
+  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "Дает {Block:diff()} [gold]защиты[/gold].\nДает {NarakuLife:diff()} [gold]жизни Нараку[/gold].\nДобавляет 1 [gold]Чёрное пламя[/gold] в [gold]стопку добора[/gold].",
   "NINJA_SLAYER_CARD_BS1260_KICK.title": "Удар BS1260",
   "NINJA_SLAYER_CARD_BS1260_KICK.description": "Наносит {Damage:diff()} урона.\nДобавляет 1 [gold]Чёрное пламя[/gold] в [gold]руку[/gold].",
   "NINJA_SLAYER_CARD_KUNAI_THROW.title": "Бросок куная",

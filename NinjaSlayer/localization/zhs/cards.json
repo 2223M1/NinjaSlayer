@@ -22,7 +22,7 @@
   "NINJA_SLAYER_CARD_STILLNESS.title": "守静",
   "NINJA_SLAYER_CARD_STILLNESS.description": "[gold]茶道呼吸[/gold]{Breath}。\n在接下来的{Turns:diff()}回合内，[gold]保留[/gold]你的[gold]茶道[/gold]。",
   "NINJA_SLAYER_CARD_FLAME_GUARD.title": "炎甲",
-  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n将1张[gold]黑炎[/gold]加入你的[gold]抽牌堆[/gold]。",
+  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n获得{NarakuLife:diff()}点[gold]奈落生命[/gold]。\n将1张[gold]黑炎[/gold]加入你的[gold]抽牌堆[/gold]。",
   "NINJA_SLAYER_CARD_BS1260_KICK.title": "BS1260踢",
   "NINJA_SLAYER_CARD_BS1260_KICK.description": "造成{Damage:diff()}点伤害。\n将一张[gold]黑炎[/gold]加入你的[gold]手牌[/gold]。",
   "NINJA_SLAYER_CARD_KUNAI_THROW.title": "投掷苦无",

@@ -22,7 +22,7 @@
   "NINJA_SLAYER_CARD_STILLNESS.title": "Keheningan",
   "NINJA_SLAYER_CARD_STILLNESS.description": "[gold]Pernapasan Chado[/gold] {Breath}.\n[gold]Pertahankan[/gold] [gold]Chado[/gold] kamu selama {Turns:diff()} giliran.",
   "NINJA_SLAYER_CARD_FLAME_GUARD.title": "Penjaga Api",
-  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "Dapatkan {Block:diff()} [gold]Blok[/gold].\nTambahkan 1 [gold]Api Hitam[/gold] ke [gold]Tumpukan Ambil[/gold] kamu.",
+  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "Dapatkan {Block:diff()} [gold]Blok[/gold].\nDapatkan {NarakuLife:diff()} [gold]Nyawa Naraku[/gold].\nTambahkan 1 [gold]Api Hitam[/gold] ke [gold]Tumpukan Ambil[/gold] kamu.",
   "NINJA_SLAYER_CARD_BS1260_KICK.title": "Tendangan BS1260",
   "NINJA_SLAYER_CARD_BS1260_KICK.description": "Lakukan {Damage:diff()} kerusakan.\nTambahkan 1 [gold]Api Hitam[/gold] ke [gold]Tangan[/gold] kamu.",
   "NINJA_SLAYER_CARD_KUNAI_THROW.title": "Lempar Kunai",

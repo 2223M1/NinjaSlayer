@@ -22,7 +22,7 @@
   "NINJA_SLAYER_CARD_STILLNESS.title": "Bezruch",
   "NINJA_SLAYER_CARD_STILLNESS.description": "[gold]Oddech Chado[/gold] {Breath}.\n[gold]Zachowaj[/gold] swoje [gold]Chado[/gold] przez {Turns:diff()} {Turns:plural:turę|tury|tur}.",
   "NINJA_SLAYER_CARD_FLAME_GUARD.title": "Ognista garda",
-  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "Zyskaj {Block:diff()} pkt. [gold]Bloku[/gold].\nDodaj 1 [gold]Czarny płomień[/gold] do [gold]stosu rozgrywającego[/gold].",
+  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "Zyskaj {Block:diff()} pkt. [gold]Bloku[/gold].\nZyskaj {NarakuLife:diff()} pkt. [gold]Życia Naraku[/gold].\nDodaj 1 [gold]Czarny płomień[/gold] do [gold]stosu rozgrywającego[/gold].",
   "NINJA_SLAYER_CARD_BS1260_KICK.title": "Kopnięcie BS1260",
   "NINJA_SLAYER_CARD_BS1260_KICK.description": "Zadaj {Damage:diff()} pkt. obrażeń.\nDodaj 1 [gold]Czarny płomień[/gold] do [gold]ręki[/gold].",
   "NINJA_SLAYER_CARD_KUNAI_THROW.title": "Rzut kunai",

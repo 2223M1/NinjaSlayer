@@ -22,7 +22,7 @@
   "NINJA_SLAYER_CARD_STILLNESS.title": "Quiete",
   "NINJA_SLAYER_CARD_STILLNESS.description": "[gold]Respirazione Chado[/gold] {Breath}.\nIl tuo [gold]Chado[/gold] ottiene [gold]Conservazione[/gold] per {Turns:diff()} {Turns:plural:turno|turni}.",
   "NINJA_SLAYER_CARD_FLAME_GUARD.title": "Guardia di fiamme",
-  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "Ottieni {Block:diff()} di [gold]Blocco[/gold].\nAggiungi 1 [gold]Fiamma nera[/gold] al tuo [gold]mazzo di pesca[/gold].",
+  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "Ottieni {Block:diff()} di [gold]Blocco[/gold].\nOttieni {NarakuLife:diff()} di [gold]Vita di Naraku[/gold].\nAggiungi 1 [gold]Fiamma nera[/gold] al tuo [gold]mazzo di pesca[/gold].",
   "NINJA_SLAYER_CARD_BS1260_KICK.title": "Calcio BS1260",
   "NINJA_SLAYER_CARD_BS1260_KICK.description": "Infliggi {Damage:diff()} di danno.\nAggiungi 1 [gold]Fiamma nera[/gold] alla tua [gold]mano[/gold].",
   "NINJA_SLAYER_CARD_KUNAI_THROW.title": "Lancio di kunai",

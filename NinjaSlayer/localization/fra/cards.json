@@ -22,7 +22,7 @@
   "NINJA_SLAYER_CARD_STILLNESS.title": "Sérénité",
   "NINJA_SLAYER_CARD_STILLNESS.description": "[gold]Respiration Chado[/gold] {Breath}.\nVos [gold]Chado[/gold] gagnent [gold]Retenue[/gold] pendant {Turns:diff()} {Turns:plural:tour|tours}.",
   "NINJA_SLAYER_CARD_FLAME_GUARD.title": "Garde de flammes",
-  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "Gagnez {Block:diff()} d'[gold]Armure[/gold].\nAjoutez 1 [gold]Flamme noire[/gold] à votre [gold]Pioche[/gold].",
+  "NINJA_SLAYER_CARD_FLAME_GUARD.description": "Gagnez {Block:diff()} d'[gold]Armure[/gold].\nGagnez {NarakuLife:diff()} de [gold]Vie de Naraku[/gold].\nAjoutez 1 [gold]Flamme noire[/gold] à votre [gold]Pioche[/gold].",
   "NINJA_SLAYER_CARD_BS1260_KICK.title": "Coup de pied BS1260",
   "NINJA_SLAYER_CARD_BS1260_KICK.description": "Infligez {Damage:diff()} dégâts.\nAjoutez 1 [gold]Flamme noire[/gold] à votre [gold]Main[/gold].",
   "NINJA_SLAYER_CARD_KUNAI_THROW.title": "Lancer de kunai",

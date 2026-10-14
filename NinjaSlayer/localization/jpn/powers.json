@@ -43,7 +43,7 @@
   "NINJA_SLAYER_POWER_GATHER_MOMENTUM_POWER.title": "力を蓄える",
   "NINJA_SLAYER_POWER_GATHER_MOMENTUM_POWER.description": "[gold]チャドー[/gold]が[gold]廃棄[/gold]されるたび、{Amount}[gold]活力[/gold]を得る。",
   "NINJA_SLAYER_POWER_STARLESS_NIGHT_POWER.title": "星のない夜",
-  "NINJA_SLAYER_POWER_STARLESS_NIGHT_POWER.description": "[gold]スリケン[/gold]を得るたび、同じダメージの[gold]強スリケン[/gold]を1枚[gold]手札[/gold]に加える。",
+  "NINJA_SLAYER_POWER_STARLESS_NIGHT_POWER.description": "[gold]スリケン[/gold]を得るたび、同じダメージの[gold]ツヨイ・スリケン[/gold]を1枚[gold]手札[/gold]に加える。",
   "NINJA_SLAYER_POWER_POISE_POWER.title": "静から動へ",
   "NINJA_SLAYER_POWER_POISE_POWER.description": "[gold]チャドー[/gold]を生成するたび、{Amount}[gold]カラテ[/gold]を得る。",
   "NINJA_SLAYER_POWER_MEDITATION_POWER.title": "入定",
