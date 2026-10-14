@@ -1,0 +1,166 @@
+{
+  "version": "1.0.27",
+  "sourceRevision": "3ef752b01ddd8a0581b3b8b43975a90695ee5eb6",
+  "verifiedAtUtc": "2026-10-14T04:07:39.848Z",
+  "pullRequests": [
+    214
+  ],
+  "ci": {
+    "conclusion": "success",
+    "databaseId": 38509248003,
+    "headSha": "3ef752b01ddd8a0581b3b8b43975a90695ee5eb6",
+    "status": "completed",
+    "url": "https://github.com/2223M1/NinjaSlayer/actions/runs/38509248003"
+  },
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "bytes": 24576,
+      "sha256": "349c3c25a8be4678d5ace08947fab61f9dab48641af9af9334fa89af95fbc2d9"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "bytes": 363,
+      "sha256": "43ef5e0a00f99c044aabc0e288ff344448152f4a4865d052930c1fa48cb7828c"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "bytes": 212448388,
+      "sha256": "2b120a27cba38fe87af4d6bcadfa4dae077c832356aba255f2fe3badec695a1a"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 1008,
+      "sha256": "cdec29dea7973510e2d6ab07410431b8c0f17f34c491b3e4a69e1e731587a0b2"
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "bytes": 2217984,
+      "sha256": "2cac897cca781d0c060a8da361b9224cf1876bec2152044e50628c7ed9f436c8"
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "bytes": 126976,
+      "sha256": "cdf818119b73c70d1141122414f79ea0f0196eafd3fcc73b9f7decc71d012ad3"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "bytes": 2221568,
+      "sha256": "df4f91800d988684e2022ba2416afe7e19bcc019588e6b9c06a35a26c7f7f43b"
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "bytes": 8,
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "bytes": 522,
+      "sha256": "b784277f191870cc3f5be81f625c70682dfff160ceefc853e60fe20df0ddd08b"
+    }
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "349c3c25a8be4678d5ace08947fab61f9dab48641af9af9334fa89af95fbc2d9",
+    "43ef5e0a00f99c044aabc0e288ff344448152f4a4865d052930c1fa48cb7828c",
+    "2b120a27cba38fe87af4d6bcadfa4dae077c832356aba255f2fe3badec695a1a",
+    "cdec29dea7973510e2d6ab07410431b8c0f17f34c491b3e4a69e1e731587a0b2",
+    "2cac897cca781d0c060a8da361b9224cf1876bec2152044e50628c7ed9f436c8",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "cdf818119b73c70d1141122414f79ea0f0196eafd3fcc73b9f7decc71d012ad3",
+    "df4f91800d988684e2022ba2416afe7e19bcc019588e6b9c06a35a26c7f7f43b",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "b784277f191870cc3f5be81f625c70682dfff160ceefc853e60fe20df0ddd08b"
+  ],
+  "validation": {
+    "dualHostTargetedContracts": true,
+    "dualHostNativeEnet": true,
+    "all16LanguagePackagedDescriptions": true,
+    "autoAnthonyPublicComponents": true,
+    "crossGuardReturnToHand": true,
+    "killingIntentStacks": true,
+    "logs": [
+      {
+        "name": "contracts-stable.log",
+        "sha256": "127b3a8f0c1e98b0797da80dccdf422a03792095edda79bdc35c8d70ae644c57"
+      },
+      {
+        "name": "network-stable/host.log",
+        "sha256": "054b5950672c5dc1863e2b579c9854f8b792d01810e2abb57be7d207ef66db24"
+      },
+      {
+        "name": "network-stable/client.log",
+        "sha256": "29fe688d4afe2fb3b4571fdeb45c999c1077b116242061cf794cdecf424c11f6"
+      },
+      {
+        "name": "contracts-preview.log",
+        "sha256": "6b97113889b0b1ce383063515782405643d39473232f358fe857d16e428941b6"
+      },
+      {
+        "name": "network-preview/host.log",
+        "sha256": "0c894e19f9255e96b058bf626f8834d0157f222d8752d107a42bef70820f5782"
+      },
+      {
+        "name": "network-preview/client.log",
+        "sha256": "8a030414a7f3faec0d6ce79541480b541d0d0ea26284e228b15ea1a9dc83dbe7"
+      },
+      {
+        "name": "anthony-preview.log",
+        "sha256": "570bd757c841fc9df77385f9a573bc1a85d5f783e94720c7c681c4c9f86c6879"
+      }
+    ]
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "remoteDescriptionVerified": true,
+    "localizedLanguages": [
+      "english",
+      "schinese",
+      "japanese",
+      "tchinese",
+      "german",
+      "latam",
+      "french",
+      "indonesian",
+      "italian",
+      "koreana",
+      "polish",
+      "brazilian",
+      "russian",
+      "spanish",
+      "thai",
+      "turkish"
+    ],
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "galleryUnchanged": true,
+    "downloadBytes": 217359938
+  },
+  "notRun": [
+    "Full graphical client replay",
+    "Mobile/macOS/Linux gameplay",
+    "Full third-party mod environment"
+  ],
+  "scope": "Taunt native Retain; Cross Guard 6/9 Block without Retain and next card returns to hand; stack Killing Intent counters within one turn."
+}
