@@ -1,0 +1,161 @@
+{
+  "version": "1.0.26",
+  "sourceRevision": "d6a1386fc9289e85db0d5a6cd7b41a0b8e320ae3",
+  "verifiedAtUtc": "2026-10-14T03:13:25.551Z",
+  "pullRequests": [
+    212
+  ],
+  "ci": {
+    "conclusion": "success",
+    "databaseId": 38504513051,
+    "headSha": "d6a1386fc9289e85db0d5a6cd7b41a0b8e320ae3",
+    "status": "completed",
+    "url": "https://github.com/2223M1/NinjaSlayer/actions/runs/38504513051",
+    "workflowName": "CI"
+  },
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "bytes": 24576,
+      "sha256": "e443208b7494cd517b9400f72ea40bc8b88c4878976a86d5785a059bbdb95dc3"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "bytes": 363,
+      "sha256": "a1348c5b60c3f8469dcaa998e7d6ee07d422538274a5f561ae7b3e55967742bd"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "bytes": 211730336,
+      "sha256": "c9411d6799f2e3610daeabbda503107b918da6137a4138094b97b5c346ea77ce"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 1008,
+      "sha256": "c67245cb0d725703c9119051de088419671aa15820c96494f122919dee1834ef"
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "bytes": 2215936,
+      "sha256": "2da335f716e175783301b782179db7d63aa2b6b971209aeca196d87c7ab4fd87"
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "bytes": 126976,
+      "sha256": "caa25c70c3ccfa8b9e6ff03f7c129008be831720feb147fcfefa7389a0d808d1"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "bytes": 2219520,
+      "sha256": "fecc6cb300ed59a3e5c1b56bd4414d13f1c9e782991b63b8efacdfcd92877173"
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "bytes": 8,
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "bytes": 522,
+      "sha256": "007b4061d25f59658c5900cd9273e67b2fd1934a973d5939b13658f38505692e"
+    }
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "e443208b7494cd517b9400f72ea40bc8b88c4878976a86d5785a059bbdb95dc3",
+    "a1348c5b60c3f8469dcaa998e7d6ee07d422538274a5f561ae7b3e55967742bd",
+    "c9411d6799f2e3610daeabbda503107b918da6137a4138094b97b5c346ea77ce",
+    "c67245cb0d725703c9119051de088419671aa15820c96494f122919dee1834ef",
+    "2da335f716e175783301b782179db7d63aa2b6b971209aeca196d87c7ab4fd87",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "caa25c70c3ccfa8b9e6ff03f7c129008be831720feb147fcfefa7389a0d808d1",
+    "fecc6cb300ed59a3e5c1b56bd4414d13f1c9e782991b63b8efacdfcd92877173",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "007b4061d25f59658c5900cd9273e67b2fd1934a973d5939b13658f38505692e"
+  ],
+  "validation": {
+    "dualHostTargetedContracts": true,
+    "dualHostNativeEnet": true,
+    "all16LanguagePackagedDescriptions": true,
+    "japaneseNames": true,
+    "logs": [
+      {
+        "name": "contracts-stable.log",
+        "sha256": "2c1d0f4e9f4f61599c36f11d0414e8a79ec021a2d187c9b9d2be1d62cebbafa5"
+      },
+      {
+        "name": "network-stable/host.log",
+        "sha256": "2d82b7789190186c9d07360c9f193c64ce1818fba31f2e5b3d0dbcd99e74db23"
+      },
+      {
+        "name": "network-stable/client.log",
+        "sha256": "c3845cb01b70ffe3adc2e718e61c69f37f0daaae59778413a0e17f371c3f1a75"
+      },
+      {
+        "name": "contracts-preview.log",
+        "sha256": "47a5b3d52a442fc343e42e06a4baf2072ae72ccf0fce9fd7506d2670e4a7cb98"
+      },
+      {
+        "name": "network-preview/host.log",
+        "sha256": "816b7854538903d87bfa93780feb525a6c17389c7850da83036e6d70b3effdbc"
+      },
+      {
+        "name": "network-preview/client.log",
+        "sha256": "42d557f04295d319941984082b3c0c578e3ac7e1a753a6266a30e5aca39e15e4"
+      }
+    ]
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "remoteDescriptionVerified": true,
+    "localizedLanguages": [
+      "english",
+      "schinese",
+      "japanese",
+      "tchinese",
+      "german",
+      "latam",
+      "french",
+      "indonesian",
+      "italian",
+      "koreana",
+      "polish",
+      "brazilian",
+      "russian",
+      "spanish",
+      "thai",
+      "turkish"
+    ],
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "galleryUnchanged": true,
+    "downloadBytes": 216637790
+  },
+  "notRun": [
+    "Full graphical client replay of reported two-player death combat",
+    "Mobile/macOS/Linux gameplay",
+    "Historical full third-party mod environment"
+  ],
+  "scope": "Surviving Hell Tornado lifecycle fix; Flame Guard 10/12 Block and 4/5 Naraku; upgraded Chado costs 0; Japanese technique names."
+}

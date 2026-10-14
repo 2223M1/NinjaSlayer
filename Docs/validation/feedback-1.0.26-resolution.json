@@ -1,0 +1,22 @@
+{
+  "version": "1.0.26",
+  "sourceRevision": "d6a1386fc9289e85db0d5a6cd7b41a0b8e320ae3",
+  "rows": [
+    {
+      "id": "b7aaef2f-3ea5-416c-b484-d8bab841dfb6",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-14T03:13:46.648Z"
+    },
+    {
+      "id": "8a23803f-c3fb-4a48-88f3-6de2fd330802",
+      "before": "unresolved",
+      "after": "resolved",
+      "authorReplyPreserved": true,
+      "replySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-14T03:13:50.855Z"
+    }
+  ]
+}
