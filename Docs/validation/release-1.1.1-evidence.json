@@ -192,5 +192,11 @@
     "Mobile/macOS/Linux gameplay",
     "Full third-party mod environment"
   ],
-  "scope": "Rename free control to Ether Reflux; tune Chop, BS1260 Kick, Tornado Fist, Alabama Drop, Hell Chop, Storm Fist and Kindle; exact requested Chinese descriptions and 16-language synchronization."
+  "scope": "Rename free control to Ether Reflux; tune Chop, BS1260 Kick, Tornado Fist, Alabama Drop, Hell Chop, Storm Fist and Kindle; exact requested Chinese descriptions and 16-language synchronization.",
+  "cleanup": {
+    "status": "blocked_by_policy",
+    "scope": "Only generated package/build subdirectories of build/validation-1.1.1",
+    "deleted": false,
+    "retried": false
+  }
 }
