@@ -5,6 +5,8 @@ using ChaosCardGenerator;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
@@ -19,6 +21,7 @@ internal static class NinjaComponentCardPatches
     internal static void Register(ModPatcher patcher)
     {
         patcher.RegisterPatch<ResultLocation>();
+        patcher.RegisterPatch<GrowStormDamage>();
         patcher.RegisterPatch<ReturnOnAttacks>();
         patcher.RegisterPatch<PlayFromTop>();
         patcher.RegisterPatch<RequireChado>();
@@ -29,6 +32,27 @@ internal static class NinjaComponentCardPatches
 
     private static bool Has(ChaosCardModel card, string variant) => card.Generated.Operations.Any(op =>
         op.RuntimeSpec is { Opcode: NinjaComponentSources.Opcode } spec && spec.Variant == variant);
+
+    private sealed class GrowStormDamage : IPatchMethod
+    {
+        public static string PatchId => "ninjaslayer_anthony_storm_turn_end";
+        public static string Description => "Grow Storm components through the native side-turn hook and public Anthony damage state.";
+        public static bool IsCritical => true;
+        public static ModPatchTarget[] GetTargets() => [new(typeof(Hook), nameof(Hook.AfterSideTurnEnd))];
+        public static void Postfix(IEnumerable<Creature> participants, ref Task __result)
+        {
+            __result = Complete(__result, participants.ToArray());
+        }
+        private static async Task Complete(Task original, Creature[] participants)
+        {
+            await original;
+            foreach (var player in participants.Select(c => c.Player).OfType<Player>().Distinct())
+            foreach (var card in player.PlayerCombatState!.AllPiles.SelectMany(p => p.Cards).OfType<ChaosCardModel>())
+            foreach (var (operation, index) in card.Generated.Operations.Select((op, i) => (op, i)))
+                if (operation.RuntimeSpec is { Opcode: NinjaComponentSources.Opcode, Variant: "grow_damage_turn_end" })
+                    card.ExtraDamage += card.DynamicVars["Amount" + index].IntValue;
+        }
+    }
 
     private sealed class ResultLocation : IPatchMethod
     {

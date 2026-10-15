@@ -103,14 +103,14 @@ public partial class OrbContractRunner
             Expect(palm, 9);
             Expect(adjustment, upgraded ? 14 : 10);
             Expect(judge, 6, block: true);
-            Expect(storm, upgraded ? 13 : 10);
+            Expect(storm, upgraded ? 9 : 8);
 
             await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, -5, combat.Player.Creature, null);
             await PowerCmd.Apply<DexterityPower>(Choice, combat.Player.Creature, -4, combat.Player.Creature, null);
             Expect(palm, 4);
             Expect(adjustment, upgraded ? 9 : 5);
             Expect(judge, 2, block: true);
-            Expect(storm, upgraded ? 8 : 5);
+            Expect(storm, upgraded ? 4 : 3);
 
             await PowerCmd.Apply<WeakPower>(Choice, combat.Player.Creature, 1, combat.Enemy, null);
             await PowerCmd.Apply<FrailPower>(Choice, combat.Player.Creature, 1, combat.Enemy, null);
@@ -118,9 +118,9 @@ public partial class OrbContractRunner
             Expect(palm, 4);
             Expect(adjustment, upgraded ? 10 : 5);
             Expect(judge, 1, block: true);
-            Expect(storm, upgraded ? 9 : 5);
+            Expect(storm, upgraded ? 4 : 3);
         }
-        GD.Print("PASS native card-number previews: positive/negative Strength and Dexterity, Weak, Vulnerable, Frail, exhaust scaling and upgrades");
+        GD.Print("PASS native card-number previews: positive/negative Strength and Dexterity, Weak, Vulnerable, Frail and upgrades");
     }
 
     private static T AddCard<T>(OrbCombat combat, PileType pile = PileType.Hand, bool upgraded = false) where T : CardModel
@@ -386,11 +386,43 @@ public partial class OrbContractRunner
             await PlayerCmd.SetEnergy(10, combat.Player);
             Require(storm.CanPlay(), "Storm Fist must be playable without Chado.");
             foreach (var pile in new[] { PileType.Draw, PileType.Hand, PileType.Discard, PileType.Exhaust }) AddCard<Chado>(combat, pile);
-            Require(storm.CanPlay(), "Three Chado across active piles must enable Storm Fist.");
+            Require(storm.CanPlay(), "Chado must not change Storm Fist playability.");
             await CardCmd.AutoPlay(Choice, storm, combat.Enemy);
-            Require(combat.Enemy.CurrentHp == 972 && PileType.Exhaust.GetPile(combat.Player).Cards.OfType<Chado>().Count() == 1,
-                "Storm Fist leaves active tea untouched and deals four hits of 4 + 3.");
+            Require(combat.Enemy.CurrentHp == 980 && storm.Pile?.Type == PileType.Exhaust && PileType.Exhaust.GetPile(combat.Player).Cards.OfType<Chado>().Count() == 1,
+                "Storm Fist leaves tea untouched, deals four hits of 5 and exhausts.");
         }
+        foreach (bool upgraded in new[] { false, true })
+        foreach (var pile in new[] { PileType.Draw, PileType.Hand, PileType.Discard, PileType.Exhaust })
+        {
+            using var combat = new OrbCombat();
+            var storm = AddCard<StormFist>(combat, pile, upgraded);
+            int initial = upgraded ? 6 : 5;
+            int growth = upgraded ? 3 : 2;
+            await Hook.AfterSideTurnEnd(combat.State, CombatSide.Enemy, [combat.Enemy]);
+            Require(storm.DynamicVars.Damage.BaseValue == initial, "Enemy turn must not grow Storm Fist.");
+            await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
+            var copy = (StormFist)storm.MutableClone();
+            await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
+            Require(storm.DynamicVars.Damage.BaseValue == initial + 2 * growth
+                && copy.DynamicVars.Damage.BaseValue == initial + growth,
+                "Storm must grow in every combat pile and copies must own their accumulated damage.");
+            if (upgraded)
+            {
+                storm.DowngradeInternal();
+                copy.DowngradeInternal();
+                Require(storm.DynamicVars.Damage.BaseValue == 5 + 2 * growth
+                    && copy.DynamicVars.Damage.BaseValue == 5 + growth,
+                    "Downgrading must preserve combat growth on originals and copies.");
+            }
+            var fresh = AddCard<StormFist>(combat, upgraded: upgraded);
+            Require(fresh.DynamicVars.Damage.BaseValue == initial, "Fresh Storm must not inherit another card's growth.");
+            await CardPileCmd.Add(storm, PileType.Hand);
+            decimal damage = storm.DynamicVars.Damage.BaseValue;
+            await CardCmd.AutoPlay(Choice, storm, combat.Enemy);
+            Require(combat.Enemy.CurrentHp == 1000 - damage * 4 && storm.Pile?.Type == PileType.Exhaust,
+                "Storm must deal its accumulated damage four times and use native Exhaust.");
+        }
+        GD.Print("PASS Storm combat growth: all piles, owner turn, cloning, downgrade and native Exhaust.");
         GD.Print("PASS accumulated Chado, Sip Tea duration, Storm Fist playability/damage");
     }
 

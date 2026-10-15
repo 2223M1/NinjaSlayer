@@ -21,7 +21,7 @@ public sealed class Kindle : NinjaSlayerUncommonCard
         await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.IntValue, Owner);
         for (int index = 0; index < DynamicVars["BlackFlames"].IntValue; index++)
         {
-            await NinjaSlayerCardCmd.AddGeneratedCard<BlackFlame>(Owner, PileType.Discard);
+            await NinjaSlayerCardCmd.AddGeneratedCard<BlackFlame>(Owner, PileType.Draw);
         }
     }
 

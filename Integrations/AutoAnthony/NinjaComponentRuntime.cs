@@ -56,6 +56,7 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
             case "return_first":
             case "return_attacks":
             case "play_on_top":
+            case "grow_damage_turn_end":
                 break;
             case "fill_hand":
                 context.ReplaceDrawnCards(await CardPileCmd.Draw(choice,
@@ -195,6 +196,9 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                 context.RecordDamageDealt((int)kick.Results.SelectMany(r => r).Sum(r => r.UnblockedDamage));
                 NinjaComponentCardPatches.DoubleDamageThisTurn(card);
                 break;
+            case "storm_damage":
+                amount += ((ChaosCardModel)card).ExtraDamage;
+                goto case "target_multi";
             case "target_multi":
                 var targeted = DamageCmd.Attack(amount).FromCard(card, context.CardPlay).WithHitCount(Value("hits"))
                     .Targeting(context.Target!);
@@ -206,6 +210,14 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                     .TargetingAllOpponents(card.CombatState!);
                 await multi.Execute(choice);
                 context.RecordDamageDealt((int)multi.Results.SelectMany(r => r).Sum(r => r.UnblockedDamage));
+                break;
+            case "area_x_bonus":
+                int x = card.ResolveEnergyXValue();
+                if (x <= 0) break;
+                var boosted = DamageCmd.Attack(amount + (x >= 4 ? Value("bonus") : 0))
+                    .FromCard(card, context.CardPlay).WithHitCount(x).TargetingAllOpponents(card.CombatState!);
+                await boosted.Execute(choice);
+                context.RecordDamageDealt((int)boosted.Results.SelectMany(r => r).Sum(r => r.UnblockedDamage));
                 break;
             case "area_x":
                 int repeats = card.ResolveEnergyXValue();

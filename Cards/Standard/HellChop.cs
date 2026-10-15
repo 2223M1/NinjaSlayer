@@ -26,7 +26,7 @@ namespace NinjaSlayer.Cards.Standard;
 public sealed class HellChop : NinjaSlayerRareCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(5, ValueProp.Move), new KarateVar(1), new CardsVar(3)];
+        [new DamageVar(4, ValueProp.Move), new KarateVar(1), new CardsVar(3)];
 
     public HellChop()
         : base(nameof(HellChop), 0, CardType.Attack, TargetType.AnyEnemy) { }

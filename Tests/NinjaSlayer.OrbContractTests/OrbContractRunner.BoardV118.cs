@@ -28,8 +28,8 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<VigorPower>(Choice, combat.Player.Creature, 7, combat.Player.Creature, null);
             var tornado = AddCard<TornadoFist>(combat, upgraded: upgraded);
             await CardCmd.AutoPlay(Choice, tornado, null);
-            int hits = x >= 4 ? 2 * x : x;
-            int expected = 1000 - hits * ((upgraded ? 6 : 4) + 7);
+            int hits = x;
+            int expected = 1000 - hits * ((upgraded ? 6 : 4) * (x >= 4 ? 2 : 1) + 7);
             Require(combat.Enemy.CurrentHp == expected && second.CurrentHp == expected,
                 $"Tornado X={x}, upgraded={upgraded}: every native hit must include Vigor on every target.");
             Require(!combat.Enemy.HasPower<VulnerablePower>() && !second.HasPower<VulnerablePower>(), "Tornado retained old per-hit Vulnerable.");

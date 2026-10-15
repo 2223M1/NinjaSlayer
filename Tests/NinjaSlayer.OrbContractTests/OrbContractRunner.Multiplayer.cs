@@ -193,7 +193,8 @@ public partial class OrbContractRunner
                 RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(kindle, null));
             await WaitNetwork(() => completed >= expected, "Glam Kindle owner " + caster.NetId);
             Require(kindle.Pile?.Type == PileType.Discard && PileType.Hand.GetPile(caster).Cards.Count == (upgraded ? 6 : 4)
-                && PileType.Discard.GetPile(caster).Cards.OfType<BlackFlame>().Count() == 2,
+                && PileType.Draw.GetPile(caster).Cards.Concat(PileType.Hand.GetPile(caster).Cards).OfType<BlackFlame>().Count() == 2
+                && !PileType.Discard.GetPile(caster).Cards.OfType<BlackFlame>().Any(),
                 "Glam Kindle repeated draws or generated card owner differ between peers.");
             expected++;
             if (teammate.NetId == _network.NetId)

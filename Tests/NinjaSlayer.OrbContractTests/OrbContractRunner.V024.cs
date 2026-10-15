@@ -35,8 +35,8 @@ public partial class OrbContractRunner
                 .Where(e => e.Receiver == combat.Enemy).Select(e => e.Result.TotalDamage).ToArray();
             Require(hits.SequenceEqual(new[] { main, 4 }) && owner.GetPowerAmount<KaratePower>() == 3,
                 $"Alabama must deal normal main damage then four Karate and consume one: upgrade={upgraded}, vulnerable={vulnerable}, weak={weak}, strength={strength}; hits={string.Join(',', hits)}.");
-            Require(PileType.Draw.GetPile(combat.Player).Cards.OfType<Dazed>().Count() == 3,
-                "Alabama must retain its three Dazed.");
+            Require(PileType.Draw.GetPile(combat.Player).Cards.OfType<Dazed>().Count() == 2,
+                "Alabama must retain its two Dazed.");
         }
         foreach (int hp in new[] { 5, 6, 8, 20, 24 })
         foreach (bool alabama in new[] { false, true })

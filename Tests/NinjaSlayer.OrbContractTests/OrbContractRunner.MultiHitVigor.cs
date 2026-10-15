@@ -48,7 +48,7 @@ public partial class OrbContractRunner
                 _vigorExtraHits = extra;
                 await CardCmd.AutoPlay(Choice, card, storm ? combat.Enemy : null);
                 int hits = (storm ? 4 : 2) + extra;
-                int damage = (storm ? (upgraded ? 6 + 2 * 4 : 4 + 2 * 3) : (upgraded ? 9 : 7)) + 3 + 7;
+                int damage = (storm ? (upgraded ? 6 : 5) : (upgraded ? 9 : 7)) + 3 + 7;
                 var results = VigorAttacks.SelectMany(attack => attack.Results).ToArray();
                 bool correct = VigorAttacks.Count == 1 && _vigorAfterAttacks == 1
                     && results.Length == hits && results.All(hit => hit.Count == (storm ? 1 : 2)
@@ -127,7 +127,7 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
             await PowerCmd.Apply<VigorPower>(Choice, combat.Player.Creature, 7, combat.Player.Creature, null);
             int hits = card is AntiAirBangBangFist ? 3 : card.DynamicVars.Repeat.IntValue;
-            decimal raw = card is StormFist ? card.DynamicVars.CalculatedDamage.Calculate(combat.Enemy) : card.DynamicVars.Damage.BaseValue;
+            decimal raw = card.DynamicVars.Damage.BaseValue;
             var command = DamageCmd.Attack(raw).WithHitCount(hits)
 #if NINJASLAYER_CHANNEL_STABLE
                 .FromCard(card)
