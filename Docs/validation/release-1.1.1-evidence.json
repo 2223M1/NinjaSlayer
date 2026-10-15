@@ -1,0 +1,196 @@
+{
+  "knownExternalLimitations": [
+    {
+      "mod": "AutoAnthony",
+      "mode": "UltimateChaos + NumericRandomMode",
+      "fixtureSeed": "NINJA_ANTHONY_CONTRACT",
+      "failure": "必须选择消耗的效果只能选择1张牌；多张牌必须使用“至多”效果。",
+      "description": "每当你打出一张虚无牌时，抽1张牌。\n消耗手牌中的3张牌。",
+      "operations": [
+        {
+          "template": "A:whenEtherealPlayed",
+          "localizationId": "necrobinder/spiritofash/0",
+          "text": "每当你打出一张虚无牌时。"
+        },
+        {
+          "template": "N:Draw",
+          "localizationId": "ironclad/battletrance/0",
+          "text": "抽1张牌。"
+        },
+        {
+          "template": "N:Exhaust",
+          "localizationId": "regent/tyranny/2",
+          "text": "消耗手牌中的3张牌。"
+        }
+      ],
+      "conclusion": "Generated card contains only built-in Anthony components; no NinjaSlayer opcode. Numeric randomization emits an invalid mandatory three-card exhaust. No production bypass, retry or third-party patch was added. Disable NumericRandomMode with UltimateChaos on this installed version.",
+      "assemblySha256": "130af7f57e642dcbb25dac5a3e79b72731598e2a2b0bd0e26248090be5f55403"
+    }
+  ],
+  "version": "1.1.1",
+  "sourceRevision": "e62b5319c65f85aaa454dc5b4167bbdb1f687327",
+  "verifiedAtUtc": "2026-10-15T01:48:21.914Z",
+  "pullRequests": [
+    220
+  ],
+  "ci": {
+    "conclusion": "success",
+    "databaseId": 38667030376,
+    "headSha": "e62b5319c65f85aaa454dc5b4167bbdb1f687327",
+    "status": "completed",
+    "url": "https://github.com/2223M1/NinjaSlayer/actions/runs/38667030376"
+  },
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "bytes": 24576,
+      "sha256": "3b677efc7f6a2c86bfbb5d55ab35a6a2d9b8d866d7e3bab0de1ab5d076ae4a18"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "bytes": 362,
+      "sha256": "4442e519bdf4d87e61df8a87c0334dfd9427442f5b2c8e730bb653469acc50f8"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "bytes": 213147012,
+      "sha256": "5623036ba92496eda36dc029b3fd336bb4c279a340cb74642335e881e5c30e5a"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 1008,
+      "sha256": "0d21073e2cb2b6a146ad17e953db53f451edb701ad9e39f02786db975ded81bb"
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "bytes": 2217984,
+      "sha256": "23fe04233cb80e1ba447d4a2a7d61cfbb0e742d6d8317c4fec741a73978f45ef"
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "bytes": 128512,
+      "sha256": "7722b96e27bb9d3f2abd5220fd3c8f4089821da4dd4ebf672d284d0ed2e9a73f"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "bytes": 2221568,
+      "sha256": "87cf6879a59937849a60a1808ed81cc1c52b272992e79985cea546ffe4972550"
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "bytes": 8,
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "bytes": 522,
+      "sha256": "aaff839f937ce201ba9fc680a2addca40b8f3587ee13c748b2055f50bebb1d04"
+    }
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "3b677efc7f6a2c86bfbb5d55ab35a6a2d9b8d866d7e3bab0de1ab5d076ae4a18",
+    "4442e519bdf4d87e61df8a87c0334dfd9427442f5b2c8e730bb653469acc50f8",
+    "5623036ba92496eda36dc029b3fd336bb4c279a340cb74642335e881e5c30e5a",
+    "0d21073e2cb2b6a146ad17e953db53f451edb701ad9e39f02786db975ded81bb",
+    "23fe04233cb80e1ba447d4a2a7d61cfbb0e742d6d8317c4fec741a73978f45ef",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "7722b96e27bb9d3f2abd5220fd3c8f4089821da4dd4ebf672d284d0ed2e9a73f",
+    "87cf6879a59937849a60a1808ed81cc1c52b272992e79985cea546ffe4972550",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "aaff839f937ce201ba9fc680a2addca40b8f3587ee13c748b2055f50bebb1d04"
+  ],
+  "validation": {
+    "dualHostTargetedContracts": true,
+    "dualHostNativeEnet": true,
+    "all16LanguagePackagedDescriptions": true,
+    "autoAnthonyPublicComponents": true,
+    "autoAnthonyNumericRandomMode": false,
+    "stormCombatGrowth": true,
+    "tornadoHitBonus": true,
+    "kindleDrawPile": true,
+    "logs": [
+      {
+        "name": "contracts-stable.log",
+        "sha256": "af0dc3e456ecdc76896ca90d1f0353ae206d39214b3a5550baa1ff91ab08cac9"
+      },
+      {
+        "name": "network-final-stable/host.log",
+        "sha256": "43f5d50404ae3270ef09c0fc0829c1eda6d6d6c67e2da7a2c17577048b4cba54"
+      },
+      {
+        "name": "network-final-stable/client.log",
+        "sha256": "4ecd7463302d51261d35532b62219c952c7e4552cb789c640a6d35a908bb8571"
+      },
+      {
+        "name": "contracts-preview.log",
+        "sha256": "116b757868718b131b3a878de97fb94d9ac3eeaa58d4a0d9e4383aaca533e737"
+      },
+      {
+        "name": "network-final-preview/host.log",
+        "sha256": "72afc67d3359643a5a47f4d0b6d8be91199c247a271166a29b1163116752de4a"
+      },
+      {
+        "name": "network-final-preview/client.log",
+        "sha256": "d9b7acfa659baf79f1b593b91d43fd124ebe849e3711fa1ce708bcbd2e33e347"
+      },
+      {
+        "name": "anthony-preview.log",
+        "sha256": "0e94849c057c499f4d67d3b2186d0d1f02b7882611873c65ff53a964fbb42b90"
+      }
+    ]
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "remoteDescriptionVerified": true,
+    "localizedLanguages": [
+      "english",
+      "schinese",
+      "japanese",
+      "tchinese",
+      "german",
+      "latam",
+      "french",
+      "indonesian",
+      "italian",
+      "koreana",
+      "polish",
+      "brazilian",
+      "russian",
+      "spanish",
+      "thai",
+      "turkish"
+    ],
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "galleryUnchanged": true,
+    "downloadBytes": 218060097
+  },
+  "notRun": [
+    "Full graphical client replay",
+    "Mobile/macOS/Linux gameplay",
+    "Full third-party mod environment"
+  ],
+  "scope": "Rename free control to Ether Reflux; tune Chop, BS1260 Kick, Tornado Fist, Alabama Drop, Hell Chop, Storm Fist and Kindle; exact requested Chinese descriptions and 16-language synchronization."
+}
