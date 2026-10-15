@@ -19,13 +19,13 @@ public sealed class AlabamaDrop : NinjaSlayerRareCard
         new ExtraDamageVar(5),
         new CalculatedDamageVar(ValueProp.Move)
             .WithMultiplier(static (card, _) => card.Owner.Creature.GetPowerAmount<KaratePower>()),
-        new DynamicVar("Dazed", 3)
+        new DynamicVar("Dazed", 2)
     ];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromPower<KaratePower>(), HoverTipFactory.FromCard<Dazed>()];
 
     public AlabamaDrop()
-        : base(nameof(AlabamaDrop), 3, CardType.Attack, TargetType.AnyEnemy) { }
+        : base(nameof(AlabamaDrop), 2, CardType.Attack, TargetType.AnyEnemy) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

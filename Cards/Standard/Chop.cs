@@ -54,6 +54,7 @@ public sealed class Chop : NinjaSlayerCommonCard
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Damage.UpgradeValueBy(3);
+        DynamicVars.Damage.UpgradeValueBy(1);
+        DynamicVars.Karate().UpgradeValueBy(1);
     }
 }

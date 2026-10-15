@@ -108,7 +108,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_ALABAMA_DROP",
     "Upgraded": false,
-    "Cost": 3,
+    "Cost": 2,
     "X": false,
     "Type": "Attack",
     "Rarity": "Rare",
@@ -121,14 +121,14 @@
     "Vars": {
       "CalculatedDamage": 0,
       "CalculationBase": 0,
-      "Dazed": 3,
+      "Dazed": 2,
       "ExtraDamage": 5
     }
   },
   {
     "Id": "CARD.NINJA_SLAYER_CARD_ALABAMA_DROP",
     "Upgraded": true,
-    "Cost": 3,
+    "Cost": 2,
     "X": false,
     "Type": "Attack",
     "Rarity": "Rare",
@@ -141,7 +141,7 @@
     "Vars": {
       "CalculatedDamage": 0,
       "CalculationBase": 0,
-      "Dazed": 3,
+      "Dazed": 2,
       "ExtraDamage": 7
     }
   },
@@ -638,7 +638,7 @@
     "Portrait": "res://NinjaSlayer/images/cards/HellChop.png",
     "Vars": {
       "Cards": 3,
-      "Damage": 5,
+      "Damage": 4,
       "Karate": 1
     }
   },
@@ -657,7 +657,7 @@
     "Portrait": "res://NinjaSlayer/images/cards/HellChop.png",
     "Vars": {
       "Cards": 3,
-      "Damage": 6,
+      "Damage": 5,
       "Karate": 2
     }
   },
@@ -809,8 +809,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Chop.png",
     "Vars": {
-      "Damage": 7,
-      "Karate": 1
+      "Damage": 5,
+      "Karate": 2
     }
   },
   {
@@ -2404,7 +2404,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BS1260Kick.png",
     "Vars": {
-      "Damage": 18
+      "Damage": 20
     }
   },
   {
@@ -2421,7 +2421,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BS1260Kick.png",
     "Vars": {
-      "Damage": 24
+      "Damage": 26
     }
   },
   {
@@ -2734,13 +2734,14 @@
     "Target": "AnyEnemy",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Exhaust"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/StormFist.png",
     "Vars": {
-      "CalculatedDamage": 4,
-      "CalculationBase": 4,
-      "ExtraDamage": 3,
+      "Damage": 5,
+      "ExtraDamage": 2,
       "Repeat": 4
     }
   },
@@ -2754,13 +2755,14 @@
     "Target": "AnyEnemy",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Exhaust"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/StormFist.png",
     "Vars": {
-      "CalculatedDamage": 6,
-      "CalculationBase": 6,
-      "ExtraDamage": 4,
+      "Damage": 6,
+      "ExtraDamage": 3,
       "Repeat": 4
     }
   },
@@ -3111,7 +3113,8 @@
     "Portrait": "res://NinjaSlayer/images/cards/TornadoFist.png",
     "Vars": {
       "Damage": 4,
-      "Threshold": 4
+      "Threshold": 4,
+      "ExtraDamage": 4
     }
   },
   {
@@ -3129,7 +3132,8 @@
     "Portrait": "res://NinjaSlayer/images/cards/TornadoFist.png",
     "Vars": {
       "Damage": 6,
-      "Threshold": 4
+      "Threshold": 4,
+      "ExtraDamage": 6
     }
   },
   {

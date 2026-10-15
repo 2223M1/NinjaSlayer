@@ -71,9 +71,9 @@ public partial class OrbContractRunner
             for (int i = 0; i < 4; i++) AddCard<StrikeIronclad>(combat, PileType.Draw);
             await CardCmd.AutoPlay(Choice, AddCard<Kindle>(combat, upgraded: upgraded), null);
             Require(PileType.Hand.GetPile(combat.Player).Cards.OfType<StrikeIronclad>().Count() == (upgraded ? 3 : 2)
-                && PileType.Discard.GetPile(combat.Player).Cards.OfType<BlackFlame>().Count() == 1
-                && !PileType.Draw.GetPile(combat.Player).Cards.OfType<BlackFlame>().Any(),
-                "Kindle must draw two/three cards before adding exactly one Black Flame to discard.");
+                && PileType.Draw.GetPile(combat.Player).Cards.OfType<BlackFlame>().Count() == 1
+                && !PileType.Discard.GetPile(combat.Player).Cards.OfType<BlackFlame>().Any(),
+                "Kindle must draw two/three cards before adding exactly one Black Flame to draw.");
         }
         using (var combat = new OrbCombat())
         {

@@ -1,4 +1,5 @@
-using MegaCrit.Sts2.Core.HoverTips;
+using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -11,22 +12,16 @@ namespace NinjaSlayer.Cards.Standard;
 
 public sealed class StormFist : NinjaSlayerRareCard
 {
-    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
-        HoverTipFactory.FromCardWithCardHoverTips<Chado>();
-
+    private decimal _extraDamageThisCombat;
+    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-    [
-        new CalculationBaseVar(4), new ExtraDamageVar(3),
-        new CalculatedDamageVar(ValueProp.Move)
-            .WithMultiplier((card, _) => PileType.Exhaust.GetPile(card.Owner).Cards.OfType<Chado>().Count()),
-        new RepeatVar(4)
-    ];
+        [new DamageVar(5, ValueProp.Move), new ExtraDamageVar(2), new RepeatVar(4)];
     public StormFist()
         : base(nameof(StormFist), 3, CardType.Attack, TargetType.AnyEnemy) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        await DamageCmd.Attack(DynamicVars.CalculatedDamage)
+        await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .WithHitCount(DynamicVars.Repeat.IntValue)
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
             .FromCard(this)
@@ -39,9 +34,22 @@ public sealed class StormFist : NinjaSlayerRareCard
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
     }
 
+    public override Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side,
+        IEnumerable<Creature> participants)
+    {
+        if (participants.Contains(Owner.Creature))
+        {
+            _extraDamageThisCombat += DynamicVars.ExtraDamage.BaseValue;
+            DynamicVars.Damage.BaseValue += DynamicVars.ExtraDamage.BaseValue;
+        }
+        return Task.CompletedTask;
+    }
+
+    protected override void AfterDowngraded() => DynamicVars.Damage.BaseValue += _extraDamageThisCombat;
+
     protected override void OnUpgrade()
     {
         DynamicVars.ExtraDamage.UpgradeValueBy(1);
-        DynamicVars.CalculationBase.UpgradeValueBy(2);
+        DynamicVars.Damage.UpgradeValueBy(1);
     }
 }

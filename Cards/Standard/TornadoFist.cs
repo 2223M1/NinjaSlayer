@@ -32,7 +32,7 @@ public sealed class TornadoFist : NinjaSlayerUncommonCard
 
     protected override bool HasEnergyCostX => true;
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(4, ValueProp.Move), new DynamicVar("Threshold", 4)];
+        [new DamageVar(4, ValueProp.Move), new ExtraDamageVar(4), new DynamicVar("Threshold", 4)];
 
     public TornadoFist()
         : base(nameof(TornadoFist), 0, CardType.Attack, TargetType.AllEnemies) { }
@@ -40,7 +40,8 @@ public sealed class TornadoFist : NinjaSlayerUncommonCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         int x = ResolveEnergyXValue();
-        int hits = IsEmpowered(x) ? x * 2 : x;
+        int hits = x;
+        decimal damage = DynamicVars.Damage.BaseValue + (IsEmpowered(x) ? DynamicVars.ExtraDamage.BaseValue : 0);
         if (hits <= 0)
         {
             NinjaSlayer.Code.Nodes.NinjaSlayerAimPose.Get(Owner.Creature)?.ReleaseEmptyTornado();
@@ -57,7 +58,7 @@ public sealed class TornadoFist : NinjaSlayerUncommonCard
             if (MegaCrit.Sts2.Core.TestSupport.TestMode.IsOff && TornadoSpinTiming.Select(hits, duration,
                 NinjaSlayerFormState.GetPresentation(Owner.Creature).ForcePerHitComboAudio) != TornadoAudioMode.PerHit)
                 spin = SpinComboAudio.Start(Owner.Creature);
-            AttackCommand command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+            AttackCommand command = DamageCmd.Attack(damage)
                 .WithHitCount(hits)
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
                 .FromCard(this)
@@ -84,5 +85,9 @@ public sealed class TornadoFist : NinjaSlayerUncommonCard
         }
     }
 
-    protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(2);
+    protected override void OnUpgrade()
+    {
+        DynamicVars.Damage.UpgradeValueBy(2);
+        DynamicVars.ExtraDamage.UpgradeValueBy(2);
+    }
 }

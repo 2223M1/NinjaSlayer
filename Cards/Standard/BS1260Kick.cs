@@ -22,7 +22,7 @@ namespace NinjaSlayer.Cards.Standard;
 
 public sealed class BS1260Kick : NinjaSlayerCommonCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(18, ValueProp.Move)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(20, ValueProp.Move)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromCard<BlackFlame>()];
 

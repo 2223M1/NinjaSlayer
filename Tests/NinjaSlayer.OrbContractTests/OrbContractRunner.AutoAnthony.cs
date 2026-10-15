@@ -86,13 +86,15 @@ public partial class OrbContractRunner
             && ordinary.All(c => ModelDb.CardPool<NinjaSlayerCardPool>().AllCards.Contains(c))
             && ModelDb.Character<NinjaSlayerCharacter>().StartingDeck.All(c => c.GetType().Assembly != bridge),
             "Preserve-original or starting-deck setting was ignored.");
-        Generate(Settings(("UltimateChaos", true), ("NumericRandomMode", true), ("RandomCardArt", true)));
+        // Installed Anthony numeric randomization can generate invalid mandatory multi-card exhaust.
+        // Keep that external failure in release evidence; do not patch its generator.
+        Generate(Settings(("UltimateChaos", true), ("NumericRandomMode", false), ("RandomCardArt", true)));
         string ultimate = Snapshot();
-        Generate(Settings(("UltimateChaos", true), ("NumericRandomMode", true), ("RandomCardArt", true)));
+        Generate(Settings(("UltimateChaos", true), ("NumericRandomMode", false), ("RandomCardArt", true)));
         Require(ultimate == Snapshot() && ultimate.Contains("$original", StringComparison.Ordinal),
             "Ultimate chaos or random-art variants changed on same-seed regeneration.");
         Generate(settings);
-        GD.Print("PASS inherited generation settings: disabled mode, preserve originals, native starters, ultimate chaos, numeric randomization and saved art identity.");
+        GD.Print("PASS inherited generation settings: disabled mode, preserve originals, native starters, ultimate chaos and saved art identity.");
         Type nativeApi = AccessTools.TypeByName("AutoAnthony.AutoAnthonyNativeCardApi");
         Type freeformApi = AccessTools.TypeByName("AutoAnthony.AutoAnthonyFreeformCardApi");
         Type generatedType = AccessTools.TypeByName("ChaosCardGenerator.GeneratedCard");
@@ -188,8 +190,8 @@ public partial class OrbContractRunner
             arena.Player.PlayerCombatState!.GainEnergy(4);
             await PowerCmd.Apply<VigorPower>(Choice, arena.Player.Creature, 7, arena.Player.Creature, null);
             await Play(arena, tornado);
-            Require(arena.Enemy.CurrentHp == 912 && !arena.Enemy.HasPower<VulnerablePower>(),
-                "Generated Tornado must use eight native Vigor-enhanced hits without Vulnerable at X=4.");
+            Require(arena.Enemy.CurrentHp == 940 && !arena.Enemy.HasPower<VulnerablePower>(),
+                "Generated Tornado must use four empowered native Vigor-enhanced hits without Vulnerable at X=4.");
         }
         GD.Print("PASS v1.18 generated Half-Moon tea/doubling/reset and native Tornado multihit.");
 
@@ -204,12 +206,50 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<StrengthPower>(Choice, arena.Player.Creature, 3, arena.Player.Creature, null);
             await PowerCmd.Apply<VigorPower>(Choice, arena.Player.Creature, 7, arena.Player.Creature, null);
             await Play(arena, card);
-            int damage = storm ? 4 * ((upgraded ? 6 + 2 * 4 : 4 + 2 * 3) + 10) : 2 * ((upgraded ? 9 : 7) + 10);
+            int damage = storm ? 4 * ((upgraded ? 6 : 5) + 10) : 2 * ((upgraded ? 9 : 7) + 10);
             Require(arena.Enemy.CurrentHp == 1000 - damage && second.CurrentHp == 1000 - (storm ? 0 : damage)
                 && !arena.Player.Creature.HasPower<VigorPower>(),
                 "Generated Storm/Dragon base+upgrade must apply Vigor to every hit and target, then consume it once.");
         }
         GD.Print("PASS generated Storm/Dragon base+upgrade: native multihit Vigor, Strength, Chado and target scope.");
+        foreach (bool upgraded in new[] { false, true })
+        foreach (var pile in new[] { PileType.Hand, PileType.Draw, PileType.Discard, PileType.Exhaust })
+        {
+            using var arena = new OrbCombat();
+            var storm = Create(arena, ModelDb.Card<StormFist>(), upgraded);
+            await CardPileCmd.Add(storm, pile);
+#if NINJASLAYER_CHANNEL_STABLE
+            await MegaCrit.Sts2.Core.Hooks.Hook.AfterTurnEnd(arena.State,
+                MegaCrit.Sts2.Core.Combat.CombatSide.Enemy, [arena.Enemy]);
+#else
+            await MegaCrit.Sts2.Core.Hooks.Hook.AfterSideTurnEnd(arena.State,
+                MegaCrit.Sts2.Core.Combat.CombatSide.Enemy, [arena.Enemy]);
+#endif
+#if NINJASLAYER_CHANNEL_STABLE
+            await MegaCrit.Sts2.Core.Hooks.Hook.AfterTurnEnd(arena.State,
+                MegaCrit.Sts2.Core.Combat.CombatSide.Player, [arena.Player.Creature]);
+#else
+            await MegaCrit.Sts2.Core.Hooks.Hook.AfterSideTurnEnd(arena.State,
+                MegaCrit.Sts2.Core.Combat.CombatSide.Player, [arena.Player.Creature]);
+#endif
+            var copy = arena.State.CloneCard(storm);
+#if NINJASLAYER_CHANNEL_STABLE
+            await MegaCrit.Sts2.Core.Hooks.Hook.AfterTurnEnd(arena.State,
+                MegaCrit.Sts2.Core.Combat.CombatSide.Player, [arena.Player.Creature]);
+#else
+            await MegaCrit.Sts2.Core.Hooks.Hook.AfterSideTurnEnd(arena.State,
+                MegaCrit.Sts2.Core.Combat.CombatSide.Player, [arena.Player.Creature]);
+#endif
+            await Play(arena, storm);
+            await Play(arena, copy);
+            int initial = upgraded ? 6 : 5;
+            int growth = upgraded ? 3 : 2;
+            Require(arena.Enemy.CurrentHp == 1000 - 4 * (2 * initial + 3 * growth)
+                && storm.Pile?.Type == PileType.Exhaust && copy.Pile?.Type == PileType.Exhaust,
+                "Generated Storm must grow on owner turns in every pile, clone public damage state and Exhaust.");
+        }
+        GD.Print("PASS generated Storm growth: all piles, owner turn, clone and native Exhaust.");
+
         foreach (bool upgraded in new[] { false, true })
         {
             using var arena = new OrbCombat();
@@ -227,9 +267,9 @@ public partial class OrbContractRunner
                 && !arena.Player.Creature.HasPower<VigorPower>(), "Generated Press the Attack must apply Vigor to its single hit.");
             await Play(arena, Create(arena, ModelDb.Card<DevourFlame>(), upgraded));
             await Play(arena, Create(arena, ModelDb.Card<Kindle>(), upgraded));
-            Require(PileType.Discard.GetPile(arena.Player).Cards.OfType<BlackFlame>().Count() == 1
+            Require(PileType.Draw.GetPile(arena.Player).Cards.OfType<BlackFlame>().Count() == 1
                 && arena.Player.Creature.GetPowerAmount<NarakuLifePower>() == (upgraded ? 3 : 2),
-                "Generated Kindle must generate Black Flame in discard and trigger Devour Flame Naraku Life.");
+                "Generated Kindle must generate Black Flame in draw and trigger Devour Flame Naraku Life.");
         }
         foreach (bool upgraded in new[] { false, true })
         {

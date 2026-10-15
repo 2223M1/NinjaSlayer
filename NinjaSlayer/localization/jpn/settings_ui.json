@@ -6,7 +6,7 @@
   "NINJA_SLAYER_FEEDBACK_SEND": "送信",
   "NINJA_SLAYER_SETTINGS_PAGE_TITLE": "ニンジャスレイヤー設定",
   "NINJA_SLAYER_SETTINGS_HIDDEN_TITLE": "その他",
-  "NINJA_SLAYER_SETTINGS_FREE_CONTROL_TITLE": "自由操作",
+  "NINJA_SLAYER_SETTINGS_FREE_CONTROL_TITLE": "エーテル逆流",
   "NINJA_SLAYER_SETTINGS_FREE_CONTROL_DESCRIPTION": "シングルプレイの自分の行動中のみ、移動、ドラッグ、無料の攻撃ができます。ターン終了時に元の位置へ戻ります。一度でも使用した冒険はバランス統計に含まれません。",
   "NINJA_SLAYER_TELEMETRY_TITLE": "データ共有",
   "NINJA_SLAYER_TELEMETRY_TOGGLE": "プレイデータを共有",
