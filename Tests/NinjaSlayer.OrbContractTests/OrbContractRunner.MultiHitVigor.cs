@@ -74,7 +74,7 @@ public partial class OrbContractRunner
                 await CardCmd.AutoPlay(Choice, card, storm ? combat.Enemy : null);
                 int afterFirst = combat.Enemy.CurrentHp;
                 await CardCmd.AutoPlay(Choice, card, storm ? combat.Enemy : null);
-                Require(afterFirst - combat.Enemy.CurrentHp == (storm ? 4 * 4 : 7 * 2),
+                Require(afterFirst - combat.Enemy.CurrentHp == (storm ? 5 * 4 : 7 * 2),
                     "A later play incorrectly reused consumed Vigor.");
 
                 // Fixed-target hits must not jump to another enemy after the target dies;

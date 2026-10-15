@@ -216,13 +216,28 @@ public partial class OrbContractRunner
             using var arena = new OrbCombat();
             var storm = Create(arena, ModelDb.Card<StormFist>(), upgraded);
             await CardPileCmd.Add(storm, pile);
+#if NINJASLAYER_CHANNEL_STABLE
+            await MegaCrit.Sts2.Core.Hooks.Hook.AfterTurnEnd(arena.State,
+                MegaCrit.Sts2.Core.Combat.CombatSide.Enemy, [arena.Enemy]);
+#else
             await MegaCrit.Sts2.Core.Hooks.Hook.AfterSideTurnEnd(arena.State,
                 MegaCrit.Sts2.Core.Combat.CombatSide.Enemy, [arena.Enemy]);
+#endif
+#if NINJASLAYER_CHANNEL_STABLE
+            await MegaCrit.Sts2.Core.Hooks.Hook.AfterTurnEnd(arena.State,
+                MegaCrit.Sts2.Core.Combat.CombatSide.Player, [arena.Player.Creature]);
+#else
             await MegaCrit.Sts2.Core.Hooks.Hook.AfterSideTurnEnd(arena.State,
                 MegaCrit.Sts2.Core.Combat.CombatSide.Player, [arena.Player.Creature]);
-            var copy = storm.MutableClone();
+#endif
+            var copy = (CardModel)storm.MutableClone();
+#if NINJASLAYER_CHANNEL_STABLE
+            await MegaCrit.Sts2.Core.Hooks.Hook.AfterTurnEnd(arena.State,
+                MegaCrit.Sts2.Core.Combat.CombatSide.Player, [arena.Player.Creature]);
+#else
             await MegaCrit.Sts2.Core.Hooks.Hook.AfterSideTurnEnd(arena.State,
                 MegaCrit.Sts2.Core.Combat.CombatSide.Player, [arena.Player.Creature]);
+#endif
             await Play(arena, storm);
             await Play(arena, copy);
             int initial = upgraded ? 6 : 5;

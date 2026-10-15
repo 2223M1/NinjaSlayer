@@ -54,7 +54,7 @@ public static class Bridge
         AutoAnthonyNativeCardApi.RegisterExternalAdapter(new NinjaNativeCardAdapter());
         ComponentRuntimeApi.RegisterPackage("ninjaslayer.components", catalog.Atoms
             .Where(atom => atom.RuntimeSpec!.Opcode == NinjaComponentSources.Opcode)
-            .Select(atom => atom.RuntimeSpec!.Variant).Concat(["tea_exhaust_damage", "area_x"]).Distinct()
+            .Select(atom => atom.RuntimeSpec!.Variant).Distinct()
             .Select(variant => new ComponentRuntimeRoute(NinjaComponentSources.Opcode, variant, handler)));
         NinjaAnthonyRun.InstallLibraryPreview();
     }

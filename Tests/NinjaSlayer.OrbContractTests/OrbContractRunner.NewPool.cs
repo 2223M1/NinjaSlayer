@@ -398,11 +398,23 @@ public partial class OrbContractRunner
             var storm = AddCard<StormFist>(combat, pile, upgraded);
             int initial = upgraded ? 6 : 5;
             int growth = upgraded ? 3 : 2;
+#if NINJASLAYER_CHANNEL_STABLE
+            await Hook.AfterTurnEnd(combat.State, CombatSide.Enemy, [combat.Enemy]);
+#else
             await Hook.AfterSideTurnEnd(combat.State, CombatSide.Enemy, [combat.Enemy]);
+#endif
             Require(storm.DynamicVars.Damage.BaseValue == initial, "Enemy turn must not grow Storm Fist.");
+#if NINJASLAYER_CHANNEL_STABLE
+            await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
+#else
             await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
+#endif
             var copy = (StormFist)storm.MutableClone();
+#if NINJASLAYER_CHANNEL_STABLE
+            await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
+#else
             await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
+#endif
             Require(storm.DynamicVars.Damage.BaseValue == initial + 2 * growth
                 && copy.DynamicVars.Damage.BaseValue == initial + growth,
                 "Storm must grow in every combat pile and copies must own their accumulated damage.");

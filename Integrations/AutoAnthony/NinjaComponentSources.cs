@@ -98,7 +98,7 @@ internal static class NinjaComponentSources
         new(typeof(AntiAirBangBangFist), "对空砰砰拳", "Anti-Air Bang-Bang Fist", c => [Custom("buff_hits", "随机造成[[amount]]点伤害，攻击次数为1加你的正面增益种类数。", "Deal [[amount]] damage to random enemies 1 time plus once for each type of positive buff on you.", V(c,"Damage"))]),
         new(typeof(StormFist), "岚之拳", "Storm Fist", c => [Custom("storm_damage", "造成[[amount]]点伤害[[hits]]次。", "Deal [[amount]] damage [[hits]] times.", V(c,"Damage"), extraValues: [new("hits", V(c,"Repeat"), Upgradable: false)], targeted: true), Custom("grow_damage_turn_end", "在你的回合结束时，在这场战斗中其伤害增加[[amount]]。", "At the end of your turn, increase its damage by [[amount]] this combat.", V(c,"ExtraDamage"), persistent: true)]),
         new(typeof(HalfMoonCompassKick), "半月圆规踢", "Half-Moon Compass Kick", c => [Custom("tea_area_damage", "消耗手牌中1张茶道。对所有敌人造成[[amount]]点伤害。本回合将此牌的伤害翻倍，然后回到手牌。", "Exhaust a Chado from your hand. Deal [[amount]] damage to ALL enemies. Double this card's damage this turn, then return it to your hand.", V(c,"Damage"))]),
-        new(typeof(TornadoFist), "龙卷拳", "Tornado Fist", c => [Custom("area_x_bonus", "对所有敌人造成[[amount]]点伤害X次。\n如果X至少为4，则每次伤害增加[[bonus]]点。", "Deal [[amount]] damage to ALL enemies X times.\nIf X is at least 4, increase each hit by [[bonus]] damage.", V(c,"Damage"), extraValues: [new("bonus", V(c,"ExtraDamage"))], energyX: true)]),
+        new(typeof(TornadoFist), "龙卷拳", "Tornado Fist", c => [Custom("area_x", "对所有敌人造成[[amount]]点伤害X次。\n如果X至少为4，则每次伤害增加[[bonus]]点。", "Deal [[amount]] damage to ALL enemies X times.\nIf X is at least 4, increase each hit by [[bonus]] damage.", V(c,"Damage"), extraValues: [new("bonus", V(c,"ExtraDamage"))], energyX: true)]),
         new(typeof(DeepBreath), "长息", "Deep Breath", c => [Custom("breath_next_x", "下回合茶道呼吸X乘[[amount]]加[[extra]]。", "Next turn, Chado Breathing X times [[amount]] plus [[extra]].", V(c,"BreathPerX"), extraValues: [new("extra",V(c,"ExtraX"))], energyX: true)]),
         new(typeof(StrikeStrike), "打击·打击", "Strike Strike", c => [Damage(c), Scry(c,"Cards"), Custom("generate_strike_strike", "将一张打击·打击加入手牌。", "Add a Strike Strike to your hand.", 1, fixedRule: true)]),
         new(typeof(HellChop), "地狱·Chop", "Hell Chop", c => [Damage(c), Karate(c), Custom("return_attacks", "每打出[[amount]]张其他攻击牌，将此牌放入手牌。", "Whenever you play [[amount]] other Attacks in a turn, put this card in your hand.", V(c,"Cards"), fixedRule: true)]),
@@ -162,7 +162,7 @@ internal static class NinjaComponentSources
             : ["has_numeric_literal", "scalable_reward_wording", "api_beneficial"];
         if (downside) flags = ["has_numeric_literal", "cost_wording", "api_negative"];
         if (energyX) flags = [..flags, "uses_energy_x"];
-        if (variant is "karate_damage" or "buff_hits" or "tea_exhaust_damage" or "tea_area_damage" or "area_multi" or "area_x" or "area_x_bonus" or "storm_damage")
+        if (variant is "karate_damage" or "buff_hits" or "tea_area_damage" or "area_multi" or "area_x" or "storm_damage")
             flags = [..flags, "api_enemy_damage"];
         if (variant is "return_first" or "return_attacks" or "play_on_top" or "topdeck_self")
             flags = [..flags, "api_self_card_movement"];
@@ -172,7 +172,7 @@ internal static class NinjaComponentSources
         {
             Category = downside ? ComponentCategory.Negative : persistent ? ComponentCategory.Growth : variant switch
             {
-                "karate_damage" or "buff_hits" or "tea_exhaust_damage" or "tea_area_damage" or "area_multi" or "area_x" or "area_x_bonus" or "storm_damage" => ComponentCategory.Damage,
+                "karate_damage" or "buff_hits" or "tea_area_damage" or "area_multi" or "area_x" or "storm_damage" => ComponentCategory.Damage,
                 "block_after_stock" or "tea_block_weak" or "thorns" => ComponentCategory.Defense,
                 "vulnerable_after_attack" or "weak_after_skill" or "hook_strength" => ComponentCategory.Status,
                 "shuriken" or "fire_stock" or "double_stock" or "discard_stock" => ComponentCategory.Orb,
