@@ -4,7 +4,7 @@
 
 ## 对局统计
 
-我会用玩家分享的数据调整卡牌平衡。对局结束后，模组会发送路线、选择、牌组、结果与战斗统计。放弃的对局，以及开启过自由操控的整局，不计入统计。不会补传过去的对局。
+我会用玩家分享的数据调整卡牌平衡。对局结束后，模组会发送路线、选择、牌组、结果与战斗统计。放弃的对局，以及开启过以太回流的整局，不计入统计。不会补传过去的对局。
 
 首次提示出现时，本次启动暂不自动上传。选择“现在开启”会立即启用；直接关闭或忽略提示，下次启动游戏后会默认开启。选择“关闭分享”则持续停用，之后可在模组设置中更改。已经拒绝过分享的选择会保留。
 
@@ -32,7 +32,7 @@
 
 ### Run statistics
 
-I use shared run data to balance the cards. When a run ends, the mod sends its route, choices, deck, result and combat statistics. Abandoned runs and any run that used free control are excluded. Past runs are not uploaded later.
+I use shared run data to balance the cards. When a run ends, the mod sends its route, choices, deck, result and combat statistics. Abandoned runs and any run that used Ether Reflux are excluded. Past runs are not uploaded later.
 
 When the first notice appears, nothing is sent automatically during that session. “Enable now” starts sharing immediately. Closing or ignoring the notice enables sharing on the next launch. “Disable sharing” keeps it off. You can change this in the mod settings. Earlier refusals remain respected.
 
@@ -60,7 +60,7 @@ Contact me on [GitHub](https://github.com/2223M1/NinjaSlayer/issues) with questi
 
 ### プレイ統計
 
-共有されたデータをカードのバランス調整に使います。冒険の終了後、ルート、選択、デッキ、結果、戦闘の統計を送信します。途中で放棄した冒険と、自由操作を一度でも使った冒険は集計しません。過去の冒険を後から送信することもありません。
+共有されたデータをカードのバランス調整に使います。冒険の終了後、ルート、選択、デッキ、結果、戦闘の統計を送信します。途中で放棄した冒険と、エーテル逆流を一度でも使った冒険は集計しません。過去の冒険を後から送信することもありません。
 
 初回の案内が出た時点では、その起動中に自動送信しません。「今すぐ有効にする」で共有を開始します。案内を閉じるか無視した場合、次回の起動から自動で有効になります。「共有しない」を選ぶと無効のまま維持されます。後からMod設定で変更でき、以前の拒否も維持されます。
 

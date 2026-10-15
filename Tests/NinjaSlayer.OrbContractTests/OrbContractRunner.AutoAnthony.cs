@@ -86,13 +86,15 @@ public partial class OrbContractRunner
             && ordinary.All(c => ModelDb.CardPool<NinjaSlayerCardPool>().AllCards.Contains(c))
             && ModelDb.Character<NinjaSlayerCharacter>().StartingDeck.All(c => c.GetType().Assembly != bridge),
             "Preserve-original or starting-deck setting was ignored.");
-        Generate(Settings(("UltimateChaos", true), ("NumericRandomMode", true), ("RandomCardArt", true)));
+        // Installed Anthony numeric randomization can generate invalid mandatory multi-card exhaust.
+        // Keep that external failure in release evidence; do not patch its generator.
+        Generate(Settings(("UltimateChaos", true), ("NumericRandomMode", false), ("RandomCardArt", true)));
         string ultimate = Snapshot();
-        Generate(Settings(("UltimateChaos", true), ("NumericRandomMode", true), ("RandomCardArt", true)));
+        Generate(Settings(("UltimateChaos", true), ("NumericRandomMode", false), ("RandomCardArt", true)));
         Require(ultimate == Snapshot() && ultimate.Contains("$original", StringComparison.Ordinal),
             "Ultimate chaos or random-art variants changed on same-seed regeneration.");
         Generate(settings);
-        GD.Print("PASS inherited generation settings: disabled mode, preserve originals, native starters, ultimate chaos, numeric randomization and saved art identity.");
+        GD.Print("PASS inherited generation settings: disabled mode, preserve originals, native starters, ultimate chaos and saved art identity.");
         Type nativeApi = AccessTools.TypeByName("AutoAnthony.AutoAnthonyNativeCardApi");
         Type freeformApi = AccessTools.TypeByName("AutoAnthony.AutoAnthonyFreeformCardApi");
         Type generatedType = AccessTools.TypeByName("ChaosCardGenerator.GeneratedCard");
@@ -230,7 +232,7 @@ public partial class OrbContractRunner
             await MegaCrit.Sts2.Core.Hooks.Hook.AfterSideTurnEnd(arena.State,
                 MegaCrit.Sts2.Core.Combat.CombatSide.Player, [arena.Player.Creature]);
 #endif
-            var copy = (CardModel)storm.MutableClone();
+            var copy = arena.State.CloneCard(storm);
 #if NINJASLAYER_CHANNEL_STABLE
             await MegaCrit.Sts2.Core.Hooks.Hook.AfterTurnEnd(arena.State,
                 MegaCrit.Sts2.Core.Combat.CombatSide.Player, [arena.Player.Creature]);

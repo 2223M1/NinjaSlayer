@@ -1,6 +1,6 @@
-# Free Control
+# Ether Reflux
 
-The default-off **Free control** toggle is in Ninja Slayer settings under **Hidden features**. It can be changed from the main menu or a paused run. It applies only to the single-player Ninja Slayer during the player's Play phase. Free transforms are not saved.
+The default-off **Ether Reflux** toggle is in Ninja Slayer settings under **Hidden features**. It can be changed from the main menu or a paused run. It applies only to the single-player Ninja Slayer during the player's Play phase. Free transforms are not saved.
 
 | Input | Action |
 | --- | --- |
@@ -27,4 +27,4 @@ Free attacks consume no cards, energy, or shuriken stock. Cards retain their nor
 
 Movement and free actions use real time regardless of combat animation speed. Movement tuning: run 420 px/s, jump 850 px/s, gravity 1800 px/s², dash 1200 px/s for 0.18 seconds, coyote time 0.08 seconds and jump buffer 0.10 seconds.
 
-启用过自由操控的整局不会上报平衡统计。标记随该局存档保存，中途关闭开关或读档不恢复统计资格。
+启用过以太回流的整局不会上报平衡统计。标记随该局存档保存，中途关闭开关或读档不恢复统计资格。
