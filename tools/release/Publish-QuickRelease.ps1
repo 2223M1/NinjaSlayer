@@ -61,6 +61,7 @@ if ($SkipGitHub) {
     $workshopParameters = @{
         Version = $Version
         SourceRevision = $SourceRevision
+        ReleaseNoteFile = $ReleaseNoteFile
         Confirm = $true
     }
     if (-not [string]::IsNullOrWhiteSpace($WorkshopUploadRoot)) {

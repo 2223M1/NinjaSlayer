@@ -2,7 +2,7 @@
   "title": "忍者杀手 Ninja Slayer",
   "description": "[h1]Domo. Ninja Slayer desu.[/h1]\r\n\r\n[h2]Something wrong?[/h2]\r\nPress [b]F2[/b] in game to report bugs or send suggestions.\r\nWant to see what cards everyone is picking and where their runs end? [url=https://2223m1.github.io/NinjaSlayer/?lang=eng]Ninja Slayer Intel[/url]\r\n\r\nDiscord Community：Previous invite expired. New invite: https://discord.gg/eHuQqjrAyf\r\nPatreon：https://www.patreon.com/cw/bobbizerri\r\n\r\n[i]Unofficial fan-made Mod.[/i]",
   "visibility": "public",
-  "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+  "changeNote": "chop+：7伤害1空手道调整为5伤害2空手道。\nBS1260踢：18→24伤害调整为20→26伤害。\n龙卷拳：X≥4时翻倍攻击次数调整为每次伤害增加4→6。\n阿拉巴马落：3费3晕眩调整为2费2晕眩。\n地狱chop：5→6伤害调整为4→5伤害。\n岚之拳：4→6伤害调整为5→6伤害，增加消耗；消耗堆茶道加伤改为己方回合末本场伤害增加2→3。\n燃火：黑炎加入弃牌堆调整为抽牌堆。\n自由操控：更名为以太回流。",
   "tags": [
     "Characters",
     "English",

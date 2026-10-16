@@ -56,6 +56,7 @@ jobs:
           node tools/sync-compatibility.mjs --check
           node tools/validate-repository.mjs
           node tools/sync-website-localization.mjs --check
+          node tools/test-workshop-notes.mjs
 
       - name: Tutorial mirror contracts
         run: python3 tools/test-tutorial-sync.py

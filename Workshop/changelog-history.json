@@ -1,0 +1,511 @@
+{
+  "itemId": "3776911445",
+  "scope": "1.0.0 onward",
+  "language": "Chinese text in the default English change-note field; Chinese viewers use Steam fallback",
+  "entryCountBefore": 87,
+  "unchangedOlderEntryCount": 57,
+  "olderBoundaryEntryId": "1790823842",
+  "unmappedEntries": [],
+  "entries": [
+    {
+      "version": "1.0.0",
+      "entryId": "1790831602",
+      "publishedAtUtc": "2026-10-01T05:13:22+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1790831602/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "修正假商人立绘过大。\n修正预见确认时误开消耗堆。",
+      "sourceRevision": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+      "evidence": [
+        "Docs/validation/release-1.0.0-evidence.json",
+        "Docs/validation/release-1.0.0.md",
+        "Website/content/versions/1.0.0/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "1d4a3bb19748590168be879208aee91f232eae708b390f303f73423b99883db3"
+    },
+    {
+      "version": "1.0.1",
+      "entryId": "1790860507",
+      "publishedAtUtc": "2026-10-01T13:15:07+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1790860507/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "修正预见后牌堆计数不更新。\n工坊条目改为公开。",
+      "sourceRevision": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+      "evidence": [
+        "Docs/validation/release-1.0.1-evidence.json",
+        "Docs/validation/release-1.0.1.md",
+        "Website/content/versions/1.0.1/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "ff606fb73751a18bd08d92bbec53c46d783a238fd3fb870cec65240c12776c16"
+    },
+    {
+      "version": "1.0.2",
+      "entryId": "1790900014",
+      "publishedAtUtc": "2026-10-02T00:13:34+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1790900014/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "新增首次通关反馈邀请。\n官网反馈支持查看处理状态和作者回应。\n修正守护者替伤时误触发死亡演出。\n修正死亡后角色归位异常。",
+      "sourceRevision": "36cfde86520291e133935d575dd4e03ef53ee788",
+      "evidence": [
+        "Docs/validation/release-1.0.2-evidence.json",
+        "Docs/validation/release-1.0.2.md",
+        "Website/content/versions/1.0.2/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "af83f179d96655a4afd6558537951ba71473cabccec427243c565d47ed75cdef"
+    },
+    {
+      "version": "1.0.3",
+      "entryId": "1790931655",
+      "publishedAtUtc": "2026-10-02T09:00:55+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1790931655/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "chop：3→6伤害调整为4→7伤害。\nChop打击：9→10伤害调整为11→13伤害。\n螺旋回转跳：7→8伤害调整为7→11伤害，1→2手里剑调整为2手里剑。\n备镖：7→8格挡调整为8→10格挡。\n左·上勾拳：8→10伤害调整为10→12伤害。\n嘶哈：5→8治疗调整为6→9治疗。\n强攻：10→12伤害调整为16→20伤害。\n手里剑生成：2费调整为1费。\n乘胜：每次触发获得1→2力量调整为2→3力量。\n钩绳：按空手道层数减力量调整为固定减4→6力量。\n半月圆规踢：改为消耗1张茶道，造成10→13群体伤害，本回合自身伤害翻倍并回手。\n龙卷拳：X≥4时逐次给予易伤调整为翻倍攻击次数。\n奈落之力：2费技能调整为1费攻击，造成8→10伤害并给予2→3易伤，取消空手道收益。\n修正非攻击伤害触发反向处决。\n修正联机死亡后复活卡住。\n新增击飞死亡后的复活入场演出。",
+      "sourceRevision": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+      "evidence": [
+        "Docs/validation/release-1.0.3-evidence.json",
+        "Docs/validation/release-1.0.3.md",
+        "Website/content/versions/1.0.3/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "d40c5d60496c90924f0bb89a79ebcf0474bed14113c432cddfa9c7765446e28c"
+    },
+    {
+      "version": "1.0.4",
+      "entryId": "1790935434",
+      "publishedAtUtc": "2026-10-02T10:03:54+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1790935434/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "修正沢渡和黑暗忍者的鞠躬方向。\n澄明：更名为真名看破。",
+      "sourceRevision": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+      "evidence": [
+        "Docs/validation/release-1.0.4-evidence.json",
+        "Docs/validation/release-1.0.4.md",
+        "Website/content/versions/1.0.4/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "45fa50b01658705d7ee577fb8db1dec7fe82e09b08176f66e9d8761656764329"
+    },
+    {
+      "version": "1.0.5",
+      "entryId": "1791023512",
+      "publishedAtUtc": "2026-10-03T10:31:52+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791023512/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "修复了用户反馈中Mac版无法加载的问题。\n强·手里剑：基础与升级版统一具有保留、消耗。",
+      "sourceRevision": "4578f29217521602d46840986c088ef5e7a7453c",
+      "evidence": [
+        "Docs/validation/release-1.0.5-evidence.json",
+        "Docs/validation/release-1.0.5.md",
+        "Website/content/versions/1.0.5/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "452d5a994162898057a02a26bea7c67ff02f448909564e671822a419577431c9"
+    },
+    {
+      "version": "1.0.6",
+      "entryId": "1791027166",
+      "publishedAtUtc": "2026-10-03T11:32:46+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791027166/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "韧性+：移除固有。",
+      "sourceRevision": "b4455b891116aba989fe3b0b6c9d20fff2c66240",
+      "evidence": [
+        "Docs/validation/release-1.0.6-evidence.json",
+        "Docs/validation/release-1.0.6.md",
+        "Website/content/versions/1.0.6/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "42a68399e546da1eacc500d51a42aef2a0e8b22093db04912c2d7f479a3dba82"
+    },
+    {
+      "version": "1.0.7",
+      "entryId": "1791050853",
+      "publishedAtUtc": "2026-10-03T18:07:33+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791050853/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "修正岚之拳、龙回旋踢仅首段享受活力加成。\n修正巴投对皇帝蟹钳子使用时卡住。\n龙·飞踢：改为先茶道呼吸，再抽牌。\n官网统计支持同时筛选多个版本。",
+      "sourceRevision": "7e04386fd7e2fd3e698d2117a150a0a2f0a92c7e",
+      "evidence": [
+        "Docs/validation/release-1.0.7-evidence.json",
+        "Docs/validation/release-1.0.7.md",
+        "Website/content/versions/1.0.7/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "ab34cd9e61634c48cd72174ce1fec7ec2a03b641d9ab10461d92495962d8c9c4"
+    },
+    {
+      "version": "1.0.8",
+      "entryId": "1791087832",
+      "publishedAtUtc": "2026-10-04T04:23:52+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791087832/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "初始生命和最大生命：72调整为80。\n嘶哈：6→9治疗调整为8→12治疗。",
+      "sourceRevision": "dc9f651ebba7be43365cb50816257387b0ce62b6",
+      "evidence": [
+        "Docs/validation/release-1.0.8-evidence.json",
+        "Docs/validation/release-1.0.8.md",
+        "Website/content/versions/1.0.8/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "34c9d8db52d0b6bd9d1164fcd38c82c190361efb9bba3b4b51edee17d41c08f5"
+    },
+    {
+      "version": "1.0.9",
+      "entryId": "1791092930",
+      "publishedAtUtc": "2026-10-04T05:48:50+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791092930/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "聚气：1费调整为0费。\n啜饮：1费调整为0费。\n修正龙卷拳连击音效衔接。",
+      "sourceRevision": "a9f479ba621155ba4ae25cca08635f25d98de757",
+      "evidence": [
+        "Website/content/versions/1.0.9/catalog.json",
+        "Docs/validation/release-1.0.10.md"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "442694dfddef762fef345bae0187a9e79fdf730032b43bb368ac04ccf60b9354"
+    },
+    {
+      "version": "1.0.10",
+      "entryId": "1791094362",
+      "publishedAtUtc": "2026-10-04T06:12:42+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791094362/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "修正记者证在建筑师处的对话异常。",
+      "sourceRevision": "898a306c149502a453304e6d963cbfe2ddeb72cc",
+      "evidence": [
+        "Docs/validation/release-1.0.10-evidence.json",
+        "Docs/validation/release-1.0.10.md",
+        "Website/content/versions/1.0.10/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "6dde35f6ea47a1d34d6429c9b6bdfd1209ca787bc94453940844851e25b1b210"
+    },
+    {
+      "version": "1.0.11",
+      "entryId": "1791113563",
+      "publishedAtUtc": "2026-10-04T11:32:43+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791113563/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "BS1260踢：3费27→33伤害调整为2费18→24伤害。\n炎甲：12→15格挡调整为15→18格挡。\n左·上勾拳：移除上一张牌必须是攻击牌的条件。\n掌打：每次5伤害调整为6伤害。\n巴投：6→7格挡调整为9→11格挡。\n聚气：基础版0费调整为1费，增加保留。\n月面宙反：1费调整为0费。\n燃火：1费调整为0费，抽3→4张调整为2→3张，生成2张黑炎到抽牌堆调整为1张到弃牌堆。\n噬火：消耗黑炎获得2→3力量调整为生成状态牌获得2→3奈落生命。\n浴火：打出攻击牌触发调整为打出技能牌触发，浴火自身除外。\n强攻：16→20伤害1次调整为5→6伤害3次。\n修正建筑师对话显示错误。",
+      "sourceRevision": "029d4df22d393ca4cb56e6ba28deef1aee621822",
+      "evidence": [
+        "Docs/validation/release-1.0.11-evidence.json",
+        "Docs/validation/release-1.0.11.md",
+        "Website/content/versions/1.0.11/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "cee48f83e17b2e686726ca62cd4287ace2770aeafbc21d4be8d9f9bf2acec965"
+    },
+    {
+      "version": "1.0.12",
+      "entryId": "1791117772",
+      "publishedAtUtc": "2026-10-04T12:42:52+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791117772/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "预见：抽牌堆为空时先洗牌，再进行预见。",
+      "sourceRevision": "2e7705cd6bd202d0bcee35bd2a33fb297181fd78",
+      "evidence": [
+        "Docs/validation/release-1.0.12-evidence.json",
+        "Docs/validation/release-1.0.12.md",
+        "Website/content/versions/1.0.12/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "aaca101f849f24cc99c1357cd63ebc012fad4f231e29c3b55df3f12f859db928"
+    },
+    {
+      "version": "1.0.13",
+      "entryId": "1791203296",
+      "publishedAtUtc": "2026-10-05T12:28:16+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791203296/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "螺旋回转跳：7→11伤害调整为8→12伤害，获得手里剑调整为激发并清空手里剑。\n韧性：抽到状态牌触发调整为生成状态牌触发。\n月面宙反：0费调整为1→0费，基础版增加保留，激发1次调整为2次。\n残心：额外抽1→2张调整为2→3张。\n应变：抽2→3张调整为3→4张，赋予奇巧调整为下一张牌置顶。\n修复了用户反馈中同伴触发蜂群卡死的问题。",
+      "sourceRevision": "0762d6ee02282be8c9437e01af58be99b0b0da72",
+      "evidence": [
+        "Docs/validation/release-1.0.13-evidence.json",
+        "Docs/validation/release-1.0.13.md",
+        "Website/content/versions/1.0.13/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "cda5816f9fc3f92cdbf1b5257d9f9c4714b0038aa5c54fe1ffd9489ff83f3199"
+    },
+    {
+      "version": "1.0.14",
+      "entryId": "1791211888",
+      "publishedAtUtc": "2026-10-05T14:51:28+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791211888/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "修复了用户反馈中奈落血条异常的问题。\n沢渡全名统一为沢渡 · 佛雷斯特。\n修正沢渡事件入场被黑幕遮挡。\n修正多段攻击未提前触发处决。",
+      "sourceRevision": "f4ad7482fe5f164b5781da222fd9e6460e4bacd5",
+      "evidence": [
+        "Docs/validation/release-1.0.14-evidence.json",
+        "Docs/validation/release-1.0.14.md",
+        "Website/content/versions/1.0.14/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "c29ba9ca86d9b9c4a999a8458f238d1e975ef5952246cec2c03fa6e63046233c"
+    },
+    {
+      "version": "1.0.15",
+      "entryId": "1791218709",
+      "publishedAtUtc": "2026-10-05T16:45:09+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791218709/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "嘲讽：随机敌人调整为指定敌人。\n投掷苦无：预见2→3调整为3→4。\n审势：3→4格挡调整为4→6格挡。",
+      "sourceRevision": "6355a1a09a6bd69a33eb74a15dbea791865f372f",
+      "evidence": [
+        "Docs/validation/release-1.0.15-evidence.json",
+        "Docs/validation/release-1.0.15.md",
+        "Website/content/versions/1.0.15/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "108ea758c5cea35c0db0026530aefb0288ef57d3bdaa4f43032a69e47e4abdac"
+    },
+    {
+      "version": "1.0.16",
+      "entryId": "1791265312",
+      "publishedAtUtc": "2026-10-06T05:41:52+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791265312/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "新增13种语言支持，合计支持16种语言。",
+      "sourceRevision": "d4e595997d164e96aa3f0973c3606d5922c91f3d",
+      "evidence": [
+        "Docs/validation/release-1.0.16-evidence.json",
+        "Docs/validation/release-1.0.16.md",
+        "Website/content/versions/1.0.16/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "cb02b7f382ef2b925ddaa8519860ad70c5529e430d2401fa0ec82cf4a8c5bb39"
+    },
+    {
+      "version": "1.0.17",
+      "entryId": "1791301288",
+      "publishedAtUtc": "2026-10-06T15:41:28+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791301288/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "F2反馈改用独立界面，发送时不再二次确认。\n简化数据分享和公开战报说明。",
+      "sourceRevision": "ededb5561735d45589c1c2866adfa9e00511c8e4",
+      "evidence": [
+        "Docs/validation/release-1.0.17-evidence.json",
+        "Docs/validation/release-1.0.17.md",
+        "Website/content/versions/1.0.17/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "363c6fb039762c954dc8f467eccdda839cfc5424c437450f5d803607f3c297cd"
+    },
+    {
+      "version": "1.0.18",
+      "entryId": "1791377294",
+      "publishedAtUtc": "2026-10-07T12:48:14+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791377294/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "打击·打击：更名为Strike · 打击。\nChop打击、Strike · 打击支持打击木偶、假打击木偶和完美打击。",
+      "sourceRevision": "2867321efea159f386146ccb74fd7786e66fdab8",
+      "evidence": [
+        "Docs/validation/release-1.0.18.md"
+      ],
+      "status": "edited-and-verified",
+      "localPublicationEvidence": {
+        "version": "1.0.18",
+        "sourceRevision": "2867321efea159f386146ccb74fd7786e66fdab8",
+        "uploaded": true,
+        "remotePackageVerified": true
+      },
+      "publicReadbackSha256": "a627e23785fbc0e3392272db821587b8685cc8800880b73c0aaa84e14d241274"
+    },
+    {
+      "version": "1.0.19",
+      "entryId": "1791522247",
+      "publishedAtUtc": "2026-10-09T05:04:07+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791522247/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "Strike · 打击：更名为Strike·打击。\n嘲讽：14→17格挡调整为15→18格挡。\n忍耐：1费技能调整为2费攻击，造成4→5伤害3次后获得4→5空手道。\n强攻：2费5→6伤害3次调整为1费7→10伤害1次。\n普通处决取消怪物形变。\n阿拉巴马落保留压缩，落地头部贴地。\n攻击收招动画对齐原版。\n修复了用户反馈中沢渡读档卡住的问题。\n修复了用户反馈中死亡不结算的问题。\n修复了用户反馈中沙虫吞噬异常的问题。\n修复了用户反馈中角色预览异常的问题。\n修复了用户反馈中韧性抽牌卡住的问题。\n修复了用户反馈中珊瑚锁血误处决的问题。\n修复了用户反馈中日文茶道不统一的问题。",
+      "sourceRevision": "a5b1cead30f7d7e1f96eae903285abe653f1ade3",
+      "evidence": [
+        "Docs/validation/release-1.0.19-evidence.json",
+        "Docs/validation/release-1.0.19.md",
+        "Website/content/versions/1.0.19/catalog.json",
+        "Docs/validation/feedback-1.0.19.md"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "217c6f3037821d9c40971a7242730a487384b132d18c36bf1e3b8e31dcd6acaa"
+    },
+    {
+      "version": "1.0.20",
+      "entryId": "1791566645",
+      "publishedAtUtc": "2026-10-09T17:24:05+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791566645/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "修复了用户反馈中手里剑加载崩溃的问题。\n修复了用户反馈中连续攻击右漂的问题。\n修复了用户反馈中黑炎联机死亡报错的问题。\n修复了用户反馈中手里剑遮挡界面的问题。\n修复了用户反馈中沙虫拉拽站位错乱的问题。",
+      "sourceRevision": "a05f13fb2cf07aaf85e3514b81201938533881f2",
+      "evidence": [
+        "Docs/validation/release-1.0.20-evidence.json",
+        "Docs/validation/release-1.0.20.md",
+        "Website/content/versions/1.0.20/catalog.json",
+        "Docs/validation/feedback-1.0.20.md"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "112e3c38cb27bc56f373212fab9b60a55b8d884955fee8b1f3438d0f8ee456bd"
+    },
+    {
+      "version": "1.0.21",
+      "entryId": "1791627570",
+      "publishedAtUtc": "2026-10-10T10:19:30+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791627570/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "小季事件：仅在第二层出现。\n崩拳：10→14伤害调整为20→28伤害。\n柔术：移除弃牌效果。\n杀气：更名为杀气·直气；完全格挡后，敌方回合结束时直接反击47→56伤害，取消生成直气。\n校订韩语翻译。",
+      "sourceRevision": "5ded8b1bb090e8c9725ad90719e216388f6d9608",
+      "evidence": [
+        "Docs/validation/release-1.0.21-evidence.json",
+        "Docs/validation/release-1.0.21.md",
+        "Website/content/versions/1.0.21/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "14f2249a4cba6200e9b199f3b274c84678fd72727c4acd5ab8fab222f9dbda3e"
+    },
+    {
+      "version": "1.0.22",
+      "entryId": "1791701047",
+      "publishedAtUtc": "2026-10-11T06:44:07+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791701047/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "缩短普通和快速模式的攻击收招动画。\n简化杀气·直气文案。",
+      "sourceRevision": "9233a89dd6884859aa9e90999ab5d217e45180d0",
+      "evidence": [
+        "Docs/validation/release-1.0.22-evidence.json",
+        "Docs/validation/release-1.0.22.md",
+        "Website/content/versions/1.0.22/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "da220c521fc7c0e8804b04ac10b17908f1d0dc0d88942112435cfd51eab71182"
+    },
+    {
+      "version": "1.0.23",
+      "entryId": "1791705379",
+      "publishedAtUtc": "2026-10-11T07:56:19+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791705379/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "备战归档，守势加入卡池。\n守势：1费，每当你的空手道触发时获得1→2格挡。\n交叉防御：增加保留。",
+      "sourceRevision": "d00d17265fce21bbd198095a2a93f292f210e6ef",
+      "evidence": [
+        "Docs/validation/release-1.0.25-catalog-evidence.json"
+      ],
+      "status": "edited-and-verified",
+      "localPublicationEvidence": {
+        "gameplayTests": "skipped at user request",
+        "status": "uploaded",
+        "redownload": "skipped at user request",
+        "version": "1.0.23",
+        "workshopId": "3776911445",
+        "sourceRevision": "d00d17265fce21bbd198095a2a93f292f210e6ef"
+      },
+      "publicReadbackSha256": "63a14c6b9c111dd1bcfc427ca610aa0902306c84315ef512086024f5dfcaa5c0"
+    },
+    {
+      "version": "1.0.24",
+      "entryId": "1791727924",
+      "publishedAtUtc": "2026-10-11T14:12:04+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791727924/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "守势：“你的空手道”调整为“有空手道”。",
+      "sourceRevision": "976f03f4fe4064a001b95fb3c14eef1d348ce0d1",
+      "evidence": [
+        "Docs/validation/release-1.0.25-catalog-evidence.json"
+      ],
+      "status": "edited-and-verified",
+      "localPublicationEvidence": {
+        "workshopId": "3776911445",
+        "redownload": "skipped at user request",
+        "gameplayTests": "skipped at user request",
+        "version": "1.0.24",
+        "sourceRevision": "976f03f4fe4064a001b95fb3c14eef1d348ce0d1",
+        "status": "uploaded"
+      },
+      "publicReadbackSha256": "b81a9c80d269dccddf6e08137d422a97f6314e6a166945ff9890ab03792ac176"
+    },
+    {
+      "version": "1.0.25",
+      "entryId": "1791732863",
+      "publishedAtUtc": "2026-10-11T15:34:23+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791732863/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "嘲讽：1费15→18格挡调整为0费13→16格挡。",
+      "sourceRevision": "38c786e508d40c4f2a0d9368e4db49b05630d706",
+      "evidence": [
+        "Website/content/versions/1.0.25/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "2e942ca1a6f0dcbd861bb38e32c92181f8ae50744bb194ee9f6a9651c7468632"
+    },
+    {
+      "version": "1.0.26",
+      "entryId": "1791947508",
+      "publishedAtUtc": "2026-10-14T03:11:48+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791947508/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "炎甲：15→18格挡调整为10→12格挡，增加4→5奈落生命。\n茶道+：1费调整为0费。\n修复了用户反馈中龙卷卡回合的问题。\n修复了用户反馈中日文译名不统一的问题。",
+      "sourceRevision": "d6a1386fc9289e85db0d5a6cd7b41a0b8e320ae3",
+      "evidence": [
+        "Docs/validation/release-1.0.26-evidence.json",
+        "Docs/validation/release-1.0.26.md",
+        "Website/content/versions/1.0.26/catalog.json",
+        "Docs/validation/feedback-20261014.md"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "2ec6ce2525d859493ae10525090871899bbc295c473b4d230ce9df24262a5f1f"
+    },
+    {
+      "version": "1.0.27",
+      "entryId": "1791950776",
+      "publishedAtUtc": "2026-10-14T04:06:16+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791950776/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "嘲讽：增加保留。\n交叉防御：移除保留，下一张牌置顶调整为回手。\n杀气·直气：单回合内可叠加，满足条件时按层数反击。",
+      "sourceRevision": "3ef752b01ddd8a0581b3b8b43975a90695ee5eb6",
+      "evidence": [
+        "Docs/validation/release-1.0.27-evidence.json",
+        "Docs/validation/release-1.0.27.md",
+        "Website/content/versions/1.0.27/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "eb917427846677fadb08597b1aade1e5c1597eefaf74797694b0769b7bbaddfb"
+    },
+    {
+      "version": "1.1.0",
+      "entryId": "1791951720",
+      "publishedAtUtc": "2026-10-14T04:22:00+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1791951720/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "版本号由1.0.27调整为1.1.0。",
+      "sourceRevision": "4b83de9e61e8466219c87ce036a24689b077d800",
+      "evidence": [
+        "Docs/validation/release-1.1.0-evidence.json",
+        "Docs/validation/release-1.1.0.md",
+        "Website/content/versions/1.1.0/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "a402cb39b07e5aeb386a363e07ccce4bb9d05394941ce0b170745370b03f2c91"
+    },
+    {
+      "version": "1.1.1",
+      "entryId": "1792028863",
+      "publishedAtUtc": "2026-10-15T01:47:43+00:00",
+      "editUrl": "https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/1792028863/",
+      "originalText": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+      "replacementText": "chop+：7伤害1空手道调整为5伤害2空手道。\nBS1260踢：18→24伤害调整为20→26伤害。\n龙卷拳：X≥4时翻倍攻击次数调整为每次伤害增加4→6。\n阿拉巴马落：3费3晕眩调整为2费2晕眩。\n地狱chop：5→6伤害调整为4→5伤害。\n岚之拳：4→6伤害调整为5→6伤害，增加消耗；消耗堆茶道加伤改为己方回合末本场伤害增加2→3。\n燃火：黑炎加入弃牌堆调整为抽牌堆。\n自由操控：更名为以太回流。",
+      "sourceRevision": "e62b5319c65f85aaa454dc5b4167bbdb1f687327",
+      "evidence": [
+        "Docs/validation/release-1.1.1-evidence.json",
+        "Docs/validation/release-1.1.1.md",
+        "Website/content/versions/1.1.1/catalog.json"
+      ],
+      "status": "edited-and-verified",
+      "publicReadbackSha256": "b661db59be1cdb16816aa3505d744bf664f232e16ac4bbd19c9921887b2696de"
+    }
+  ],
+  "entryCountAfter": 87,
+  "entryOrderPreserved": true,
+  "olderBoundaryVerifiedUnchanged": true,
+  "recordedAtUtc": "2026-10-16T08:24:18.631417+00:00"
+}

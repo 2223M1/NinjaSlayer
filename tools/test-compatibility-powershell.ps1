@@ -134,14 +134,16 @@ try {
 
     $fixtureRepository = Join-Path $temporaryRoot 'repository'
     $fixtureCandidateRoot = Join-Path $temporaryRoot 'candidates'
+    $fixtureNote = "chop+：7伤害1空手道调整为5伤害2空手道。`n说明：`"茶道`"与路径A\B。"
     [IO.Directory]::CreateDirectory((Join-Path $fixtureRepository 'Workshop')) | Out-Null
+    [IO.File]::WriteAllText((Join-Path $fixtureRepository '.gitattributes'), "* text=auto eol=lf`n")
     [IO.File]::WriteAllText(
         (Join-Path $fixtureRepository 'source.txt'),
         'committed source',
         [Text.UTF8Encoding]::new($false))
     [IO.File]::WriteAllText(
         (Join-Path $fixtureRepository 'Workshop\change-note.md'),
-        'committed note',
+        $fixtureNote,
         [Text.UTF8Encoding]::new($false))
     [IO.File]::WriteAllText(
         (Join-Path $fixtureRepository 'Workshop\workshop.json'),
@@ -168,7 +170,7 @@ try {
         -SpineExtensionDirectory $spineSource `
         -ReleaseNoteRelativePath 'Workshop/change-note.md'
     if ((Get-Content (Join-Path $candidate.Root 'source.txt') -Raw) -cne 'committed source' -or
-        (Get-Content $candidate.ReleaseNotePath -Raw) -cne 'committed note' -or
+        (Get-Content $candidate.ReleaseNotePath -Raw -Encoding UTF8) -cne $fixtureNote -or
         (Test-Path (Join-Path $candidate.Root 'untracked.txt')) -or
         [string]$candidate.TreeSha -ne $fixtureTree) {
         throw 'Release candidate did not remain bound to the committed Git tree.'
