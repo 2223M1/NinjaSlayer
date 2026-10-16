@@ -44,5 +44,6 @@
 
 ## Workshop publication policy
 
-- Every automated Workshop upload must use exactly `我们修复了一些问题，增添了一些内容，调整了一些东西。` as its update note. Detailed Workshop notes are written manually by the owner; never generate or overwrite them during other maintenance.
+- Workshop change notes use concise Chinese, one player-visible change per line. Numeric changes compare old and new values; `→` means base-to-upgrade and `+` means upgraded-only. Feedback fixes use `修复了用户反馈中xx的问题。`, with `xx` at most 10 characters, and require evidence of a fix in that published version. Do not claim unresolved or third-party failures are fixed.
+- `Workshop/change-note.md` is the approved note source; keep `Workshop/workshop.json.changeNote` identical. Uploaders must use the committed/frozen note without replacing it with boilerplate. Prepare a new note for each release. Historical edits affect existing entries only, preserve their IDs/order, and keep original text plus version/evidence mappings. Do not rewrite an entry whose release cannot be established.
 - The next game release after 0.3.9 is **1.0.0**. Website-only changes do not bump the game version.

@@ -10,6 +10,7 @@ param(
     [ValidatePattern('^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$')]
     [string] $Version,
 
+    [string] $ReleaseNoteFile = 'Workshop/change-note.md',
     [string] $WorkshopUploadRoot,
     [string] $StableDataDir,
     [string] $PreviewDataDir,
@@ -108,7 +109,16 @@ if ([string]::IsNullOrWhiteSpace($Version)) {
 }
 $tag = "v$Version"
 
-$releaseNote = '我们修复了一些问题，增添了一些内容，调整了一些东西。'
+$releaseNotePath = if ([IO.Path]::IsPathRooted($ReleaseNoteFile)) { $ReleaseNoteFile } else { Join-Path $repositoryRoot $ReleaseNoteFile }
+$releaseNotePath = [IO.Path]::GetFullPath($releaseNotePath)
+if (-not $releaseNotePath.StartsWith($repositoryRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+    throw 'Workshop release note must belong to the committed candidate repository.'
+}
+$releaseNoteRelativePath = [IO.Path]::GetRelativePath($repositoryRoot, $releaseNotePath)
+$null = & git ls-files --error-unmatch -- $releaseNoteRelativePath
+if ($LASTEXITCODE -ne 0) { throw 'Workshop release note must be tracked and committed.' }
+$releaseNote = (Get-Content -LiteralPath $releaseNotePath -Raw -Encoding UTF8).Trim()
+if ([string]::IsNullOrWhiteSpace($releaseNote)) { throw 'Workshop release note must not be empty.' }
 
 if ([string]::IsNullOrWhiteSpace($WorkshopUploadRoot)) {
     $workspaceRoot = [IO.Path]::GetFullPath((Join-Path $repositoryRoot '..'))

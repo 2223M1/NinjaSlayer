@@ -174,8 +174,6 @@ function Assert-ReleaseNoteIsFresh(
     if ([string]::IsNullOrWhiteSpace($currentText)) {
         throw 'The committed release note must contain at least one sentence.'
     }
-    # Workshop notes intentionally stay identical; detailed notes are maintained manually.
-    if ($relativePath -eq 'Workshop/change-note.md') { return }
     if ([string]::IsNullOrWhiteSpace($PreviousTag)) {
         return
     }
@@ -822,7 +820,7 @@ try {
 
             $metadata = Get-Content -LiteralPath $frozenWorkshopMetadataPath `
                 -Raw -Encoding UTF8 | ConvertFrom-Json
-            $metadata.changeNote = '我们修复了一些问题，增添了一些内容，调整了一些东西。'
+            $metadata.changeNote = (Get-Content -LiteralPath $frozenReleaseNotePath -Raw -Encoding UTF8).Trim()
             [IO.File]::WriteAllText(
                 (Join-Path $workshopDirectory 'workshop.json'),
                 ($metadata | ConvertTo-Json -Depth 10),

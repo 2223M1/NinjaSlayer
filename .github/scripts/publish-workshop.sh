@@ -22,8 +22,11 @@ test -f "$PREVIEW_FILE" || { echo "Missing Workshop preview image"; exit 1; }
 test "$(stat -c%s "$PREVIEW_FILE")" -le 1048576 || { echo "Workshop preview exceeds 1 MiB"; exit 1; }
 test -x "$STEAMCMD" || { echo "SteamCMD is unavailable"; exit 1; }
 
-# Detailed Workshop notes are edited manually by the owner.
-CHANGE_NOTE='我们修复了一些问题，增添了一些内容，调整了一些东西。'
+note_file="${RELEASE_NOTE_FILE:-$(dirname "${BASH_SOURCE[0]}")/../../Workshop/change-note.md}"
+test -f "$note_file" || { echo "Workshop release note is missing"; exit 1; }
+CHANGE_NOTE=$(cat "$note_file")
+CHANGE_NOTE=${CHANGE_NOTE//$'\r'/}
+[[ -n "${CHANGE_NOTE//[[:space:]]/}" ]] || { echo "Workshop release note must not be empty"; exit 1; }
 
 steam_home="${STEAM_HOME:-$HOME/Steam}"
 mkdir -p "$steam_home/config"
@@ -32,8 +35,10 @@ chmod 600 "$steam_home/config/config.vdf"
 
 manifest="$(mktemp --suffix=.vdf)"
 # Omit title/description: SteamCMD content uploads must preserve the language fields
-# maintained by tools/workshop-metadata. Detailed notes remain owner-authored.
-escaped_note=${CHANGE_NOTE//\"/\\\"}
+# maintained by tools/workshop-metadata. Encode the frozen UTF-8 note as VDF.
+escaped_note=${CHANGE_NOTE//\\/\\\\}
+escaped_note=${escaped_note//\"/\\\"}
+escaped_note=${escaped_note//$'\n'/\\n}
 {
   printf '"workshopitem"\n{\n'
   printf '    "appid" "2868840"\n'

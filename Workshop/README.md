@@ -25,6 +25,14 @@ dotnet run --project tools/workshop-metadata/WorkshopMetadata.csproj -c Release 
 
 Use `inspect` for read-only snapshots or `verify` to compare remote fields to the local text without writing. The tool writes the same configured title in each language: a new localized description does not inherit the default title. It never uploads a game package or touches tags, visibility, dependencies, or images. It skips titles/descriptions that already match and submits metadata changes without a change note.
 
-Steam documents `SetItemUpdateLanguage` for **title and description only**, not `SubmitItemUpdate`'s shared change note. Do not submit separate per-language updates with duplicate changelogs. Automatic game-package uploads continue to use exactly `我们修复了一些问题，增添了一些内容，调整了一些东西。`; detailed notes and historical edits remain with the owner.
+Steam documents `SetItemUpdateLanguage` for **title and description only**, not `SubmitItemUpdate`'s shared change note. Do not submit separate per-language updates with duplicate changelogs. Game-package uploads read the committed `Workshop/change-note.md` and freeze it with the candidate. `workshop.json.changeNote` mirrors that text; all publication paths must preserve Chinese, line breaks, quotes and backslashes instead of substituting a fixed sentence.
+
+## Concise change notes
+
+Write one Chinese line per player-visible change. Compare old and new numbers; `→` is base-to-upgrade and `+` means upgraded-only. Use `修复了用户反馈中xx的问题。` for a verified, released feedback fix, with a problem name of at most 10 characters. Describe additions, translation changes and renames in one sentence. Omit development, test and commit details. Do not call unresolved reports or third-party failures fixed.
+
+Historical edits cover 1.0.0 onward. Match each original Workshop entry to its published version and evidence, keep an original/replacement record, edit through the owner's existing change-note page, and read it back. Preserve earlier entries and any entry that cannot be mapped reliably. Text-only maintenance does not upload a new package, create a release entry or bump the game version.
 
 References: [Steam UGC language fields](https://partner.steamgames.com/doc/api/ISteamUGC#SetItemUpdateLanguage), [change-note submission](https://partner.steamgames.com/doc/api/ISteamUGC#SubmitItemUpdate), [official uploader configuration](https://github.com/megacrit/sts2-mod-uploader/blob/main/src/ModConfig.cs).
+
+The Steam website separately offers language-specific historical note editing. This cleanup edits the existing default (English-field) text in Chinese; Simplified Chinese viewers use Steam's documented-on-page fallback. No translated note variants are created. Original/replacement text, published source revisions and read-back results are in `changelog-history.json`.

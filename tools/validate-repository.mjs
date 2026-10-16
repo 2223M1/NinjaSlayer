@@ -386,8 +386,28 @@ for (const [language, description] of Object.entries(workshopDescriptions)) {
     errors.push(`Workshop ${language} description must be nonempty and within Steam limits`);
   }
 }
-if (localWorkshopManifest?.changeNote !== '我们修复了一些问题，增添了一些内容，调整了一些东西。') {
-  errors.push('Workshop automatic change notes must retain the owner-specified fixed sentence');
+const workshopNote = readFileSync(join(root, 'Workshop', 'change-note.md'), 'utf8').trim();
+if (!workshopNote || localWorkshopManifest?.changeNote?.replace(/\r\n/g, '\n') !== workshopNote.replace(/\r\n/g, '\n')) {
+  errors.push('Workshop metadata must match the nonempty approved change-note.md');
+}
+const workshopHistory = readJson(join(root, 'Workshop', 'changelog-history.json'));
+const historicalNotes = workshopHistory?.entries ?? [];
+if (new Set(historicalNotes.map(entry => entry.entryId)).size !== historicalNotes.length
+    || workshopHistory?.entryCountBefore !== workshopHistory?.entryCountAfter) {
+  errors.push('Workshop historical edits must preserve distinct entries and the original entry count');
+}
+for (const entry of historicalNotes) {
+  if (entry.status === 'edited-and-verified'
+      && createHash('sha256').update(entry.replacementText).digest('hex') !== entry.publicReadbackSha256) {
+    errors.push(`Workshop ${entry.version} note differs from its verified public readback`);
+  }
+}
+for (const note of [workshopNote, ...historicalNotes.map(entry => entry.replacementText)]) {
+  for (const match of note.matchAll(/修复了用户反馈中(.*?)的问题。/g)) {
+    if ([...match[1]].length < 1 || [...match[1]].length > 10) {
+      errors.push('Workshop feedback problem names must contain 1–10 characters');
+    }
+  }
 }
 
 const retiredHostVersion = ['0', '109', '0'].join('.');
