@@ -9,8 +9,10 @@ using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Cards;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
+using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Lifecycle;
+using NinjaSlayer.Content;
 using STS2RitsuLib.Patching.Models;
 using STS2RitsuLib.Utils.HarmonyIl;
 
@@ -74,13 +76,18 @@ internal sealed class RapidPowerCardFlyPatch : IPatchMethod
     public static void Prefix(CardModel __instance) =>
         RapidCardPresentationContext.PreparePowerFly(__instance);
 
-    public static void Postfix(ref Task __result)
+    public static void Postfix(CardModel __instance, ref Task __result)
     {
         if (!RapidCardPresentationContext.IsActive)
         {
             return;
         }
 
+        // The detached animation owns this visual until it frees it. Remove it
+        // from the play container so a Power returned to hand gets its own node.
+        NCard? flyingCard = NCard.FindOnTable(__instance);
+        if (flyingCard != null)
+            flyingCard.Reparent(NCombatRoom.Instance!.CombatVfxContainer);
         TaskHelper.RunSafely(__result);
         __result = Task.CompletedTask;
     }
@@ -102,6 +109,23 @@ internal sealed class RapidMultiCardPlayPatch : IPatchMethod
 
         TaskHelper.RunSafely(__result);
         __result = Task.CompletedTask;
+    }
+}
+
+internal sealed class RapidCardPileVisualPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_rapid_card_pile_visual";
+    public static string Description => "Restore card opacity when a pile change interrupts the repeated-play fade.";
+    public static bool IsCritical => true;
+    public static ModPatchTarget[] GetTargets() =>
+        [new(typeof(CardPileCmd), "MoveCardNodeToNewPileBeforeTween", [typeof(NCard), typeof(PileType)])];
+
+    public static void Postfix(NCard cardNode)
+    {
+        // Native pile movement kills PlayPileTween. A detached repeated-play
+        // tween may still be in its fade-out phase when the card changes piles.
+        if (cardNode.Model!.Owner.Character is INinjaSlayerCharacter)
+            cardNode.Modulate = Godot.Colors.White;
     }
 }
 

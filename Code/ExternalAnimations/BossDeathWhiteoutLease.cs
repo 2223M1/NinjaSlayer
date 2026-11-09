@@ -71,7 +71,7 @@ internal sealed class BossDeathWhiteoutLease : IDisposable
                 }
 
                 if (lease == null
-                    && !TryAcquire(boss, out lease, out string failureReason))
+                    && !TryAcquire(room, boss, out lease, out string failureReason))
                 {
                     Scripts.Entry.Logger.Warn(
                         $"Boss death whiteout was unavailable for {bossId}: {failureReason}.");
@@ -101,6 +101,7 @@ internal sealed class BossDeathWhiteoutLease : IDisposable
     }
 
     public static bool TryAcquire(
+        NCombatRoom room,
         NCreature boss,
         out BossDeathWhiteoutLease? lease,
         out string failureReason)
@@ -111,7 +112,10 @@ internal sealed class BossDeathWhiteoutLease : IDisposable
         List<SlotColorState>? slotColors = null;
         try
         {
-            MegaSprite? sprite = boss.Visuals.SpineBody;
+            MegaSprite? sprite = boss.Entity.Monster is MegaCrit.Sts2.Core.Models.Monsters.Crusher
+                or MegaCrit.Sts2.Core.Models.Monsters.Rocket
+                ? new MegaSprite(BossDismembermentPresentation.ResolveSourceBody(room, boss))
+                : boss.Visuals.SpineBody;
             if (sprite == null)
             {
                 failureReason = "the Boss has no active Spine body";

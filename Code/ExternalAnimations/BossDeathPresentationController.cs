@@ -2,10 +2,12 @@ using Godot;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Monsters;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Nodes.Vfx.Backgrounds;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Scripts;
@@ -46,7 +48,9 @@ public sealed partial class BossDeathPresentationController : Node
         };
         try
         {
-            boss.AddChildSafely(controller);
+            Node parent = boss.Entity.Monster is Crusher or Rocket
+                ? room.Background.GetNode<NKaiserCrabBossBackground>("%KaiserCrab") : boss;
+            parent.AddChildSafely(controller);
             if (!GodotObject.IsInstanceValid(controller) || !controller.IsInsideTree())
             {
                 throw new InvalidOperationException(
@@ -89,6 +93,10 @@ public sealed partial class BossDeathPresentationController : Node
             }
 
             _boss.SetAnimationTrigger("Dead");
+        }
+        else if (_boss.Entity.Monster is Crusher or Rocket)
+        {
+            _room.Background.GetNode<NKaiserCrabBossBackground>("%KaiserCrab").PlayBodyDeathAnim();
         }
 
         if (!RunManager.Instance.IsSingleplayerOrFakeMultiplayer)

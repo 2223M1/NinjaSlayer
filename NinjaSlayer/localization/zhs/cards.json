@@ -54,7 +54,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "戒备",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n获得{Stock:diff()}层[gold]手里剑[/gold]。",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "交叉防御",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n将你在本回合打出的下一张牌放置到你的手牌。",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n将你在本回合打出的下一张非能力牌放置到你的手牌。",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "飞刃屏障",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n如果你在本回合获得过[gold]手里剑[/gold]，则额外获得{Block:diff()}点[gold]格挡[/gold]。",
   "NINJA_SLAYER_CARD_BLADE_SWEEP.title": "飞刃席卷",

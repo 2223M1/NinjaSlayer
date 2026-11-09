@@ -2,7 +2,7 @@
   "title": "忍者杀手 Ninja Slayer",
   "description": "[h1]Domo. Ninja Slayer desu.[/h1]\r\n\r\n[h2]Something wrong?[/h2]\r\nPress [b]F2[/b] in game to report bugs or send suggestions.\r\nWant to see what cards everyone is picking and where their runs end? [url=https://2223m1.github.io/NinjaSlayer/?lang=eng]Ninja Slayer Intel[/url]\r\n\r\nDiscord Community：Previous invite expired. New invite: https://discord.gg/eHuQqjrAyf\r\nPatreon：https://www.patreon.com/cw/bobbizerri\r\n\r\n[i]Unofficial fan-made Mod.[/i]",
   "visibility": "public",
-  "changeNote": "浴火由本回合每打出一张其他技能牌获得3→4奈落生命，改为每触发一次黑炎获得2→3奈落生命，保留选择一张手牌变化为黑炎。\n一心同体由每次空手道触发获得3→4奈落生命，改为打出时获得5→8奈落生命，并使每点奈落生命计入1点空手道伤害。\n一心同体重复打出可叠加换算倍率，每次空手道触发仍只优先消耗1点奈落生命；基础空手道不会承受伤害，其他按实际空手道层数计算的效果不变。\n手里剑生成移除预见1→2，保留1费、奇巧和获得3→4层手里剑。\n同步16种语言、伤害预览及东尼算法卡牌组件。",
+  "changeNote": "修复了用户反馈中沢渡快速SL卡住的问题。\n修复了用户反馈中首领音乐异常的问题。\n修复了用户反馈中帝皇蟹不爆炸的问题。\n修复了用户反馈中能力牌吞交叉防御的问题。\n修复了用户反馈中卡牌异常透明的问题。\n阿拉巴马落现在会真实抬起、翻转并摔落帝皇蟹的目标钳子。",
   "tags": [
     "Characters",
     "English",

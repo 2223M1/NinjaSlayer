@@ -54,7 +54,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "Auf der Hut",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "Erhalte {Block:diff()} [gold]Block[/gold].\nErhalte {Stock:diff()} [gold]Shuriken[/gold].",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "Kreuzabwehr",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Erhalte {Block:diff()} [gold]Block[/gold].\nNimm die nächste Karte, die du in diesem Zug ausspielst, auf deine Hand zurück.",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Erhalte {Block:diff()} [gold]Block[/gold].\nNimm die nächste Karte, die keine Macht ist und die du in diesem Zug ausspielst, auf deine Hand zurück.",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "Klingenbarriere",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.description": "Erhalte {Block:diff()} [gold]Block[/gold].\nWenn du in diesem Zug [gold]Shuriken[/gold] erhalten hast, erhalte {Block:diff()} zusätzlichen [gold]Block[/gold].",
   "NINJA_SLAYER_CARD_BLADE_SWEEP.title": "Klingensturm",

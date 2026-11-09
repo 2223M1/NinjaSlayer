@@ -54,7 +54,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "In guardia",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "Ottieni {Block:diff()} di [gold]Blocco[/gold].\nOttieni {Stock:diff()} di [gold]Shuriken[/gold].",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "Guardia incrociata",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Ottieni {Block:diff()} di [gold]Blocco[/gold].\nRimetti nella tua mano la prossima carta che giochi in questo turno.",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Ottieni {Block:diff()} di [gold]Blocco[/gold].\nRimetti nella tua mano la prossima carta non Potere che giochi in questo turno.",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "Barriera di lame",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.description": "Ottieni {Block:diff()} di [gold]Blocco[/gold].\nSe hai ottenuto [gold]Shuriken[/gold] in questo turno, ottieni {Block:diff()} di [gold]Blocco[/gold] aggiuntivo.",
   "NINJA_SLAYER_CARD_BLADE_SWEEP.title": "Spazzata di lame",

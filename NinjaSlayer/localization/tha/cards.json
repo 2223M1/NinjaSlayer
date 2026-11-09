@@ -54,7 +54,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "ระวังตัว",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "ได้รับ {Block:diff()} [gold]บล็อก[/gold]\nได้รับ {Stock:diff()} [gold]ชุริเค็น[/gold]",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "ป้องกันไขว้",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "ได้รับ {Block:diff()} [gold]บล็อก[/gold]\nนำการ์ดใบถัดไปที่คุณเล่นในเทิร์นนี้กลับขึ้นมือ",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "ได้รับ {Block:diff()} [gold]บล็อก[/gold]\nนำการ์ดที่ไม่ใช่พลังใบถัดไปที่คุณเล่นในเทิร์นนี้กลับขึ้นมือ",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "กำแพงคมมีด",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.description": "ได้รับ {Block:diff()} [gold]บล็อก[/gold]\nถ้าคุณได้รับ[gold]ชุริเค็น[/gold]ในเทิร์นนี้ ได้รับ {Block:diff()} [gold]บล็อก[/gold] เพิ่มเติม",
   "NINJA_SLAYER_CARD_BLADE_SWEEP.title": "กวาดคมมีด",

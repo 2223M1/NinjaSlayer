@@ -2,6 +2,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Monsters;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Nodes.Vfx.Backgrounds;
 using MegaCrit.Sts2.Core.Rooms;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.ExternalAnimations;
@@ -46,6 +47,14 @@ internal sealed class BossDeathPresentationPatch : IPatchMethod
         {
             return true;
         }
+
+        // Both claws share the background rig. Burst it once, only when neither
+        // claw remains alive, including a simultaneous kill of both claws.
+        if (monster is Crusher or Rocket
+            && (monster.CombatState.Enemies.Any(enemy => enemy.IsAlive)
+                || room.Background.GetNode<NKaiserCrabBossBackground>("%KaiserCrab")
+                    .GetNodeOrNull<BossDeathPresentationController>("NinjaSlayerBossDeathPresentation") != null))
+            return true;
 
         BossDeathPresentationController? controller = null;
         bool ownsMusicTransition = false;

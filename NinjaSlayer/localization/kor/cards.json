@@ -54,7 +54,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "경계",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "[gold]방어도[/gold]를 {Block:diff()} 얻습니다.\n[gold]슈리켄[/gold]을 {Stock:diff()} 얻습니다.",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "교차 방어",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "[gold]방어도[/gold]를 {Block:diff()} 얻습니다.\n이번 턴에 다음으로 사용하는 카드를 손으로 가져옵니다.",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "[gold]방어도[/gold]를 {Block:diff()} 얻습니다.\n이번 턴에 다음으로 사용하는 파워가 아닌 카드를 손으로 가져옵니다.",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "칼날 장벽",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.description": "[gold]방어도[/gold]를 {Block:diff()} 얻습니다.\n이번 턴에 [gold]슈리켄[/gold]을 얻었다면, [gold]방어도[/gold]를 추가로 {Block:diff()} 얻습니다.",
   "NINJA_SLAYER_CARD_BLADE_SWEEP.title": "칼날 휩쓸기",

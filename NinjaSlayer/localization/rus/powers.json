@@ -88,7 +88,7 @@
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Защитная стойка",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Каждый раз, когда срабатывает чьё-либо [gold]карате[/gold], вы получаете {Amount} [gold]защиты[/gold].",
   "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.title": "Перекрёстная защита",
-  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Верните в руку следующую карту, разыгранную на этом ходу.",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Верните в руку следующую карту не типа «Талант», разыгранную на этом ходу.",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.smartDescription": "В конце хода врагов, если вы заблокировали весь урон от атак, нанесите {Damage} урона атакующим. Повторите {Amount} раз.",
-  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "Верните в руку следующую карту, разыгранную на этом ходу. Повторите {Amount} раз."
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "Верните в руку следующую карту не типа «Талант», разыгранную на этом ходу. Повторите {Amount} раз."
 }

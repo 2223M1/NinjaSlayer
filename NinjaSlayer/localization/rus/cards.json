@@ -54,7 +54,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "Настороже",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "Дает {Block:diff()} [gold]защиты[/gold].\nДает {Stock:diff()} [gold]{Stock:plural(ru):сюрикен|сюрикена|сюрикенов}[/gold].",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "Перекрёстная защита",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Дает {Block:diff()} [gold]защиты[/gold].\nВерните в руку следующую карту, разыгранную на этом ходу.",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Дает {Block:diff()} [gold]защиты[/gold].\nВерните в руку следующую карту не типа «Талант», разыгранную на этом ходу.",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "Барьер лезвий",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.description": "Дает {Block:diff()} [gold]защиты[/gold].\nЕсли вы получили [gold]сюрикен[/gold] на этом ходу, дает еще {Block:diff()} [gold]защиты[/gold].",
   "NINJA_SLAYER_CARD_BLADE_SWEEP.title": "Взмах лезвий",

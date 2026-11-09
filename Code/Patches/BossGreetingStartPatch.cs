@@ -44,8 +44,8 @@ public sealed class BossGreetingStartPatch : IPatchMethod
         catch (OperationCanceledException) { cancelled = true; return; }
         finally
         {
-            if (cancelled) BossGreetingCinematic.CancelDeferredBossBgm();
-            else BossGreetingCinematic.PlayDeferredBossBgm();
+            if (cancelled) BossGreetingCinematic.CancelDeferredBossBgm(combatState);
+            else BossGreetingCinematic.PlayDeferredBossBgm(combatState);
         }
         if (CombatManager.Instance.DebugOnlyGetState() == combatState)
         {

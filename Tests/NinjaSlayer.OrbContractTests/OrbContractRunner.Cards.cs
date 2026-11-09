@@ -153,8 +153,17 @@ public partial class OrbContractRunner
             await CardCmd.AutoPlay(Choice, AddCard<CrossGuard>(combat), null);
             var powerCard = AddCard<MegaCrit.Sts2.Core.Models.Cards.Inflame>(combat);
             await CardCmd.AutoPlay(Choice, powerCard, null);
-            Require(powerCard.Pile?.Type == PileType.Hand && owner.HasPower<StrengthPower>(),
-                "Cross Guard returns the next Power card after its effect resolves.");
+            Require(powerCard.Pile == null && owner.HasPower<StrengthPower>()
+                && owner.GetPowerAmount<CrossGuardPower>() == 1,
+                "Cross Guard skips Power cards without consuming its return.");
+            var secondPower = AddCard<MegaCrit.Sts2.Core.Models.Cards.Inflame>(combat);
+            await CardCmd.AutoPlay(Choice, secondPower, null);
+            Require(secondPower.Pile == null && owner.GetPowerAmount<CrossGuardPower>() == 1,
+                "Consecutive Power cards must leave Cross Guard pending.");
+            var strike = AddCard<MegaCrit.Sts2.Core.Models.Cards.StrikeIronclad>(combat);
+            await CardCmd.AutoPlay(Choice, strike, combat.Enemy);
+            Require(strike.Pile?.Type == PileType.Hand && !owner.HasPower<CrossGuardPower>(),
+                "The next non-Power card consumes Cross Guard and returns to hand.");
             await CardCmd.AutoPlay(Choice, AddCard<CrossGuard>(combat), null);
             await EndGuardSide(combat.State, CombatSide.Player, owner);
             Require(!owner.HasPower<CrossGuardPower>(), "Unused Cross Guard expires at this turn's end.");

@@ -1,4 +1,5 @@
 using Godot;
+using MegaCrit.Sts2.Core.Models.Monsters;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
@@ -9,6 +10,11 @@ using NinjaSlayer.Scripts;
 namespace NinjaSlayer.Code.ExternalAnimations;
 public sealed partial class BossDismembermentPresentation
 {
+    internal static Node2D ResolveSourceBody(NCombatRoom room, NCreature creature) =>
+        creature.Entity.Monster is Crusher or Rocket
+            ? room.Background.GetNode<Node2D>("%KaiserCrab").GetNode<Node2D>("%Visuals")
+            : creature.Body;
+
     internal static BossDismembermentSnapshot? TryCapture(
         NCombatRoom room,
         NCreature creature,
@@ -23,7 +29,7 @@ public sealed partial class BossDismembermentPresentation
 
         try
         {
-            Node2D sourceBody = creature.Body;
+            Node2D sourceBody = ResolveSourceBody(room, creature);
             if (!GodotObject.IsInstanceValid(sourceBody))
             {
                 return null;
@@ -51,7 +57,7 @@ public sealed partial class BossDismembermentPresentation
                 * sourceBody.GlobalTransform;
             Rect2 bodyLocalBounds = ResolveBodyLocalBounds(creature, sourceBody);
             ulong seed = CreateSeed(creature);
-            bool canSplitSpine = creature.HasSpineAnimation
+            bool canSplitSpine = creature.Entity.Monster is Crusher or Rocket || creature.HasSpineAnimation
                 && !creature.Visuals.IsUsingPhobiaModeBody;
             BossVisualCapture? capture = BossVisualCapture.TryCreate(
                 presentationParent,
@@ -236,10 +242,9 @@ public sealed partial class BossDismembermentPresentation
                 mode,
                 detachedExplosionCenter);
             presentation.FollowArchitectCamera();
-            if (mode != PresentationMode.ArchitectLead
-                && GodotObject.IsInstanceValid(creature.Body))
+            if (mode != PresentationMode.ArchitectLead)
             {
-                creature.Body.Visible = false;
+                ResolveSourceBody(room, creature).Visible = false;
             }
             presentation.SetProcess(true);
             return presentation;

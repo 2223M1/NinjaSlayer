@@ -38,7 +38,11 @@ public static class BossGreetingCinematic
     private const int FmodPlaybackStateStopped = 2;
     private const float DefaultBossZoomMultiplier = 1.5f;
     private static readonly ConditionalWeakTable<IRunState, ProcessedRoomState> ProcessedRooms = new();
-    private static string? _deferredBossBgm;
+    private sealed record DeferredBossMusic(ICombatState Combat, NRunMusicController Controller, string Track)
+    {
+        internal Dictionary<string, float> Parameters { get; } = new(StringComparer.Ordinal);
+    }
+    private static DeferredBossMusic? _deferredBossBgm;
     private static bool _musicBusMuted;
     private static BossGreetingSync? _sync;
 
@@ -48,6 +52,7 @@ public static class BossGreetingCinematic
             ProcessedRooms.GetOrCreateValue(evt.RunState).ResumedLocation = evt.RunState.MapLocation);
         RitsuLibFramework.SubscribeLifecycle<RoomExitedEvent>(evt =>
         {
+            CancelDeferredBossBgm();
             _sync?.Dispose();
             _sync = null;
             if (evt.RunManager.DebugOnlyGetState() is { } runState
@@ -58,6 +63,7 @@ public static class BossGreetingCinematic
         });
         RitsuLibFramework.SubscribeLifecycle<RunEndedEvent>(_ =>
         {
+            CancelDeferredBossBgm();
             _sync?.Dispose();
             _sync = null;
         });
@@ -253,7 +259,7 @@ public static class BossGreetingCinematic
         context.BossBubble = bubble;
     }
 
-    public static bool TryDeferBossBgm(string customMusic)
+    public static bool TryDeferBossBgm(NRunMusicController controller, string customMusic)
     {
         ICombatState? combatState = CombatManager.Instance.DebugOnlyGetState();
         if (combatState == null || !IsGreetingPending(combatState, out _, out _))
@@ -261,7 +267,9 @@ public static class BossGreetingCinematic
             return false;
         }
 
-        _deferredBossBgm = customMusic;
+        if (_deferredBossBgm is not { } pending
+            || pending.Combat != combatState || pending.Controller != controller || pending.Track != customMusic)
+            _deferredBossBgm = new DeferredBossMusic(combatState, controller, customMusic);
         if (!_musicBusMuted)
         {
             _musicBusMuted = FmodStudioBusAccess.TrySetMute(FmodStudioRouting.MusicBus, true);
@@ -274,19 +282,34 @@ public static class BossGreetingCinematic
         return true;
     }
 
-    public static void PlayDeferredBossBgm()
+    internal static bool TryDeferBossMusicParameter(NRunMusicController controller, string label, float value)
     {
-        string? customMusic = _deferredBossBgm;
+        if (_deferredBossBgm is not { } pending || pending.Controller != controller
+            || pending.Combat != CombatManager.Instance.DebugOnlyGetState()) return false;
+        pending.Parameters[label] = value;
+        return true;
+    }
+
+    public static void PlayDeferredBossBgm(ICombatState combatState) => ReleaseDeferredBossMusic(combatState, play: true);
+
+    internal static void CancelDeferredBossBgm(ICombatState? combatState = null) =>
+        ReleaseDeferredBossMusic(combatState, play: false);
+
+    private static void ReleaseDeferredBossMusic(ICombatState? combatState, bool play)
+    {
+        DeferredBossMusic? pending = _deferredBossBgm;
+        // A cancelled greeting from an old room must not release its replacement.
+        if (combatState != null && pending?.Combat != combatState) return;
         _deferredBossBgm = null;
         try
         {
-            if (string.IsNullOrEmpty(customMusic))
-            {
-                return;
-            }
+            if (!play || pending == null || pending.Controller != NRunMusicController.Instance
+                || pending.Combat != CombatManager.Instance.DebugOnlyGetState()) return;
 
-            Entry.Logger.Info($"Starting deferred boss BGM while Music Bus is muted: {customMusic}");
-            NRunMusicController.Instance?.PlayCustomMusic(customMusic);
+            Entry.Logger.Info($"Starting deferred boss BGM while Music Bus is muted: {pending.Track}");
+            pending.Controller.PlayCustomMusic(pending.Track);
+            foreach ((string label, float value) in pending.Parameters)
+                pending.Controller.UpdateMusicParameter(label, value);
         }
         finally
         {
@@ -299,12 +322,6 @@ public static class BossGreetingCinematic
                 _musicBusMuted = false;
             }
         }
-    }
-
-    internal static void CancelDeferredBossBgm()
-    {
-        _deferredBossBgm = null;
-        PlayDeferredBossBgm();
     }
 
     private static async Task PlayInternal(

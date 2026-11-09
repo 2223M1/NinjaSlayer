@@ -54,7 +54,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "Sur ses gardes",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "Gagnez {Block:diff()} d'[gold]Armure[/gold].\nGagnez {Stock:diff()} de [gold]Shuriken[/gold].",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "Garde croisée",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Gagnez {Block:diff()} d'[gold]Armure[/gold].\nRemettez dans votre main la prochaine carte que vous jouez ce tour-ci.",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Gagnez {Block:diff()} d'[gold]Armure[/gold].\nRemettez dans votre main la prochaine carte autre qu’un Pouvoir que vous jouez ce tour-ci.",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "Barrière de lames",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.description": "Gagnez {Block:diff()} d'[gold]Armure[/gold].\nSi vous avez gagné des [gold]Shuriken[/gold] ce tour-ci, gagnez {Block:diff()} d'[gold]Armure[/gold] supplémentaire.",
   "NINJA_SLAYER_CARD_BLADE_SWEEP.title": "Balayage de lames",

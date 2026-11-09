@@ -88,7 +88,7 @@
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Savunma Duruşu",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Herhangi bir karakterin [gold]Karate[/gold] etkisi tetiklendiğinde {Amount} [gold]Blok[/gold] kazan.",
   "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.title": "Çapraz Savunma",
-  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Bu tur oynadığın sonraki kartı eline geri al.",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Bu tur oynadığın sonraki Güç olmayan kartı eline geri al.",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.smartDescription": "Düşman turunun sonunda tüm saldırı hasarını engellediysen saldıranlara {Damage} hasar ver. {Amount} kez tekrarla.",
-  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "Bu tur oynadığın sonraki kartı eline geri al. {Amount} kez tekrarla."
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "Bu tur oynadığın sonraki Güç olmayan kartı eline geri al. {Amount} kez tekrarla."
 }

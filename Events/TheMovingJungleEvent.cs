@@ -284,6 +284,6 @@ internal static class SawatariEventUi
         layout.GetNode<CanvasItem>("%SharedEventLabel").Visible = isMultiplayer;
         Control options = layout.GetNode<Control>("%OptionsContainer");
         options.Visible = true;
-        options.GetChildren().OfType<Control>().FirstOrDefault()?.GrabFocus();
+        // Native option AnimateIn enables focus after its deferred entrance.
     }
 }

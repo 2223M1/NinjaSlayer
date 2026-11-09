@@ -88,7 +88,7 @@
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Sikap Bertahan",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Setiap kali [gold]Karate[/gold] siapa pun terpicu, dapatkan {Amount} [gold]Blok[/gold].",
   "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.title": "Tangkisan Silang",
-  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Kembalikan kartu berikutnya yang kamu mainkan giliran ini ke tanganmu.",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Kembalikan kartu non-Kekuatan berikutnya yang kamu mainkan giliran ini ke tanganmu.",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.smartDescription": "Di akhir giliran musuh, jika kamu memblokir semua kerusakan serangan, berikan {Damage} kerusakan kepada para penyerang. Ulangi {Amount} kali.",
-  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "Kembalikan kartu berikutnya yang kamu mainkan giliran ini ke tanganmu. Ulangi {Amount} kali."
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "Kembalikan kartu non-Kekuatan berikutnya yang kamu mainkan giliran ini ke tanganmu. Ulangi {Amount} kali."
 }

@@ -88,7 +88,7 @@
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Postura Defensiva",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Sempre que o [gold]Karatê[/gold] de qualquer personagem for ativado, ganhe {Amount} de [gold]Proteção[/gold].",
   "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.title": "Guarda Cruzada",
-  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Devolva à sua mão a próxima carta que jogar neste turno.",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Devolva à sua mão a próxima carta que não seja de Poder que jogar neste turno.",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.smartDescription": "Ao final do turno inimigo, se você bloqueou todo o dano de ataque, cause {Damage} de dano aos atacantes. Repita {Amount} vezes.",
-  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "Devolva à sua mão a próxima carta que jogar neste turno. Repita {Amount} vezes."
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "Devolva à sua mão a próxima carta que não seja de Poder que jogar neste turno. Repita {Amount} vezes."
 }

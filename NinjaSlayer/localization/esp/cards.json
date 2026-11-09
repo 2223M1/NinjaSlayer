@@ -54,7 +54,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "En guardia",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "Obtienes {Block:diff()} de [gold]bloqueo[/gold].\nObtienes {Stock:diff()} de [gold]shuriken[/gold].",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "Guardia cruzada",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Obtienes {Block:diff()} de [gold]bloqueo[/gold].\nDevuelve a tu mano la próxima carta que juegues este turno.",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Obtienes {Block:diff()} de [gold]bloqueo[/gold].\nDevuelve a tu mano la próxima carta que no sea de poder y que juegues este turno.",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "Barrera de cuchillas",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.description": "Obtienes {Block:diff()} de [gold]bloqueo[/gold].\nSi obtuviste [gold]shuriken[/gold] este turno, obtén {Block:diff()} de [gold]bloqueo[/gold] adicional.",
   "NINJA_SLAYER_CARD_BLADE_SWEEP.title": "Barrido de cuchillas",

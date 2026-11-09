@@ -54,7 +54,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "Czujność",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "Zyskaj {Block:diff()} pkt. [gold]Bloku[/gold].\nZyskaj {Stock:diff()} [gold]{Stock:plural:Shuriken|Shurikeny|Shurikenów}[/gold].",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "Krzyżowa garda",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Zyskaj {Block:diff()} pkt. [gold]Bloku[/gold].\nPrzywróć do ręki następną kartę zagraną w tej turze.",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Zyskaj {Block:diff()} pkt. [gold]Bloku[/gold].\nPrzywróć do ręki następną kartę niebędącą Mocą zagraną w tej turze.",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "Bariera ostrzy",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.description": "Zyskaj {Block:diff()} pkt. [gold]Bloku[/gold].\nJeśli zyskałeś [gold]Shuriken[/gold] w tej turze, zyskaj dodatkowo {Block:diff()} pkt. [gold]Bloku[/gold].",
   "NINJA_SLAYER_CARD_BLADE_SWEEP.title": "Zamach ostrzami",

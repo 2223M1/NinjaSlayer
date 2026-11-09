@@ -88,7 +88,7 @@
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "ท่าป้องกัน",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "ทุกครั้งที่ [gold]คาราเต้[/gold] ของใครก็ตามทำงาน ได้รับ [gold]บล็อก[/gold] {Amount} หน่วย",
   "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.title": "ป้องกันไขว้",
-  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "นำการ์ดใบถัดไปที่คุณเล่นในเทิร์นนี้กลับขึ้นมือ",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "นำการ์ดที่ไม่ใช่พลังใบถัดไปที่คุณเล่นในเทิร์นนี้กลับขึ้นมือ",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.smartDescription": "เมื่อจบเทิร์นศัตรู หากคุณบล็อกความเสียหายจากการโจมตีทั้งหมด สร้างความเสียหาย {Damage} แก่ผู้โจมตี ทำซ้ำ {Amount} ครั้ง",
-  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "นำการ์ดใบถัดไปที่คุณเล่นในเทิร์นนี้กลับขึ้นมือ ทำซ้ำ {Amount} ครั้ง"
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "นำการ์ดที่ไม่ใช่พลังใบถัดไปที่คุณเล่นในเทิร์นนี้กลับขึ้นมือ ทำซ้ำ {Amount} ครั้ง"
 }

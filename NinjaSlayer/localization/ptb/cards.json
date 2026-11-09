@@ -54,7 +54,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "Em guarda",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "Receba {Block:diff()} de [gold]Proteção[/gold].\nReceba {Stock:diff()} [gold]Shuriken[/gold].",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "Guarda Cruzada",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Receba {Block:diff()} de [gold]Proteção[/gold].\nDevolva à sua mão a próxima carta que jogar neste turno.",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Receba {Block:diff()} de [gold]Proteção[/gold].\nDevolva à sua mão a próxima carta que não seja de Poder que jogar neste turno.",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "Barreira de Lâminas",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.description": "Receba {Block:diff()} de [gold]Proteção[/gold].\nSe recebeu um [gold]Shuriken[/gold] neste turno, receba {Block:diff()} de [gold]Proteção[/gold] adicional.",
   "NINJA_SLAYER_CARD_BLADE_SWEEP.title": "Varredura de Lâminas",

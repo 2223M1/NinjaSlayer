@@ -54,7 +54,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "Waspada",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "Dapatkan {Block:diff()} [gold]Blok[/gold].\nDapatkan {Stock:diff()} [gold]Shuriken[/gold].",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "Tangkisan Silang",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Dapatkan {Block:diff()} [gold]Blok[/gold].\nKembalikan kartu berikutnya yang kamu mainkan giliran ini ke tanganmu.",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Dapatkan {Block:diff()} [gold]Blok[/gold].\nKembalikan kartu non-Kekuatan berikutnya yang kamu mainkan giliran ini ke tanganmu.",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "Penghalang Bilah",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.description": "Dapatkan {Block:diff()} [gold]Blok[/gold].\nJika kamu mendapatkan [gold]Shuriken[/gold] giliran ini, dapatkan {Block:diff()} [gold]Blok[/gold] tambahan.",
   "NINJA_SLAYER_CARD_BLADE_SWEEP.title": "Sapuan Bilah",

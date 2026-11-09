@@ -54,7 +54,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "On Guard",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "Gain {Block:diff()} [gold]Block[/gold].\nGain {Stock:diff()} [gold]Shuriken[/gold].",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "Cross Guard",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Gain {Block:diff()} [gold]Block[/gold].\nPut the next card you play this turn into your hand.",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "Gain {Block:diff()} [gold]Block[/gold].\nPut the next non-Power card you play this turn into your hand.",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "Blade Barrier",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.description": "Gain {Block:diff()} [gold]Block[/gold].\nIf you have gained a [gold]Shuriken[/gold] this turn, gain {Block:diff()} additional [gold]Block[/gold].",
   "NINJA_SLAYER_CARD_BLADE_SWEEP.title": "Blade Sweep",

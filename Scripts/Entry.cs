@@ -108,6 +108,7 @@ public class Entry
             requiredPatcher.RegisterPatch<AncientEntranceEventOptionPatch>();
             requiredPatcher.RegisterPatch<AncientEntranceCreatureVisibilityPatch>();
             requiredPatcher.RegisterPatch<BossGreetingMusicPatch>();
+            requiredPatcher.RegisterPatch<BossGreetingMusicParameterPatch>();
             requiredPatcher.RegisterPatch<BossGreetingStartPatch>();
             requiredPatcher.RegisterPatch<CardTransformShineSfxPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
@@ -343,6 +344,7 @@ public class Entry
                 patcher.RegisterPatch<RapidCardResolutionScopePatch>();
                 patcher.RegisterPatch<RapidPowerCardFlyPatch>();
                 patcher.RegisterPatch<RapidMultiCardPlayPatch>();
+                patcher.RegisterPatch<RapidCardPileVisualPatch>();
             },
             () =>
             [

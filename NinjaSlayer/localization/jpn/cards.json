@@ -54,7 +54,7 @@
   "NINJA_SLAYER_CARD_READY_SHURIKEN.title": "警戒",
   "NINJA_SLAYER_CARD_READY_SHURIKEN.description": "{Block:diff()}[gold]ブロック[/gold]を得る。\n{Stock:diff()}[gold]スリケン[/gold]を得る。",
   "NINJA_SLAYER_CARD_CROSS_GUARD.title": "クロスガード",
-  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "{Block:diff()}[gold]ブロック[/gold]を得る。\nこのターン、次にプレイするカードを手札に戻す。",
+  "NINJA_SLAYER_CARD_CROSS_GUARD.description": "{Block:diff()}[gold]ブロック[/gold]を得る。\nこのターン、次にプレイするパワー以外のカードを手札に戻す。",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.title": "飛刃の壁",
   "NINJA_SLAYER_CARD_BLADE_BARRIER.description": "{Block:diff()}[gold]ブロック[/gold]を得る。\nこのターンに[gold]スリケン[/gold]を得ていた場合、追加で{Block:diff()}[gold]ブロック[/gold]を得る。",
   "NINJA_SLAYER_CARD_BLADE_SWEEP.title": "飛刃一掃",

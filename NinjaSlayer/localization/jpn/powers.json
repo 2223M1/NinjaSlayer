@@ -88,7 +88,7 @@
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "守勢",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "誰かの[gold]カラテ[/gold]が発動するたび、{Amount}[gold]ブロック[/gold]を得る。",
   "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.title": "クロスガード",
-  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "このターン、次にプレイするカードを手札に戻す。",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "このターン、次にプレイするパワー以外のカードを手札に戻す。",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.smartDescription": "敵のターン終了時、攻撃ダメージをすべて防いでいた場合、攻撃者に{Damage}ダメージを与える。 これを{Amount}回繰り返す。",
-  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "このターン、次にプレイするカードを手札に戻す。 これを{Amount}回繰り返す。"
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "このターン、次にプレイするパワー以外のカードを手札に戻す。 これを{Amount}回繰り返す。"
 }

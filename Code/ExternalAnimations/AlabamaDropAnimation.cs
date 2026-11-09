@@ -3,6 +3,7 @@ using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
+using MegaCrit.Sts2.Core.Models.Monsters;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
@@ -51,6 +52,7 @@ public static class AlabamaDropAnimation
         Task impactResolutionTask = Task.CompletedTask;
         Node2D? targetBody = null;
         EntangledSpinMotionBlur? targetSpinBlur = null;
+        AlabamaClawMotion? clawMotion = null;
         Node.ProcessModeEnum targetBodyProcessMode = Node.ProcessModeEnum.Inherit;
 
         void RestoreTargetBodyProcessMode()
@@ -131,6 +133,7 @@ public static class AlabamaDropAnimation
             if (targetReleasedForDeath) return;
             targetReleasedForDeath = true;
             targetSpinBlur?.Stop();
+            clawMotion?.Dispose();
             Transform2D impactPose = targetRig.Body.Transform;
             targetSnapshot.RestoreVisuals();
             AlabamaDeathRecovery.Attach(targetRig.Body, impactPose, targetPivot.MarkerBodyLocal);
@@ -140,6 +143,7 @@ public static class AlabamaDropAnimation
         }
         void RestoreTargetPose()
         {
+            clawMotion?.Dispose();
             if (!targetReleasedForDeath)
                 targetSnapshot.Restore(restoreNinjaSlayerAirborneState: false);
         }
@@ -167,6 +171,8 @@ public static class AlabamaDropAnimation
 
         try
         {
+            if (target.Monster is Crusher or Rocket)
+                clawMotion = new AlabamaClawMotion(targetRig.CreatureNode, NCombatRoom.Instance!);
             if (aimPose != null)
             {
                 bool owned = NinjaSlayerFinisherCinematic.TryPlayOwnedAction(owner, LungeDuration, out Task approach);
@@ -238,7 +244,8 @@ public static class AlabamaDropAnimation
             ownerPivot.Apply(ownerInvertedRotation, ownerInvertedScale);
             landingPivot.Value.Apply(targetInvertedRotation, targetSnapshot.BodyScale);
 
-            targetSpinBlur = EntangledSpinMotionBlur.Create(targetRig.Body, targetBodyBounds);
+            if (clawMotion == null)
+                targetSpinBlur = EntangledSpinMotionBlur.Create(targetRig.Body, targetBodyBounds);
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
             await Task.WhenAll(
                 PlayFall(ownerRig),
@@ -521,7 +528,7 @@ public static class AlabamaDropAnimation
         CreatureRig ownerRig,
         CreatureRig targetRig,
         float duration,
-        EntangledSpinMotionBlur targetBlur)
+        EntangledSpinMotionBlur? targetBlur)
     {
         Vector2 ownerCenter = ResolveOwnerSpinCenter(ownerRig);
         Vector2 targetCenter = targetRig.Visuals.Bounds.GetGlobalRect().GetCenter();
@@ -547,7 +554,7 @@ public static class AlabamaDropAnimation
                         duration > 0f ? Mathf.Max(0f, progress - (float)age / duration) : progress);
                     ownerProjection.ApplyDegrees(degrees, AngleBefore);
                     targetProjection.ApplyDegrees(degrees);
-                    targetBlur.Record(targetProjection, degrees, AngleBefore);
+                    targetBlur?.Record(targetProjection, degrees, AngleBefore);
                 });
 
             ownerProjection.ApplyDegrees(TotalTumbleDegrees);
@@ -555,7 +562,7 @@ public static class AlabamaDropAnimation
         }
         finally
         {
-            targetBlur.Stop();
+            targetBlur?.Stop();
             ownerProjection.Restore();
             targetProjection.Restore();
         }

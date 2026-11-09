@@ -20,7 +20,7 @@ public sealed class CrossGuardPower : NinjaSlayerPowerTemplate
     public override (PileType, CardPilePosition) ModifyCardPlayResultPileTypeAndPosition(
         CardModel card, bool isAutoPlay, ResourceInfo resources, PileType pileType, CardPilePosition position)
     {
-        return card.Owner.Creature == Owner && !card.IsDupe
+        return card.Owner.Creature == Owner && !card.IsDupe && card.Type != CardType.Power
             ? (PileType.Hand, CardPilePosition.Top) : (pileType, position);
     }
 
@@ -30,7 +30,7 @@ public sealed class CrossGuardPower : NinjaSlayerPowerTemplate
     public override CardLocation ModifyCardPlayResultLocation(
         CardModel card, bool isAutoPlay, ResourceInfo resources, CardLocation cardLocation)
     {
-        if (card.Owner.Creature == Owner && !card.IsDupe)
+        if (card.Owner.Creature == Owner && !card.IsDupe && card.Type != CardType.Power)
         {
             cardLocation.pileType = PileType.Hand;
             cardLocation.position = CardPilePosition.Top;

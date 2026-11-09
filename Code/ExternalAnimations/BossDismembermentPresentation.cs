@@ -791,6 +791,9 @@ public sealed partial class BossDismembermentPresentation : Node2D
         NCreature creature,
         Node2D sourceBody)
     {
+        if (creature.Entity.Monster is MegaCrit.Sts2.Core.Models.Monsters.Crusher
+            or MegaCrit.Sts2.Core.Models.Monsters.Rocket)
+            return new MegaSprite(sourceBody).GetSkeleton()!.GetBounds();
         Transform2D bodyToGlobal = sourceBody.GlobalTransform;
         Transform2D boundsToGlobal = creature.Visuals.Bounds.GetGlobalTransform();
         Transform2D globalToBody = bodyToGlobal.AffineInverse();

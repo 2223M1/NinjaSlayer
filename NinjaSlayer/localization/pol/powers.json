@@ -88,7 +88,7 @@
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Postawa obronna",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Za każdym razem, gdy aktywuje się czyjeś [gold]Karate[/gold], zyskaj {Amount} pkt. [gold]Bloku[/gold].",
   "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.title": "Krzyżowa garda",
-  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Przywróć do ręki następną kartę zagraną w tej turze.",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Przywróć do ręki następną kartę niebędącą Mocą zagraną w tej turze.",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.smartDescription": "Na koniec tury wroga, jeśli zablokowano wszystkie obrażenia od ataków, zadaj atakującym {Damage} obrażeń. Powtórz {Amount} razy.",
-  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "Przywróć do ręki następną kartę zagraną w tej turze. Powtórz {Amount} razy."
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "Przywróć do ręki następną kartę niebędącą Mocą zagraną w tej turze. Powtórz {Amount} razy."
 }

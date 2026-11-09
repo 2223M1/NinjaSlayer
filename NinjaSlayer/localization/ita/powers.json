@@ -88,7 +88,7 @@
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.title": "Postura difensiva",
   "NINJA_SLAYER_POWER_GUARD_STANCE_POWER.description": "Ogni volta che si attiva il [gold]Karate[/gold] di chiunque, ottieni {Amount} di [gold]Blocco[/gold].",
   "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.title": "Guardia incrociata",
-  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Rimetti nella tua mano la prossima carta che giochi in questo turno.",
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.description": "Rimetti nella tua mano la prossima carta non Potere che giochi in questo turno.",
   "NINJA_SLAYER_POWER_KILLING_INTENT_POWER.smartDescription": "Alla fine del turno nemico, se hai bloccato tutti i danni da attacco, infliggi {Damage} danni agli attaccanti. Ripeti {Amount} volte.",
-  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "Rimetti nella tua mano la prossima carta che giochi in questo turno. Ripeti {Amount} volte."
+  "NINJA_SLAYER_POWER_CROSS_GUARD_POWER.smartDescription": "Rimetti nella tua mano la prossima carta non Potere che giochi in questo turno. Ripeti {Amount} volte."
 }
