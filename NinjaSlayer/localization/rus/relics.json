@@ -48,6 +48,6 @@
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.description": "За каждые {Cards} разыгранные Атаки получаете {Plating} [gold]панциря[/gold].",
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.flavor": "Расщеплённый бамбук еще сырой. Если туго привязать, он, возможно, отведёт скользящий удар.",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.title": "Осколок Бэппин",
-  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "При первой потере ОЗ или [gold]жизни Нараку[/gold] в каждом бою получаете {Karate} [gold]карате[/gold].",
+  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "При первой потере ОЗ в каждом бою получаете {Karate} [gold]карате[/gold].",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.flavor": "Осколок демонического клинка Бэппин."
 }

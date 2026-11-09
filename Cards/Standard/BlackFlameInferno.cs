@@ -27,5 +27,5 @@ public sealed class BlackFlameInferno : NinjaSlayerUncommonCard
             this);
     }
 
-    protected override void OnUpgrade() => DynamicVars["EnemyHpLoss"].UpgradeValueBy(2);
+    protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
 }

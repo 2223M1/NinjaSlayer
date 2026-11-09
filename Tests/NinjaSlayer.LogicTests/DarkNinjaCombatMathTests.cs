@@ -205,14 +205,6 @@ public sealed class DarkNinjaCombatMathTests
     }
 
     [Fact]
-    public void MultiplayerTargetsAreOrderedLeftToRightAndTiesStayStable()
-    {
-        int[] order = DarkNinjaCombatMath.OrderTargetsByCanvasX([400f, 120f, 400f, 250f]);
-
-        Assert.Equal([1, 3, 0, 2], order);
-    }
-
-    [Fact]
     public void ReturnParabolaKeepsOneContinuousArcAcrossTheHorizontalWrap()
     {
         DarkNinjaPoint start = new(500f, 700f);

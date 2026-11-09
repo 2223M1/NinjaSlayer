@@ -25,7 +25,7 @@ public sealed class SomersaultKick : NinjaSlayerCommonCard
         [NinjaSlayerHoverTips.ChadoBreathing, .. HoverTipFactory.FromCardWithCardHoverTips<Chado>()];
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(14, ValueProp.Move), new DynamicVar("Breath", 2)];
+        [new DamageVar(7, ValueProp.Move), new RepeatVar(2), new DynamicVar("Breath", 2)];
 
     public SomersaultKick()
         : base(nameof(SomersaultKick), 2, CardType.Attack, TargetType.AnyEnemy) { }
@@ -33,6 +33,7 @@ public sealed class SomersaultKick : NinjaSlayerCommonCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+            .WithHitCount(DynamicVars.Repeat.IntValue)
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
             .FromCard(this)
 #else
@@ -48,5 +49,5 @@ public sealed class SomersaultKick : NinjaSlayerCommonCard
         }
     }
 
-    protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(4);
+    protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(2);
 }

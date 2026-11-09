@@ -931,7 +931,7 @@ internal sealed partial class SmokeController
             1,
             target,
             null);
-        LeftUppercut first = combatState.CreateCard<LeftUppercut>(player);
+        LowUppercut first = combatState.CreateCard<LowUppercut>(player);
         await CardPileCmd.Add(first, PileType.Hand);
         await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), first, target);
         Require(target.GetPower<EvasionPower>()?.Amount is null or 0, "Evasion was not consumed by an attack card.");
@@ -951,7 +951,7 @@ internal sealed partial class SmokeController
             1,
             target,
             null);
-        LeftUppercut second = combatState.CreateCard<LeftUppercut>(player);
+        LowUppercut second = combatState.CreateCard<LowUppercut>(player);
         await CardPileCmd.Add(second, PileType.Hand);
         await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), second, target);
 

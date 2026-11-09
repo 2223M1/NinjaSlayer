@@ -10,7 +10,7 @@ namespace NinjaSlayer.Cards.Standard;
 public sealed class Jujutsu : NinjaSlayerCommonCard
 {
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new KarateVar(3)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new KarateVar(4)];
 
     public Jujutsu()
         : base(nameof(Jujutsu), 1, CardType.Skill, TargetType.Self) { }
@@ -23,5 +23,5 @@ public sealed class Jujutsu : NinjaSlayerCommonCard
             Owner.Creature,
             this);
 
-    protected override void OnUpgrade() => DynamicVars.Karate().UpgradeValueBy(2);
+    protected override void OnUpgrade() => DynamicVars.Karate().UpgradeValueBy(1);
 }

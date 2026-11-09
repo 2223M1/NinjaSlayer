@@ -230,7 +230,7 @@ internal sealed class AttackEvasionDamagePatch : IPatchMethod
         ValueProp props,
         Creature? dealer,
         CardModel? cardSource,
-        out List<EvasionPower>? __state)
+        out List<(EvasionPower Power, bool ConsumeLayer)>? __state)
     {
         List<Creature> targetList = targets?
             .Where(target => target.Monster is not OrigamiMissileMonster)
@@ -244,7 +244,7 @@ internal sealed class AttackEvasionDamagePatch : IPatchMethod
         }
 
         var remainingTargets = new List<Creature>(targetList.Count);
-        var evadedPowers = new List<EvasionPower>();
+        var evadedPowers = new List<(EvasionPower Power, bool ConsumeLayer)>();
         var reservedLayers = new Dictionary<EvasionPower, int>(ReferenceEqualityComparer.Instance);
         foreach (Creature target in targetList)
         {
@@ -260,8 +260,9 @@ internal sealed class AttackEvasionDamagePatch : IPatchMethod
                 && evasion.Amount > reserved
                 && evasion.CanEvade(target, props, attacker))
             {
-                reservedLayers[evasion] = reserved + 1;
-                evadedPowers.Add(evasion);
+                bool consumeLayer = !EvasionResolution.DeferConsumption(evasion, attacker);
+                if (consumeLayer) reservedLayers[evasion] = reserved + 1;
+                evadedPowers.Add((evasion, consumeLayer));
                 EvasionResolution.RecordEvadedHit(cardSource, attacker, target);
                 continue;
             }
@@ -280,7 +281,7 @@ internal sealed class AttackEvasionDamagePatch : IPatchMethod
 
     public static void Postfix(
         ref Task<IEnumerable<DamageResult>> __result,
-        List<EvasionPower>? __state)
+        List<(EvasionPower Power, bool ConsumeLayer)>? __state)
     {
         if (__state is not null)
         {
@@ -290,12 +291,12 @@ internal sealed class AttackEvasionDamagePatch : IPatchMethod
 
     private static async Task<IEnumerable<DamageResult>> Complete(
         Task<IEnumerable<DamageResult>> damageTask,
-        IReadOnlyList<EvasionPower> evadedPowers)
+        IReadOnlyList<(EvasionPower Power, bool ConsumeLayer)> evadedPowers)
     {
         IEnumerable<DamageResult> results = await damageTask;
-        foreach (EvasionPower evasion in evadedPowers)
+        foreach (var hit in evadedPowers)
         {
-            await evasion.ResolveDodge();
+            await hit.Power.ResolveDodge(hit.ConsumeLayer);
         }
 
         return results;

@@ -38,12 +38,9 @@ public partial class OrbContractRunner
                 setToggle.Invoke(null, [combat.Player.NetId, "godmode", godmode]);
                 await PowerCmd.Apply<NarakuLifePower>(Choice, player, 3, player, null);
                 DamageResult result = (await CreatureCmd.Damage(Choice, player, 5, ValueProp.Unpowered, combat.Enemy)).Single();
-                int absorbed = (int)AccessTools.Method(typeof(NarakuLifeDamagePatch), "AbsorbedBy").Invoke(null, [result])!;
                 Require(player.CurrentHp == (godmode ? 10 : 8), "Loadout godmode did not retain its native HP semantics.");
-                Require(player.GetPowerAmount<NarakuLifePower>() == (godmode ? 3 : 0),
-                    "Loadout godmode consumed Naraku life before blocking HP loss.");
-                Require(absorbed == (godmode ? 0 : 3) && !result.WasTargetKilled,
-                    "Loadout godmode produced a false life-loss receipt or death.");
+                Require(player.GetPowerAmount<NarakuLifePower>() == 0 && !result.WasTargetKilled,
+                    "Temporary HP must resolve before Loadout's final real-HP protection.");
             }
         }
         finally
@@ -51,7 +48,7 @@ public partial class OrbContractRunner
             setToggle.Invoke(null, [1UL, "godmode", false]);
             harmony.UnpatchAll(harmony.Id);
         }
-        GD.Print("PASS actual Loadout prefix: installation permits finishers; godmode blocks both real and Naraku HP loss without false receipts.");
+        GD.Print("PASS actual Loadout prefix: installation permits finishers; temporary HP resolves before final real-HP protection.");
     }
 
     private static async Task VerifyHextechDamage(Assembly hextech)
@@ -96,14 +93,15 @@ public partial class OrbContractRunner
                 if (stock > 0)
                     await PowerCmd.Apply<NarakuLifePower>(Choice, player, stock, player, null);
                 DamageResult result = (await CreatureCmd.Damage(Choice, player, damage, ValueProp.Unpowered, combat.Enemy)).Single();
-                int actualReceipt = (int)AccessTools.Method(typeof(NarakuLifeDamagePatch), "AbsorbedBy").Invoke(null, [result])!;
-                Require(actualReceipt == receipt, $"Naraku receipt mismatch with Hextech: expected {receipt}, actual {actualReceipt}.");
+                Require(player.GetPowerAmount<NarakuLifePower>() == stock - receipt,
+                    "Temporary HP absorption differs from the remaining stock with Hextech.");
                 Require(player.CurrentHp == expectedHp && !result.WasTargetKilled,
                     "Hextech's surviving near-death result became confirmed death.");
                 Require((int)AccessTools.Property(runeType, "SavedNearDeathDebt").GetValue(rune)! == expectedDebt,
                     "Naraku and real HP loss were charged twice to the Hextech debt.");
-                Require(flashes == 1 && player.GetPowerAmount<KaratePower>() == 7,
-                    "One damage result must trigger the life-loss relic only once.");
+                Require(flashes == (result.UnblockedDamage > 0 ? 1 : 0)
+                    && player.GetPowerAmount<KaratePower>() == (result.UnblockedDamage > 0 ? 7 : 0),
+                    "Only real HP loss must trigger the life-loss relic with Hextech.");
             }
             using (var combat = new OrbCombat())
             {

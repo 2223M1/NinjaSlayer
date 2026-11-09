@@ -48,6 +48,6 @@
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.description": "ทุกครั้งที่คุณเล่นการ์ดโจมตีครบ {Cards} ใบ ได้รับ {Plating} [gold]เกราะโลหะ[/gold]",
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.flavor": "ไม้ไผ่ผ่ายังชื้น มัดให้แน่นอาจกันการโจมตีเฉี่ยวได้",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.title": "เศษเบปปิน",
-  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "ครั้งแรกที่คุณเสียพลังชีวิตหรือ[gold]พลังชีวิตนาราคุ[/gold]ในการต่อสู้แต่ละครั้ง ได้รับ {Karate} [gold]คาราเต้[/gold]",
+  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "ครั้งแรกที่คุณเสียพลังชีวิตในการต่อสู้แต่ละครั้ง ได้รับ {Karate} [gold]คาราเต้[/gold]",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.flavor": "เศษดาบปีศาจเบปปิน"
 }

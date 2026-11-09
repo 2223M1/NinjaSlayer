@@ -36,7 +36,7 @@ public sealed class TomoeThrow : NinjaSlayerUncommonCard
     }
     protected override void OnUpgrade()
     {
-        DynamicVars.Block.UpgradeValueBy(2);
+        DynamicVars.Block.UpgradeValueBy(3);
         DynamicVars[nameof(WeakPower)].UpgradeValueBy(1);
     }
 }

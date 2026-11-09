@@ -48,6 +48,6 @@
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.description": "Every {Cards} Attacks you play, gain {Plating} [gold]Plating[/gold].",
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.flavor": "The split bamboo is still damp. Bound tight, it might turn a glancing blow.",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.title": "Beppin Shard",
-  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "The first time you lose HP or [gold]Naraku Life[/gold] each combat, gain {Karate} [gold]Karate[/gold].",
+  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "The first time you lose HP each combat, gain {Karate} [gold]Karate[/gold].",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.flavor": "A fragment of the demonic blade Beppin."
 }

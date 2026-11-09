@@ -221,14 +221,6 @@ public partial class OrbContractRunner : Node
                 return;
             }
 
-            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_NARAKU_PANEL_BASELINE") == "1")
-            {
-                await VerifyNarakuPanelBaseline();
-                GD.Print("NinjaSlayer orb product contracts passed.");
-                GetTree().Quit(0);
-                return;
-            }
-
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_FINISHER_FORECAST") == "1")
             {
                 await VerifyMultiHitFinisherForecast();
@@ -271,7 +263,6 @@ public partial class OrbContractRunner : Node
             patcher.RegisterPatch<ShurikenOrbLayoutPatch>();
             patcher.RegisterPatch<ShurikenMultiCastPreviewPatch>();
             patcher.RegisterPatch<NarakuLifeDamagePatch>();
-            patcher.RegisterPatch<NarakuCentennialPuzzlePatch>();
             patcher.RegisterPatch<SawatariDuelRewardsPatch>();
             patcher.RegisterPatch<SawatariTurnEndPatch>();
             patcher.RegisterPatch<SawatariWinCheckPatch>();
@@ -286,6 +277,28 @@ public partial class OrbContractRunner : Node
             SaveManager.Instance.InitSettingsDataForTest();
             SaveManager.Instance.InitPrefsDataForTest();
             MegaCrit.Sts2.Core.Localization.LocManager.Initialize();
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_NARAKU_IMAGE") != null)
+            {
+                await VerifyNarakuPanels();
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_PRESENTATION_20261030") == "1")
+            {
+                await VerifyArchitectExitBounds();
+                await VerifyNarakuPanels();
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_FEEDBACK_20261021") is { } october21)
+            {
+                await VerifyOctober21Feedback(october21);
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_FEEDBACK_20261014") is { } feedbackMode)
             {
                 if (feedbackMode != "tornado") await VerifyOctoberFeedbackCardsAndEvents();
@@ -297,6 +310,7 @@ public partial class OrbContractRunner : Node
             await VerifyFriendlyHive();
             await VerifyRelease113Cards();
             await VerifyNarakuPanels();
+            await VerifyArchitectExitBounds();
             if (minion is not null)
             {
                 await VerifyMinionDamage(minion);
@@ -366,6 +380,7 @@ public partial class OrbContractRunner : Node
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_GAMEPLAY") == "1")
             {
                 VerifyCardMetadata();
+                await VerifyDarkStrikeTheft();
                 await VerifyCurrentCardInteractions();
                 await VerifyStrikeSynergy();
                 await VerifyV020();
@@ -432,7 +447,6 @@ public partial class OrbContractRunner : Node
             await VerifyCurrentCardInteractions();
             await VerifyStrikeSynergy();
             await VerifyV020();
-            await VerifyEventRelics();
             await VerifyV17();
             await VerifyV023();
             await VerifyV024();

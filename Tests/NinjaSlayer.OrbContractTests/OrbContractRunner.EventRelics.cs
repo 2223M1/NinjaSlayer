@@ -70,7 +70,7 @@ public partial class OrbContractRunner
             Require(!puzzle.UsedThisCombat && flashes == 0, "Preview activated life-loss relics.");
             var results = await CreatureCmd.Damage(Choice, player, scenario == "zero" ? 0 : 2,
                 scenario == "evasion" ? ValueProp.Move : ValueProp.Unpowered, scenario == "self" ? player : combat.Enemy);
-            bool triggers = scenario is not ("blocked" or "buffer" or "evasion" or "zero");
+            bool triggers = scenario is not ("absorbed" or "depleted" or "blocked" or "buffer" or "evasion" or "zero");
             Require(player.GetPowerAmount<KaratePower>() == (triggers ? 7 : 0)
                 && puzzle.UsedThisCombat == triggers && PileType.Hand.GetPile(combat.Player).Cards.Count == (triggers ? 3 : 0),
                 $"{scenario}: fragment and native Puzzle must each trigger once only on life loss.");
@@ -116,6 +116,6 @@ public partial class OrbContractRunner
                     "Native event relic reward ignored collection or skipping.");
             }
         }
-        GD.Print("PASS event relics: attack counter/save, native Plating, real/Naraku life loss, prevention, native Puzzle, per-combat reset and two-player victory reload");
+        GD.Print("PASS event relics: attack counter/save, native Plating, real HP loss only, temporary HP prevention, native Puzzle, per-combat reset and two-player victory reload");
     }
 }

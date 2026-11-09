@@ -46,10 +46,9 @@ public partial class OrbContractRunner
                 suppressed.SetValue(scope, blocked ? owner : null);
                 DamageResult result = owner.LoseHpInternal(5, ValueProp.Move);
                 suppressed.SetValue(scope, null);
-                Require(owner.CurrentHp == (blocked ? 10 : 8), "Guardian suppression changed real HP loss.");
-                Require(owner.GetPowerAmount<NarakuLifePower>() == (blocked ? 3 : 0), "Temporary suppressed loss consumed Naraku life.");
-                Require((int)AccessTools.Method(typeof(NarakuLifeDamagePatch), "AbsorbedBy").Invoke(null, [result])! == (blocked ? 0 : 3),
-                    "Guardian suppression produced the wrong absorption receipt.");
+                Require(owner.CurrentHp == (blocked ? 10 : 5), "Guardian suppression changed direct real HP loss.");
+                Require(owner.GetPowerAmount<NarakuLifePower>() == 3,
+                    "Direct HP assignment must bypass temporary HP regardless of guardian suppression.");
                 Require(!result.WasTargetKilled, "Guardian suppression became a confirmed death.");
             }
             // Install the real overflow implementation, including its original damage callback.
@@ -57,7 +56,7 @@ public partial class OrbContractRunner
             Type guardian = minion.GetType("MinionLib.Powers.MinionGuardianPower", true)!;
             foreach (var (petHp, damage, naraku, expectedHp, expectedNaraku) in new[]
             {
-                (10, 5, 3, 10, 3), (2, 6, 3, 10, 1), (2, 10, 3, 7, 0), (2, 30, 3, 0, 0)
+                (10, 5, 3, 10, 0), (2, 6, 3, 10, 0), (2, 10, 3, 7, 0), (2, 30, 3, 0, 0)
             })
             {
                 using var combat = new OrbCombat(true);
@@ -81,6 +80,6 @@ public partial class OrbContractRunner
             }
         }
         finally { suppressed.SetValue(scope, null); harmony.UnpatchAll(harmony.Id); }
-        GD.Print("PASS official MinionLib HP suppression, native guardian overflow, Naraku receipts and final death.");
+        GD.Print("PASS official MinionLib direct HP suppression, temporary HP before guardian redirection, overflow and final death.");
     }
 }

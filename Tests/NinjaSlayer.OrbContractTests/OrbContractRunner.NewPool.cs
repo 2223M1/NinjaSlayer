@@ -330,7 +330,7 @@ public partial class OrbContractRunner
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [first]));
             await CardCmd.AutoPlay(Choice, recovery, null);
             Require(combat.Player.Creature.CurrentHp == 30 && combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 4,
-                "Transforming into Black Flame must trigger Devour Flame once without healing or a Rekindle self-reward.");
+                "Rekindle must grant Devour Flame life by exhausting itself, without healing or a Rekindle self-reward.");
             Require(wound.Pile?.Type == PileType.Hand && second.Pile?.Type == PileType.Hand
                 && PileType.Hand.GetPile(combat.Player).Cards.OfType<BlackFlame>().Count() == 1,
                 "Recovery must transform exactly one selected card.");
@@ -517,22 +517,14 @@ public partial class OrbContractRunner
             var card = AddCard<Endurance>(combat, upgraded: upgraded);
             await CardCmd.AutoPlay(Choice, card, combat.Enemy);
             Require(combat.Enemy.CurrentHp == 1000 - 3 * (upgraded ? 15 : 14) && untouched.CurrentHp == 1000
-                && owner.GetPowerAmount<KaratePower>() == (upgraded ? 5 : 4) && !owner.HasPower<VigorPower>()
+                && owner.GetPowerAmount<KaratePower>() == (upgraded ? 6 : 5) && !owner.HasPower<VigorPower>()
                 && !owner.HasPower<EndurancePower>(), "Endurance must resolve three selected-target hits before granting Karate, with native Strength/Vigor and no delayed power.");
 #if NINJASLAYER_CHANNEL_STABLE
             await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [owner]);
 #else
             await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [owner]);
 #endif
-            Require(owner.GetPowerAmount<KaratePower>() == (upgraded ? 5 : 4), "Endurance must not grant a second turn-end reward.");
-        }
-        using (var combat = new OrbCombat())
-        {
-            var chop = AddCard<HellChop>(combat, PileType.Discard);
-            for (int i = 0; i < 3; i++) await CardCmd.AutoPlay(Choice, AddCard<DefendIronclad>(combat), null);
-            Require(chop.Pile?.Type == PileType.Discard, "Skills must not return Strong Chop.");
-            for (int i = 0; i < 3; i++) await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
-            Require(chop.Pile?.Type == PileType.Hand, "The third Attack must return Strong Chop.");
+            Require(owner.GetPowerAmount<KaratePower>() == (upgraded ? 6 : 5), "Endurance must not grant a second turn-end reward.");
         }
         using (var combat = new OrbCombat())
         {
@@ -562,8 +554,8 @@ public partial class OrbContractRunner
             AddCard<DefendIronclad>(combat);
             AddCard<DefendIronclad>(combat);
             await CardCmd.AutoPlay(Choice, storm, null);
-            Require(combat.Stock == 3 && combat.Enemy.CurrentHp == 988 && storm.Pile?.Type == PileType.Exhaust,
-                "Shuriken Storm must grant initial stock, dispatch every hand discard, then replenish by discarded count.");
+            Require(combat.Stock == 2 && combat.Enemy.CurrentHp == 1000 && storm.Pile?.Type == PileType.Exhaust,
+                "Shuriken Storm must discard before granting stock; zero initial stock must not fire.");
         }
         using (var combat = new OrbCombat())
         {
@@ -572,10 +564,10 @@ public partial class OrbContractRunner
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [tea]));
             await CardCmd.AutoPlay(Choice, AddCard<TomoeThrow>(combat, upgraded: true), combat.Enemy);
             Require(combat.Enemy.GetPowerAmount<WeakPower>() == 3 && !second.HasPower<WeakPower>()
-                && combat.Player.Creature.Block == 11 && tea.Pile?.Type == PileType.Exhaust,
-                "Sudden Guard must consume tea, grant eleven Block and weaken only its selected target.");
+                && combat.Player.Creature.Block == 12 && tea.Pile?.Type == PileType.Exhaust,
+                "Sudden Guard must consume tea, grant twelve Block and weaken only its selected target.");
         }
-        GD.Print("PASS Endurance three hits, post-attack Karate and no delayed reward, Strong Chop attack counter, two-card copying, retention, Shuriken Storm and selected-target Weak");
+        GD.Print("PASS Endurance three hits, post-attack Karate and no delayed reward, two-card copying, retention, Shuriken Storm and selected-target Weak");
     }
 
     private sealed class SelectCards(Func<CardModel[], IEnumerable<CardModel>> select) : ICardSelector

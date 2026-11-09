@@ -48,6 +48,6 @@
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.description": "每打出{Cards}張攻擊牌，獲得{Plating}點[gold]鍍甲[/gold]。",
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.flavor": "削開的竹片仍帶著溼氣。綁緊了，至少能擋住擦身的一擊。",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.title": "別嬪殘刃",
-  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "每場戰鬥中，你第一次失去生命或[gold]奈落生命[/gold]時，獲得{Karate}層[gold]空手道[/gold]。",
+  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "每場戰鬥中，你第一次失去生命時，獲得{Karate}層[gold]空手道[/gold]。",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.flavor": "妖刀別嬪的一塊碎片。"
 }

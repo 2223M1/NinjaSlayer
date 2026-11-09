@@ -22,7 +22,7 @@ internal static class NinjaComponentCardPatches
     {
         patcher.RegisterPatch<ResultLocation>();
         patcher.RegisterPatch<GrowStormDamage>();
-        patcher.RegisterPatch<ReturnOnAttacks>();
+        patcher.RegisterPatch<CopyOnDraw>();
         patcher.RegisterPatch<PlayFromTop>();
         patcher.RegisterPatch<RequireChado>();
         patcher.RegisterPatch<ResetTurnDamage>();
@@ -69,24 +69,21 @@ internal static class NinjaComponentCardPatches
         }
     }
 
-    private sealed class ReturnOnAttacks : IPatchMethod
+    private sealed class CopyOnDraw : IPatchMethod
     {
-        public static string PatchId => "ninjaslayer_anthony_return_attacks";
-        public static string Description => "Use native completed card plays for the Hell Chop component.";
+        public static string PatchId => "ninjaslayer_anthony_copy_on_draw";
+        public static string Description => "Copy the drawn Hell Chop component through the native draw hook.";
         public static bool IsCritical => true;
-        public static ModPatchTarget[] GetTargets() => [new(typeof(ChaosCardModel), nameof(ChaosCardModel.AfterCardPlayedLate))];
-        public static void Postfix(ChaosCardModel __instance, PlayerChoiceContext choiceContext, CardPlay cardPlay, ref Task __result)
+        public static ModPatchTarget[] GetTargets() => [new(typeof(Hook), nameof(Hook.AfterCardDrawn))];
+        public static void Postfix(CardModel card, ref Task __result)
         {
-            if (Has(__instance, "return_attacks")) __result = Complete(__result, __instance, choiceContext, cardPlay);
+            if (card is ChaosCardModel generated && Has(generated, "copy_on_draw"))
+                __result = Complete(__result, generated);
         }
-        private static async Task Complete(Task original, ChaosCardModel card, PlayerChoiceContext choice, CardPlay played)
+        private static async Task Complete(Task original, ChaosCardModel card)
         {
             await original;
-            if (played.Card == card || played.Card.Owner != card.Owner || played.Card.Type != CardType.Attack
-                || card.Pile?.Type == PileType.Hand) return;
-            int count = CombatManager.Instance.History.CardPlaysFinished.Count(e => e.HappenedThisTurn(card.CombatState!)
-                && e.CardPlay.Card != card && e.CardPlay.Card.Type == CardType.Attack && e.CardPlay.Player == card.Owner);
-            if (count > 0 && count % 3 == 0) await CardPileCmd.Add(card, PileType.Hand);
+            await CardPileCmd.AddGeneratedCardToCombat(card.CreateClone(), PileType.Hand, card.Owner);
         }
     }
 

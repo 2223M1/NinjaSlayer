@@ -23,8 +23,7 @@ public partial class OrbContractRunner
             Creature player = combat.Player.Creature;
             player.SetCurrentHpInternal(10);
             await PowerCmd.Apply<NarakuLifePower>(Choice, player, 20, player, null);
-            // Exercise the host's final loss/death boundary, including exact lethal loss.
-            var result = player.LoseHpInternal(hit, ValueProp.Unpowered);
+            var result = (await CreatureCmd.Damage(Choice, player, hit, ValueProp.Unpowered, combat.Enemy)).Single();
             Require(player.CurrentHp == hp && player.GetPowerAmount<NarakuLifePower>() == life,
                 $"Naraku final loss {hit}: expected HP {hp}, life {life}.");
             Require(result.WasTargetKilled == (hp == 0), "Naraku absorption must precede the native lethal flag.");
@@ -41,9 +40,9 @@ public partial class OrbContractRunner
                 ValueProp.Unpowered, combat.Enemy, null, HpLossHookPhase.All, out _);
             Require(player.GetPowerAmount<NarakuLifePower>() == 20, "Damage previews must not spend Naraku Life.");
             await CreatureCmd.Damage(Choice, player, 20, ValueProp.Unpowered, combat.Enemy);
-            Require(player.CurrentHp == 10 && player.GetPowerAmount<NarakuLifePower>() == (buffer ? 20 : 5),
-                "Block and Buffer must resolve before Naraku Life, including hits greater than real HP.");
-            Require(!player.HasPower<BufferPower>(), "Buffer must prevent the hit before the shield is spent.");
+            Require(player.CurrentHp == 10 && player.GetPowerAmount<NarakuLifePower>() == 5,
+                "Block must resolve before temporary HP, and absorbed damage must not consume Buffer.");
+            Require(player.HasPower<BufferPower>() == buffer, "Temporary HP must preserve Buffer when no damage overflows.");
             Require(player.GetPower<EvokeObserver>()!.Healing == 0, "Absorption must not trigger native healing notifications.");
         }
         using (var combat = new OrbCombat())

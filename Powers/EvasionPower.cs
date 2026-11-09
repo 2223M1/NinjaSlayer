@@ -24,7 +24,7 @@ public sealed class EvasionPower : NinjaSlayerPowerTemplate
             && props.IsCardOrMonsterMove();
     }
 
-    internal async Task ResolveDodge()
+    internal async Task ResolveDodge(bool consumeLayer)
     {
         if (Owner.Monster is DarkNinjaMonster darkNinja)
         {
@@ -33,7 +33,7 @@ public sealed class EvasionPower : NinjaSlayerPowerTemplate
 
         CombatDodgeAnimation.NotifyImpact(Owner);
         Flash();
-        await PowerCmd.Decrement(this);
+        if (consumeLayer) await PowerCmd.Decrement(this);
     }
 
     public override async Task BeforeSideTurnStart(

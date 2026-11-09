@@ -1,0 +1,3075 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-11-09T10:01:47.603Z",
+  "publishedVersion": "1.1.1",
+  "sourceRevision": "e62b5319c65f85aaa454dc5b4167bbdb1f687327",
+  "head": "06214140be4d58476b8c7a1fee8810b194f13213",
+  "installed": [
+    {
+      "path": "Box2D.NET.dll",
+      "version": "1.1.1",
+      "matchesRelease": true,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "version": "1.1.1",
+      "matchesRelease": true,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "version": "1.1.1",
+      "matchesRelease": true,
+      "sha256": "3b677efc7f6a2c86bfbb5d55ab35a6a2d9b8d866d7e3bab0de1ab5d076ae4a18"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "version": "1.1.1",
+      "matchesRelease": true,
+      "sha256": "4442e519bdf4d87e61df8a87c0334dfd9427442f5b2c8e730bb653469acc50f8"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "version": "1.1.1",
+      "matchesRelease": false,
+      "sha256": "b53def2213f6f4a2cbf78a894652fa6b717465b3b7c728ca0893259a823cb5a3"
+    },
+    {
+      "path": "SHA256SUMS",
+      "version": "1.1.1",
+      "matchesRelease": false,
+      "sha256": "017e8d4dfd74044ecd976e5a096bd99d3db1cd3f4cca7794f247e84a7fd3f83f"
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "version": "1.1.1",
+      "matchesRelease": true,
+      "sha256": "23fe04233cb80e1ba447d4a2a7d61cfbb0e742d6d8317c4fec741a73978f45ef"
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "version": "1.1.1",
+      "matchesRelease": true,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "version": "1.1.1",
+      "matchesRelease": true,
+      "sha256": "7722b96e27bb9d3f2abd5220fd3c8f4089821da4dd4ebf672d284d0ed2e9a73f"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "version": "1.1.1",
+      "matchesRelease": true,
+      "sha256": "87cf6879a59937849a60a1808ed81cc1c52b272992e79985cea546ffe4972550"
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "version": "1.1.1",
+      "matchesRelease": true,
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "version": "1.1.1",
+      "matchesRelease": true,
+      "sha256": "aaff839f937ce201ba9fc680a2addca40b8f3587ee13c748b2055f50bebb1d04"
+    }
+  ],
+  "postReleaseCommits": [
+    "06214140 Use concise Workshop notes and preserve historical edit evidence (#222)",
+    "e534745c Publish verified 1.1.1 catalog and release evidence (#221)"
+  ],
+  "postReleaseCommittedFiles": [
+    ".github/scripts/publish-workshop.sh",
+    ".github/workflows/ci.yml",
+    ".github/workflows/workshop.yml",
+    "AGENTS.md",
+    "Docs/validation/release-1.1.1-evidence.json",
+    "Docs/validation/release-1.1.1.md",
+    "Website/content/current.json",
+    "Website/content/versions/1.1.1/catalog.json",
+    "Website/content/versions/1.1.1/fingerprint.txt",
+    "Workshop/README.md",
+    "Workshop/change-note.md",
+    "Workshop/changelog-history.json",
+    "Workshop/workshop.json",
+    "tools/release/Invoke-OneClickRelease.ps1",
+    "tools/release/Publish-QuickRelease.ps1",
+    "tools/release/Publish-WorkshopQuickRelease.ps1",
+    "tools/test-compatibility-powershell.ps1",
+    "tools/test-workshop-notes.mjs",
+    "tools/validate-repository.mjs"
+  ],
+  "counts": {
+    "files": 194,
+    "byStatus": {
+      "modified": 170,
+      "added": 18,
+      "deleted": 6
+    },
+    "byCategory": {
+      "resources-and-packaging": 2,
+      "production-csharp": 37,
+      "documentation": 10,
+      "website": 1,
+      "optional-integration": 3,
+      "card-art": 61,
+      "ui-assets": 3,
+      "localization": 48,
+      "tests": 25,
+      "tools": 4
+    },
+    "cardArt": 61
+  },
+  "sourceCounts": {
+    "baseline": {
+      "files": 531,
+      "typeDeclarations": 1009,
+      "physicalLines": 65126
+    },
+    "beforeNovember9": {
+      "files": 529,
+      "typeDeclarations": 1004,
+      "physicalLines": 64913
+    },
+    "current": {
+      "files": 528,
+      "typeDeclarations": 1003,
+      "physicalLines": 64868
+    }
+  },
+  "cardChanges": [
+    {
+      "title": "烈焰",
+      "before": {
+        "Id": "CARD.NINJA_SLAYER_CARD_BLACK_FLAME_INFERNO",
+        "Upgraded": true,
+        "Cost": 1,
+        "X": false,
+        "Type": "Power",
+        "Rarity": "Uncommon",
+        "Target": "Self",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/BlackFlameInferno.png",
+        "Vars": {
+          "EnemyHpLoss": 8
+        }
+      },
+      "after": {
+        "Id": "CARD.NINJA_SLAYER_CARD_BLACK_FLAME_INFERNO",
+        "Upgraded": true,
+        "Cost": 0,
+        "X": false,
+        "Type": "Power",
+        "Rarity": "Uncommon",
+        "Target": "Self",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/BlackFlameInferno.png",
+        "Vars": {
+          "EnemyHpLoss": 6
+        }
+      }
+    },
+    {
+      "title": "地狱·Chop",
+      "before": {
+        "Id": "CARD.NINJA_SLAYER_CARD_HELL_CHOP",
+        "Upgraded": false,
+        "Cost": 0,
+        "X": false,
+        "Type": "Attack",
+        "Rarity": "Rare",
+        "Target": "AnyEnemy",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/HellChop.png",
+        "Vars": {
+          "Cards": 3,
+          "Damage": 4,
+          "Karate": 1
+        }
+      },
+      "after": {
+        "Id": "CARD.NINJA_SLAYER_CARD_HELL_CHOP",
+        "Upgraded": false,
+        "Cost": 0,
+        "X": false,
+        "Type": "Attack",
+        "Rarity": "Rare",
+        "Target": "AnyEnemy",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [
+          "Ethereal"
+        ],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/HellChop.png",
+        "Vars": {
+          "Damage": 4,
+          "Karate": 1
+        }
+      }
+    },
+    {
+      "title": "地狱·Chop",
+      "before": {
+        "Id": "CARD.NINJA_SLAYER_CARD_HELL_CHOP",
+        "Upgraded": true,
+        "Cost": 0,
+        "X": false,
+        "Type": "Attack",
+        "Rarity": "Rare",
+        "Target": "AnyEnemy",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/HellChop.png",
+        "Vars": {
+          "Cards": 3,
+          "Damage": 5,
+          "Karate": 2
+        }
+      },
+      "after": {
+        "Id": "CARD.NINJA_SLAYER_CARD_HELL_CHOP",
+        "Upgraded": true,
+        "Cost": 0,
+        "X": false,
+        "Type": "Attack",
+        "Rarity": "Rare",
+        "Target": "AnyEnemy",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [
+          "Ethereal"
+        ],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/HellChop.png",
+        "Vars": {
+          "Damage": 5,
+          "Karate": 2
+        }
+      }
+    },
+    {
+      "title": "忍耐",
+      "before": {
+        "Id": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "Upgraded": false,
+        "Cost": 2,
+        "X": false,
+        "Type": "Attack",
+        "Rarity": "Uncommon",
+        "Target": "AnyEnemy",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/Endurance.png",
+        "Vars": {
+          "Damage": 4,
+          "Karate": 4,
+          "Repeat": 3
+        }
+      },
+      "after": {
+        "Id": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "Upgraded": false,
+        "Cost": 2,
+        "X": false,
+        "Type": "Attack",
+        "Rarity": "Uncommon",
+        "Target": "AnyEnemy",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [
+          "Ethereal"
+        ],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/Endurance.png",
+        "Vars": {
+          "Damage": 4,
+          "Karate": 5,
+          "Repeat": 3
+        }
+      }
+    },
+    {
+      "title": "忍耐",
+      "before": {
+        "Id": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "Upgraded": true,
+        "Cost": 2,
+        "X": false,
+        "Type": "Attack",
+        "Rarity": "Uncommon",
+        "Target": "AnyEnemy",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/Endurance.png",
+        "Vars": {
+          "Damage": 5,
+          "Karate": 5,
+          "Repeat": 3
+        }
+      },
+      "after": {
+        "Id": "CARD.NINJA_SLAYER_CARD_ENDURANCE",
+        "Upgraded": true,
+        "Cost": 2,
+        "X": false,
+        "Type": "Attack",
+        "Rarity": "Uncommon",
+        "Target": "AnyEnemy",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [
+          "Ethereal"
+        ],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/Endurance.png",
+        "Vars": {
+          "Damage": 5,
+          "Karate": 6,
+          "Repeat": 3
+        }
+      }
+    },
+    {
+      "title": "修行",
+      "before": {
+        "Id": "CARD.NINJA_SLAYER_CARD_TRAINING",
+        "Upgraded": false,
+        "Cost": 2,
+        "X": false,
+        "Type": "Power",
+        "Rarity": "Uncommon",
+        "Target": "Self",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/Training.png",
+        "Vars": {
+          "Karate": 2
+        }
+      },
+      "after": {
+        "Id": "CARD.NINJA_SLAYER_CARD_TRAINING",
+        "Upgraded": false,
+        "Cost": 1,
+        "X": false,
+        "Type": "Power",
+        "Rarity": "Uncommon",
+        "Target": "Self",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/Training.png",
+        "Vars": {
+          "Karate": 2
+        }
+      }
+    },
+    {
+      "title": "修行",
+      "before": {
+        "Id": "CARD.NINJA_SLAYER_CARD_TRAINING",
+        "Upgraded": true,
+        "Cost": 2,
+        "X": false,
+        "Type": "Power",
+        "Rarity": "Uncommon",
+        "Target": "Self",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/Training.png",
+        "Vars": {
+          "Karate": 3
+        }
+      },
+      "after": {
+        "Id": "CARD.NINJA_SLAYER_CARD_TRAINING",
+        "Upgraded": true,
+        "Cost": 1,
+        "X": false,
+        "Type": "Power",
+        "Rarity": "Uncommon",
+        "Target": "Self",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/Training.png",
+        "Vars": {
+          "Karate": 3
+        }
+      }
+    },
+    {
+      "title": "巴投",
+      "before": {
+        "Id": "CARD.NINJA_SLAYER_CARD_TOMOE_THROW",
+        "Upgraded": true,
+        "Cost": 0,
+        "X": false,
+        "Type": "Skill",
+        "Rarity": "Uncommon",
+        "Target": "AnyEnemy",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/TomoeThrow.png",
+        "Vars": {
+          "Block": 11,
+          "WeakPower": 3
+        }
+      },
+      "after": {
+        "Id": "CARD.NINJA_SLAYER_CARD_TOMOE_THROW",
+        "Upgraded": true,
+        "Cost": 0,
+        "X": false,
+        "Type": "Skill",
+        "Rarity": "Uncommon",
+        "Target": "AnyEnemy",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/TomoeThrow.png",
+        "Vars": {
+          "Block": 12,
+          "WeakPower": 3
+        }
+      }
+    },
+    {
+      "title": "倒挂金钩踢",
+      "before": {
+        "Id": "CARD.NINJA_SLAYER_CARD_SOMERSAULT_KICK",
+        "Upgraded": false,
+        "Cost": 2,
+        "X": false,
+        "Type": "Attack",
+        "Rarity": "Common",
+        "Target": "AnyEnemy",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/SomersaultKick.png",
+        "Vars": {
+          "Breath": 2,
+          "Damage": 14
+        }
+      },
+      "after": {
+        "Id": "CARD.NINJA_SLAYER_CARD_SOMERSAULT_KICK",
+        "Upgraded": false,
+        "Cost": 2,
+        "X": false,
+        "Type": "Attack",
+        "Rarity": "Common",
+        "Target": "AnyEnemy",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/SomersaultKick.png",
+        "Vars": {
+          "Breath": 2,
+          "Damage": 7,
+          "Repeat": 2
+        }
+      }
+    },
+    {
+      "title": "倒挂金钩踢",
+      "before": {
+        "Id": "CARD.NINJA_SLAYER_CARD_SOMERSAULT_KICK",
+        "Upgraded": true,
+        "Cost": 2,
+        "X": false,
+        "Type": "Attack",
+        "Rarity": "Common",
+        "Target": "AnyEnemy",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/SomersaultKick.png",
+        "Vars": {
+          "Breath": 2,
+          "Damage": 18
+        }
+      },
+      "after": {
+        "Id": "CARD.NINJA_SLAYER_CARD_SOMERSAULT_KICK",
+        "Upgraded": true,
+        "Cost": 2,
+        "X": false,
+        "Type": "Attack",
+        "Rarity": "Common",
+        "Target": "AnyEnemy",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/SomersaultKick.png",
+        "Vars": {
+          "Breath": 2,
+          "Damage": 9,
+          "Repeat": 2
+        }
+      }
+    },
+    {
+      "title": "柔术",
+      "before": {
+        "Id": "CARD.NINJA_SLAYER_CARD_JUJUTSU",
+        "Upgraded": false,
+        "Cost": 1,
+        "X": false,
+        "Type": "Skill",
+        "Rarity": "Common",
+        "Target": "Self",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [
+          "Exhaust"
+        ],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/Jujutsu.png",
+        "Vars": {
+          "Karate": 3
+        }
+      },
+      "after": {
+        "Id": "CARD.NINJA_SLAYER_CARD_JUJUTSU",
+        "Upgraded": false,
+        "Cost": 1,
+        "X": false,
+        "Type": "Skill",
+        "Rarity": "Common",
+        "Target": "Self",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [
+          "Exhaust"
+        ],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/Jujutsu.png",
+        "Vars": {
+          "Karate": 4
+        }
+      }
+    },
+    {
+      "title": "集打中击击",
+      "before": null,
+      "after": {
+        "Id": "CARD.NINJA_SLAYER_CARD_FOCUSED_BLOWS",
+        "Upgraded": false,
+        "Cost": 1,
+        "X": false,
+        "Type": "Attack",
+        "Rarity": "Common",
+        "Target": "AnyEnemy",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/RightUppercut.png",
+        "Vars": {
+          "CalculatedDamage": 6,
+          "CalculationBase": 6,
+          "ExtraDamage": 3
+        }
+      }
+    },
+    {
+      "title": "集打中击击",
+      "before": null,
+      "after": {
+        "Id": "CARD.NINJA_SLAYER_CARD_FOCUSED_BLOWS",
+        "Upgraded": true,
+        "Cost": 1,
+        "X": false,
+        "Type": "Attack",
+        "Rarity": "Common",
+        "Target": "AnyEnemy",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/RightUppercut.png",
+        "Vars": {
+          "CalculatedDamage": 6,
+          "CalculationBase": 6,
+          "ExtraDamage": 4
+        }
+      }
+    },
+    {
+      "title": "低空上勾拳",
+      "before": null,
+      "after": {
+        "Id": "CARD.NINJA_SLAYER_CARD_LOW_UPPERCUT",
+        "Upgraded": false,
+        "Cost": 1,
+        "X": false,
+        "Type": "Attack",
+        "Rarity": "Common",
+        "Target": "AnyEnemy",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/LeftUppercut.png",
+        "Vars": {
+          "Damage": 8,
+          "VulnerablePower": 1,
+          "WeakPower": 1
+        }
+      }
+    },
+    {
+      "title": "低空上勾拳",
+      "before": null,
+      "after": {
+        "Id": "CARD.NINJA_SLAYER_CARD_LOW_UPPERCUT",
+        "Upgraded": true,
+        "Cost": 1,
+        "X": false,
+        "Type": "Attack",
+        "Rarity": "Common",
+        "Target": "AnyEnemy",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/LeftUppercut.png",
+        "Vars": {
+          "Damage": 10,
+          "VulnerablePower": 2,
+          "WeakPower": 2
+        }
+      }
+    },
+    {
+      "title": "手里剑风暴",
+      "before": {
+        "Id": "CARD.NINJA_SLAYER_CARD_SHURIKEN_STORM",
+        "Upgraded": false,
+        "Cost": 1,
+        "X": false,
+        "Type": "Skill",
+        "Rarity": "Rare",
+        "Target": "Self",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [
+          "Exhaust"
+        ],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/ShurikenStorm.png",
+        "Vars": {
+          "Stock": 1
+        }
+      },
+      "after": {
+        "Id": "CARD.NINJA_SLAYER_CARD_SHURIKEN_STORM",
+        "Upgraded": false,
+        "Cost": 1,
+        "X": false,
+        "Type": "Skill",
+        "Rarity": "Rare",
+        "Target": "Self",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [
+          "Exhaust"
+        ],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/ShurikenStorm.png",
+        "Vars": {}
+      }
+    },
+    {
+      "title": "手里剑风暴",
+      "before": {
+        "Id": "CARD.NINJA_SLAYER_CARD_SHURIKEN_STORM",
+        "Upgraded": true,
+        "Cost": 1,
+        "X": false,
+        "Type": "Skill",
+        "Rarity": "Rare",
+        "Target": "Self",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [
+          "Exhaust"
+        ],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/ShurikenStorm.png",
+        "Vars": {
+          "Stock": 3
+        }
+      },
+      "after": {
+        "Id": "CARD.NINJA_SLAYER_CARD_SHURIKEN_STORM",
+        "Upgraded": true,
+        "Cost": 0,
+        "X": false,
+        "Type": "Skill",
+        "Rarity": "Rare",
+        "Target": "Self",
+        "CanBeGeneratedInCombat": true,
+        "CanBeGeneratedByModifiers": true,
+        "Keywords": [
+          "Exhaust"
+        ],
+        "Tags": [],
+        "Portrait": "res://NinjaSlayer/images/cards/ShurikenStorm.png",
+        "Vars": {}
+      }
+    }
+  ],
+  "removedCards": [
+    {
+      "title": "右·上勾拳",
+      "Id": "CARD.NINJA_SLAYER_CARD_RIGHT_UPPERCUT",
+      "Upgraded": false,
+      "Cost": 1,
+      "X": false,
+      "Type": "Attack",
+      "Rarity": "Common",
+      "Target": "AnyEnemy",
+      "CanBeGeneratedInCombat": true,
+      "CanBeGeneratedByModifiers": true,
+      "Keywords": [],
+      "Tags": [],
+      "Portrait": "res://NinjaSlayer/images/cards/RightUppercut.png",
+      "Vars": {
+        "Damage": 8,
+        "WeakPower": 1
+      }
+    },
+    {
+      "title": "右·上勾拳",
+      "Id": "CARD.NINJA_SLAYER_CARD_RIGHT_UPPERCUT",
+      "Upgraded": true,
+      "Cost": 1,
+      "X": false,
+      "Type": "Attack",
+      "Rarity": "Common",
+      "Target": "AnyEnemy",
+      "CanBeGeneratedInCombat": true,
+      "CanBeGeneratedByModifiers": true,
+      "Keywords": [],
+      "Tags": [],
+      "Portrait": "res://NinjaSlayer/images/cards/RightUppercut.png",
+      "Vars": {
+        "Damage": 10,
+        "WeakPower": 2
+      }
+    },
+    {
+      "title": "左·上勾拳",
+      "Id": "CARD.NINJA_SLAYER_CARD_LEFT_UPPERCUT",
+      "Upgraded": false,
+      "Cost": 1,
+      "X": false,
+      "Type": "Attack",
+      "Rarity": "Common",
+      "Target": "AnyEnemy",
+      "CanBeGeneratedInCombat": true,
+      "CanBeGeneratedByModifiers": true,
+      "Keywords": [],
+      "Tags": [],
+      "Portrait": "res://NinjaSlayer/images/cards/LeftUppercut.png",
+      "Vars": {
+        "Damage": 10,
+        "VulnerablePower": 1
+      }
+    },
+    {
+      "title": "左·上勾拳",
+      "Id": "CARD.NINJA_SLAYER_CARD_LEFT_UPPERCUT",
+      "Upgraded": true,
+      "Cost": 1,
+      "X": false,
+      "Type": "Attack",
+      "Rarity": "Common",
+      "Target": "AnyEnemy",
+      "CanBeGeneratedInCombat": true,
+      "CanBeGeneratedByModifiers": true,
+      "Keywords": [],
+      "Tags": [],
+      "Portrait": "res://NinjaSlayer/images/cards/LeftUppercut.png",
+      "Vars": {
+        "Damage": 12,
+        "VulnerablePower": 2
+      }
+    }
+  ],
+  "art": [
+    {
+      "path": "NinjaSlayer/images/cards/Adapt.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 626716,
+      "sha256": "418c66baa67b839d1843d2ee6a74089dea4a1fe2d8552ecb1d984c502de1fd5e",
+      "title": "应变",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/AlabamaDrop.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 707526,
+      "sha256": "ff1619208a6d079695c632b1d2ceeaeb1a91cf6c2ac0ccf1e1deca4135f6eb96",
+      "title": "阿拉巴马落",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/AntiAirBangBangFist.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 703921,
+      "sha256": "19aa1c722513e7b844bdb65549e8f518a62bea358d77981740e21f5ebe83cdc3",
+      "title": "对空砰砰拳",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Assess.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 719899,
+      "sha256": "4b8d22a012599a5e658252604e64102206968dfdcb5ac5b87ddcecf72b909b4d",
+      "title": "审势",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/BS1260Kick.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 679854,
+      "sha256": "019a8b110b8277d2056474d9aabfaca576e0251035df5355620578ed9b5ded45",
+      "title": "BS1260踢",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/BackBridge.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 779598,
+      "sha256": "037d2a807089373e9bf27780ce86fa09ce6a607a67a53963c8d659adde15eeac",
+      "title": "后拱桥",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/BarehandedCatch.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 596226,
+      "sha256": "ee7e34d1b38b1293cfe32db75d834da352be4a0cddc5c88b87cf583f11872a23",
+      "title": "空手入白刃",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/BlackFlame.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 701963,
+      "sha256": "f3d05455415a3bb5a7e4b8199429fd749165b199a2d4b003b50dfa10906df328",
+      "title": "黑炎",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/BladeSweep.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 810924,
+      "sha256": "664a5ff2cbb8ae93a5357d61993474a4d6c380d98861acf7d8075a689babac13",
+      "title": "飞刃席卷",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Chop.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 553829,
+      "sha256": "f75ded2db3b654554db9a4a82998922be00809aa86b1c5d6760ecc3a8059c056",
+      "title": "Chop",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/ChopStrike.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 627200,
+      "sha256": "a3b952dfd91dd53d106ad4ca4cfb92cb1827d3c756603184ccb05e7061b4f94c",
+      "title": "Chop打击",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/ClearMind.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 695167,
+      "sha256": "29d95afbe5aa1311241949d7a900d8e030f5604b42a68a643077bf6ff7505920",
+      "title": "真名看破",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Composure.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 692844,
+      "sha256": "9db1cb1dd4aecb4b92e55a3c2f79bf9b52559956c308fa92ef46abfa5c5f4834",
+      "title": "从容",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/CrossGuard.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 695103,
+      "sha256": "6c9b2a74ca670f103b8a5feeb71ae5b222218500c2881548d9e63c1b3cfe2598",
+      "title": "交叉防御",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/DeepBreath.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 615157,
+      "sha256": "3ffdd70593f7a6b055ccbed17513f17735a48aebc061d5daa251db383ced36d7",
+      "title": "长息",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/DevourFlame.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 654279,
+      "sha256": "c20fdfac84d055aaf9f5455b4245e688269a742acf16cbef657aa627ad500d74",
+      "title": "噬火",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/DragonFlyingKick.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 742869,
+      "sha256": "93301312e860a1392d91b24408351a5a4be361ebd89461f07e2e7b386010886d",
+      "title": "龙·飞踢",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/DragonRoundhouseKick.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 760616,
+      "sha256": "9fa45a9e142445791335a85ad9716f893315604dce9ad83680398e33b688198d",
+      "title": "龙回旋踢",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Endurance.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 721582,
+      "sha256": "b680df62db92bdce5c79b75403bfadcdc9005c366f66caa36d2c8ba1ee7622c3",
+      "title": "忍耐",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/FlameGuard.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 704471,
+      "sha256": "1ba275c79a4506b7399e0e0eff2e659fbc071c44dc37552f9d1a67f0becc8de7",
+      "title": "炎甲",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Forethought.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 714914,
+      "sha256": "195d2d04e075f4cdb8e607d5c30f7051e99f1a608eb6cd670b2ba0e2aa63e6fe",
+      "title": "谋定",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/GatherKi.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 699225,
+      "sha256": "2f59c21185016a3b985a42c088d3d77c9f734452370f0c34f7b0b5eb0d3e6450",
+      "title": "聚气",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/GatherMomentum.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 774220,
+      "sha256": "4c6d415cac0c9fb7dc66a8650081411baf4d7b92d1b26ca1da5ad87bb0836ea3",
+      "title": "蓄势",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/GrapplingHook.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 738244,
+      "sha256": "cd564956b7bac2d632ffe2404cdb798d4755f98208c6b1a98b03405c37493e53",
+      "title": "钩绳",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/GreatUkemi.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 890081,
+      "sha256": "adcf321cf97ff05627eea54b8f28ab9851408ea823f69180234fafc77bfb5e0b",
+      "title": "大·受身",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/GuardStance.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 793635,
+      "sha256": "79b7c0a0480eaa4799bc49d3a6d17aa4918b75d12b888d30833d44febf5d73dc",
+      "title": "守势",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/HalfMoonCompassKick.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 768824,
+      "sha256": "db895935f678ad5babc5fa90392c342a32a8def2087820a43a8a9cf7db9befa1",
+      "title": "半月圆规踢",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/HissAndHuff.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 683750,
+      "sha256": "9f0e2053b4c149a4bf6052ff0dc10c2ed2e371bcc95e8f51df03d7b374b51c9d",
+      "title": "嘶哈",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Jujutsu.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 786080,
+      "sha256": "2e6a2c74c6d9837965bf5f2ae89908ef58919a426880c352b2ec58c4b526673e",
+      "title": "柔术",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/KarateBulwark.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 747788,
+      "sha256": "28488572ab66e620808bcf6b1317d35c917aecef0db2aef17e15b5ad23d6dd2c",
+      "title": "坚壁",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/KunaiThrow.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 636845,
+      "sha256": "6a89bd375203f632551cb252f0761f4324f0486fdd02ab77c39d1c2eff751fd7",
+      "title": "投掷苦无",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/LeftUppercut.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 690455,
+      "sha256": "84a6c8d81d3cd28b9c725b7cecfbdbbac394db65161dd623c096daec6748f723",
+      "title": "低空上勾拳",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/LetGo.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 647101,
+      "sha256": "8df2f9beb9cf82df2b5c5dec31cb5c9c69a3761301abcd04dad6ae6bb8efc7c4",
+      "title": "舍念",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Macaco.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 673509,
+      "sha256": "e5b1e4c14c4c8f5f0e77d8920e402dc6ecca2669650392fd588fe41b14ffae2c",
+      "title": "玛卡古",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Machete.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 596308,
+      "sha256": "0b8d54ba7a221d1b1a10677e3e362a008b10747e11ba22709084754093b6d05d",
+      "title": "砍刀",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Meditation.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 778947,
+      "sha256": "0f32ef32621235e39a2b044c28698dee43b443fb359b1401d3525dcd3ac4c25f",
+      "title": "入定",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/MotionAndStillness.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 748703,
+      "sha256": "e4d2e4134565adf64ee2f414829770507c0b6596bcc6372704a9a664ed7f33aa",
+      "title": "动静相生",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/NarakuForm.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 867882,
+      "sha256": "5109dc8ecf7e2c2bb2273cf783d1f6f88b7fd8c2201928a0e02437bd53832091",
+      "title": "奈落形态",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/NavyHammer.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 692719,
+      "sha256": "09890f812f0945d144f77afccf01d70ab5ca80ad0aa237a2b39608e926541559",
+      "title": "海军战锤",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/NinjaCaltrops.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 726060,
+      "sha256": "2ecf4447cd931945cdaf8c8d0c0654d4317eb6a21e47bc2fd9d08fa63a89e2d0",
+      "title": "撒菱",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/NinjaTaunt.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 587226,
+      "sha256": "6e3e0c57e0253545c1476e2a2e1ad8dc312eceb74b368e2886b7f8a07916b8d6",
+      "title": "嘲讽",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/OneMindOneBody.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 566687,
+      "sha256": "2b7f63fb192367be00018e3abf022b32c14ae1e33921f658b9b644c26c3c2f41",
+      "title": "一心同体",
+      "width": 606,
+      "height": 852
+    },
+    {
+      "path": "NinjaSlayer/images/cards/PalmThrust.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 643811,
+      "sha256": "af6895406effd409803cedeacb1ca72ac7f98870921edf1947bf56783bc55372",
+      "title": "掌打",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/PressTheAttack.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 702621,
+      "sha256": "59b0cc6c8c3faf7132ac37bb0bc1908548d15c5dd19d29c5ed16fa13e630c784",
+      "title": "强攻",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/ReadyShuriken.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 792068,
+      "sha256": "2ca368af371ba6977f70cb7888650fe6c655f87f157aa603aacab5859f63897b",
+      "title": "备镖",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/RegulateBreath.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 612408,
+      "sha256": "77699ef56c526e6cc30c9f7a7310f119641e1e0890d48c8dc1992067a5088cf4",
+      "title": "调息",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Rekindle.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 782201,
+      "sha256": "d59bc6383cfda5ea8fb9a741bce1e884a7ed8fef61c3d59126bdb8d56a179573",
+      "title": "浴火",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Relentless.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 701165,
+      "sha256": "299f835f19d806317b56609043426d19357a843e02702009e73712855d4ab158",
+      "title": "攻势不息",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Resilience.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 753368,
+      "sha256": "c915057f4c6dad8989f58314cbf6022b9b984bcf4f8b122e6d088f7edf3c742c",
+      "title": "韧性",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/SomersaultKick.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 711092,
+      "sha256": "3587c1cf01b357ea60b3ff33c5bbeabcb235de3aacd066cd22ac61919a2bfe13",
+      "title": "倒挂金钩踢",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/SpiralJump.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 743044,
+      "sha256": "a6192d320c779e4972e987cb1388bd59ffa4fb601d906fe34a09486231454a5d",
+      "title": "螺旋回转跳",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Stillness.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 736324,
+      "sha256": "9f34166e13df31a366ae8349a6e3f7d5a91baadf7b4c2cf01421a4ffd2ed2365",
+      "title": "守静",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/StormFist.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 794615,
+      "sha256": "41772082cf835ccc489045386c25875d27a8c5e290b9d00bbadcc169245fecfa",
+      "title": "岚之拳",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/StraightKi.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 670650,
+      "sha256": "980b5cc0ff979326d842ef5e77bd66c6a5caba1f0da951ee071c836aa2f37144",
+      "title": "直气",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/StraightPunch.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 678094,
+      "sha256": "d00c69ced93e33ec9dcc59b340bfc8ae001a09fc0b434df24cbcaaea71c955ab",
+      "title": "直拳",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/StrikeStrike.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 612807,
+      "sha256": "281b0271b48230989b8279a43b7cc9574328dc5f904f9a786fcb4c847be20b8c",
+      "title": "Strike·打击",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/TomoeThrow.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 775408,
+      "sha256": "e85bcb9ed1faf766b641bcba327edd9c2a54977099040b83c882d32c8249f5ab",
+      "title": "巴投",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/TornadoFist.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 809936,
+      "sha256": "f3a6bea8f7cd3e4d867e5e5006c3630bc51d6b822039a69a97efbe6d2d91faaa",
+      "title": "龙卷拳",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Training.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 716861,
+      "sha256": "a61564907dbe0e71387d2c76843b3943d313379295bc97b4c5c9039ffaab5488",
+      "title": "修行",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Zanshin.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 623243,
+      "sha256": "3421bc0380163a5c930d57f866a4a06690820b560ed831f51b99a9a17aeac4da",
+      "title": "残心",
+      "width": 1000,
+      "height": 760
+    },
+    {
+      "path": "NinjaSlayer/images/cards/ZazenDrink.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 523916,
+      "sha256": "896ad15c056a2d0c25d85abb721b24d3e9f29538e96a60565f978ad154700e07",
+      "title": "坐禅饮料",
+      "width": 606,
+      "height": 852
+    }
+  ],
+  "changedFiles": [
+    {
+      "path": "ASSET_MANIFEST.md",
+      "status": "modified",
+      "category": "resources-and-packaging",
+      "bytes": 17989,
+      "sha256": "d43ed6e2d833043d98588f41b141e8328dccae4aaca0f4b0fb15ad8a2795a24e"
+    },
+    {
+      "path": "Cards/Standard/AntiAirBangBangFist.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 2365,
+      "sha256": "43b16d035b1ac8beec599391d92fada669905c3cdef925e546aa400319058cc0"
+    },
+    {
+      "path": "Cards/Standard/BlackFlameInferno.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 1097,
+      "sha256": "fef2f4a2ac86fd322a4cbd0432abfdccfa0aa056e6a9f91d96b53d61e9bac770"
+    },
+    {
+      "path": "Cards/Standard/Endurance.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 1563,
+      "sha256": "5114a00e449b3f46d78ab9f3ae8a98f5370cad52d86fd290e37d0c776af70c25"
+    },
+    {
+      "path": "Cards/Standard/FocusedBlows.cs",
+      "status": "added",
+      "category": "production-csharp",
+      "bytes": 1657,
+      "sha256": "5629da0b6f4ed5acd3ec23579c3b57e4c9e7e5acc7ebf40f16e1d8da14a7cd95"
+    },
+    {
+      "path": "Cards/Standard/HellChop.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 1832,
+      "sha256": "ab50ad369983515490d72005438d886b82d33939835442c77eec3c42313e2bd6"
+    },
+    {
+      "path": "Cards/Standard/Jujutsu.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 953,
+      "sha256": "6f0939f628d961615de4b3345e71551051651fcbf4a7b0724a944a378a1fdd08"
+    },
+    {
+      "path": "Cards/Standard/LeftUppercut.cs",
+      "status": "deleted",
+      "category": "production-csharp",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "Cards/Standard/LowUppercut.cs",
+      "status": "added",
+      "category": "production-csharp",
+      "bytes": 2111,
+      "sha256": "0fee0d10a101a94beaf6af683798da376655740ec7a4b94b780e42c1ce45e70d"
+    },
+    {
+      "path": "Cards/Standard/RightUppercut.cs",
+      "status": "deleted",
+      "category": "production-csharp",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "Cards/Standard/ShurikenStorm.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 1054,
+      "sha256": "407015deb57262b7dfa09a0a4532bb41ca41ccb02f6132ee2e617c04d5698ed7"
+    },
+    {
+      "path": "Cards/Standard/SomersaultKick.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 2093,
+      "sha256": "8651e3ff3e53a62be29fb5e376a527a2a7fd8030e8ca1931dbc89fa6eb61c624"
+    },
+    {
+      "path": "Cards/Standard/TomoeThrow.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 2072,
+      "sha256": "f8c956310f3294c2989a351992e831d3d02b6537c9fcd6927c0dc462aae69a89"
+    },
+    {
+      "path": "Cards/Standard/Training.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 871,
+      "sha256": "75cbd7c931826d61104d06c0714c77a08bf573606896a8b016fda1a12fa5c361"
+    },
+    {
+      "path": "Code/Combat/CombatMetricsSnapshot.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 2376,
+      "sha256": "9b862b66245b5776219ff64a2026c6e02208fd86d12812a84579e4bc0fa6b1c2"
+    },
+    {
+      "path": "Code/Combat/DarkNinjaCombatMath.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 8955,
+      "sha256": "bfce8561f35cbd6e65eefe3b2d8220df9fce2aa784633e6883f2ec3804fc0cf8"
+    },
+    {
+      "path": "Code/Combat/EvasionResolution.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 3839,
+      "sha256": "fca2e0d48027900cfba73fe264b58c0da6119899145845bfe779325bbc18f9d1"
+    },
+    {
+      "path": "Code/Combat/ExtendedHealthBarLayout.cs",
+      "status": "deleted",
+      "category": "production-csharp",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "Code/Combat/SawatariEventSession.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 23510,
+      "sha256": "9da4cb9d811dc207c11c67525ef3c30e9f03dcab778746c726033425d95486c1"
+    },
+    {
+      "path": "Code/ExternalAnimations/ArchitectExecutionCinematic.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 20702,
+      "sha256": "8d1bd9dc81c1945ec7b52f7e426f6677c178bbf72c93e6e6c170e1c54e067d3b"
+    },
+    {
+      "path": "Code/ExternalAnimations/DarkNinjaAttackExecution.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 10054,
+      "sha256": "8ad98df469dee51df54a9bed803f8ce6bb4fce81cd1836553f9168b208220cc6"
+    },
+    {
+      "path": "Code/ExternalAnimations/DarkNinjaSpecialAttackPresentation.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 43325,
+      "sha256": "b00fec4d6aee06ceb4ae3e969895a6e621974afa0f14e147ecbd8367d789488b"
+    },
+    {
+      "path": "Code/Nodes/NLowHealthBloodVfx.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 7381,
+      "sha256": "32307353c156224676a3eeff8dfd7d7b619f1f6364d55ef6b89e190b9dbb7e61"
+    },
+    {
+      "path": "Code/Patches/EvasionMissPatches.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 13407,
+      "sha256": "80dea0522418be5f057f9bd528aedbde1bc720afbea3f9ab2c4ac03d33e4f804"
+    },
+    {
+      "path": "Code/Patches/NarakuCentennialPuzzlePatch.cs",
+      "status": "deleted",
+      "category": "production-csharp",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "Code/Patches/NarakuLifeDamagePatch.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 3006,
+      "sha256": "2cea5002d9186b540f7d6440c9ea78054c5ce54a68ff3fc1fb5ff57a79472025"
+    },
+    {
+      "path": "Code/Patches/NarakuLifeHealthBarLayoutPatch.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 3129,
+      "sha256": "9131a29b92c3bc7ed1695b6908845c257b356e4c1229793bdf873beeea618213"
+    },
+    {
+      "path": "Code/Patches/ReporterPassEventOptionPatch.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 3233,
+      "sha256": "64a1ef29dfaecd1d54e17b27df4c1ce6047a2dc84886e31d1a3dc27103afa993"
+    },
+    {
+      "path": "Content/NarakuLifeHealthBarColors.cs",
+      "status": "deleted",
+      "category": "production-csharp",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "Content/NinjaSlayerCardRules.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 4645,
+      "sha256": "22a07c1c14d7c4e5b2c987c04ea875491d3e4fab98311aad6ccac3aad404ae86"
+    },
+    {
+      "path": "Content/NinjaSlayerCombatMetrics.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 6870,
+      "sha256": "667552735706592790d9053619eb8c5845eb725968898a3734e7199f003a54a9"
+    },
+    {
+      "path": "Docs/card-catalog.md",
+      "status": "modified",
+      "category": "documentation",
+      "bytes": 28587,
+      "sha256": "29560822bc5fca10ebc7678cf13a93950cc7d9cd9d0bf595eaa2c8665cac159e"
+    },
+    {
+      "path": "Docs/validation/feedback-20261021.evidence.json",
+      "status": "added",
+      "category": "documentation",
+      "bytes": 40397,
+      "sha256": "7b3f461aca9f09d219b23fbfc567a5b5c1da8e86bee31a90a3d4d90b36a65484"
+    },
+    {
+      "path": "Docs/validation/feedback-20261021.md",
+      "status": "added",
+      "category": "documentation",
+      "bytes": 10859,
+      "sha256": "1ba211e3334756ae482b825b3031d9e7fae8764dc64a40190cfd168e1a7fdf20"
+    },
+    {
+      "path": "Docs/validation/feedback-20261029.evidence.json",
+      "status": "added",
+      "category": "documentation",
+      "bytes": 33352,
+      "sha256": "f6863917f9f0b7c7953200f0e21768dbb7c82fec56d099b49eec3b56ec7e9746"
+    },
+    {
+      "path": "Docs/validation/feedback-20261029.md",
+      "status": "added",
+      "category": "documentation",
+      "bytes": 11273,
+      "sha256": "651dc34c9b8c9edfbdb23b1b543cb04f1858b9145cd0d272fa53b5d3cfd65e08"
+    },
+    {
+      "path": "Docs/validation/feedback-20261030.evidence.json",
+      "status": "added",
+      "category": "documentation",
+      "bytes": 40665,
+      "sha256": "264cbaca898ecf02bbb3fecf3826e17f740553a5bc5e0b4818a9a751166d95f1"
+    },
+    {
+      "path": "Docs/validation/feedback-20261030.md",
+      "status": "added",
+      "category": "documentation",
+      "bytes": 9141,
+      "sha256": "e3e87bb98d12ea21c09b002d87310a2088472cfa67abc55f24359ad5fec43bdf"
+    },
+    {
+      "path": "Docs/validation/naraku-temphp-20261030.png",
+      "status": "added",
+      "category": "documentation",
+      "bytes": 12543,
+      "sha256": "4cc1da2479482d07948603099fc4663060fc09413d3988a5acad559d2725713b"
+    },
+    {
+      "path": "Docs/validation/naraku-temphp-purple-20261030.png",
+      "status": "added",
+      "category": "documentation",
+      "bytes": 13232,
+      "sha256": "c9736278f8c231e8497e85b69f6f619eb66f99822b47b5ac3c2cec3666724307"
+    },
+    {
+      "path": "Docs/validation/unpublished-20261109.md",
+      "status": "added",
+      "category": "documentation",
+      "bytes": 11270,
+      "sha256": "33328fad83223950ba23f0fbdffcb93d67406d563055092ab1b4ea61808baf57"
+    },
+    {
+      "path": "Events/TheMovingJungleEvent.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 10027,
+      "sha256": "6083968e902532d18bf8288099201a1fa26e5cc62ec52137fe36de9823e1d207"
+    },
+    {
+      "path": "Infrastructure/telemetry-worker/dashboard/app.js",
+      "status": "modified",
+      "category": "website",
+      "bytes": 26821,
+      "sha256": "b7d7086e619bbf7fe5a325f283200c97f78b661007c26d6e5585cf488d5ecffa"
+    },
+    {
+      "path": "Integrations/AutoAnthony/NinjaComponentCardPatches.cs",
+      "status": "modified",
+      "category": "optional-integration",
+      "bytes": 9940,
+      "sha256": "d831ccb5e4734be59b1db3822d59ce34f6e5cc96e406afd72fa1e0a5e688779e"
+    },
+    {
+      "path": "Integrations/AutoAnthony/NinjaComponentRuntime.cs",
+      "status": "modified",
+      "category": "optional-integration",
+      "bytes": 18156,
+      "sha256": "7e41517c3663a9a77fda5dbe7198b4abe4785af7062d87d0b1881c709e6badc7"
+    },
+    {
+      "path": "Integrations/AutoAnthony/NinjaComponentSources.cs",
+      "status": "modified",
+      "category": "optional-integration",
+      "bytes": 29321,
+      "sha256": "cc57fa5b9d97d7106dfd9683cfa82919a8d045c843aa9844ec0fb92e7b52a0f5"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Adapt.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 626716,
+      "sha256": "418c66baa67b839d1843d2ee6a74089dea4a1fe2d8552ecb1d984c502de1fd5e"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/AlabamaDrop.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 707526,
+      "sha256": "ff1619208a6d079695c632b1d2ceeaeb1a91cf6c2ac0ccf1e1deca4135f6eb96"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/AntiAirBangBangFist.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 703921,
+      "sha256": "19aa1c722513e7b844bdb65549e8f518a62bea358d77981740e21f5ebe83cdc3"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Assess.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 719899,
+      "sha256": "4b8d22a012599a5e658252604e64102206968dfdcb5ac5b87ddcecf72b909b4d"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/BS1260Kick.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 679854,
+      "sha256": "019a8b110b8277d2056474d9aabfaca576e0251035df5355620578ed9b5ded45"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/BackBridge.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 779598,
+      "sha256": "037d2a807089373e9bf27780ce86fa09ce6a607a67a53963c8d659adde15eeac"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/BarehandedCatch.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 596226,
+      "sha256": "ee7e34d1b38b1293cfe32db75d834da352be4a0cddc5c88b87cf583f11872a23"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/BlackFlame.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 701963,
+      "sha256": "f3d05455415a3bb5a7e4b8199429fd749165b199a2d4b003b50dfa10906df328"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/BladeSweep.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 810924,
+      "sha256": "664a5ff2cbb8ae93a5357d61993474a4d6c380d98861acf7d8075a689babac13"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Chop.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 553829,
+      "sha256": "f75ded2db3b654554db9a4a82998922be00809aa86b1c5d6760ecc3a8059c056"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/ChopStrike.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 627200,
+      "sha256": "a3b952dfd91dd53d106ad4ca4cfb92cb1827d3c756603184ccb05e7061b4f94c"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/ClearMind.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 695167,
+      "sha256": "29d95afbe5aa1311241949d7a900d8e030f5604b42a68a643077bf6ff7505920"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Composure.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 692844,
+      "sha256": "9db1cb1dd4aecb4b92e55a3c2f79bf9b52559956c308fa92ef46abfa5c5f4834"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/CrossGuard.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 695103,
+      "sha256": "6c9b2a74ca670f103b8a5feeb71ae5b222218500c2881548d9e63c1b3cfe2598"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/DeepBreath.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 615157,
+      "sha256": "3ffdd70593f7a6b055ccbed17513f17735a48aebc061d5daa251db383ced36d7"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/DevourFlame.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 654279,
+      "sha256": "c20fdfac84d055aaf9f5455b4245e688269a742acf16cbef657aa627ad500d74"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/DragonFlyingKick.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 742869,
+      "sha256": "93301312e860a1392d91b24408351a5a4be361ebd89461f07e2e7b386010886d"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/DragonRoundhouseKick.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 760616,
+      "sha256": "9fa45a9e142445791335a85ad9716f893315604dce9ad83680398e33b688198d"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Endurance.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 721582,
+      "sha256": "b680df62db92bdce5c79b75403bfadcdc9005c366f66caa36d2c8ba1ee7622c3"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/FlameGuard.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 704471,
+      "sha256": "1ba275c79a4506b7399e0e0eff2e659fbc071c44dc37552f9d1a67f0becc8de7"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Forethought.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 714914,
+      "sha256": "195d2d04e075f4cdb8e607d5c30f7051e99f1a608eb6cd670b2ba0e2aa63e6fe"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/GatherKi.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 699225,
+      "sha256": "2f59c21185016a3b985a42c088d3d77c9f734452370f0c34f7b0b5eb0d3e6450"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/GatherMomentum.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 774220,
+      "sha256": "4c6d415cac0c9fb7dc66a8650081411baf4d7b92d1b26ca1da5ad87bb0836ea3"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/GrapplingHook.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 738244,
+      "sha256": "cd564956b7bac2d632ffe2404cdb798d4755f98208c6b1a98b03405c37493e53"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/GreatUkemi.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 890081,
+      "sha256": "adcf321cf97ff05627eea54b8f28ab9851408ea823f69180234fafc77bfb5e0b"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/GuardStance.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 793635,
+      "sha256": "79b7c0a0480eaa4799bc49d3a6d17aa4918b75d12b888d30833d44febf5d73dc"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/HalfMoonCompassKick.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 768824,
+      "sha256": "db895935f678ad5babc5fa90392c342a32a8def2087820a43a8a9cf7db9befa1"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/HissAndHuff.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 683750,
+      "sha256": "9f0e2053b4c149a4bf6052ff0dc10c2ed2e371bcc95e8f51df03d7b374b51c9d"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Jujutsu.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 786080,
+      "sha256": "2e6a2c74c6d9837965bf5f2ae89908ef58919a426880c352b2ec58c4b526673e"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/KarateBulwark.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 747788,
+      "sha256": "28488572ab66e620808bcf6b1317d35c917aecef0db2aef17e15b5ad23d6dd2c"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/KunaiThrow.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 636845,
+      "sha256": "6a89bd375203f632551cb252f0761f4324f0486fdd02ab77c39d1c2eff751fd7"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/LeftUppercut.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 690455,
+      "sha256": "84a6c8d81d3cd28b9c725b7cecfbdbbac394db65161dd623c096daec6748f723"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/LetGo.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 647101,
+      "sha256": "8df2f9beb9cf82df2b5c5dec31cb5c9c69a3761301abcd04dad6ae6bb8efc7c4"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Macaco.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 673509,
+      "sha256": "e5b1e4c14c4c8f5f0e77d8920e402dc6ecca2669650392fd588fe41b14ffae2c"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Machete.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 596308,
+      "sha256": "0b8d54ba7a221d1b1a10677e3e362a008b10747e11ba22709084754093b6d05d"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Meditation.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 778947,
+      "sha256": "0f32ef32621235e39a2b044c28698dee43b443fb359b1401d3525dcd3ac4c25f"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/MotionAndStillness.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 748703,
+      "sha256": "e4d2e4134565adf64ee2f414829770507c0b6596bcc6372704a9a664ed7f33aa"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/NarakuForm.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 867882,
+      "sha256": "5109dc8ecf7e2c2bb2273cf783d1f6f88b7fd8c2201928a0e02437bd53832091"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/NavyHammer.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 692719,
+      "sha256": "09890f812f0945d144f77afccf01d70ab5ca80ad0aa237a2b39608e926541559"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/NinjaCaltrops.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 726060,
+      "sha256": "2ecf4447cd931945cdaf8c8d0c0654d4317eb6a21e47bc2fd9d08fa63a89e2d0"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/NinjaTaunt.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 587226,
+      "sha256": "6e3e0c57e0253545c1476e2a2e1ad8dc312eceb74b368e2886b7f8a07916b8d6"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/OneMindOneBody.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 566687,
+      "sha256": "2b7f63fb192367be00018e3abf022b32c14ae1e33921f658b9b644c26c3c2f41"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/PalmThrust.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 643811,
+      "sha256": "af6895406effd409803cedeacb1ca72ac7f98870921edf1947bf56783bc55372"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/PressTheAttack.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 702621,
+      "sha256": "59b0cc6c8c3faf7132ac37bb0bc1908548d15c5dd19d29c5ed16fa13e630c784"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/ReadyShuriken.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 792068,
+      "sha256": "2ca368af371ba6977f70cb7888650fe6c655f87f157aa603aacab5859f63897b"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/RegulateBreath.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 612408,
+      "sha256": "77699ef56c526e6cc30c9f7a7310f119641e1e0890d48c8dc1992067a5088cf4"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Rekindle.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 782201,
+      "sha256": "d59bc6383cfda5ea8fb9a741bce1e884a7ed8fef61c3d59126bdb8d56a179573"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Relentless.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 701165,
+      "sha256": "299f835f19d806317b56609043426d19357a843e02702009e73712855d4ab158"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Resilience.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 753368,
+      "sha256": "c915057f4c6dad8989f58314cbf6022b9b984bcf4f8b122e6d088f7edf3c742c"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/SomersaultKick.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 711092,
+      "sha256": "3587c1cf01b357ea60b3ff33c5bbeabcb235de3aacd066cd22ac61919a2bfe13"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/SpiralJump.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 743044,
+      "sha256": "a6192d320c779e4972e987cb1388bd59ffa4fb601d906fe34a09486231454a5d"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Stillness.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 736324,
+      "sha256": "9f34166e13df31a366ae8349a6e3f7d5a91baadf7b4c2cf01421a4ffd2ed2365"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/StormFist.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 794615,
+      "sha256": "41772082cf835ccc489045386c25875d27a8c5e290b9d00bbadcc169245fecfa"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/StraightKi.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 670650,
+      "sha256": "980b5cc0ff979326d842ef5e77bd66c6a5caba1f0da951ee071c836aa2f37144"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/StraightPunch.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 678094,
+      "sha256": "d00c69ced93e33ec9dcc59b340bfc8ae001a09fc0b434df24cbcaaea71c955ab"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/StrikeStrike.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 612807,
+      "sha256": "281b0271b48230989b8279a43b7cc9574328dc5f904f9a786fcb4c847be20b8c"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/TomoeThrow.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 775408,
+      "sha256": "e85bcb9ed1faf766b641bcba327edd9c2a54977099040b83c882d32c8249f5ab"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/TornadoFist.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 809936,
+      "sha256": "f3a6bea8f7cd3e4d867e5e5006c3630bc51d6b822039a69a97efbe6d2d91faaa"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Training.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 716861,
+      "sha256": "a61564907dbe0e71387d2c76843b3943d313379295bc97b4c5c9039ffaab5488"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Zanshin.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 623243,
+      "sha256": "3421bc0380163a5c930d57f866a4a06690820b560ed831f51b99a9a17aeac4da"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/ZazenDrink.png",
+      "status": "modified",
+      "category": "card-art",
+      "bytes": 523916,
+      "sha256": "896ad15c056a2d0c25d85abb721b24d3e9f29538e96a60565f978ad154700e07"
+    },
+    {
+      "path": "NinjaSlayer/images/ui/naraku_temp_hp.LICENSE.txt",
+      "status": "added",
+      "category": "ui-assets",
+      "bytes": 1091,
+      "sha256": "e83c885e6922f7519a68e410952c53f2346121c9f632b0b4ebf64f271fde76d5"
+    },
+    {
+      "path": "NinjaSlayer/images/ui/naraku_temp_hp.png",
+      "status": "added",
+      "category": "ui-assets",
+      "bytes": 3964,
+      "sha256": "0555b89f458e8ff74c3877d1e78c97c8a583b61fac822ffa1a82eeff1c0f7dbc"
+    },
+    {
+      "path": "NinjaSlayer/images/ui/naraku_temp_hp.png.import",
+      "status": "added",
+      "category": "ui-assets",
+      "bytes": 968,
+      "sha256": "3028294785db172add48955e9b183b88fd0b4c6f68cea52266f192a8ef1f0f69"
+    },
+    {
+      "path": "NinjaSlayer/localization/deu/cards.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 21361,
+      "sha256": "f947fc5bccf5ae05f452ce8e1766d373728081d6dc9cdafb99ddd7f1097de503"
+    },
+    {
+      "path": "NinjaSlayer/localization/deu/powers.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 11903,
+      "sha256": "bbacbf214955d925714a3bb97b33e420a68bc8adc7647a95bfdffc2e730dca45"
+    },
+    {
+      "path": "NinjaSlayer/localization/deu/relics.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 6373,
+      "sha256": "1ad7490125312cd3fec174b603f2246e5c3cee2618e910ae5889a12651abb77c"
+    },
+    {
+      "path": "NinjaSlayer/localization/eng/cards.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 19963,
+      "sha256": "f765cfe0a0c6a7dc7941a2537a08a5c69e9f03dcd43249461a062222e6841135"
+    },
+    {
+      "path": "NinjaSlayer/localization/eng/powers.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 11073,
+      "sha256": "63892316e84acd61c712685bcb49dac7fc0e45e637809e3147526a12d0dadb80"
+    },
+    {
+      "path": "NinjaSlayer/localization/eng/relics.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 5996,
+      "sha256": "97a43e4857ab490748aeaa9e14f2b25cb8087b972d13083f7f75c09fbd941482"
+    },
+    {
+      "path": "NinjaSlayer/localization/esp/cards.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 21352,
+      "sha256": "043c9e9643db412331927c9cc7dbb9db5779c34baf2884ee3e4823105711f1da"
+    },
+    {
+      "path": "NinjaSlayer/localization/esp/powers.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 11946,
+      "sha256": "2cf8d54d28ee6ff26c4f17e34c62439e608c28d269a910e78c0e20c17bb2ae3c"
+    },
+    {
+      "path": "NinjaSlayer/localization/esp/relics.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 6310,
+      "sha256": "11dffc9fcf3f6494588e38b49f9f1490382b5becdaa83b61da2e8cb7a299b59f"
+    },
+    {
+      "path": "NinjaSlayer/localization/fra/cards.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 21709,
+      "sha256": "d4e21a4cb6052d7f76314ebf84c2c2a3558aa0545191cd98b13a1273cf3d5946"
+    },
+    {
+      "path": "NinjaSlayer/localization/fra/powers.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 12262,
+      "sha256": "a6b80afe0651c5101771e0f77bd566afe0b25d1b539e3f74713be189fdfa953c"
+    },
+    {
+      "path": "NinjaSlayer/localization/fra/relics.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 6475,
+      "sha256": "26033c900839a54ee1ee9d9f88ff3c377bb0bf7db16bd7d2dd2d98cadd7679f9"
+    },
+    {
+      "path": "NinjaSlayer/localization/ind/cards.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 20903,
+      "sha256": "98a1f307ba060e48f818902100b6a78da251fbdf945d92233af42e020aa94394"
+    },
+    {
+      "path": "NinjaSlayer/localization/ind/powers.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 11633,
+      "sha256": "41d06532fffdf4639d80b613c6646c30e162c326ab4f76defd6fa2a28e8d14b7"
+    },
+    {
+      "path": "NinjaSlayer/localization/ind/relics.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 6231,
+      "sha256": "9e7b851c65d08b368cb87dbb5b02d343d8d76d79265a8ef7e0b94874fbf52dca"
+    },
+    {
+      "path": "NinjaSlayer/localization/ita/cards.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 21514,
+      "sha256": "2dfcb0b5f2af88435b9dc94e3a4a6e618ec3a9fe65049ef5d2da31a5fa3b2187"
+    },
+    {
+      "path": "NinjaSlayer/localization/ita/powers.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 12100,
+      "sha256": "38a06193dc2ace5879222d96e9c7e340af9391d94fdceb174aa450783e4c732a"
+    },
+    {
+      "path": "NinjaSlayer/localization/ita/relics.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 6422,
+      "sha256": "68823527c48e1de83a282cf945545e0c2a0b2c79bd9a72a7c5f5170c4dafc455"
+    },
+    {
+      "path": "NinjaSlayer/localization/jpn/cards.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 22122,
+      "sha256": "0dcb2e64b265e7381f49a48b41ee1219bae55c9b9d0c018299f5cc61022bf1f1"
+    },
+    {
+      "path": "NinjaSlayer/localization/jpn/powers.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 11956,
+      "sha256": "8ac6b3daa9226cd64e4fbded35c22ac360ae152311e0c98e61901b779f43b0b1"
+    },
+    {
+      "path": "NinjaSlayer/localization/jpn/relics.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 6524,
+      "sha256": "d18e7971dc9202f5a73818274f0b8950c1575b363e7b590f0921c3dd3f2cde96"
+    },
+    {
+      "path": "NinjaSlayer/localization/kor/cards.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 22026,
+      "sha256": "5e3cc500974f6717e3df6e8fdc28f5acf529b01d0a5042d2cece569b283b38b0"
+    },
+    {
+      "path": "NinjaSlayer/localization/kor/powers.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 11928,
+      "sha256": "c7cdf9127d285e31b8c5bfde0f5e8cc3d73faf284ab23742cc06c90e89f0b0c1"
+    },
+    {
+      "path": "NinjaSlayer/localization/kor/relics.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 6502,
+      "sha256": "75969b322fda0899c1abf516b6aa38d8dae6712c31166f7a30fb6b3b37ac813f"
+    },
+    {
+      "path": "NinjaSlayer/localization/pol/cards.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 22168,
+      "sha256": "ce5318c2286d69de94dea4992ff7a6d6ab4b7e8bfa6359988faf1733ed3cb897"
+    },
+    {
+      "path": "NinjaSlayer/localization/pol/powers.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 12421,
+      "sha256": "a53ece974c8e83a46654a4f8549f42beb27b1f6194ee4fd60f7ef9aada93542d"
+    },
+    {
+      "path": "NinjaSlayer/localization/pol/relics.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 6275,
+      "sha256": "afac48d8b36dfb86ae84b9c9303779ed892ff8b4ef21bb097c1d03c1af9c8159"
+    },
+    {
+      "path": "NinjaSlayer/localization/ptb/cards.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 21291,
+      "sha256": "6539cb68a6e1a2cb982d3b19419309a667d2ee7d05b0b0d733c9339402a44283"
+    },
+    {
+      "path": "NinjaSlayer/localization/ptb/powers.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 11801,
+      "sha256": "d61340ecd8a8eb297a4cff806f80fe3d6489acf0061c31a11559a897fff06880"
+    },
+    {
+      "path": "NinjaSlayer/localization/ptb/relics.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 6277,
+      "sha256": "799796a204772c7317d3a112e2c8a208d88c22fbebb3c1d31d9b5cad9946d0db"
+    },
+    {
+      "path": "NinjaSlayer/localization/rus/cards.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 26636,
+      "sha256": "f4e337a6f29f912ed1bf485bab664cee79d6ec687b91f0dc64b5f3b3abb25f55"
+    },
+    {
+      "path": "NinjaSlayer/localization/rus/powers.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 15382,
+      "sha256": "7de980876b755d2d5538d2c5dac11235aae10806d1dffe015e6049a030e86c16"
+    },
+    {
+      "path": "NinjaSlayer/localization/rus/relics.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 8224,
+      "sha256": "9c28871e7b62d8b1ad1b9c658311f59fa379c2d4788e675faaacbb02c0883b4a"
+    },
+    {
+      "path": "NinjaSlayer/localization/spa/cards.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 21183,
+      "sha256": "15a81b2dc4184071430c730317cba18093f4136c352f852d5c71ae3ca9e52345"
+    },
+    {
+      "path": "NinjaSlayer/localization/spa/powers.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 11952,
+      "sha256": "eb56ed1da1220549564aea274c0733242383900306916f1b969503cf40e3cebf"
+    },
+    {
+      "path": "NinjaSlayer/localization/spa/relics.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 6298,
+      "sha256": "adef9b57407e27eee9e04478a3b3729ee24be10174ae19d126114fbd7d5d807d"
+    },
+    {
+      "path": "NinjaSlayer/localization/tha/cards.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 30740,
+      "sha256": "7a319633e12dee6a657e74138b8848cb0ea4969aa38a8013f7503181107c85c1"
+    },
+    {
+      "path": "NinjaSlayer/localization/tha/powers.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 18338,
+      "sha256": "6d23fbcf67b2de2cc24e3fc36f911ccb18a8af45c892e894d3237eb729261bc0"
+    },
+    {
+      "path": "NinjaSlayer/localization/tha/relics.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 9737,
+      "sha256": "fd74c4b865329f2f32c8283ff0d2fa459c88d795c2eda8e83afe2fbe1f711825"
+    },
+    {
+      "path": "NinjaSlayer/localization/tur/cards.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 20218,
+      "sha256": "66bde0075c344f386ca27bb39e9315f1d6c5148dcb26177bc1cc6bad3263b24c"
+    },
+    {
+      "path": "NinjaSlayer/localization/tur/powers.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 11269,
+      "sha256": "88df81568ed607ca4c2fbde7eb9be00c380b34e0eb608780979c5d76a500ff14"
+    },
+    {
+      "path": "NinjaSlayer/localization/tur/relics.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 6038,
+      "sha256": "166c777435a26f01a301415c3c35d812916605f47c5426c5a7bd650dc1ce2378"
+    },
+    {
+      "path": "NinjaSlayer/localization/zhs/cards.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 19965,
+      "sha256": "98e34ece5e069a650f40dbbcf63845ab8e2d0fd1d31f679f0f598dec6291c003"
+    },
+    {
+      "path": "NinjaSlayer/localization/zhs/powers.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 10739,
+      "sha256": "81d7ca02f94bff633aafabcff4a21a9cb0865f6730193608fb10be35cd1a624f"
+    },
+    {
+      "path": "NinjaSlayer/localization/zhs/relics.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 5842,
+      "sha256": "ec9cf96f43378797bf9dd6d17a63e853d97dc927cea0abe4c24292e700a9394a"
+    },
+    {
+      "path": "NinjaSlayer/localization/zht/cards.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 19967,
+      "sha256": "90c1cdeb6c206028d65c161b1c35d20bd3726c269fa989d39fb06b6b09ac1c28"
+    },
+    {
+      "path": "NinjaSlayer/localization/zht/powers.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 10739,
+      "sha256": "3e3b0a376a7798d50661d46b721fc7c35c22a039678baa702ab9f62e638c9ba2"
+    },
+    {
+      "path": "NinjaSlayer/localization/zht/relics.json",
+      "status": "modified",
+      "category": "localization",
+      "bytes": 5842,
+      "sha256": "d58e31809e91f78b8a62f119e4ace2115e315b73a05ac76f2c9e0f8a126059e0"
+    },
+    {
+      "path": "Powers/DevourFlamePower.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 688,
+      "sha256": "3760dc0c873be30432205fde3ed3bac9d76bad4d68971bb53cf544e435f0eabc"
+    },
+    {
+      "path": "Powers/EvasionPower.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 1486,
+      "sha256": "d08273c8bb7b7e3563edf29988766aa64f4dbb504daf8b4ec476a4a6409505ef"
+    },
+    {
+      "path": "Powers/KillingIntentPower.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 2524,
+      "sha256": "9506540582f5b650f27a582d85f8f77fda8341bc29a5abb8473493d24212bda4"
+    },
+    {
+      "path": "Powers/NarakuLifePower.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 1494,
+      "sha256": "85d9ceba70aa9e43d6345698b03cd9c99d00e2033ea23fd8c6f4b6abdf13c548"
+    },
+    {
+      "path": "Relics/BeppinShardRelic.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 1522,
+      "sha256": "54838ee7fa258cc95b5be7516c0cae05343d1aa6d4953c11fca2748a194fbb37"
+    },
+    {
+      "path": "Scripts/Entry.cs",
+      "status": "modified",
+      "category": "production-csharp",
+      "bytes": 27356,
+      "sha256": "a1e23f00931c50271603f2dbcfe59c1c5f7a4ff9bfc8239943511d9207ecbc28"
+    },
+    {
+      "path": "Tests/NinjaSlayer.LogicTests/CardPoolRulesTests.cs",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 8817,
+      "sha256": "728aca8a0fe244f645e454e624c42b6efc79edc034db8676b3e0d4f1ce4f014e"
+    },
+    {
+      "path": "Tests/NinjaSlayer.LogicTests/CombatLogicTests.cs",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 57449,
+      "sha256": "a75d3d4e3582b902e890c99d1170f08312f89f9c8eebee410cacf576ee5ebb3a"
+    },
+    {
+      "path": "Tests/NinjaSlayer.LogicTests/DarkNinjaCombatMathTests.cs",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 9706,
+      "sha256": "3c025ec3137963caab571e53475214ada03ddc08b361cf807840f5e4b889dde6"
+    },
+    {
+      "path": "Tests/NinjaSlayer.LogicTests/ExtendedHealthBarLayoutTests.cs",
+      "status": "deleted",
+      "category": "tests",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "Tests/NinjaSlayer.LogicTests/NinjaSlayer.LogicTests.csproj",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 7022,
+      "sha256": "d54d29fdf7b6311eb728f552d0710d6de9cfaa0e856469838bf1cf25593a6ca8"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.AutoAnthony.cs",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 34485,
+      "sha256": "c24f866859e6e5fdb4a792df3d0fdd3c7d1889250f903f209763daa4ce8a53b2"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.BoardV119.cs",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 3015,
+      "sha256": "fd2878036db64dd90deddcbf941477559008af7aee5676a76093a099bb017e26"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Cards.cs",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 21465,
+      "sha256": "77ebd596c0410384961dc02f993e0b1d4b271f909f0832fbb4dcdcaa947bc8d3"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Compatibility.cs",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 8835,
+      "sha256": "b3fec296d865ceaa349e2620bba16bfb2639d2ecdd928d8d348f226d9d69dc48"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.DarkStrike.cs",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 14001,
+      "sha256": "fcd86651a56cae724f8b8c8323b6d7d35c44f0b2543303fadba82553d390b2e4"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.EventRelics.cs",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 8013,
+      "sha256": "b82b6b23f449e59eade5bc75a56cc57204e98665fef8c8599866a1a205dc6525"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.FeedbackOctober21.cs",
+      "status": "added",
+      "category": "tests",
+      "bytes": 11923,
+      "sha256": "cbed0f7b56be2ef612d3be859d9b37e235ae3d8910a479b0301a19e7290f75f5"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.FeedbackOctober29.cs",
+      "status": "added",
+      "category": "tests",
+      "bytes": 9759,
+      "sha256": "9c78fbd03b180b5bb4b6aba0a85b71a9a4fc57adcc88451b8f893ea95290eb35"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.FeedbackOctober30.cs",
+      "status": "added",
+      "category": "tests",
+      "bytes": 7069,
+      "sha256": "08e661748843e4921f0eea529fa43758c9a7bcd108b1990a9b8c31d567e8827d"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Minion.cs",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 5515,
+      "sha256": "99a43327c5cc3d7b7527a9d6fd7c926428135a9890d90d8aa5488c285947711f"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Multiplayer.cs",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 40607,
+      "sha256": "3a23539996bd0cb077b1e6de01722b3b23bb9e2ea018da4fcac281d27f1e58bf"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.NarakuPanels.cs",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 7973,
+      "sha256": "d14bd4e6920e6a3d67c23284ea5d736f94f30f4eb2f10c169e74ba581f187720"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.NewPool.cs",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 36015,
+      "sha256": "7b3efb835c0bdd888a9d269fa66c0f6070dcffeec7329645a47fbad5b6a5e879"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.November9.cs",
+      "status": "added",
+      "category": "tests",
+      "bytes": 5240,
+      "sha256": "1f9ce5d4dd22e1e95c9db48e5ced0bcc79ba89abd6d2f978e3087b6f3ff3f8d0"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Release113.cs",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 6677,
+      "sha256": "f70314651e37d676808c3c1c00d9d97a01bf5fc8e50cafcc073402dbdc35c001"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.V020.cs",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 11607,
+      "sha256": "704fca27f83db724d0ec4ff58a3a4e349a09f1110fe7ab076d5dee8c2b1495f1"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.V17.cs",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 11651,
+      "sha256": "21a15d04e833448d20e4898769138ab0b1a31bb4f8de14c59169ff0efbd032c0"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.cs",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 46889,
+      "sha256": "b90fec93f96ec87aa1747ea12f23c19c17c19d6f870621156058cad4ed29a66e"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/card-metadata.json",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 76545,
+      "sha256": "f3e8a8d4e93db03d5fdbe387eb26af2c7bb8c0c7bb2e2e2837107ac5f656be92"
+    },
+    {
+      "path": "Tests/NinjaSlayer.RitsuLibContractTests/ContractRunner.cs",
+      "status": "modified",
+      "category": "tests",
+      "bytes": 132381,
+      "sha256": "103b94f4e15de8298d926949a49755399e8b53a8c5e5b6661dcc3c954225a3a9"
+    },
+    {
+      "path": "export_presets.cfg",
+      "status": "modified",
+      "category": "resources-and-packaging",
+      "bytes": 3353,
+      "sha256": "0e5b4e7428f17993e27fff82ad8bdb96d78da6aa8d67c29f64a3b651f6d4e94d"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Architect.cs",
+      "status": "modified",
+      "category": "tools",
+      "bytes": 13900,
+      "sha256": "38d77a53c0fca879aa9a24b7fab8e33c22050c39e84495396680d3517a45c150"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.MultiHitVigor.cs",
+      "status": "modified",
+      "category": "tools",
+      "bytes": 16405,
+      "sha256": "18525ff419c3bb6fb7606037521cb12dd3829c1c71ecd8f9785941e698863095"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Release114.cs",
+      "status": "modified",
+      "category": "tools",
+      "bytes": 7805,
+      "sha256": "4e78960546270d01a9fc640f2e1980acd88b544e8598f2cbf55e6f9bd63840e0"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.cs",
+      "status": "modified",
+      "category": "tools",
+      "bytes": 101796,
+      "sha256": "8a8503eb939b420599a0fc6917992cf3e5838327bc43e09ef4766ce1a4de1bb7"
+    }
+  ],
+  "version": "1.1.1",
+  "publication": {
+    "commit": false,
+    "push": false,
+    "workshopUpload": false,
+    "websiteDeployment": false,
+    "feedbackWrites": false
+  },
+  "workshopPublicDetails": {
+    "source": "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/",
+    "checkedOn": "2026-11-09",
+    "publishedfileid": "3776911445",
+    "result": 1,
+    "title": "忍者杀手 Ninja Slayer",
+    "time_created": 1785762051,
+    "time_updated": 1792028863,
+    "updatedAtUtc": "2026-10-15T01:47:43Z",
+    "hcontent_file": "3261107012571943715",
+    "file_size": "218060097",
+    "file_url": ""
+  },
+  "baselineCaveat": "The installed PCK and SHA256SUMS were locally modified after publication. Public Workshop manifest/time and committed release evidence establish the published baseline.",
+  "countsScope": "Current working-tree diff against HEAD, including untracked source/assets/docs/tests; excludes ignored build outputs and this self-referential evidence file. HEAD production source matches the published source revision.",
+  "hosts": {
+    "stable": {
+      "version": "0.107.1",
+      "mvid": "97f10687-c306-4798-ab75-8b9f23f34dfb"
+    },
+    "preview": {
+      "version": "0.111.0",
+      "mvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e"
+    }
+  },
+  "checks": {
+    "builds": "both hosts passed, zero warnings/errors",
+    "gameplay": "both hosts passed",
+    "newCards": "live stock and Ashen Strike preview parity; actual damage; modifiers; draw cloning/upgrades/no recursion; native multihit; Ethereal; no retired attack-count return",
+    "autoAnthony": "preview passed all 84 sources, stock damage, Somersault two hits, Hell Chop draw copy and upgrades",
+    "patchInstallAndRollback": "both hosts passed",
+    "nativeTwoProcessENet": "both hosts passed",
+    "logic": {
+      "passed": 361,
+      "failed": 0,
+      "skipped": 0
+    },
+    "static": "repository/localization/compatibility-derived/diff passed",
+    "localization": {
+      "languages": 16,
+      "tables": 17,
+      "keysPerLanguage": 623
+    },
+    "smokeDriver": "preview build passed",
+    "resources": "exported from current working tree"
+  },
+  "limits": [
+    "Full client smoke NOT RUN; isolated launcher elevation requirement not bypassed.",
+    "No macOS/Linux device or four-player Steam client validation.",
+    "Optional Loadout/Hextech/Minion integration NOT RUN.",
+    "Existing unresolved feedback is not classified as fixed."
+  ],
+  "removedThisTurn": [
+    "Powers/FocusedBlowsFocusPower.cs and all 16-language entries",
+    "HellChop.AfterCardPlayedLate attack-count return and CardsVar",
+    "AutoAnthony ReturnOnAttacks patch and return_attacks component branch",
+    "Temporary-Focus tests for retired FocusedBlows effect"
+  ],
+  "artifacts": [
+    {
+      "path": "build/card-adjustments-20261109/final-stable/Release/NinjaSlayer.dll",
+      "bytes": 2211328,
+      "sha256": "e4406ab07a6c6cab91f052bc25efdb37e3cadf095bbb546b6d0fa63060d32c01"
+    },
+    {
+      "path": "build/card-adjustments-20261109/final-preview/Release/NinjaSlayer.dll",
+      "bytes": 2214912,
+      "sha256": "3a2e997789455a08aa7408227647ae7daca250bf67cce8d3e6a96101079bf16c"
+    },
+    {
+      "path": "build/card-adjustments-20261109/anthony/NinjaSlayer.AutoAnthony.dll",
+      "bytes": 129024,
+      "sha256": "97f71771703e60befcd24d9b423cd03c490bd9ac9ef32d15ce631a6b75c16dc8"
+    },
+    {
+      "path": "build/card-adjustments-20261109/current-resources.pck",
+      "bytes": 216032740,
+      "sha256": "b51b6e07f84f266bf9dac38cf4917a1994ba8515cab9710aa0dc4f47c83684b7"
+    }
+  ],
+  "logs": [
+    {
+      "path": "build/card-adjustments-20261109/build-final-stable.log",
+      "bytes": 437,
+      "sha256": "c6273e05d79a947e8aa5e145e61a903def6cfa2c2dfc9738b076a053b6c37a1e"
+    },
+    {
+      "path": "build/card-adjustments-20261109/build-final-preview.log",
+      "bytes": 438,
+      "sha256": "51a7d72ff0dee288f461bf76caa0289c355d43c008c5098f912996b96d38db61"
+    },
+    {
+      "path": "build/card-adjustments-20261109/final-stable-gameplay.log",
+      "bytes": 62875,
+      "sha256": "c8ae5beb2519fc2a8f56b60760d966d377af76c573a53df468926974e9d044d7",
+      "candidateSha256": "e4406ab07a6c6cab91f052bc25efdb37e3cadf095bbb546b6d0fa63060d32c01",
+      "hostMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb"
+    },
+    {
+      "path": "build/card-adjustments-20261109/final-preview-gameplay.log",
+      "bytes": 62255,
+      "sha256": "03eed499b70fa303004fda7bd421f81b3826ab66fdaf1cbf30f0a8b67d179c1d",
+      "candidateSha256": "3a2e997789455a08aa7408227647ae7daca250bf67cce8d3e6a96101079bf16c",
+      "hostMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e"
+    },
+    {
+      "path": "build/card-adjustments-20261109/anthony.log",
+      "bytes": 34391,
+      "sha256": "7669eae8a52237cdbd9622bc65c9a4a47264f8a161a2abadb6d0d2829e194040",
+      "candidateSha256": "3a2e997789455a08aa7408227647ae7daca250bf67cce8d3e6a96101079bf16c",
+      "hostMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e"
+    },
+    {
+      "path": "build/card-adjustments-20261109/build-anthony.log",
+      "bytes": 326,
+      "sha256": "583f8e1386b3b0b52799e214d528f316593a9c722970355a02eab810ffabf708"
+    },
+    {
+      "path": "build/card-adjustments-20261109/patch-stable.log",
+      "bytes": 5835435,
+      "sha256": "84d5d8663367e2ba7ea5b3fcf90384cf6fbcabf9470168228c7584d0c20313cf"
+    },
+    {
+      "path": "build/card-adjustments-20261109/patch-preview.log",
+      "bytes": 5874900,
+      "sha256": "747de8a9bfcb77819b8ed52683c68f824a7887c7a0fbfdbd20d13cee73165f5b"
+    },
+    {
+      "path": "build/card-adjustments-20261109/network-stable/host.log",
+      "bytes": 51158,
+      "sha256": "096c920cd69f2b83976bac2b404731d8ff99a04a2a4159090d9c9942d7529b60",
+      "candidateSha256": "e4406ab07a6c6cab91f052bc25efdb37e3cadf095bbb546b6d0fa63060d32c01",
+      "hostMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb"
+    },
+    {
+      "path": "build/card-adjustments-20261109/network-stable/client.log",
+      "bytes": 51242,
+      "sha256": "bcc644d37809881657fc4e1d2a37934e5573799737455410edec17695ca7d8c0",
+      "candidateSha256": "e4406ab07a6c6cab91f052bc25efdb37e3cadf095bbb546b6d0fa63060d32c01",
+      "hostMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb"
+    },
+    {
+      "path": "build/card-adjustments-20261109/network-preview/host.log",
+      "bytes": 52770,
+      "sha256": "42f918418586cb1f58a8ea4f2f33e368940325406fdd90d70628ce60debda5c5",
+      "candidateSha256": "3a2e997789455a08aa7408227647ae7daca250bf67cce8d3e6a96101079bf16c",
+      "hostMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e"
+    },
+    {
+      "path": "build/card-adjustments-20261109/network-preview/client.log",
+      "bytes": 52854,
+      "sha256": "d4be99ad2008c27bc034417afeda80cca69757d72a1c015a761bea22aa03be08",
+      "candidateSha256": "3a2e997789455a08aa7408227647ae7daca250bf67cce8d3e6a96101079bf16c",
+      "hostMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e"
+    },
+    {
+      "path": "build/card-adjustments-20261109/network-summary.log",
+      "bytes": 79,
+      "sha256": "0c25aa3e57b5e8412f7107d79cff029262f64b7c0757c6b2a9368fe1b977e921"
+    },
+    {
+      "path": "build/card-adjustments-20261109/logic.log",
+      "bytes": 791,
+      "sha256": "26ff38e3bdeab0beb4b51d78586359472dac4dad3b1b7e3aba78609e5ce7cb43"
+    },
+    {
+      "path": "build/card-adjustments-20261109/static-final.log",
+      "bytes": 189,
+      "sha256": "06e5ddffeb20ba4571f5ab93671add448c17ea342487dd13896bb8916ba97548"
+    },
+    {
+      "path": "build/card-adjustments-20261109/smoke-driver-build.log",
+      "bytes": 349,
+      "sha256": "b8f736ef7ee020b863ce6db243376c87454845ecbdc87f76ee61ce3e5d19ef2f"
+    },
+    {
+      "path": "build/card-adjustments-20261109/export.log",
+      "bytes": 227046,
+      "sha256": "0c58747a806c766ef22d045d3413d7a69a54eb3d8ce3872ed3238e825ac25eb7"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "build/card-adjustments-20261109/verify-current.ps1",
+      "bytes": 1717,
+      "sha256": "9fda8e45d17ed4cbd3be900b53ef651e9a984d045e662b37b32d107abad2b52b"
+    },
+    {
+      "path": "build/card-adjustments-20261109/verify-anthony.ps1",
+      "bytes": 1803,
+      "sha256": "7c46eb58f8de4df35a8f1c5b6d24cf84c63e6d972d410d3e26f871288596b257"
+    },
+    {
+      "path": "build/card-adjustments-20261109/verify-patches.ps1",
+      "bytes": 1506,
+      "sha256": "239f9bdfe4fa1315107723c67ebba7497203cda92caef4b1349a49f50ee645e2"
+    },
+    {
+      "path": "build/card-adjustments-20261109/verify-network.ps1",
+      "bytes": 1076,
+      "sha256": "704d2f4d215337a7330bf45524d9eca468203f0eee0ced3ae273bd77b94a1ff9"
+    },
+    {
+      "path": "build/card-adjustments-20261109/update-content.cjs",
+      "bytes": 6816,
+      "sha256": "48afc750609e3400a24ac7e73b1373066a954fea0f3f4c99683a84e3d64456a0"
+    },
+    {
+      "path": "build/card-adjustments-20261109/inventory.cjs",
+      "bytes": 4996,
+      "sha256": "9d842321e0a3804ebf3ce713090143e3a390be6e0d29d2570a2c8a0c91982aed"
+    },
+    {
+      "path": "build/card-adjustments-20261109/collect-evidence.cjs",
+      "bytes": 4158,
+      "sha256": "015b89c783d0b8ccb9d4e0c488c965342083356aa99e049363ddf21705ac0f45"
+    }
+  ],
+  "originalBehaviorEvidence": [
+    {
+      "path": "../Slay the Spire 2/Slay the Spire 2 v0.107.1/src/Core/Models/Cards/AshenStrike.cs",
+      "bytes": 1676,
+      "sha256": "7024789ffbcf1e36cd296f9cce1b8909a61bf01728152e1b9f558572dcb6e01c"
+    },
+    {
+      "path": "../Slay the Spire 2/Slay the Spire 2 v0.107.1/src/Core/Localization/DynamicVars/CalculatedDamageVar.cs",
+      "bytes": 3027,
+      "sha256": "fd576b2e76f45503db579ce27f3370be182ba737e1946b1f06e32ebc76b40094"
+    },
+    {
+      "path": "../Slay the Spire 2/Slay the Spire 2 v0.107.1/src/Core/Models/Cards/Void.cs",
+      "bytes": 1080,
+      "sha256": "6b25feaae5c92b592a870b9e12d6674be56ade35cffc89fe2f7277eafc08dca7"
+    },
+    {
+      "path": "../Slay the Spire 2/Slay the Spire 2 v0.107.1/src/Core/Commands/CardPileCmd.cs",
+      "bytes": 40222,
+      "sha256": "edb32ca9e0596640425c10ff7296de01719eb2393d3458de0c091d5a1a838072"
+    },
+    {
+      "path": "../Slay the Spire 2/Slay the Spire 2 v0.111.0/src/Core/Models/Cards/AshenStrike.cs",
+      "bytes": 1686,
+      "sha256": "0b01dceba433e14540eaedcab008aafc14108f9161b125129df6f3407d9fc999"
+    },
+    {
+      "path": "../Slay the Spire 2/Slay the Spire 2 v0.111.0/src/Core/Localization/DynamicVars/CalculatedDamageVar.cs",
+      "bytes": 3033,
+      "sha256": "de26a7c4a097a9a83393f3eaba6ff6eb461fd77dfb9ba6fa8d7f983c7e34fbc2"
+    },
+    {
+      "path": "../Slay the Spire 2/Slay the Spire 2 v0.111.0/src/Core/Models/Cards/Void.cs",
+      "bytes": 1080,
+      "sha256": "6b25feaae5c92b592a870b9e12d6674be56ade35cffc89fe2f7277eafc08dca7"
+    },
+    {
+      "path": "../Slay the Spire 2/Slay the Spire 2 v0.111.0/src/Core/Commands/CardPileCmd.cs",
+      "bytes": 49239,
+      "sha256": "f3830d1848de1be5eba54892ba59f8a65708271146d17ff11e3485bbac670f62"
+    }
+  ]
+}

@@ -48,6 +48,6 @@
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.description": "Toutes les {Cards} Attaques jouées, gagnez {Plating} de [gold]Blindage[/gold].",
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.flavor": "Le bambou fendu est encore humide. Bien serré, il pourrait dévier un coup oblique.",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.title": "Éclat de Beppin",
-  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "La première fois que vous perdez des PV ou de la [gold]Vie de Naraku[/gold] à chaque combat, gagnez {Karate} de [gold]Karaté[/gold].",
+  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "La première fois que vous perdez des PV à chaque combat, gagnez {Karate} de [gold]Karaté[/gold].",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.flavor": "Un fragment de la lame démoniaque Beppin."
 }

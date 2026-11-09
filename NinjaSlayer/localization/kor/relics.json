@@ -48,6 +48,6 @@
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.description": "공격 카드를 {Cards}장 사용할 때마다 [gold]판금[/gold]을 {Plating} 얻습니다.",
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.flavor": "쪼갠 대나무는 아직 축축하다. 단단히 묶으면 스치는 타격을 막을지도 모른다.",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.title": "벳핀 파편",
-  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "매 전투에서 처음으로 체력이나 [gold]나라쿠 생명[/gold]을 잃으면, [gold]카라테[/gold]를 {Karate} 얻습니다.",
+  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "매 전투에서 처음으로 체력을 잃으면, [gold]카라테[/gold]를 {Karate} 얻습니다.",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.flavor": "요도 벳핀의 파편."
 }

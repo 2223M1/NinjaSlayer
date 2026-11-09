@@ -48,6 +48,6 @@
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.description": "Erhalte für jeweils {Cards} ausgespielte Angriffe {Plating} [gold]Panzerung[/gold].",
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.flavor": "Der gespaltene Bambus ist noch feucht. Fest verschnürt könnte er einen Streifschlag ablenken.",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.title": "Beppin-Splitter",
-  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "Wenn du in einem Kampf zum ersten Mal TP oder [gold]Naraku-Leben[/gold] verlierst, erhalte {Karate} [gold]Karate[/gold].",
+  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "Wenn du in einem Kampf zum ersten Mal TP verlierst, erhalte {Karate} [gold]Karate[/gold].",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.flavor": "Ein Splitter der dämonischen Klinge Beppin."
 }

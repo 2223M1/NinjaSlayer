@@ -8,7 +8,6 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
-using NinjaSlayer.Code.Patches;
 using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
@@ -28,7 +27,7 @@ public sealed class KillingIntentPower : NinjaSlayerPowerTemplate
         ValueProp props, Creature? dealer, CardModel? cardSource)
     {
         if (target == Owner && dealer != null && dealer.Side != Owner.Side && props.IsPoweredAttack()
-            && (result.UnblockedDamage > 0 || NarakuLifeDamagePatch.AbsorbedBy(result) > 0))
+            && result.UnblockedDamage > 0)
             _receivedDamage = true;
         return Task.CompletedTask;
     }

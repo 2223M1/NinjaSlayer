@@ -48,6 +48,6 @@
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.description": "アタックを{Cards}枚プレイするたび、{Plating}[gold]プレート[/gold]を得る。",
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.flavor": "削った竹はまだ湿っている。固く縛れば、かすめる刃ぐらいは防げるだろう。",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.title": "ベッピンの欠片",
-  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "各戦闘で初めてHPまたは[gold]ナラク生命[/gold]を失った時、{Karate}[gold]カラテ[/gold]を得る。",
+  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "各戦闘で初めてHPを失った時、{Karate}[gold]カラテ[/gold]を得る。",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.flavor": "妖刀ベッピンの欠片。"
 }

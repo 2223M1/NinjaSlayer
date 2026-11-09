@@ -1,0 +1,924 @@
+{
+  "schemaVersion": 1,
+  "validatedAtUtc": "2026-10-30T03:36:19.996278+00:00",
+  "baselineCommit": "06214140be4d58476b8c7a1fee8810b194f13213",
+  "reviewedState": "uncommitted working tree; candidate identity is SHA256, not baseline commit alone",
+  "version": "1.1.1",
+  "publication": {
+    "commit": false,
+    "push": false,
+    "workshopUpload": false,
+    "websiteDeployment": false,
+    "feedbackWrites": false
+  },
+  "hosts": {
+    "stable": {
+      "version": "0.107.1",
+      "mvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+      "patchTargets": 142,
+      "criticalPatchTargets": 110
+    },
+    "preview": {
+      "version": "0.111.0",
+      "mvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "patchTargets": 143,
+      "criticalPatchTargets": 111
+    }
+  },
+  "checks": {
+    "builds": "both hosts; zero warnings and errors",
+    "gameplayContracts": "both hosts; passed",
+    "nativeHealthBarScene": "both hosts; passed",
+    "patchInstallAndFaultRollback": "both hosts; passed",
+    "nativeTwoProcessENet": "both hosts; passed",
+    "october21TargetedRegressions": "both hosts; passed on final candidate DLLs",
+    "autoAnthony": "preview; passed; all 84 sources and edited component gameplay",
+    "logic": {
+      "passed": 361,
+      "failed": 0,
+      "skipped": 0
+    },
+    "website": {
+      "passed": 34,
+      "failed": 0,
+      "skipped": 1
+    },
+    "localization": {
+      "languages": 16,
+      "tables": 17,
+      "keysPerLanguage": 626
+    },
+    "repository": "passed",
+    "compatibilityDerivedFiles": "passed",
+    "buildBoundaries": "passed",
+    "javascriptSyntax": "passed",
+    "fullGameClientSmoke": "NOT RUN: existing launcher requires elevated firewall isolation; session not elevated"
+  },
+  "limits": [
+    "Native reporter option contract keeps live enemies; no full client next-room traversal claim.",
+    "Reporter test only stubs SfxCmd.Play; native pause is exercised with TestMode off.",
+    "Health bar image is a real native scene in an isolated Godot contract runner, not a full game screenshot.",
+    "No macOS/Linux client, four-player Steam session or player-environment performance measurement.",
+    "October 21 unresolved issues remain unresolved."
+  ],
+  "productionSourceCounts": {
+    "roots": [
+      "Ancients",
+      "Cards",
+      "Code",
+      "Content",
+      "Enchantments",
+      "Encounters",
+      "Events",
+      "Integrations",
+      "Monsters",
+      "Orbs",
+      "Potions",
+      "Powers",
+      "Relics",
+      "Scripts"
+    ],
+    "baseline": {
+      "files": 531,
+      "typeDeclarations": 1009,
+      "physicalLines": 65126
+    },
+    "workingTree": {
+      "files": 530,
+      "typeDeclarations": 1006,
+      "physicalLines": 64938
+    },
+    "includesPreservedOctober21Changes": true
+  },
+  "websiteSelection": {
+    "integersOnly": true,
+    "min": 0,
+    "max": 10,
+    "allAscensionsRetained": true,
+    "rawStatisticsAndReplayDataRetained": true
+  },
+  "feedback": {
+    "publicUrl": "https://2223m1.github.io/NinjaSlayer/data.json",
+    "checkedDate": "2026-10-30",
+    "previousCount": 193,
+    "count": 205,
+    "newCount": 12,
+    "localAssessments": [
+      {
+        "id": "d7e7be4f-890b-4247-be00-5742289220db",
+        "at": "2026-10-28T10:09:34.815Z",
+        "category": "balance",
+        "assessment": "balance_shuriken",
+        "attachmentsInspected": false
+      },
+      {
+        "id": "52392469-a8c4-453c-987f-3178a5b318b4",
+        "at": "2026-10-28T09:40:32.338Z",
+        "category": "feedback",
+        "assessment": "gameplay_understanding_chado",
+        "attachmentsInspected": false
+      },
+      {
+        "id": "c408d626-8978-43ee-afd9-d080559c796f",
+        "at": "2026-10-27T18:55:43.173Z",
+        "category": "feedback",
+        "assessment": "general_comment",
+        "attachmentsInspected": false
+      },
+      {
+        "id": "85aca033-9bbc-4093-989e-deaf0daa452b",
+        "at": "2026-10-27T16:01:30.341Z",
+        "category": "feedback",
+        "assessment": "design_sly_discard",
+        "attachmentsInspected": false
+      },
+      {
+        "id": "80f874f0-5520-4e57-bde8-a580bf76c62e",
+        "at": "2026-10-27T07:26:07.745Z",
+        "category": "feedback",
+        "assessment": "balance_chado",
+        "attachmentsInspected": false
+      },
+      {
+        "id": "65f78780-80dc-4ce4-b638-7064d794ba9e",
+        "at": "2026-10-24T18:11:39.275Z",
+        "category": "feedback",
+        "assessment": "balance_early_game",
+        "attachmentsInspected": false
+      },
+      {
+        "id": "bc786e24-dd65-4042-85c4-52eaf114efb1",
+        "at": "2026-10-24T11:07:41.359Z",
+        "category": "feedback",
+        "assessment": "general_comment",
+        "attachmentsInspected": false
+      },
+      {
+        "id": "9a569b2e-85ad-4221-a910-3bf404aba6d5",
+        "at": "2026-10-24T03:03:45.348Z",
+        "category": "feedback",
+        "assessment": "fixed_locally_reporter_event_completion",
+        "attachmentsInspected": true
+      },
+      {
+        "id": "1b2c1daf-f761-4461-832a-1309bd87a36d",
+        "at": "2026-10-23T13:58:30.361Z",
+        "category": "feedback",
+        "assessment": "no_issue_reported",
+        "attachmentsInspected": false
+      },
+      {
+        "id": "0c4a9f38-d09e-4397-9dde-a31b19d49279",
+        "at": "2026-10-22T16:39:16.483Z",
+        "category": "feedback",
+        "assessment": "unresolved_insufficient_defense_hit_evidence",
+        "attachmentsInspected": true
+      },
+      {
+        "id": "a425a040-b0b6-450b-bb67-f38b412cda30",
+        "at": "2026-10-22T07:57:40.659Z",
+        "category": "feedback",
+        "assessment": "suggestion_death_animation",
+        "attachmentsInspected": true
+      },
+      {
+        "id": "21eb98df-644d-4545-b6ca-48d5c0336ce4",
+        "at": "2026-10-22T06:19:42.513Z",
+        "category": "feedback",
+        "assessment": "general_comment",
+        "attachmentsInspected": false
+      }
+    ],
+    "snapshots": [
+      {
+        "path": "build/feedback-20261029/new-public.json",
+        "bytes": 5110,
+        "sha256": "60664ec4c0c98648fd508e1beed9eb6d234ad62c10a2915dac7995809d4f3888"
+      },
+      {
+        "path": "build/feedback-20261029/latest-feedback.json",
+        "bytes": 91935,
+        "sha256": "4e894fb0761d14e4626429b8fbd70e274082ac80d04f12e780b955a381bd6658"
+      },
+      {
+        "path": "build/feedback-20261029/public-latest-tail.json",
+        "bytes": 500000,
+        "sha256": "51eefe875476b878de4f9a7494dc349ba0c21b71dc7ab20e82b68a70b2069e67"
+      }
+    ],
+    "privateAttachmentHashes": [
+      {
+        "path": "build/feedback-20261029/9a569b2e-85ad-4221-a910-3bf404aba6d5/private.json",
+        "bytes": 1919,
+        "sha256": "8fd89c0b9f8365f973b181cfd185ef1b9859028d06894fadbd9f0b31cbcbe28e"
+      },
+      {
+        "path": "build/feedback-20261029/9a569b2e-85ad-4221-a910-3bf404aba6d5/logs.zip",
+        "bytes": 1228181,
+        "sha256": "7478dc8739e9d3cf2c6efc11ed1c70bca99e1c0b5f2ba942c59c27423b5aeda8"
+      },
+      {
+        "path": "build/feedback-20261029/9a569b2e-85ad-4221-a910-3bf404aba6d5/entries.json",
+        "bytes": 2357,
+        "sha256": "86490d880f95835d7d96a7f89a91e3037bed563b7cb36d22a597ec7c29e7333a"
+      },
+      {
+        "path": "build/feedback-20261029/0c4a9f38-d09e-4397-9dde-a31b19d49279/private.json",
+        "bytes": 1817,
+        "sha256": "d2a9c4e2267948c222f62028e0879b76d0e922b70f9a82c61962dff04853279b"
+      },
+      {
+        "path": "build/feedback-20261029/0c4a9f38-d09e-4397-9dde-a31b19d49279/logs.zip",
+        "bytes": 1033562,
+        "sha256": "5062a5bfc547d167259a3b04e3f4c49d347777dbac6665ca7b0035b778740530"
+      },
+      {
+        "path": "build/feedback-20261029/0c4a9f38-d09e-4397-9dde-a31b19d49279/entries.json",
+        "bytes": 1473,
+        "sha256": "05a0108ab0081931f1fe9904a12a6895eb876ba525904101e33f4672c57d9f4b"
+      },
+      {
+        "path": "build/feedback-20261029/a425a040-b0b6-450b-bb67-f38b412cda30/private.json",
+        "bytes": 1976,
+        "sha256": "d63c5cbf3cb19baa64b0a17ae8500cfc87af18858f3f3a6c0978754028eadfd7"
+      },
+      {
+        "path": "build/feedback-20261029/a425a040-b0b6-450b-bb67-f38b412cda30/logs.zip",
+        "bytes": 381638,
+        "sha256": "5a190f683294e9d9c48103a39638c05dae8ba2ba74d22a5d2054238a1ac24150"
+      },
+      {
+        "path": "build/feedback-20261029/a425a040-b0b6-450b-bb67-f38b412cda30/entries.json",
+        "bytes": 1379,
+        "sha256": "b7173de877d5c944b2fa44402f2260d9fa72789f3a323a33fa8f4b57df88e181"
+      }
+    ]
+  },
+  "assetSource": {
+    "url": "https://github.com/kiooeht/StSLib/blob/master/src/main/resources/stslibResources/images/tempHP.png",
+    "license": "MIT",
+    "originalSha256": "0555b89f458e8ff74c3877d1e78c97c8a583b61fac822ffa1a82eeff1c0f7dbc"
+  },
+  "artifacts": [
+    {
+      "path": "build/feedback-20261029/final-stable/Release/NinjaSlayer.dll",
+      "bytes": 2213376,
+      "sha256": "22a397b9bc1ce6aa1ab78fa0fba79cfb255e4e33f537e2d25fe7eee61df97ba9"
+    },
+    {
+      "path": "build/feedback-20261029/final-preview/Release/NinjaSlayer.dll",
+      "bytes": 2217472,
+      "sha256": "742d0df7b39fbf603a0d67581f48248bcc02e98d4ed93d5acc2438f25202ba80"
+    },
+    {
+      "path": "build/feedback-20261029/current-resources.pck",
+      "bytes": 213163840,
+      "sha256": "33fb9fbd0b0d7a59c7568d04e91b43157914455100fa15817a5eaa2bf979190d"
+    }
+  ],
+  "logs": [
+    {
+      "path": "build/feedback-20261029/build-final-stable.log",
+      "bytes": 427,
+      "sha256": "ad370e384ae453da3f156ffc068878cf916c5ccf14887c04dfb2ba6916144be9"
+    },
+    {
+      "path": "build/feedback-20261029/build-final-preview.log",
+      "bytes": 366,
+      "sha256": "063cfe53cec34681bfbc763cff1e95f85c381505a36cf740c61749b284f0eddf"
+    },
+    {
+      "path": "build/feedback-20261029/final-stable-gameplay.log",
+      "bytes": 60743,
+      "sha256": "1f78b70e1898dd4e84b7ee5e489bdaf34a15630db98e8494562585300a6ae3e6"
+    },
+    {
+      "path": "build/feedback-20261029/final-preview-gameplay.log",
+      "bytes": 59946,
+      "sha256": "54c24f6fc3778723c96258878cc0ceedfc6e3a1798b4248b1efbd66b00184357"
+    },
+    {
+      "path": "build/feedback-20261029/patch-stable.log",
+      "bytes": 5875087,
+      "sha256": "eb1107e61ec82dda75177e6feeffa549400362400aa239609f09424c729d3026"
+    },
+    {
+      "path": "build/feedback-20261029/patch-preview.log",
+      "bytes": 5914705,
+      "sha256": "ab48a268e7a7dd890bfb09ea338ba0f0647565c0160c0725ead7c21f24bce2ea"
+    },
+    {
+      "path": "build/feedback-20261029/anthony.log",
+      "bytes": 34506,
+      "sha256": "5d02d0d7ea4b18169904431c16de7a0a09dcdab5b0dc3da6bbadc85297e3a6de"
+    },
+    {
+      "path": "build/feedback-20261029/network-stable/host.log",
+      "bytes": 51031,
+      "sha256": "7ab5bb603265c0d2f83908724dd0301db8dae58287c40b5a6de6047012451ea2"
+    },
+    {
+      "path": "build/feedback-20261029/network-stable/client.log",
+      "bytes": 51115,
+      "sha256": "753940e2b1a86bff252368f59c70c995ed8f23f7c38afe9f4bfe9b57558363f0"
+    },
+    {
+      "path": "build/feedback-20261029/network-stable/host.json",
+      "bytes": 7244,
+      "sha256": "8d6e06b63bb0b685a30e7924ab969e01462a3a47376c173be70a16ea6451782e"
+    },
+    {
+      "path": "build/feedback-20261029/network-stable/client.json",
+      "bytes": 7244,
+      "sha256": "8d6e06b63bb0b685a30e7924ab969e01462a3a47376c173be70a16ea6451782e"
+    },
+    {
+      "path": "build/feedback-20261029/network-preview/host.log",
+      "bytes": 52486,
+      "sha256": "118092b1973ef672d4e72475517fbc93e0635cc5a2cde9df3a7d9febe1e87a3d"
+    },
+    {
+      "path": "build/feedback-20261029/network-preview/client.log",
+      "bytes": 52570,
+      "sha256": "960dc31b06be4a53e6f9dda638c556c224d6241daaffe23877aad6b18111c147"
+    },
+    {
+      "path": "build/feedback-20261029/network-preview/host.json",
+      "bytes": 4217,
+      "sha256": "52c96a2aefc5de0d4dd6105d7129d50218635155b487a50b067c8cf16c9e96aa"
+    },
+    {
+      "path": "build/feedback-20261029/network-preview/client.json",
+      "bytes": 4217,
+      "sha256": "52c96a2aefc5de0d4dd6105d7129d50218635155b487a50b067c8cf16c9e96aa"
+    },
+    {
+      "path": "build/feedback-20261029/oct21-stable.log",
+      "bytes": 34441,
+      "sha256": "76d59fe7383d385aeb994c3ea849149b8037baf3b6ffcb5134def740bc868649"
+    },
+    {
+      "path": "build/feedback-20261029/oct21-preview.log",
+      "bytes": 33936,
+      "sha256": "e04516d6aea7b54d95ecc6e3ebde465d598552ae5c351ca6d871fcd733f996eb"
+    },
+    {
+      "path": "build/feedback-20261029/render-native.log",
+      "bytes": 60043,
+      "sha256": "e0a7add063c99ad61dc17ee5d5ea85e00a06553bf428831d524445dbd1a6fb2a"
+    },
+    {
+      "path": "build/feedback-20261029/logic.log",
+      "bytes": 688,
+      "sha256": "cf20ba818fbc4c03aa4dd90704c36d05430285b05973a1aac3485f1c27e66a02"
+    },
+    {
+      "path": "build/feedback-20261029/website-tests.log",
+      "bytes": 3623,
+      "sha256": "aca544499adf240ad5dfb1493acbf751a5bd946a69f55fec5e55b056e42cb62d"
+    },
+    {
+      "path": "build/feedback-20261029/repository.log",
+      "bytes": 39,
+      "sha256": "63d1be6098b19cb2b489bbb34a0d3ba2b5dc9897fb96c8229ac0e09a647a8550"
+    },
+    {
+      "path": "build/feedback-20261029/localization.log",
+      "bytes": 77,
+      "sha256": "aaf21f695c0762e122c32eb631671938109617aae09e2092bc9d344c4f96a66c"
+    },
+    {
+      "path": "build/feedback-20261029/build-boundaries.log",
+      "bytes": 30,
+      "sha256": "25812d3e118585dbaeb07ec30527a893794bdd31adc8095b4885e50d5cf0c962"
+    }
+  ],
+  "reproductionScripts": [
+    {
+      "path": "build/feedback-20261029/verify-current.ps1",
+      "bytes": 1504,
+      "sha256": "cde6cd82a1549205a4b1f8301a5238e70bbc8b9228cf500ab59a9ebe2b7b1f35"
+    },
+    {
+      "path": "build/feedback-20261029/verify-patches.ps1",
+      "bytes": 1326,
+      "sha256": "13cbfff7d22f9c4a672406b0ae952b3fcefb99e5efe17bbcf532bebebdf1cf5a"
+    },
+    {
+      "path": "build/feedback-20261029/verify-network.ps1",
+      "bytes": 957,
+      "sha256": "5f08c3257f91dcd5ffba66b2601a51f4852dc371cf97246d29d6f2c0317fc847"
+    },
+    {
+      "path": "build/feedback-20261029/verify-anthony.ps1",
+      "bytes": 1607,
+      "sha256": "7dc68343413bb7ca988c69e82e68010f01ca568c9978c2cea483f855ec64c9e1"
+    },
+    {
+      "path": "build/feedback-20261029/render-current.ps1",
+      "bytes": 1800,
+      "sha256": "56372d9b09917a84269e21fa68caff99ffbe5d7749b01d449959b625e4a6d1da"
+    }
+  ],
+  "preservedOctober21Files": [
+    "Cards/Standard/AntiAirBangBangFist.cs",
+    "Code/Combat/DarkNinjaCombatMath.cs",
+    "Code/Combat/EvasionResolution.cs",
+    "Code/ExternalAnimations/DarkNinjaSpecialAttackPresentation.cs",
+    "Code/Nodes/NLowHealthBloodVfx.cs",
+    "Code/Patches/EvasionMissPatches.cs",
+    "Powers/EvasionPower.cs",
+    "Tests/NinjaSlayer.LogicTests/DarkNinjaCombatMathTests.cs",
+    "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.FeedbackOctober21.cs",
+    "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Multiplayer.cs",
+    "Docs/validation/feedback-20261021.md",
+    "Docs/validation/feedback-20261021.evidence.json"
+  ],
+  "changedFiles": [
+    {
+      "path": "ASSET_MANIFEST.md",
+      "bytes": 17072,
+      "sha256": "8e0159d2e7d94d0ff780013b06d4ed673e902ee861c939c20087ae6df35a1358"
+    },
+    {
+      "path": "Cards/Standard/AntiAirBangBangFist.cs",
+      "bytes": 2365,
+      "sha256": "43b16d035b1ac8beec599391d92fada669905c3cdef925e546aa400319058cc0"
+    },
+    {
+      "path": "Cards/Standard/BlackFlameInferno.cs",
+      "bytes": 1097,
+      "sha256": "fef2f4a2ac86fd322a4cbd0432abfdccfa0aa056e6a9f91d96b53d61e9bac770"
+    },
+    {
+      "path": "Cards/Standard/Endurance.cs",
+      "bytes": 1563,
+      "sha256": "c86d2c74ddeb4ffccb9da9bd6852dbd610e067f715011ab3e914669e627f763c"
+    },
+    {
+      "path": "Cards/Standard/FocusedBlows.cs",
+      "bytes": 1780,
+      "sha256": "e9ee82505a12d91238aee642ad1077458449f12593294c9cd85450c9c7627249"
+    },
+    {
+      "path": "Cards/Standard/Jujutsu.cs",
+      "bytes": 953,
+      "sha256": "6f0939f628d961615de4b3345e71551051651fcbf4a7b0724a944a378a1fdd08"
+    },
+    {
+      "path": "Cards/Standard/LeftUppercut.cs",
+      "deleted": true,
+      "baselineSha256": "6a5d769c89e94ca220d39aaed160b8a39805caa058968bb42a4bb83a258e3817"
+    },
+    {
+      "path": "Cards/Standard/LowUppercut.cs",
+      "bytes": 2111,
+      "sha256": "0fee0d10a101a94beaf6af683798da376655740ec7a4b94b780e42c1ce45e70d"
+    },
+    {
+      "path": "Cards/Standard/RightUppercut.cs",
+      "deleted": true,
+      "baselineSha256": "cd020b8b4d9690df398ef60dde757c14e53a84cabc35cdd4d501600069e2006d"
+    },
+    {
+      "path": "Cards/Standard/ShurikenStorm.cs",
+      "bytes": 1054,
+      "sha256": "407015deb57262b7dfa09a0a4532bb41ca41ccb02f6132ee2e617c04d5698ed7"
+    },
+    {
+      "path": "Cards/Standard/SomersaultKick.cs",
+      "bytes": 2093,
+      "sha256": "8651e3ff3e53a62be29fb5e376a527a2a7fd8030e8ca1931dbc89fa6eb61c624"
+    },
+    {
+      "path": "Cards/Standard/TomoeThrow.cs",
+      "bytes": 2072,
+      "sha256": "f8c956310f3294c2989a351992e831d3d02b6537c9fcd6927c0dc462aae69a89"
+    },
+    {
+      "path": "Cards/Standard/Training.cs",
+      "bytes": 871,
+      "sha256": "75cbd7c931826d61104d06c0714c77a08bf573606896a8b016fda1a12fa5c361"
+    },
+    {
+      "path": "Code/Combat/CombatMetricsSnapshot.cs",
+      "bytes": 2376,
+      "sha256": "9b862b66245b5776219ff64a2026c6e02208fd86d12812a84579e4bc0fa6b1c2"
+    },
+    {
+      "path": "Code/Combat/DarkNinjaCombatMath.cs",
+      "bytes": 8955,
+      "sha256": "bfce8561f35cbd6e65eefe3b2d8220df9fce2aa784633e6883f2ec3804fc0cf8"
+    },
+    {
+      "path": "Code/Combat/EvasionResolution.cs",
+      "bytes": 3839,
+      "sha256": "fca2e0d48027900cfba73fe264b58c0da6119899145845bfe779325bbc18f9d1"
+    },
+    {
+      "path": "Code/Combat/ExtendedHealthBarLayout.cs",
+      "deleted": true,
+      "baselineSha256": "baa805a2ff3bdd15a6e96eb90a99415e1604f774c9c87e440ce72ff1c80bb15f"
+    },
+    {
+      "path": "Code/Combat/SawatariEventSession.cs",
+      "bytes": 23510,
+      "sha256": "9da4cb9d811dc207c11c67525ef3c30e9f03dcab778746c726033425d95486c1"
+    },
+    {
+      "path": "Code/ExternalAnimations/ArchitectExecutionCinematic.cs",
+      "bytes": 20309,
+      "sha256": "8862d2cea0522d8b55e80582674b126c7b5af5147352b219cad52102417dedac"
+    },
+    {
+      "path": "Code/ExternalAnimations/DarkNinjaSpecialAttackPresentation.cs",
+      "bytes": 43325,
+      "sha256": "b00fec4d6aee06ceb4ae3e969895a6e621974afa0f14e147ecbd8367d789488b"
+    },
+    {
+      "path": "Code/Nodes/NLowHealthBloodVfx.cs",
+      "bytes": 7381,
+      "sha256": "32307353c156224676a3eeff8dfd7d7b619f1f6364d55ef6b89e190b9dbb7e61"
+    },
+    {
+      "path": "Code/Patches/EvasionMissPatches.cs",
+      "bytes": 13407,
+      "sha256": "80dea0522418be5f057f9bd528aedbde1bc720afbea3f9ab2c4ac03d33e4f804"
+    },
+    {
+      "path": "Code/Patches/NarakuLifeHealthBarLayoutPatch.cs",
+      "bytes": 2951,
+      "sha256": "c46426b54b2890cf12f9421e493b3f3ef0cf0146049806f0f38fa8c1acab0ee4"
+    },
+    {
+      "path": "Code/Patches/ReporterPassEventOptionPatch.cs",
+      "bytes": 3233,
+      "sha256": "64a1ef29dfaecd1d54e17b27df4c1ce6047a2dc84886e31d1a3dc27103afa993"
+    },
+    {
+      "path": "Content/NarakuLifeHealthBarColors.cs",
+      "deleted": true,
+      "baselineSha256": "be617fd78c4f4b36d2b8343db8d84cb30da0e2cd284486c30d48450fcb2deea6"
+    },
+    {
+      "path": "Content/NinjaSlayerCardRules.cs",
+      "bytes": 4645,
+      "sha256": "22a07c1c14d7c4e5b2c987c04ea875491d3e4fab98311aad6ccac3aad404ae86"
+    },
+    {
+      "path": "Content/NinjaSlayerCombatMetrics.cs",
+      "bytes": 6870,
+      "sha256": "667552735706592790d9053619eb8c5845eb725968898a3734e7199f003a54a9"
+    },
+    {
+      "path": "Docs/card-catalog.md",
+      "bytes": 28257,
+      "sha256": "9acf95c2b9bf61e8102b7fec187e1d51576fa20edc1a0914d0c9fbc5f48bbebc"
+    },
+    {
+      "path": "Docs/validation/feedback-20261021.evidence.json",
+      "bytes": 40397,
+      "sha256": "7b3f461aca9f09d219b23fbfc567a5b5c1da8e86bee31a90a3d4d90b36a65484"
+    },
+    {
+      "path": "Docs/validation/feedback-20261021.md",
+      "bytes": 10859,
+      "sha256": "1ba211e3334756ae482b825b3031d9e7fae8764dc64a40190cfd168e1a7fdf20"
+    },
+    {
+      "path": "Docs/validation/feedback-20261029.md",
+      "bytes": 11273,
+      "sha256": "651dc34c9b8c9edfbdb23b1b543cb04f1858b9145cd0d272fa53b5d3cfd65e08"
+    },
+    {
+      "path": "Docs/validation/naraku-temphp-20261030.png",
+      "bytes": 12543,
+      "sha256": "4cc1da2479482d07948603099fc4663060fc09413d3988a5acad559d2725713b"
+    },
+    {
+      "path": "Events/TheMovingJungleEvent.cs",
+      "bytes": 10027,
+      "sha256": "6083968e902532d18bf8288099201a1fa26e5cc62ec52137fe36de9823e1d207"
+    },
+    {
+      "path": "Infrastructure/telemetry-worker/dashboard/app.js",
+      "bytes": 26821,
+      "sha256": "b7d7086e619bbf7fe5a325f283200c97f78b661007c26d6e5585cf488d5ecffa"
+    },
+    {
+      "path": "Integrations/AutoAnthony/NinjaComponentRuntime.cs",
+      "bytes": 17736,
+      "sha256": "51e2023c27212a28c79cf2adb7534782b63dcd2de62eca2dcfa7d622f06f1522"
+    },
+    {
+      "path": "Integrations/AutoAnthony/NinjaComponentSources.cs",
+      "bytes": 29397,
+      "sha256": "e0c2da5da01f04da73b9bde6efb935421eec1d27ff2e8a58e0105c7c3f860da1"
+    },
+    {
+      "path": "NinjaSlayer/images/ui/naraku_temp_hp.LICENSE.txt",
+      "bytes": 1091,
+      "sha256": "e83c885e6922f7519a68e410952c53f2346121c9f632b0b4ebf64f271fde76d5"
+    },
+    {
+      "path": "NinjaSlayer/images/ui/naraku_temp_hp.png",
+      "bytes": 3964,
+      "sha256": "0555b89f458e8ff74c3877d1e78c97c8a583b61fac822ffa1a82eeff1c0f7dbc"
+    },
+    {
+      "path": "NinjaSlayer/images/ui/naraku_temp_hp.png.import",
+      "bytes": 968,
+      "sha256": "3028294785db172add48955e9b183b88fd0b4c6f68cea52266f192a8ef1f0f69"
+    },
+    {
+      "path": "NinjaSlayer/localization/deu/cards.json",
+      "bytes": 21530,
+      "sha256": "49661faf36b7e39fb589f14ca1ad557709e3a07267da709e7ce2b0bd46e53220"
+    },
+    {
+      "path": "NinjaSlayer/localization/deu/powers.json",
+      "bytes": 12277,
+      "sha256": "410216f010a7c8cd5b01f1d1e0b215cb3b36c74ebe09d9a1613226775fabaa8e"
+    },
+    {
+      "path": "NinjaSlayer/localization/eng/cards.json",
+      "bytes": 20135,
+      "sha256": "71aaf7c7ac23eef2ba6f0ddb0e78c868492b89b543e54d3433f0c7b7edc5c083"
+    },
+    {
+      "path": "NinjaSlayer/localization/eng/powers.json",
+      "bytes": 11404,
+      "sha256": "14f925706dfc62044c1e3b218ac6c0546ff2702715595796990f7729e598bace"
+    },
+    {
+      "path": "NinjaSlayer/localization/esp/cards.json",
+      "bytes": 21538,
+      "sha256": "146be4e0ba6c7d17859eae10499be1bdcf6b6afe656b37a34ca4bcbb8abe7d1c"
+    },
+    {
+      "path": "NinjaSlayer/localization/esp/powers.json",
+      "bytes": 12279,
+      "sha256": "aadd3aae0f35a0341c6d636e7793ef348ce1f6d98bb8dc406839e6d3b40bf0b3"
+    },
+    {
+      "path": "NinjaSlayer/localization/fra/cards.json",
+      "bytes": 21873,
+      "sha256": "18b45c8ec3a873821bb0c87f902aaae0bc704f45982b90ff915a269398f1528c"
+    },
+    {
+      "path": "NinjaSlayer/localization/fra/powers.json",
+      "bytes": 12602,
+      "sha256": "62fc1ba03d939a3c1c43cc070ca7e240aa3863d0ec47bf8e782fbbdbe48ebaa0"
+    },
+    {
+      "path": "NinjaSlayer/localization/ind/cards.json",
+      "bytes": 21080,
+      "sha256": "f041c2c2a838fc61080439ad4902ce2538d812bbfe2582be5a8e515aad33f283"
+    },
+    {
+      "path": "NinjaSlayer/localization/ind/powers.json",
+      "bytes": 11965,
+      "sha256": "3ffde27a8de3127a2548fc115588a81e2c4fb7c02c434e8072a37dba96e414e6"
+    },
+    {
+      "path": "NinjaSlayer/localization/ita/cards.json",
+      "bytes": 21695,
+      "sha256": "6fef4a15cedad0a33f237090fbcb8fb86d6b6ffd160d704b3fcb3fed51056b82"
+    },
+    {
+      "path": "NinjaSlayer/localization/ita/powers.json",
+      "bytes": 12441,
+      "sha256": "012158ed99daaf1854c74c0f2cf730b43c517a8cb7d2254409b52dac6c12398b"
+    },
+    {
+      "path": "NinjaSlayer/localization/jpn/cards.json",
+      "bytes": 22300,
+      "sha256": "03271b6e0ca7702d4bbf9eaa84dc069060766ca1e79202691ce441ee0995b95b"
+    },
+    {
+      "path": "NinjaSlayer/localization/jpn/powers.json",
+      "bytes": 12312,
+      "sha256": "3f4919b9c643c7988332f39fbbe99bd5af2a887747745699d7e841d475bcf110"
+    },
+    {
+      "path": "NinjaSlayer/localization/kor/cards.json",
+      "bytes": 22225,
+      "sha256": "321b9fff0bb0e16fbb984e8e4f055bae3f7597cd5d7f2fd4de1ef7632b2fce1c"
+    },
+    {
+      "path": "NinjaSlayer/localization/kor/powers.json",
+      "bytes": 12253,
+      "sha256": "c859d8b817ad62468e3ea9df1e11098a7000cc400c1296f460b77a9b602c34bb"
+    },
+    {
+      "path": "NinjaSlayer/localization/pol/cards.json",
+      "bytes": 22311,
+      "sha256": "f67acd9e5e794081da470865d0a34d38db5ca473927ca37f684cb7fc756637e1"
+    },
+    {
+      "path": "NinjaSlayer/localization/pol/powers.json",
+      "bytes": 12807,
+      "sha256": "b85b84eb7e2fca0ef38ea039dcd31eae38a4c00b1ee44a0c9e57fac2aef98a30"
+    },
+    {
+      "path": "NinjaSlayer/localization/ptb/cards.json",
+      "bytes": 21448,
+      "sha256": "ebbe3fcafeb757947e7b62cd7e66d6882c8e9794f7768511563c2c2d2ef23096"
+    },
+    {
+      "path": "NinjaSlayer/localization/ptb/powers.json",
+      "bytes": 12132,
+      "sha256": "8b5390977713f1f625a571315db09bbee10160a2be6f75590eb4d52f41461ad5"
+    },
+    {
+      "path": "NinjaSlayer/localization/rus/cards.json",
+      "bytes": 26763,
+      "sha256": "760c337ad021a0fb4da689d9b7d13ab4d2172339d8c8f3095e3ce71a507e33ec"
+    },
+    {
+      "path": "NinjaSlayer/localization/rus/powers.json",
+      "bytes": 15777,
+      "sha256": "e27b1a0ffebf8655abfb1218264063ad2c5d6f6e8b1fcd81a452e5c4f4788f30"
+    },
+    {
+      "path": "NinjaSlayer/localization/spa/cards.json",
+      "bytes": 21369,
+      "sha256": "b67ee3d3b2dde6243f251b80484ee92742c468a4d70bd9a1a21d1f37929f119b"
+    },
+    {
+      "path": "NinjaSlayer/localization/spa/powers.json",
+      "bytes": 12285,
+      "sha256": "bddb6e6081bab62d87803616ab1cab4d611fc88b6efa19b9fca8f1cc4eb52984"
+    },
+    {
+      "path": "NinjaSlayer/localization/tha/cards.json",
+      "bytes": 30878,
+      "sha256": "aa265bdc58f531ad5cb493c621986f2fdf2e0b18a77c1bac151ec7dd714fae0a"
+    },
+    {
+      "path": "NinjaSlayer/localization/tha/powers.json",
+      "bytes": 18715,
+      "sha256": "4d2f6f89c1d532bb4dabd1b8c2cc634a94dd9f37bf5d59feab16f32826e5c6f6"
+    },
+    {
+      "path": "NinjaSlayer/localization/tur/cards.json",
+      "bytes": 20389,
+      "sha256": "5015364fce440c0db1fd1ac26ddcade22d617ef358c1a31245bc85476cd9f7eb"
+    },
+    {
+      "path": "NinjaSlayer/localization/tur/powers.json",
+      "bytes": 11607,
+      "sha256": "5b4274bfc9f01f152bbb7bbb8082782d88f017d3aa41a740bb79aee3a8129372"
+    },
+    {
+      "path": "NinjaSlayer/localization/zhs/cards.json",
+      "bytes": 20165,
+      "sha256": "288095592fed1c3b7a6e1cf44f8c721daec8da4ab353db443ce916039372891f"
+    },
+    {
+      "path": "NinjaSlayer/localization/zhs/powers.json",
+      "bytes": 11054,
+      "sha256": "a8b2a731adf47c98eb3435b8d941319dcf35fe3978745665a7bc0ab7be09ac60"
+    },
+    {
+      "path": "NinjaSlayer/localization/zht/cards.json",
+      "bytes": 20165,
+      "sha256": "5cb464ebebcd5a765ad1c924c4320c118cd3aadbe12e0b12e4b34f637a58bff9"
+    },
+    {
+      "path": "NinjaSlayer/localization/zht/powers.json",
+      "bytes": 11054,
+      "sha256": "43b1cfd5bfde6cfdf954a428fc82f8205e18d87f77145da203818902688178e5"
+    },
+    {
+      "path": "Powers/DevourFlamePower.cs",
+      "bytes": 688,
+      "sha256": "3760dc0c873be30432205fde3ed3bac9d76bad4d68971bb53cf544e435f0eabc"
+    },
+    {
+      "path": "Powers/EvasionPower.cs",
+      "bytes": 1486,
+      "sha256": "d08273c8bb7b7e3563edf29988766aa64f4dbb504daf8b4ec476a4a6409505ef"
+    },
+    {
+      "path": "Powers/FocusedBlowsFocusPower.cs",
+      "bytes": 480,
+      "sha256": "c63b3353bb04ae36f1755b81ec6f2a9b8ba90def15ddd9a518fb6d441edf77ee"
+    },
+    {
+      "path": "Powers/NarakuLifePower.cs",
+      "bytes": 1774,
+      "sha256": "f2c66b718f78c00751d383d819c102812d7fc04c702253ad399c6a266b4b7e81"
+    },
+    {
+      "path": "Tests/NinjaSlayer.LogicTests/CardPoolRulesTests.cs",
+      "bytes": 8817,
+      "sha256": "728aca8a0fe244f645e454e624c42b6efc79edc034db8676b3e0d4f1ce4f014e"
+    },
+    {
+      "path": "Tests/NinjaSlayer.LogicTests/CombatLogicTests.cs",
+      "bytes": 57449,
+      "sha256": "a75d3d4e3582b902e890c99d1170f08312f89f9c8eebee410cacf576ee5ebb3a"
+    },
+    {
+      "path": "Tests/NinjaSlayer.LogicTests/DarkNinjaCombatMathTests.cs",
+      "bytes": 9706,
+      "sha256": "3c025ec3137963caab571e53475214ada03ddc08b361cf807840f5e4b889dde6"
+    },
+    {
+      "path": "Tests/NinjaSlayer.LogicTests/ExtendedHealthBarLayoutTests.cs",
+      "deleted": true,
+      "baselineSha256": "200e5ca8022b6dfef53a47f3fe513ea42b07b503725daab9d5df550f48ec10e0"
+    },
+    {
+      "path": "Tests/NinjaSlayer.LogicTests/NinjaSlayer.LogicTests.csproj",
+      "bytes": 7022,
+      "sha256": "d54d29fdf7b6311eb728f552d0710d6de9cfaa0e856469838bf1cf25593a6ca8"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.AutoAnthony.cs",
+      "bytes": 32510,
+      "sha256": "6162f03604e7841bc4ea6e6c3e508541d51f23616a23d88f6ffcf52295635ae9"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.BoardV119.cs",
+      "bytes": 3015,
+      "sha256": "fd2878036db64dd90deddcbf941477559008af7aee5676a76093a099bb017e26"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Cards.cs",
+      "bytes": 21348,
+      "sha256": "22a42ad744321d0391206811d5c719c22ca9d8cc59212037f176a78dc954bf21"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.FeedbackOctober21.cs",
+      "bytes": 11923,
+      "sha256": "cbed0f7b56be2ef612d3be859d9b37e235ae3d8910a479b0301a19e7290f75f5"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.FeedbackOctober29.cs",
+      "bytes": 11245,
+      "sha256": "004bd46f27081895b707cda596cc2ed00b72743531578d882c86bac6ed52443a"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Multiplayer.cs",
+      "bytes": 40258,
+      "sha256": "46210631a63ac66f9dda536dad6c34d4805b7d328d2376aff92758e539392c39"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.NarakuPanels.cs",
+      "bytes": 7753,
+      "sha256": "4fca8c35db114f26abcb50c029cdff22cba90020395724218dfa3390d1dffe27"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.NewPool.cs",
+      "bytes": 36612,
+      "sha256": "a6e8ba5f41c4e1775578d2816f8ac876124acff675c6f067138b8ba0230c3a2a"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Release113.cs",
+      "bytes": 6677,
+      "sha256": "f70314651e37d676808c3c1c00d9d97a01bf5fc8e50cafcc073402dbdc35c001"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.V17.cs",
+      "bytes": 11639,
+      "sha256": "e42eb8d21096554a626bb371bc90c8117b7571c205bde7d01283f4b6ff86326e"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.cs",
+      "bytes": 46236,
+      "sha256": "537511e7bed2e5e4bdf446b7faeaf1affa0b85871b087ea721074093b5b3cb43"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/card-metadata.json",
+      "bytes": 79816,
+      "sha256": "5bf9f18835d24bee844db1b058eadb4ce62a77d06245f7b7496f0d42a727bd79"
+    },
+    {
+      "path": "Tests/NinjaSlayer.RitsuLibContractTests/ContractRunner.cs",
+      "bytes": 132381,
+      "sha256": "d6bddb94dd749b67b563bc6c382c1c7e20438fe919c413ed26eb776477b5f90a"
+    },
+    {
+      "path": "export_presets.cfg",
+      "bytes": 3353,
+      "sha256": "0e5b4e7428f17993e27fff82ad8bdb96d78da6aa8d67c29f64a3b651f6d4e94d"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.MultiHitVigor.cs",
+      "bytes": 16405,
+      "sha256": "609292ca41ac050993487b2f94ae4f1aed2c20552af49a97badabee4f2e56c76"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Release114.cs",
+      "bytes": 7805,
+      "sha256": "4e78960546270d01a9fc640f2e1980acd88b544e8598f2cbf55e6f9bd63840e0"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.cs",
+      "bytes": 101796,
+      "sha256": "8a8503eb939b420599a0fc6917992cf3e5838327bc43e09ef4766ce1a4de1bb7"
+    }
+  ]
+}

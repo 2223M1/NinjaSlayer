@@ -41,6 +41,10 @@ public partial class OrbContractRunner
         GD.Print("PASS all current upgrades: no simultaneous cost reduction and added Retain/Innate");
         await VerifyBoardV118();
         await VerifyBoardV119();
+        await VerifyOctober29Cards();
+        await VerifyNovember9Cards();
+        await VerifyTemporaryHpSemantics();
+        await VerifyEventRelics();
         await VerifyBoardFourthEdit();
         await VerifyMultiHitVigor();
         await VerifyNewCardInteractions();
@@ -279,7 +283,9 @@ public partial class OrbContractRunner
         Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 0
             && PileType.Exhaust.GetPile(combat.Player).Cards.Count == 2,
             "Native end-turn must exhaust each Black Flame once without the retired Strength reward.");
-        GD.Print("PASS native Black Flame end-turn: one exhaust per flame, no obsolete Devour Flame reward");
+        Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 8,
+            "Black Flame must grant six Naraku Life after each exhaust and absorb the second flame's four self-damage.");
+        GD.Print("PASS native Black Flame end-turn: one exhaust/reward per flame and Naraku absorption between flames");
     }
 
     private static async Task VerifyNarakuForms()

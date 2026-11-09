@@ -97,7 +97,7 @@ public sealed class CardPoolRulesTests
                      "SomersaultKick",
                      "ReadyShuriken",
                      "CrossGuard",
-                     "RightUppercut",
+                     "FocusedBlows",
                      "Rekindle",
                      "Poise"
                  })

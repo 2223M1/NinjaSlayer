@@ -54,7 +54,7 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                 break;
             // These are intrinsic card rules; NinjaComponentCardPatches uses native card hooks.
             case "return_first":
-            case "return_attacks":
+            case "copy_on_draw":
             case "play_on_top":
             case "grow_damage_turn_end":
                 break;
@@ -70,13 +70,12 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                 if (NinjaSlayerCombatMetrics.DiscardedCardThisTurn(owner))
                     await ChadoBreathCmd.Apply(choice, owner, amount);
                 break;
-            case "vulnerable_after_attack":
-                if (context.Target is { IsAlive: true } vulnerable && NinjaSlayerCombatMetrics.PreviousFinishedCardWasAttack(owner))
-                    await PowerCmd.Apply<VulnerablePower>(choice, vulnerable, amount, owner.Creature, card);
-                break;
-            case "weak_after_skill":
-                if (context.Target is { IsAlive: true } weak && NinjaSlayerCombatMetrics.PreviousFinishedCardWasSkill(owner))
-                    await PowerCmd.Apply<WeakPower>(choice, weak, amount, owner.Creature, card);
+            case "weak_vulnerable_after_attack":
+                if (context.Target is { IsAlive: true } target && NinjaSlayerCombatMetrics.PreviousFinishedCardWasAttack(owner))
+                {
+                    await PowerCmd.Apply<WeakPower>(choice, target, amount, owner.Creature, card);
+                    await PowerCmd.Apply<VulnerablePower>(choice, target, amount, owner.Creature, card);
+                }
                 break;
             case "hook_strength":
                 if (context.Target is { IsAlive: true } hooked && amount > 0)
@@ -169,10 +168,16 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                 await karateAttack.Execute(choice);
                 context.RecordDamageDealt((int)karateAttack.Results.SelectMany(r => r).Sum(r => r.UnblockedDamage));
                 break;
+            case "stock_damage":
+                var stockAttack = DamageCmd.Attack(amount + Value("bonus") * (ShurikenOrb.Find(owner)?.StackCount ?? 0))
+                    .FromCard(card, context.CardPlay).Targeting(context.Target!);
+                await stockAttack.Execute(choice);
+                context.RecordDamageDealt((int)stockAttack.Results.SelectMany(r => r).Sum(r => r.UnblockedDamage));
+                break;
             case "buff_hits":
                 int hits = 1 + owner.Creature.Powers.Where(p => p.Amount > 0 && p.TypeForCurrentAmount == PowerType.Buff
                     && p is StrengthPower or DexterityPower or VigorPower or KaratePower or FocusPower
-                        or ArtifactPower or BufferPower or IntangiblePower or ThornsPower or PlatingPower or RegenPower or EvasionPower)
+                        or ArtifactPower or BufferPower or IntangiblePower or ThornsPower or PlatingPower or RegenPower or EvasionPower or NarakuLifePower)
                     .Select(p => p.Id).Distinct().Count();
                 var random = DamageCmd.Attack(amount).FromCard(card, context.CardPlay).WithHitCount(hits).TargetingRandomOpponents(card.CombatState!);
                 await random.Execute(choice);

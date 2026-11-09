@@ -8,7 +8,6 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Relics;
@@ -26,7 +25,7 @@ public sealed class BeppinShardRelic : NinjaSlayerRelicTemplate
         DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
         if (!CombatManager.Instance.IsInProgress || target != Owner.Creature || _usedThisCombat
-            || (result.UnblockedDamage <= 0 && NarakuLifeDamagePatch.AbsorbedBy(result) == 0)) return;
+            || result.UnblockedDamage <= 0) return;
         _usedThisCombat = true;
         Flash();
         await PowerCmd.Apply<KaratePower>(choiceContext, Owner.Creature,

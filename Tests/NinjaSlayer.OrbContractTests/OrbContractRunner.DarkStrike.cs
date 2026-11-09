@@ -95,7 +95,7 @@ public partial class OrbContractRunner
                 await PowerCmd.Apply<NarakuLifePower>(Choice, f.Target, defense == "naraku" ? 100 : 3, f.Target, null);
             if (defense == "zero") await PowerCmd.Apply<StrengthPower>(Choice, f.Monster.Creature, -100, f.Monster.Creature, null);
             await DarkStrike(f.Monster, f.Target);
-            bool expected = defense is "none" or "partial-block" or "naraku" or "overflow";
+            bool expected = defense is "none" or "partial-block" or "overflow";
             SwipePower[] swipes = f.Monster.Creature.Powers.OfType<SwipePower>().ToArray();
             Require(swipes.Length == (expected ? 1 : 0), $"Dark Strike theft mismatch for {defense}.");
             Require(!f.Target.HasPower<WeakPower>(), "Dark Strike still applied Weak.");
@@ -105,7 +105,7 @@ public partial class OrbContractRunner
                 Require(ReferenceEquals(swipes.Single().StolenCard, card) && card.IsUpgraded,
                     "Native Swipe did not retain the exact upgraded card.");
         }
-        GD.Print("PASS Dark Strike real HP/Naraku receipts, full/partial block, Buffer, Evasion and zero damage.");
+        GD.Print("PASS Dark Strike real HP loss only, temporary HP/overflow, full/partial block, Buffer, Evasion and zero damage.");
 
         string[] stolenSequences = new string[2];
         for (int repeat = 0; repeat < 2; repeat++)

@@ -48,6 +48,6 @@
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.description": "Setiap {Cards} Serangan yang kamu mainkan, dapatkan {Plating} [gold]Lapisan[/gold].",
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.flavor": "Bambu belah itu masih lembap. Jika diikat erat, mungkin bisa menahan pukulan menyerempet.",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.title": "Pecahan Beppin",
-  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "Pertama kali kamu kehilangan HP atau [gold]Nyawa Naraku[/gold] dalam setiap perlawanan, dapatkan {Karate} [gold]Karate[/gold].",
+  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "Pertama kali kamu kehilangan HP dalam setiap perlawanan, dapatkan {Karate} [gold]Karate[/gold].",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.flavor": "Pecahan pedang iblis Beppin."
 }

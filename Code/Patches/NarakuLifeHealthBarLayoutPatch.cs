@@ -1,157 +1,67 @@
-using System.Reflection;
 using Godot;
-using HarmonyLib;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
-using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
 
-[HarmonyAfter("com.ritsukage.sts2-RitsuLib.framework-core")]
-[HarmonyPriority(Priority.Last)]
 public sealed class NarakuLifeHealthBarLayoutPatch : IPatchMethod
 {
-    private const string EmbeddedStripName = "NinjaSlayerNarakuLifeStrip";
-    private static readonly FieldInfo HealthBarCreature =
-        AccessTools.Field(typeof(NHealthBar), "_creature")
-        ?? throw new MissingFieldException(typeof(NHealthBar).FullName, "_creature");
-    private static readonly FieldInfo ExpectedMaxForegroundWidth =
-        AccessTools.Field(typeof(NHealthBar), "_expectedMaxFgWidth")
-        ?? throw new MissingFieldException(typeof(NHealthBar).FullName, "_expectedMaxFgWidth");
-    private static readonly FieldInfo OriginalBlockPosition =
-        AccessTools.Field(typeof(NHealthBar), "_originalBlockPosition")
-        ?? throw new MissingFieldException(typeof(NHealthBar).FullName, "_originalBlockPosition");
-
     public static string PatchId => "ninjaslayer_naraku_life_health_bar_layout";
-
-    public static string Description =>
-        "Keep the vanilla block anchor fixed while Naraku life extends the health bar to the right.";
-
+    public static string Description => "Display Naraku life as a flame-purple Temp HP heart at the native health bar's right edge.";
     public static bool IsCritical => false;
-
     public static ModPatchTarget[] GetTargets() =>
-    [
-        new(typeof(NHealthBar), "RefreshForeground"),
-        new(typeof(NHealthBar), "SetHpBarContainerSizeWithOffsetsImmediately", true)
-    ];
+        [new(typeof(NHealthBar), "RefreshForeground")];
 
-    public static void Postfix(NHealthBar __instance)
+    public static void Postfix(NHealthBar __instance, Creature? ____creature)
     {
-        Creature? creature = HealthBarCreature.GetValue(__instance) switch
+        int amount = ____creature?.GetPowerAmount<NarakuLifePower>() ?? 0;
+        Control bar = __instance.HpBarContainer;
+        Control? heart = bar.GetNodeOrNull<Control>("NinjaSlayerNarakuLife");
+        NinePatchRect? outline = bar.GetNodeOrNull<NinePatchRect>("NinjaSlayerNarakuOutline");
+        if (amount <= 0)
         {
-            null => null,
-            Creature value => value,
-            _ => throw new InvalidOperationException(
-                "NHealthBar._creature has an unexpected runtime type.")
-        };
-        if (creature == null)
-        {
-            HideEmbeddedStrip(__instance);
+            heart?.Hide();
+            outline?.Hide();
             return;
         }
 
-        int narakuLife = creature.GetPowerAmount<NarakuLifePower>();
-        if (narakuLife <= 0)
+        if (heart == null)
         {
-            HideEmbeddedStrip(__instance);
-            return;
+            // StSLib's 64px heart is centered at bar-right + (-14 + 16),
+            // overlapping the bar end instead of sitting outside it.
+            // Keep the host's label, scale and visibility under HpBarContainer.
+            heart = (Control)__instance.GetNode<Control>("%BlockContainer").Duplicate();
+            heart.Name = "NinjaSlayerNarakuLife";
+            heart.Modulate = Colors.White;
+            heart.MouseFilter = Control.MouseFilterEnum.Ignore;
+            heart.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.CenterRight);
+            heart.OffsetLeft = -30;
+            heart.OffsetRight = 34;
+            heart.OffsetTop = -36;
+            heart.OffsetBottom = 28;
+            TextureRect icon = heart.GetNode<TextureRect>("BlockIcon");
+            icon.Texture = ResourceLoader.Load<Texture2D>("res://NinjaSlayer/images/ui/naraku_temp_hp.png");
+            // Match OuterColor and sparks in ninja_slayer_additive_step_fire.tscn.
+            icon.Modulate = new Color(1f, 0.192157f, 1f);
+            Label label = heart.GetNode<Label>("BlockLabel");
+            label.AddThemeColorOverride("font_color", Colors.White);
+            label.AddThemeColorOverride("font_outline_color", new Color(0.18f, 0.18f, 0.18f));
+            bar.AddChild(heart);
         }
-
-        RefreshEmbeddedStrip(__instance, creature, narakuLife);
-        // The same native health-bar scene is also used in the multiplayer top panel.
-        // Only creature-state displays have combat hitbox/block anchoring.
-        if (__instance.GetParent() is not NCreatureStateDisplay) return;
-        NCreature creatureNode = __instance.GetParent()?.GetParent() as NCreature
-            ?? throw new InvalidOperationException(
-                "The active Naraku health bar is not attached to a creature node.");
-        Control bounds = creatureNode.Hitbox;
-        Control hpBar = __instance.HpBarContainer;
-        Control block = __instance.GetNode<Control>("%BlockContainer");
-        float vanillaPadding = (24f - creature.Monster?.HpBarSizeReduction).GetValueOrDefault();
-        float vanillaWidth = bounds.Size.X + vanillaPadding;
-        float widthMultiplier = vanillaWidth > 0f ? hpBar.Size.X / vanillaWidth : 1f;
-        ExtendedHealthBarLayout layout = ExtendedHealthBarLayoutCalculator.Calculate(
-            bounds.GlobalPosition.X,
-            bounds.Size.X,
-            vanillaPadding,
-            widthMultiplier,
-            block.Size.X);
-
-        Vector2 barPosition = hpBar.GlobalPosition;
-        barPosition.X = layout.BarLeft;
-        hpBar.GlobalPosition = barPosition;
-        Vector2 globalPosition = block.GlobalPosition;
-        globalPosition.X = layout.BlockLeft;
-        block.GlobalPosition = globalPosition;
-        OriginalBlockPosition.SetValue(__instance, block.Position);
-    }
-
-    private static void RefreshEmbeddedStrip(NHealthBar healthBar, Creature creature, int narakuLife)
-    {
-        NinePatchRect poisonTemplate = healthBar.GetNode<NinePatchRect>("%PoisonForeground");
-        Control mask = poisonTemplate.GetParent() as Control
-            ?? throw new InvalidOperationException(
-                "The poison foreground is not attached to the health-bar mask.");
-
-        NinePatchRect? strip = mask.GetNodeOrNull<NinePatchRect>(EmbeddedStripName);
-        float expectedWidth = ExpectedMaxForegroundWidth.GetValue(healthBar) is float value
-            ? value
-            : throw new InvalidOperationException(
-                "NHealthBar._expectedMaxFgWidth has an unexpected runtime type.");
-        float maxForegroundWidth = expectedWidth > 0f
-            ? expectedWidth
-            : healthBar.GetNode<Control>("%HpForegroundContainer").Size.X;
-        EmbeddedHealthBarSegment? segment = ExtendedHealthBarLayoutCalculator.CalculateEmbeddedNarakuLife(
-            creature.CurrentHp,
-            creature.MaxHp,
-            narakuLife,
-            maxForegroundWidth,
-            poisonTemplate.PatchMarginLeft);
-        if (segment == null)
+        if (outline == null)
         {
-            if (strip != null)
-            {
-                strip.Visible = false;
-            }
-
-            return;
+            outline = (NinePatchRect)__instance.GetNode<NinePatchRect>("%BlockOutline").Duplicate();
+            outline.Name = "NinjaSlayerNarakuOutline";
+            outline.Modulate = Colors.White;
+            outline.SelfModulate = Colors.White;
+            outline.MouseFilter = Control.MouseFilterEnum.Ignore;
+            bar.AddChild(outline);
+            bar.MoveChild(outline, __instance.GetNode<Control>("%BlockOutline").GetIndex() + 1);
         }
-
-        strip ??= CreateEmbeddedStrip(healthBar, mask, poisonTemplate);
-        strip.OffsetLeft = segment.Value.OffsetLeft;
-        strip.OffsetRight = segment.Value.OffsetRight;
-        strip.Visible = true;
-    }
-
-    private static NinePatchRect CreateEmbeddedStrip(
-        NHealthBar healthBar,
-        Control mask,
-        NinePatchRect poisonTemplate)
-    {
-        Control hpForeground = healthBar.GetNode<Control>("%HpForeground");
-
-        NinePatchRect strip = (NinePatchRect)poisonTemplate.Duplicate();
-        strip.Name = EmbeddedStripName;
-        strip.Visible = false;
-        strip.Modulate = Colors.White;
-        strip.SelfModulate = NarakuLifeHealthBarColors.Foreground;
-        strip.Material = null;
-        strip.ZIndex = 0;
-        strip.MouseFilter = Control.MouseFilterEnum.Ignore;
-        mask.AddChild(strip);
-        mask.MoveChild(strip, Math.Clamp(hpForeground.GetIndex() + 1, 0, mask.GetChildCount() - 1));
-        return strip;
-    }
-
-    private static void HideEmbeddedStrip(NHealthBar healthBar)
-    {
-        healthBar
-            .GetNodeOrNull<NinePatchRect>("%PoisonForeground")
-            ?.GetParent()
-            ?.GetNodeOrNull<NinePatchRect>(EmbeddedStripName)
-            ?.Hide();
+        heart.GetNode<Label>("BlockLabel").Text = amount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        heart.Show();
+        outline.Show();
     }
 }

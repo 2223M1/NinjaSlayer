@@ -48,6 +48,6 @@
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.description": "Za każde {Cards} zagrane Ataki zyskaj {Plating} pkt. [gold]Opancerzenia[/gold].",
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.flavor": "Rozszczepiony bambus wciąż jest wilgotny. Mocno związany może odbić niecelny cios.",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.title": "Odłamek Beppin",
-  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "Gdy po raz pierwszy w każdej walce utracisz PŻ lub [gold]Życie Naraku[/gold], zyskaj {Karate} pkt. [gold]Karate[/gold].",
+  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "Gdy po raz pierwszy w każdej walce utracisz PŻ, zyskaj {Karate} pkt. [gold]Karate[/gold].",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.flavor": "Fragment demonicznego ostrza Beppin."
 }

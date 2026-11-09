@@ -20,6 +20,7 @@ internal sealed partial class NLowHealthBloodVfx : Node2D
     private HeadSample _head;
     private readonly List<Spray> _spray = [];
     private NCreature _actor = null!;
+    private Sprite2D _source = null!;
     private Texture2D _jet = null!, _fringe = null!;
     private float _elapsed, _emissionEnd, _nextSpray;
     private int _sprayIndex;
@@ -31,6 +32,9 @@ internal sealed partial class NLowHealthBloodVfx : Node2D
         if (creature.IsDead || creature.GetCreatureNode() is not { } actor
             || NCombatRoom.Instance is not { } room
             || CombatActionTimingRuntime.CurrentSpeed == CombatActionSpeed.Instant) return;
+        // Copied characters and replacement skins can use another visual rig.
+        // Mouth coordinates belong only to our authored sprite.
+        if (NinjaSlayerVisualRig.GetBodySprite(actor.Visuals) is not { } source) return;
         string name = "MouthBlood_" + actor.GetInstanceId();
         var effect = room.CombatVfxContainer.GetNodeOrNull<NLowHealthBloodVfx>(name);
         if (effect is { } && effect.IsQueuedForDeletion())
@@ -40,7 +44,7 @@ internal sealed partial class NLowHealthBloodVfx : Node2D
         }
         if (effect == null)
         {
-            effect = new NLowHealthBloodVfx { Name = name, _actor = actor, ZIndex = 8, ProcessPriority = 150 };
+            effect = new NLowHealthBloodVfx { Name = name, _actor = actor, _source = source, ZIndex = 8, ProcessPriority = 150 };
             room.CombatVfxContainer.AddChild(effect);
         }
         effect._emissionEnd = effect._elapsed + .80f;
@@ -57,7 +61,8 @@ internal sealed partial class NLowHealthBloodVfx : Node2D
 
     public override void _Process(double delta)
     {
-        if (!GodotObject.IsInstanceValid(_actor) || !_actor.IsInsideTree() || _actor.Entity.IsDead)
+        if (!GodotObject.IsInstanceValid(_actor) || !_actor.IsInsideTree() || _actor.Entity.IsDead
+            || !GodotObject.IsInstanceValid(_source) || !_source.IsInsideTree())
         {
             QueueFree();
             return;
@@ -82,6 +87,11 @@ internal sealed partial class NLowHealthBloodVfx : Node2D
     private void BeforeDraw()
     {
         if (!CanProcess() || IsQueuedForDeletion()) return;
+        if (!GodotObject.IsInstanceValid(_source) || !_source.IsInsideTree())
+        {
+            QueueFree();
+            return;
+        }
         RecordHead();
         QueueRedraw();
     }
@@ -92,9 +102,8 @@ internal sealed partial class NLowHealthBloodVfx : Node2D
         if (!GodotObject.IsInstanceValid(_actor) || !_actor.IsInsideTree()) return;
         NinjaSlayerAimPose.Get(_actor.Entity)?.SyncNow();
         NinjaSlayerFormKind form = NinjaSlayerFormState.GetPresentation(_actor.Entity).Kind;
-        Sprite2D source = NinjaSlayerVisualRig.GetBodySprite(_actor.Visuals)!;
         var overlay = _actor.Visuals.GetNodeOrNull<NarakuVisualOverlay>("AirborneAnchor/AimPose/NarakuVisualOverlay");
-        Sprite2D body = overlay is { Visible: true } ? overlay : source;
+        Sprite2D body = overlay is { Visible: true } ? overlay : _source;
         var mouth = NinjaSlayerFormCalibration.Mouth(form);
         Vector2 point = new(mouth.X, mouth.Y);
         Vector2 direction = new(1f, -.22f);

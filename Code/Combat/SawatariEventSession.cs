@@ -251,6 +251,18 @@ internal sealed class SawatariEventSession
         await _intermissionChoice.Task.WaitAsync(combatCt);
     }
 
+    internal Task CompleteRecordedChoice()
+    {
+        if (Phase == SawatariEventPhase.Intermission) return TakeRegularLoot();
+        if (Phase != SawatariEventPhase.DuelResult)
+            throw new InvalidOperationException("A Sawatari event can only be recorded while choosing an outcome.");
+
+        // The reporter option replaces the duel reward choice, including bamboo.
+        var room = (CombatRoom)_state.RunState.CurrentRoom!;
+        foreach (List<Reward> rewards in room.ExtraRewards.Values) rewards.Clear();
+        return TakeDuelRewards();
+    }
+
     public async Task TakeRegularLoot()
     {
         if (Phase != SawatariEventPhase.Intermission)

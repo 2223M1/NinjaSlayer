@@ -15,13 +15,11 @@ public sealed class ShurikenStorm : NinjaSlayerRareCard
 
     public ShurikenStorm() : base(nameof(ShurikenStorm), 1, CardType.Skill, TargetType.Self) { }
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("Stock", 1)];
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        await ShurikenOrb.AddStock(choiceContext, Owner, DynamicVars["Stock"].IntValue);
         var cards = PileType.Hand.GetPile(Owner).Cards.ToArray();
         await CardCmd.Discard(choiceContext, cards);
         await ShurikenOrb.AddStock(choiceContext, Owner, cards.Length);
     }
-    protected override void OnUpgrade() => DynamicVars["Stock"].UpgradeValueBy(2);
+    protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
 }

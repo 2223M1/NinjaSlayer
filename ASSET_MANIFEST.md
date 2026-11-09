@@ -227,3 +227,13 @@ Yukano uses the complete character images that already include the yellow bow:
 - `NinjaSlayer/images/projectiles/yukano_red_shuriken.png` is the `209x208` shared combat and relic source, SHA-256 `0DBAE503153C90FF949DFC4AC8019596310233A4B061AD28F6D4121D522EEF24`.
 
 `ToriiPactRelic.png`, `ToriiPactRelic_large.png`, and `ToriiPactRelic_outline.png` are centered standard-size derivatives of that red shuriken. Yukano's arrow is loaded at runtime from the host's `CrossbowRubyRaider` `arrow` atlas region; the original game atlas is not copied into the Mod.
+
+## User-selected Krea 2 card art (2026-11-09)
+
+The user completed the 93-card gallery and explicitly requested installation. The merged selection applies 61 exact selected PNGs and retains 32 existing images, including the user's explicit overrides of candidate QA. Original dimensions are preserved. `FocusedBlows` uses `RightUppercut.png`; `LowUppercut` uses `LeftUppercut.png`, following their existing `CardAssetProfile` mappings.
+
+Selection provenance, per-card source/destination hashes, backups and installation verification are stored in `../art-production/output/krea2-handpainted-revision-20261103/integration-20261109/`. The source manifest is `plan.json`, frozen user choices are `user-choices.snapshot.json`, and the installed-art receipt is `deployment-receipt.json`. The installed resource pack is patched only for these card imports/textures; its other resources and the installed DLLs are preserved.
+
+## Naraku temporary HP
+
+`NinjaSlayer/images/ui/naraku_temp_hp.png` is the original 64×64 StSLib Temp HP heart (`tempHP.png`), SHA-256 `0555B89F458E8FF74C3877D1E78C97C8A583B61FAC822FFA1A82EEFF1C0F7DBC`. Source: `https://github.com/kiooeht/StSLib/blob/master/src/main/resources/stslibResources/images/tempHP.png`. The Downfall/崩坠 Temp HP presentation uses this StSLib asset with a gold tint; NinjaSlayer uses white modulation and a white native health-bar outline. The independent number does not extend the native HP bar. The MIT notice is stored beside the image in `naraku_temp_hp.LICENSE.txt` and included in the exported pack.

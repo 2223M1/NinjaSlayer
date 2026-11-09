@@ -193,8 +193,8 @@ public sealed partial class ArchitectExecutionCinematic : Node
     internal static string? MeleeTrigger(CardModel card) => card switch
     {
         CollapseFist or PressTheAttack or StraightKi
-            or StraightPunch or ChopStrike or LeftUppercut
-            or RightUppercut or SomersaultKick
+            or StraightPunch or ChopStrike or LowUppercut
+            or FocusedBlows or SomersaultKick
             or BS1260Kick or DragonRoundhouseKick or HalfMoonCompassKick
             or StormFist => "SlowAttack",
         StrikeNinjaSlayer or HellChop or Chop
@@ -382,10 +382,15 @@ public sealed partial class ArchitectExecutionCinematic : Node
         NinjaSlayerFacingState.SetFacing(_ownerNode, faceLeft: false);
         Vector2 start = FinisherApproach.AnimationPosition(_owner, _ownerNode.Visuals);
         Transform2D sceneToCanvas = _room.SceneContainer.GetGlobalTransformWithCanvas();
-        Vector2 sceneStart = sceneToCanvas.AffineInverse() * _ownerNode.Visuals.GetGlobalTransformWithCanvas().Origin;
-        Vector2 sceneTravel = new(_room.SceneContainer.Size.X + ExitMargin - sceneStart.X, 0f);
+        Sprite2D body = NinjaSlayerVisualRig.GetBodySprite(_ownerNode.Visuals)
+            ?? throw new InvalidOperationException("Architect exit requires the NinjaSlayer body sprite.");
+        // The authored texture includes the long trailing scarf. Move its entire
+        // rectangle beyond the viewport, not just the creature's visual origin.
+        Rect2 bodyBounds = body.GetGlobalTransformWithCanvas() * body.GetRect();
+        Vector2 canvasTravel = new(Math.Max(0f, _room.GetViewportRect().End.X + ExitMargin - bodyBounds.Position.X), 0f);
+        Vector2 sceneTravel = sceneToCanvas.AffineInverse().BasisXform(canvasTravel);
         Vector2 destination = start + _ownerNode.Visuals.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
-            .AffineInverse().BasisXform(sceneToCanvas.BasisXform(sceneTravel));
+            .AffineInverse().BasisXform(canvasTravel);
         float duration = Math.Max(0.1f, Mathf.Abs(sceneTravel.X) / ExitSpeedPixelsPerSecond);
         float elapsed = 0f;
         while (elapsed < duration)

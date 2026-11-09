@@ -95,7 +95,7 @@ public partial class OrbContractRunner
             Require(player.HasPower<KillingIntentPower>(), "Counter must wait until the enemy turn ends.");
             await EndGuardSide(combat.State, CombatSide.Enemy, combat.Enemy);
             bool eligible = scenario is "intent appears" or "blocked" or "buffer" or "upgraded"
-                or "full hand" or "before play" or "self" or "dot" or "stacked";
+                or "full hand" or "before play" or "self" or "dot" or "stacked" or "shield";
             int expected = eligible ? scenario == "upgraded" ? 168 : scenario == "stacked" ? 94 : 47 : 0;
             Require(hp - combat.Enemy.CurrentHp == expected,
                 $"Killing Intent {scenario}: expected {expected}, got {hp - combat.Enemy.CurrentHp} damage.");
@@ -157,7 +157,7 @@ public partial class OrbContractRunner
                 throw new InvalidOperationException("Jujutsu must never request a discard.")));
             await CardCmd.AutoPlay(Choice, jujutsu, null);
             Require(held.Pile?.Type == PileType.Hand && jujutsu.Pile?.Type == PileType.Exhaust
-                && combat.Stock == 3 && combat.Player.Creature.GetPowerAmount<KaratePower>() == (upgraded ? 5 : 3),
+                && combat.Stock == 3 && combat.Player.Creature.GetPowerAmount<KaratePower>() == (upgraded ? 5 : 4),
                 "Jujutsu must retain its cost, Karate and Exhaust without discarding or firing Shuriken.");
         }
         foreach (bool ninja in new[] { false, true })

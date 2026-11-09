@@ -74,7 +74,6 @@ public class Entry
             requiredPatcher.RegisterPatch<NinjaSlayerAbandonGameOverDeathFeedbackPatch>();
             requiredPatcher.RegisterPatch<NarakuLifeHealthBarLayoutPatch>();
             requiredPatcher.RegisterPatch<NarakuLifeDamagePatch>();
-            requiredPatcher.RegisterPatch<NarakuCentennialPuzzlePatch>();
             requiredPatcher.RegisterPatch<CardTransformShineCleanupPatch>();
             requiredPatcher.RegisterPatch<ArchitectDeathResourcePatch>();
             requiredPatcher.RegisterPatch<ArchitectExecutionStartPatch>();

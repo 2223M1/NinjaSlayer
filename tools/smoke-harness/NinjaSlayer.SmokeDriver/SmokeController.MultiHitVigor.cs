@@ -52,8 +52,12 @@ internal sealed partial class SmokeController
         await PowerCmd.Apply<NinjaSlayer.Powers.DevourFlamePower>(statusChoice, player.Creature, 5, player.Creature, null);
         foreach (var pile in new[] { PileType.Hand, PileType.Draw, PileType.Discard })
             await NinjaSlayer.Code.Commands.NinjaSlayerCardCmd.AddGeneratedCard<Wound>(player, pile);
+        Require(!player.Creature.HasPower<NinjaSlayer.Powers.NarakuLifePower>(),
+            "Rendered status generation must not trigger Devour Flame.");
+        foreach (var status in player.Piles.Where(p => p.Type != PileType.Deck).SelectMany(p => p.Cards).ToArray())
+            await CardCmd.Exhaust(statusChoice, status);
         Require(player.Creature.GetPowerAmount<NinjaSlayer.Powers.NarakuLifePower>() == 15,
-            "Rendered status generation must grant Naraku Life once per card.");
+            "Rendered exhaustion must grant Naraku Life once per card.");
         foreach (var old in player.Piles.Where(p => p.Type != PileType.Deck).SelectMany(p => p.Cards).ToArray())
             await CardPileCmd.RemoveFromCombat(old);
         foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
@@ -144,7 +148,7 @@ internal sealed partial class SmokeController
                     && MultiHitVigorProbe.DamageGates.SequenceEqual(Enumerable.Range(1, expectedHits).SelectMany(i => Enumerable.Repeat(i, targets))),
                     "Damage did not follow exactly one completed animation hit gate per native hit.");
                 if (card is Endurance)
-                    Require(player.Creature.GetPowerAmount<NinjaSlayer.Powers.KaratePower>() == (upgraded ? 5 : 4)
+                    Require(player.Creature.GetPowerAmount<NinjaSlayer.Powers.KaratePower>() == (upgraded ? 6 : 5)
                         && !player.Creature.HasPower<NinjaSlayer.Powers.EndurancePower>(), "Endurance must grant Karate after its hits without its former delayed power.");
                 if (card is PalmThrust or Endurance && speed != FastModeType.Instant)
                 {

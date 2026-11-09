@@ -81,14 +81,12 @@ internal static class DarkNinjaAttackExecution
                         CardModel[] candidates = player == null ? []
                             : CardPile.GetCards(player, PileType.Draw, PileType.Discard)
                                 .Where(card => card.DeckVersion != null).ToArray();
-                        NarakuLifePower? life = target.GetPower<NarakuLifePower>();
-                        long absorbedBefore = life?.TotalAbsorbed ?? 0;
                         var previous = monster.DarkStrikeDamageConfirmed;
                         bool stolen = false;
                         monster.DarkStrikeDamageConfirmed = async (receiver, result) =>
                         {
                             if (stolen || receiver != target || result.Receiver != target
-                                || (result.UnblockedDamage <= 0 && (life?.TotalAbsorbed ?? 0) <= absorbedBefore))
+                                || result.UnblockedDamage <= 0)
                                 return;
                             stolen = true;
                             await monster.StealFrom(candidates);
@@ -97,7 +95,7 @@ internal static class DarkNinjaAttackExecution
                         {
                             DarkStrikeImpactOutcome outcome = await execution.Deal(target);
                             // Lethal retaliation detaches the attacker before its damage hook can run.
-                            if (!stolen && (outcome.HpLost || (life?.TotalAbsorbed ?? 0) > absorbedBefore))
+                            if (!stolen && outcome.HpLost)
                             {
                                 stolen = true;
                                 await monster.StealFrom(candidates);

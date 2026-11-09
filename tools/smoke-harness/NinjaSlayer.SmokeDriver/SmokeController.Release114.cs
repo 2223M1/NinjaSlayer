@@ -62,11 +62,11 @@ internal sealed partial class SmokeController
                 await CreatureCmd.SetCurrentHp(player.Creature, player.Creature.MaxHp - 22);
                 await PowerCmd.ModifyAmount(choice, player.Creature.GetPower<NarakuLifePower>()!, 3, player.Creature, null);
             }
-            var strip = remoteBar.GetNode<Control>("%PoisonForeground").GetParent().GetNode<NinePatchRect>("NinjaSlayerNarakuLifeStrip");
-            Require(strip.Visible && remote.Creature.GetPowerAmount<NarakuLifePower>() == 11,
-                "Remote panel must display embedded Naraku while native block/HP/power callbacks refresh it.");
+            var heart = remoteBar.HpBarContainer.GetNode<Control>("NinjaSlayerNarakuLife");
+            Require(heart.Visible && heart.GetNode<Label>("BlockLabel").Text == "11",
+                "Remote panel must display Naraku Temp HP while native block/HP/power callbacks refresh it.");
             await PowerCmd.Remove(remote.Creature.GetPower<NarakuLifePower>()!);
-            Require(!strip.Visible, "Remote strip must hide after native removal.");
+            Require(!heart.Visible, "Remote heart must hide after native removal.");
             await PowerCmd.Apply<NarakuLifePower>(choice, remote.Creature, 5, remote.Creature, null);
             foreach (var player in run.Players) PlayerCmd.EndTurn(player, true);
             await WaitUntilAsync(() => local.PlayerCombatState!.TurnNumber >= 2

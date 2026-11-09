@@ -30,7 +30,7 @@ public sealed class AntiAirBangBangFist : NinjaSlayerRareCard
         power.Amount > 0 && power.TypeForCurrentAmount == PowerType.Buff
         && power is StrengthPower or DexterityPower or VigorPower or KaratePower or FocusPower
             or ArtifactPower or BufferPower or IntangiblePower or ThornsPower or PlatingPower
-            or RegenPower or EvasionPower;
+            or RegenPower or EvasionPower or NarakuLifePower;
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

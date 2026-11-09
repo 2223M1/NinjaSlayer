@@ -1,0 +1,986 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "06214140be4d58476b8c7a1fee8810b194f13213",
+  "workingTree": "uncommitted local candidate",
+  "published": false,
+  "remoteFeedbackChanged": false,
+  "feedback": {
+    "baselineCount": 160,
+    "count": 193,
+    "generatedAt": "2026-10-21T10:22:23.038Z",
+    "recheck": {
+      "checkedAt": "2026-10-21T14:58:04.651Z",
+      "generatedAt": "2026-10-21T10:22:23.038Z",
+      "count": 193,
+      "newRows": []
+    },
+    "publicSnapshot": {
+      "path": "build/feedback-20261021/public-data.json",
+      "bytes": 80809529,
+      "sha256": "3c3ad2beea4770b9ced8c0b20bfb38c5c2b3ea77bdb445b74129fcf8d43c7881"
+    },
+    "rows": [
+      {
+        "id": "8bf54568-d9f2-441e-bbff-f9aefaa6b843",
+        "submittedAt": "2026-10-21T09:20:05.237Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.111.0",
+        "category": "balance",
+        "group": "强度／设计建议",
+        "conclusion": "非故障，不自动修改数值。"
+      },
+      {
+        "id": "22878c1d-5c0d-413d-98d4-48ed735fea04",
+        "submittedAt": "2026-10-20T09:39:48.092Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.107.1",
+        "category": "feedback",
+        "group": "建筑师结局",
+        "conclusion": "玩法询问，属于已有结局演出，非故障。"
+      },
+      {
+        "id": "bc9ef86a-4047-49dc-ac62-5b429b2d4e63",
+        "submittedAt": "2026-10-20T08:46:32.028Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.107.1",
+        "category": "feedback",
+        "group": "茶道保留",
+        "conclusion": "设计／强度建议，本轮不修改。"
+      },
+      {
+        "id": "4e5a2abd-77cf-4e8d-b399-514f94f71d52",
+        "submittedAt": "2026-10-20T06:54:49.731Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.111.0",
+        "category": "bug",
+        "group": "空手道／图书馆",
+        "conclusion": "证据不足：图书馆0.21.0＋基础库1.2.14；截图为开战阶段，未提供可对照的命中前后状态。未取得该版本程序集进行对照，不能归责第三方，也未改写伤害流程。"
+      },
+      {
+        "id": "292201b7-ba6e-4b75-a726-31690ab82d08",
+        "submittedAt": "2026-10-19T22:04:50.051Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.111.0",
+        "category": "bug",
+        "group": "回避",
+        "conclusion": "旧实现按命中段数扣层，与旧文案一致；本轮按用户澄清改为每个敌人整次行动扣一层。附件另有AncientWaifus旧Spine接口异常，不把它归因为回避根因。"
+      },
+      {
+        "id": "acf84645-1fa5-446f-ba18-71c4f1213403",
+        "submittedAt": "2026-10-19T16:32:17.984Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.111.0",
+        "category": "bug",
+        "group": "奖励／商店／宝箱",
+        "conclusion": "故障真实，未修：日志确证SingleplayerRelicRarityPatch空列表越界。附件是另一局第一层存档，缺整个_ritsulib扩展，无法恢复出错检查点的剩余序列；不补满、不重抽。"
+      },
+      {
+        "id": "2722a0ad-1ec4-49dc-8d12-3d662277bef8",
+        "submittedAt": "2026-10-19T01:51:04.768Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.111.0",
+        "category": "feedback",
+        "group": "体系与事件建议",
+        "conclusion": "设计建议与评价，非故障。"
+      },
+      {
+        "id": "faa831fb-0fe7-4b74-87a0-a5232d992f4b",
+        "submittedAt": "2026-10-18T16:45:56.294Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.111.0",
+        "category": "feedback",
+        "group": "暗忍联机失同步",
+        "conclusion": "当前缺陷，本地已修：原生联机布局将本地玩家置前，按画面坐标结算会改变共享随机流分配给谁。改用原生目标列表顺序；双进程相反布局的偷牌、生命和随机状态一致。"
+      },
+      {
+        "id": "32150aa6-b7ba-4196-80ec-37d394dde786",
+        "submittedAt": "2026-10-18T12:02:32.300Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.111.0",
+        "category": "feedback",
+        "group": "一般评价",
+        "conclusion": "未报告可核验故障。"
+      },
+      {
+        "id": "385cace2-7b3e-4a28-b3c1-78585bf9f93f",
+        "submittedAt": "2026-10-18T11:09:58.080Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.111.0",
+        "category": "balance",
+        "group": "强度／设计建议",
+        "conclusion": "非故障，不自动修改数值。"
+      },
+      {
+        "id": "67177528-f77e-4dc0-884b-5c9d903762c7",
+        "submittedAt": "2026-10-18T08:03:51.498Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.107.1",
+        "category": "feedback",
+        "group": "一般评价",
+        "conclusion": "未报告可核验故障。"
+      },
+      {
+        "id": "d05eb907-e804-4f58-b263-d2d5dd83c075",
+        "submittedAt": "2026-10-18T03:51:38.864Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.107.1",
+        "category": "feedback",
+        "group": "一般评价",
+        "conclusion": "未报告可核验故障。"
+      },
+      {
+        "id": "02f6f178-c0fb-4c8a-8197-57209cc31821",
+        "submittedAt": "2026-10-17T15:34:22.951Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.111.0",
+        "category": "feedback",
+        "group": "一般评价",
+        "conclusion": "未报告可核验故障。"
+      },
+      {
+        "id": "8c39e302-c80f-4f18-82d2-d6d53ff00307",
+        "submittedAt": "2026-10-17T06:59:48.031Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.107.1",
+        "category": "feedback",
+        "group": "强度／设计建议",
+        "conclusion": "非故障，不自动修改数值。"
+      },
+      {
+        "id": "9a115870-657a-4d1d-8691-53ebcf0d2598",
+        "submittedAt": "2026-10-16T17:46:15.436Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.111.0",
+        "category": "feedback",
+        "group": "一般评价",
+        "conclusion": "未报告可核验故障。"
+      },
+      {
+        "id": "c90423e7-fd6b-459b-a389-62dbb3cbb567",
+        "submittedAt": "2026-10-16T17:38:08.927Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.107.1",
+        "category": "feedback",
+        "group": "二层卡顿／卡死",
+        "conclusion": "第三方接口错误已证实，整体卡死归因未完全证实：FreeLoadout调用缺失的PowerModel.IsInstanced，DamageMeter调用缺失的RunManager.IsSinglePlayerOrFakeMultiplayer。附件循环报错覆盖了启动版本信息；建议更新为匹配stable的版本或禁用后二次对照，不增加旧接口垫片。"
+      },
+      {
+        "id": "b6f3c551-3ef8-44aa-a55a-d2471f889ea1",
+        "submittedAt": "2026-10-16T17:08:04.298Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.111.0",
+        "category": "feedback",
+        "group": "背景音乐",
+        "conclusion": "新增功能建议，非故障。"
+      },
+      {
+        "id": "95275094-c6f4-4fd0-84bb-95dc8b6d8d4a",
+        "submittedAt": "2026-10-16T14:59:14.875Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.111.0",
+        "category": "balance",
+        "group": "强度／设计建议",
+        "conclusion": "非故障，不自动修改数值。"
+      },
+      {
+        "id": "9ca76354-460a-454e-be6a-5eb693785ba7",
+        "submittedAt": "2026-10-16T13:56:48.149Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.111.0",
+        "category": "balance",
+        "group": "强度／设计建议",
+        "conclusion": "非故障，不自动修改数值。"
+      },
+      {
+        "id": "acb3dd6f-5963-41d2-ba78-740a1ba7a7eb",
+        "submittedAt": "2026-10-16T08:04:32.547Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.111.0",
+        "category": "feedback",
+        "group": "一般评价",
+        "conclusion": "未报告可核验故障。"
+      },
+      {
+        "id": "fbdbc313-c571-46b3-882d-4cb3657660e5",
+        "submittedAt": "2026-10-16T03:49:56.666Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.111.0",
+        "category": "feedback",
+        "group": "低帧率／出牌异常",
+        "conclusion": "附件中的具体空引用已本地修复：低血量喷血特效把外部角色视觉当成自己的Sprite2D，RecordHead异常传播到出牌任务并持续逐帧报错。限定在拥有原版忍杀身体节点的视觉上创建，并在身体释放后结束。未做该玩家环境帧率测量，不声称普遍卡顿已解决。"
+      },
+      {
+        "id": "ab4a75f5-e70d-44d2-9b5a-d3d2af8db05c",
+        "submittedAt": "2026-10-16T01:59:50.240Z",
+        "modVersion": "1.1.1",
+        "gameVersion": "v0.111.0",
+        "category": "feedback",
+        "group": "强度／设计建议",
+        "conclusion": "非故障，不自动修改数值。"
+      },
+      {
+        "id": "4fe88ec8-a772-47bc-b1c1-a2ab24cdf442",
+        "submittedAt": "2026-10-14T18:13:45.419Z",
+        "modVersion": "1.1.0",
+        "gameVersion": "v0.111.0",
+        "category": "feedback",
+        "group": "一般评价",
+        "conclusion": "未报告可核验故障。"
+      },
+      {
+        "id": "6dc6522e-73b9-4bd4-905d-77af04179d05",
+        "submittedAt": "2026-10-14T15:50:10.860Z",
+        "modVersion": "1.1.0",
+        "gameVersion": "v0.111.0",
+        "category": "feedback",
+        "group": "一般评价",
+        "conclusion": "未报告可核验故障。"
+      },
+      {
+        "id": "307f4d29-cd59-4e93-b43b-feaee5f5675b",
+        "submittedAt": "2026-10-14T15:24:43.324Z",
+        "modVersion": "1.1.0",
+        "gameVersion": "v0.107.1",
+        "category": "feedback",
+        "group": "回避",
+        "conclusion": "旧行为与旧文案一致，按本轮用户要求改为整次敌人行动回避；未从附件证明存在额外的回避失效原因。"
+      },
+      {
+        "id": "2f96107a-ab9d-4ef4-917a-1288498847bb",
+        "submittedAt": "2026-10-14T13:51:26.187Z",
+        "modVersion": "1.1.0",
+        "gameVersion": "v0.111.0",
+        "category": "balance",
+        "group": "强度／设计建议",
+        "conclusion": "非故障，不自动修改数值。"
+      },
+      {
+        "id": "e7e29ec8-90f6-4064-8c9a-c3f6d28e140f",
+        "submittedAt": "2026-10-14T13:51:15.353Z",
+        "modVersion": "1.1.0",
+        "gameVersion": "v0.111.0",
+        "category": "feedback",
+        "group": "强度／设计建议",
+        "conclusion": "非故障，不自动修改数值。"
+      },
+      {
+        "id": "8a81c90b-5b1e-45d3-8611-cd4f4dfb34e8",
+        "submittedAt": "2026-10-14T13:44:49.151Z",
+        "modVersion": "1.1.0",
+        "gameVersion": "v0.107.1",
+        "category": "feedback",
+        "group": "Steam外分发",
+        "conclusion": "分发渠道需求，非故障。"
+      },
+      {
+        "id": "c4f6889b-30ff-414b-9aba-47f39134ad6e",
+        "submittedAt": "2026-10-14T13:43:50.011Z",
+        "modVersion": "1.1.0",
+        "gameVersion": "v0.111.0",
+        "category": "feedback",
+        "group": "一般评价",
+        "conclusion": "未报告可核验故障。"
+      },
+      {
+        "id": "54eca7e6-9d69-4bf0-a9b2-e0b79720c444",
+        "submittedAt": "2026-10-14T13:36:10.487Z",
+        "modVersion": "1.1.0",
+        "gameVersion": "v0.111.0",
+        "category": "feedback",
+        "group": "一般评价",
+        "conclusion": "未报告可核验故障。"
+      },
+      {
+        "id": "cb55f268-1c18-4784-a977-7cf45eb32de4",
+        "submittedAt": "2026-10-14T11:16:43.327Z",
+        "modVersion": "1.1.0",
+        "gameVersion": "v0.107.1",
+        "category": "feedback",
+        "group": "强度／设计建议",
+        "conclusion": "非故障，不自动修改数值。"
+      },
+      {
+        "id": "05441996-e132-4ef4-a896-fc4eb9c0fac6",
+        "submittedAt": "2026-10-14T08:11:17.509Z",
+        "modVersion": "1.1.0",
+        "gameVersion": "v0.111.0",
+        "category": "feedback",
+        "group": "强度／设计建议",
+        "conclusion": "非故障，不自动修改数值。"
+      },
+      {
+        "id": "9045add3-0898-4dc6-adc5-6ac532d5a59f",
+        "submittedAt": "2026-10-14T03:56:32.438Z",
+        "modVersion": "1.0.26",
+        "gameVersion": "v0.111.0",
+        "category": "bug",
+        "group": "皮肤切换器",
+        "conclusion": "故障现象未完全复现：SkinChanger1.0.19在构建目录时读取未完成卡池注册的卡牌，日志明确已跳过；没有证据将随后卡死归因于忍杀注册。正常模型初始化后的原生卡池与目录检查通过。未添加第三方初始化顺序补丁。"
+      }
+    ]
+  },
+  "privateAttachments": [
+    {
+      "id": "292201b7-ba6e-4b75-a726-31690ab82d08",
+      "modVersion": "1.1.1",
+      "gameVersion": "v0.111.0",
+      "files": [
+        {
+          "path": "build/feedback-20261021/292201b7-ba6e-4b75-a726-31690ab82d08/logs.zip",
+          "bytes": 10653967,
+          "sha256": "89d2ffc906fdbda6b1bcb062e4d6646ec8c6f8244e35db143f034cbeae981312"
+        },
+        {
+          "path": "build/feedback-20261021/292201b7-ba6e-4b75-a726-31690ab82d08/screenshot.png",
+          "bytes": 816071,
+          "sha256": "3c2b9b3097debb68abe23033482040d9f5ea116ef3f79997b9afc021d42247b8"
+        }
+      ],
+      "members": [
+        {
+          "path": "build/feedback-20261021/292201b7-ba6e-4b75-a726-31690ab82d08/member-0.txt",
+          "bytes": 8388591,
+          "sha256": "e5b59826f0bbae258f5b8912ef87195773fbe7c98bfbcd2659ae2aa2367694a4",
+          "zipMember": "logs/godot.log"
+        },
+        {
+          "path": "build/feedback-20261021/292201b7-ba6e-4b75-a726-31690ab82d08/member-1.txt",
+          "bytes": 8388445,
+          "sha256": "f30cdd30e935313ac47c05aceb081c4a1c658df17e2249eacf76efa543c5c1fa",
+          "zipMember": "logs/godot2026-10-19T17.17.57.log"
+        },
+        {
+          "path": "build/feedback-20261021/292201b7-ba6e-4b75-a726-31690ab82d08/member-2.txt",
+          "bytes": 8388604,
+          "sha256": "020165c8e7254f304d64bd840a11fd9f140c4d5db9eded53f620bd90359d4259",
+          "zipMember": "logs/godot2026-10-19T21.34.13.log"
+        },
+        {
+          "path": "build/feedback-20261021/292201b7-ba6e-4b75-a726-31690ab82d08/member-3.txt",
+          "bytes": 8388362,
+          "sha256": "d907b36d0105863573632110c8eb0f710cd3b05761665cf2e4052057b354108f",
+          "zipMember": "logs/godot2026-10-20T04.58.49.log"
+        },
+        {
+          "path": "build/feedback-20261021/292201b7-ba6e-4b75-a726-31690ab82d08/member-4.txt",
+          "bytes": 8388555,
+          "sha256": "84f3f8e504ad988e2f5b8a0013d18c89b5b093ddcaa7fa53dadd300f2053a690",
+          "zipMember": "logs/godot2026-10-20T05.35.36.log"
+        },
+        {
+          "path": "build/feedback-20261021/292201b7-ba6e-4b75-a726-31690ab82d08/member-9.txt",
+          "bytes": 177309,
+          "sha256": "aafd639f86cef17891afce0bd157429fb3c3963023a57b5911f026b3914752a8",
+          "zipMember": "saves/profile1/saves/current_run.save"
+        }
+      ]
+    },
+    {
+      "id": "307f4d29-cd59-4e93-b43b-feaee5f5675b",
+      "modVersion": "1.1.0",
+      "gameVersion": "v0.107.1",
+      "files": [
+        {
+          "path": "build/feedback-20261021/307f4d29-cd59-4e93-b43b-feaee5f5675b/logs.zip",
+          "bytes": 654425,
+          "sha256": "a6ccba82b51517bd0882163787d65dc1d769f8d490113ae5155a22d83625a322"
+        },
+        {
+          "path": "build/feedback-20261021/307f4d29-cd59-4e93-b43b-feaee5f5675b/screenshot.png",
+          "bytes": 121612,
+          "sha256": "d32dd55cb83626d69e4f6330fb7ba084e5aa5ddf64b5e1fae74a9437faccb2c1"
+        }
+      ],
+      "members": [
+        {
+          "path": "build/feedback-20261021/307f4d29-cd59-4e93-b43b-feaee5f5675b/member-0.txt",
+          "bytes": 1418815,
+          "sha256": "ab4bbd0b616b93e49f276f5ba25bcc027f35368c5927aa43ba69c5e83f7fe54e",
+          "zipMember": "logs/godot.log"
+        },
+        {
+          "path": "build/feedback-20261021/307f4d29-cd59-4e93-b43b-feaee5f5675b/member-1.txt",
+          "bytes": 277344,
+          "sha256": "56c4812e8d77d6792e41be4ce912de8aba9e655b3eb291ff6d804293a9d78c9b",
+          "zipMember": "logs/godot2026-10-12T18.04.17.log"
+        },
+        {
+          "path": "build/feedback-20261021/307f4d29-cd59-4e93-b43b-feaee5f5675b/member-2.txt",
+          "bytes": 2095892,
+          "sha256": "d8a07ca996237a21432baeda06d0752fec9555dde90c0166f0c80302abb91936",
+          "zipMember": "logs/godot2026-10-12T19.44.52.log"
+        },
+        {
+          "path": "build/feedback-20261021/307f4d29-cd59-4e93-b43b-feaee5f5675b/member-3.txt",
+          "bytes": 7910217,
+          "sha256": "1c1ad37304b9c5e1823a37b4f5131d23a4a4cc02b9782ec88cffe7bc84350f6d",
+          "zipMember": "logs/godot2026-10-13T16.41.20.log"
+        },
+        {
+          "path": "build/feedback-20261021/307f4d29-cd59-4e93-b43b-feaee5f5675b/member-4.txt",
+          "bytes": 496980,
+          "sha256": "5240c9d39cd579e0f6454b44fc8a3f0ba845029d7729c5a6cd721c4f2488d9c0",
+          "zipMember": "logs/godot2026-10-14T22.30.19.log"
+        }
+      ]
+    },
+    {
+      "id": "4e5a2abd-77cf-4e8d-b399-514f94f71d52",
+      "modVersion": "1.1.1",
+      "gameVersion": "v0.111.0",
+      "files": [
+        {
+          "path": "build/feedback-20261021/4e5a2abd-77cf-4e8d-b399-514f94f71d52/logs.zip",
+          "bytes": 2533005,
+          "sha256": "9179617c48c351401437ca6f47b5b05102eec1f71d4d27bff331fd82cc276eb9"
+        },
+        {
+          "path": "build/feedback-20261021/4e5a2abd-77cf-4e8d-b399-514f94f71d52/screenshot.png",
+          "bytes": 740470,
+          "sha256": "04cf6959854d519e5fd30968ffee233b93185eb716094c010c7939a0ad103715"
+        }
+      ],
+      "members": [
+        {
+          "path": "build/feedback-20261021/4e5a2abd-77cf-4e8d-b399-514f94f71d52/member-0.txt",
+          "bytes": 640112,
+          "sha256": "5a5910d9ed943889f6a0b7b7a4c52ddad7d7db14bf1a8368965b2c24d9c309c8",
+          "zipMember": "logs/godot.log"
+        },
+        {
+          "path": "build/feedback-20261021/4e5a2abd-77cf-4e8d-b399-514f94f71d52/member-1.txt",
+          "bytes": 4373113,
+          "sha256": "9cf73e7df7ba588836f157b357a5060add00d7ef91c088c95fb6af06bb873fef",
+          "zipMember": "logs/godot2026-10-19T22.06.00.log"
+        },
+        {
+          "path": "build/feedback-20261021/4e5a2abd-77cf-4e8d-b399-514f94f71d52/member-2.txt",
+          "bytes": 1708611,
+          "sha256": "bb1faff2e7a73fd386336fea1281b3aecc74a28705a8aff7050c0e2fcf6fce9a",
+          "zipMember": "logs/godot2026-10-20T14.26.38.log"
+        },
+        {
+          "path": "build/feedback-20261021/4e5a2abd-77cf-4e8d-b399-514f94f71d52/member-3.txt",
+          "bytes": 971357,
+          "sha256": "5eea8cff5096f63a6476ced5ed60d4a6554b0f21e31ad06de6431bb2550e7543",
+          "zipMember": "logs/godot2026-10-20T14.46.51.log"
+        },
+        {
+          "path": "build/feedback-20261021/4e5a2abd-77cf-4e8d-b399-514f94f71d52/member-4.txt",
+          "bytes": 698244,
+          "sha256": "4f8fec3df996755c9187e429ce464f45d200fa4b38aba0c677b61f350cf5db1e",
+          "zipMember": "logs/godot2026-10-20T14.53.14.log"
+        },
+        {
+          "path": "build/feedback-20261021/4e5a2abd-77cf-4e8d-b399-514f94f71d52/member-23.txt",
+          "bytes": 39324,
+          "sha256": "d54874c900635ff91dd97c9e3747c2defb502a4c72c8843ad7bd1eaa4c89f00a",
+          "zipMember": "saves/modded/profile1/saves/current_run.save"
+        }
+      ]
+    },
+    {
+      "id": "9045add3-0898-4dc6-adc5-6ac532d5a59f",
+      "modVersion": "1.0.26",
+      "gameVersion": "v0.111.0",
+      "files": [
+        {
+          "path": "build/feedback-20261021/9045add3-0898-4dc6-adc5-6ac532d5a59f/logs.zip",
+          "bytes": 612823,
+          "sha256": "98d712529e3d4516ceb72a0664245d9ba46e50d37a84d1ffd575c635757090ae"
+        },
+        {
+          "path": "build/feedback-20261021/9045add3-0898-4dc6-adc5-6ac532d5a59f/screenshot.png",
+          "bytes": 1165974,
+          "sha256": "58451e9210d6a358c39ecaf7a3967e5963b2d00bd2d8412f41573860ea944876"
+        }
+      ],
+      "members": [
+        {
+          "path": "build/feedback-20261021/9045add3-0898-4dc6-adc5-6ac532d5a59f/member-0.txt",
+          "bytes": 1351190,
+          "sha256": "2bfce656461fbf2ff12b9a7d757dcf94525283607a1224ba8c2ee9bafd3f6ab7",
+          "zipMember": "logs/godot.log"
+        },
+        {
+          "path": "build/feedback-20261021/9045add3-0898-4dc6-adc5-6ac532d5a59f/member-1.txt",
+          "bytes": 891910,
+          "sha256": "eeb21266e356fc6283a74ff1f69e65265600fb718bcc5e6b28d9041ca8488271",
+          "zipMember": "logs/godot2026-10-14T11.44.58.log"
+        },
+        {
+          "path": "build/feedback-20261021/9045add3-0898-4dc6-adc5-6ac532d5a59f/member-2.txt",
+          "bytes": 1331071,
+          "sha256": "f24f6c7b5acd629aad165cd715fe800e7ba0c9e587772f5e0b7f1ce5758d8166",
+          "zipMember": "logs/godot2026-10-14T11.50.17.log"
+        },
+        {
+          "path": "build/feedback-20261021/9045add3-0898-4dc6-adc5-6ac532d5a59f/member-3.txt",
+          "bytes": 826081,
+          "sha256": "7ef6fbc9872d553f101c4fcf95011d9885168bdecf820d4d0e9bac4882009fdc",
+          "zipMember": "logs/godot2026-10-14T11.51.57.log"
+        },
+        {
+          "path": "build/feedback-20261021/9045add3-0898-4dc6-adc5-6ac532d5a59f/member-4.txt",
+          "bytes": 892027,
+          "sha256": "bfc66f3b41daa0d668adcdce0713114bd83d8a8ed4be515449541623076477c9",
+          "zipMember": "logs/godot2026-10-14T11.53.40.log"
+        },
+        {
+          "path": "build/feedback-20261021/9045add3-0898-4dc6-adc5-6ac532d5a59f/member-8.txt",
+          "bytes": 32007,
+          "sha256": "fa5bdda105abd58f787ec5367c7de3b64f7a7b37aa7cb30b6a93fb0e82750f14",
+          "zipMember": "saves/modded/profile1/saves/current_run.save"
+        }
+      ]
+    },
+    {
+      "id": "acf84645-1fa5-446f-ba18-71c4f1213403",
+      "modVersion": "1.1.1",
+      "gameVersion": "v0.111.0",
+      "files": [
+        {
+          "path": "build/feedback-20261021/acf84645-1fa5-446f-ba18-71c4f1213403/logs.zip",
+          "bytes": 383510,
+          "sha256": "28337f565b807af17637421a0512a6e387de9e13ca94b1d4b41647dc84a7bb96"
+        },
+        {
+          "path": "build/feedback-20261021/acf84645-1fa5-446f-ba18-71c4f1213403/screenshot.png",
+          "bytes": 914613,
+          "sha256": "a9995045f7eb619b15a040d4db4e14178774e5d6caa9a5fa9372672c8f80cf5c"
+        }
+      ],
+      "members": [
+        {
+          "path": "build/feedback-20261021/acf84645-1fa5-446f-ba18-71c4f1213403/member-0.txt",
+          "bytes": 247391,
+          "sha256": "51046d037ce80d104af34baf24add6284fb1b9b32aa02d4b8155d7e233a5243d",
+          "zipMember": "logs/godot.log"
+        },
+        {
+          "path": "build/feedback-20261021/acf84645-1fa5-446f-ba18-71c4f1213403/member-1.txt",
+          "bytes": 1602578,
+          "sha256": "a67764803e917e169cabb971cf193971f6accef680a1450d52664eed8dd7c0d2",
+          "zipMember": "logs/godot2026-10-20T00.21.04.log"
+        },
+        {
+          "path": "build/feedback-20261021/acf84645-1fa5-446f-ba18-71c4f1213403/member-2.txt",
+          "bytes": 231978,
+          "sha256": "4032cb78f19fcc0f90355ed8bf61d1625f33219c7daf5c7dab66d12f58129d6f",
+          "zipMember": "logs/godot2026-10-20T00.07.24.log"
+        },
+        {
+          "path": "build/feedback-20261021/acf84645-1fa5-446f-ba18-71c4f1213403/member-3.txt",
+          "bytes": 2043001,
+          "sha256": "dcf56547bd9d2ee3f16a252f2e68b7784098eb39fe460120e2681e9409636f29",
+          "zipMember": "logs/godot2026-10-20T00.02.14.log"
+        },
+        {
+          "path": "build/feedback-20261021/acf84645-1fa5-446f-ba18-71c4f1213403/member-4.txt",
+          "bytes": 376651,
+          "sha256": "d48c5eb09a161260ea92830eb877b28da77fcb20d9665604fa3d762954080284",
+          "zipMember": "logs/godot2026-10-20T00.27.24.log"
+        },
+        {
+          "path": "build/feedback-20261021/acf84645-1fa5-446f-ba18-71c4f1213403/member-8.txt",
+          "bytes": 55000,
+          "sha256": "78e6aa228a3aef2d94a29d952563fcf1fd4d7c489233f6e4b11e100b121eaac1",
+          "zipMember": "saves/modded/profile1/saves/current_run.save"
+        }
+      ]
+    },
+    {
+      "id": "c90423e7-fd6b-459b-a389-62dbb3cbb567",
+      "modVersion": "1.1.1",
+      "gameVersion": "v0.107.1",
+      "files": [
+        {
+          "path": "build/feedback-20261021/c90423e7-fd6b-459b-a389-62dbb3cbb567/logs.zip",
+          "bytes": 445432,
+          "sha256": "34eca0338e25aff358fb646ee8590de125b1fc8dc5ec690c5c48c947e2df6fbc"
+        },
+        {
+          "path": "build/feedback-20261021/c90423e7-fd6b-459b-a389-62dbb3cbb567/screenshot.png",
+          "bytes": 202719,
+          "sha256": "4a29c0511bfc7062db52218189309c4cf1dd0f8f843fdd6da7a60a25cdf69c76"
+        }
+      ],
+      "members": [
+        {
+          "path": "build/feedback-20261021/c90423e7-fd6b-459b-a389-62dbb3cbb567/member-0.txt",
+          "bytes": 8388600,
+          "sha256": "bb3df32c02a02ab5b16691510f60a501f1f5c31c5dcbf0084b95bb8b8a897512",
+          "zipMember": "logs/godot.log"
+        },
+        {
+          "path": "build/feedback-20261021/c90423e7-fd6b-459b-a389-62dbb3cbb567/member-1.txt",
+          "bytes": 8388540,
+          "sha256": "7832683c334bbfc58b646bf5893c146db8d2edea1563f52021d67b6c3d1df539",
+          "zipMember": "logs/godot2026-10-11T18.16.21.log"
+        },
+        {
+          "path": "build/feedback-20261021/c90423e7-fd6b-459b-a389-62dbb3cbb567/member-2.txt",
+          "bytes": 8388595,
+          "sha256": "ddde33505706b71cf1a253bd5df4debb4f657a446548045b8e4f1edd462881fc",
+          "zipMember": "logs/godot2026-10-11T18.26.59.log"
+        },
+        {
+          "path": "build/feedback-20261021/c90423e7-fd6b-459b-a389-62dbb3cbb567/member-3.txt",
+          "bytes": 8388443,
+          "sha256": "93b81fd489f7474c26b81bd5be3d0c0c3e7aab5828aa453f8d616ffdf923e048",
+          "zipMember": "logs/godot2026-10-11T18.45.06.log"
+        },
+        {
+          "path": "build/feedback-20261021/c90423e7-fd6b-459b-a389-62dbb3cbb567/member-4.txt",
+          "bytes": 8388627,
+          "sha256": "4318c6c8f47da5b8cbc5c2858e4a2791fc590bab1a52dd3fd20eaedc140d61fc",
+          "zipMember": "logs/godot2026-10-17T01.03.21.log"
+        }
+      ]
+    },
+    {
+      "id": "faa831fb-0fe7-4b74-87a0-a5232d992f4b",
+      "modVersion": "1.1.1",
+      "gameVersion": "v0.111.0",
+      "files": [
+        {
+          "path": "build/feedback-20261021/faa831fb-0fe7-4b74-87a0-a5232d992f4b/logs.zip",
+          "bytes": 1696301,
+          "sha256": "f8017d7141e816e9d3be016098f356d4580b1326c089b55482b25bd8592947eb"
+        },
+        {
+          "path": "build/feedback-20261021/faa831fb-0fe7-4b74-87a0-a5232d992f4b/screenshot.png",
+          "bytes": 160335,
+          "sha256": "8508ad06d81c7eece4dca4423450eb09f44afae73e6e72f2865811351a3408cb"
+        }
+      ],
+      "members": [
+        {
+          "path": "build/feedback-20261021/faa831fb-0fe7-4b74-87a0-a5232d992f4b/member-0.txt",
+          "bytes": 8102293,
+          "sha256": "330b4f78abb2752a1657721b2ae3de2952c407efeaac49485add3d1ffa3f6880",
+          "zipMember": "logs/godot.log"
+        },
+        {
+          "path": "build/feedback-20261021/faa831fb-0fe7-4b74-87a0-a5232d992f4b/member-1.txt",
+          "bytes": 6898424,
+          "sha256": "5e9107a0ddc02334e396300d192fc0247cd655f82e51f5243ff2395a42e58f6d",
+          "zipMember": "logs/godot2026-10-11T17.42.58.log"
+        },
+        {
+          "path": "build/feedback-20261021/faa831fb-0fe7-4b74-87a0-a5232d992f4b/member-2.txt",
+          "bytes": 5369852,
+          "sha256": "2ff369d25567860770c1f959fa0127911a9a97e14ba50480a79235657c78a910",
+          "zipMember": "logs/godot2026-10-11T17.52.47.log"
+        },
+        {
+          "path": "build/feedback-20261021/faa831fb-0fe7-4b74-87a0-a5232d992f4b/member-3.txt",
+          "bytes": 8321117,
+          "sha256": "51872a8f1aab7005b014d9382abd073918820b243ad57f28cc92dec11139560b",
+          "zipMember": "logs/godot2026-10-18T21.11.44.log"
+        },
+        {
+          "path": "build/feedback-20261021/faa831fb-0fe7-4b74-87a0-a5232d992f4b/member-4.txt",
+          "bytes": 4494228,
+          "sha256": "4834c498852a436eaeda7659f59c5205b71a530ba53140369aecc3ddb2459156",
+          "zipMember": "logs/godot2026-10-18T23.38.51.log"
+        }
+      ]
+    },
+    {
+      "id": "fbdbc313-c571-46b3-882d-4cb3657660e5",
+      "modVersion": "1.1.1",
+      "gameVersion": "v0.111.0",
+      "files": [
+        {
+          "path": "build/feedback-20261021/fbdbc313-c571-46b3-882d-4cb3657660e5/logs.zip",
+          "bytes": 438441,
+          "sha256": "9f57119a8ce3a1f35b76bd7c468674b6c2c0a21dbbd58f74e3407047f91a8ddc"
+        },
+        {
+          "path": "build/feedback-20261021/fbdbc313-c571-46b3-882d-4cb3657660e5/screenshot.png",
+          "bytes": 263032,
+          "sha256": "39c709211e6b3d33f008923ab9663baa0bc4958bb71540b80ecc803e028152a2"
+        }
+      ],
+      "members": [
+        {
+          "path": "build/feedback-20261021/fbdbc313-c571-46b3-882d-4cb3657660e5/member-2.txt",
+          "bytes": 918844,
+          "sha256": "e994b4a3a26e4fa19934762dc9034bdc45bf760ac1adb13268dba09a936085cd",
+          "zipMember": "logs/godot.log"
+        },
+        {
+          "path": "build/feedback-20261021/fbdbc313-c571-46b3-882d-4cb3657660e5/member-3.txt",
+          "bytes": 503715,
+          "sha256": "241a0d8acd053c224e9e179786659e8dd8060b725a778291742860639810bbb1",
+          "zipMember": "logs/godot2026-10-15T15.14.05.log"
+        },
+        {
+          "path": "build/feedback-20261021/fbdbc313-c571-46b3-882d-4cb3657660e5/member-4.txt",
+          "bytes": 403946,
+          "sha256": "5dbe78186f4958632516b320e18ec15c0fac3072ec1896f1bdcfa55f5957d899",
+          "zipMember": "logs/godot2026-10-15T15.19.26.log"
+        },
+        {
+          "path": "build/feedback-20261021/fbdbc313-c571-46b3-882d-4cb3657660e5/member-5.txt",
+          "bytes": 489982,
+          "sha256": "00882af12292af74bc6e8bcf58889829245c39d7c6cad2fe8b1e94e7d87458ce",
+          "zipMember": "logs/godot2026-10-16T00.16.40.log"
+        },
+        {
+          "path": "build/feedback-20261021/fbdbc313-c571-46b3-882d-4cb3657660e5/member-6.txt",
+          "bytes": 484251,
+          "sha256": "e6e9d03d8bd1e86ccf8629746a89e106026cc18f776797afca6d3d92b6ae0d47",
+          "zipMember": "logs/godot2026-10-16T11.39.59.log"
+        }
+      ]
+    }
+  ],
+  "hostVersions": {
+    "stable": "0.107.1",
+    "preview": "0.111.0"
+  },
+  "products": [
+    {
+      "path": "build/feedback-20261021/final-stable/Release/NinjaSlayer.dll",
+      "bytes": 2217984,
+      "sha256": "caf49012ae22bffe6256acd0b78fa11ba8ae95dfbc3372ef131a1b887592c30b"
+    },
+    {
+      "path": "build/feedback-20261021/final-preview/Release/NinjaSlayer.dll",
+      "bytes": 2221568,
+      "sha256": "e088e856ca876ae7afde93aaeb89894226d18c378ff650fb67e7e2ffe78054e2"
+    },
+    {
+      "path": "build/feedback-20261021/anthony/NinjaSlayer.AutoAnthony.dll",
+      "bytes": 128512,
+      "sha256": "cf6dfd0d1de753b6f31048772b71e2a4fc382c036ccd341dba5d9ba68bee283d"
+    }
+  ],
+  "validation": {
+    "baseline-preview-dark.log": {
+      "path": "build/feedback-20261021/baseline-preview-dark.log",
+      "bytes": 34861,
+      "sha256": "ab2ccba73b178ca0d4052c7c94b394fe7cd26d20ba659dbeb92ffb8b24013c84"
+    },
+    "baseline-preview-blood.log": {
+      "path": "build/feedback-20261021/baseline-preview-blood.log",
+      "bytes": 35731,
+      "sha256": "9cc6bd2a21fc2b073b6cc9c2ef1a8eb2ce248fc99d4cd2206fa1ea2451b2f3fa"
+    },
+    "baseline-preview-evasion.log": {
+      "path": "build/feedback-20261021/baseline-preview-evasion.log",
+      "bytes": 36053,
+      "sha256": "6db3921a20708810f0d0c93e663f814f9db9e36bbf59b14e5cc6538b43e84c8a"
+    },
+    "baseline-preview-anti-air.log": {
+      "path": "build/feedback-20261021/baseline-preview-anti-air.log",
+      "bytes": 34805,
+      "sha256": "a29a8c40e4157ec23f4b5e7447fb66ba515b3e0ee9cf5e349600ddc03ce9795c"
+    },
+    "final-preview-targeted.log": {
+      "path": "build/feedback-20261021/final-preview-targeted.log",
+      "bytes": 33817,
+      "sha256": "594ddbeb65504e8729a2755cac95d2c3a8122f827ef6cd5f0e4ef185c058b11c"
+    },
+    "final-stable-targeted.log": {
+      "path": "build/feedback-20261021/final-stable-targeted.log",
+      "bytes": 34156,
+      "sha256": "ec91a6bd64ebe2814d9e52476b4206810e54eca5b32236435b0c571bbcc0345c"
+    },
+    "final-preview-gameplay.log": {
+      "path": "build/feedback-20261021/final-preview-gameplay.log",
+      "bytes": 59044,
+      "sha256": "dd746f62f3eb856ecebb850808b86c109a004f420691e921a0ab9514780f10f6"
+    },
+    "final-stable-gameplay.log": {
+      "path": "build/feedback-20261021/final-stable-gameplay.log",
+      "bytes": 59675,
+      "sha256": "4f95322b442ae36abcf7232ec404ef9cd79d6b5507dcbd2c1e20167073bfbe51"
+    },
+    "patch-preview.log": {
+      "path": "build/feedback-20261021/patch-preview.log",
+      "bytes": 5954438,
+      "sha256": "9ed18f1d27132e308302629f19d2b911d0817b5d68aec27b4a8b042aa8c67ae4"
+    },
+    "patch-stable.log": {
+      "path": "build/feedback-20261021/patch-stable.log",
+      "bytes": 5914973,
+      "sha256": "aa329345fe2c96127628898f688fc8e60730107d28714d2f70ced8534a56accf"
+    },
+    "seed-preview.log": {
+      "path": "build/feedback-20261021/seed-preview.log",
+      "bytes": 210061,
+      "sha256": "55e10e133a101e7916a46a44952539f8073e1c2d7d9dd1b3790b849e0092db00"
+    },
+    "seed-stable.log": {
+      "path": "build/feedback-20261021/seed-stable.log",
+      "bytes": 209450,
+      "sha256": "a784eb4d3a1e9d0efe7c6df0a28d4e30bc8f5d0fdcfbd7bbc53da9790347652e"
+    },
+    "anthony.log": {
+      "path": "build/feedback-20261021/anthony.log",
+      "bytes": 34387,
+      "sha256": "5e8ddb3a190448f4134a583533b08aec1b6da22cfbc4a4311b965f5f2ccc67cc"
+    },
+    "network-preview/host.log": {
+      "path": "build/feedback-20261021/network-preview/host.log",
+      "bytes": 51785,
+      "sha256": "f70072eadbe56a2b67bd5b276b2d5c8077ed99a48ea9f30b7431430cc0338a66"
+    },
+    "network-preview/client.log": {
+      "path": "build/feedback-20261021/network-preview/client.log",
+      "bytes": 51869,
+      "sha256": "5c275bf7dedbfa7bbfc4fc0a1c0ed23ae1638a91c8bc5885fbbf0e069fa6ad90"
+    },
+    "network-stable/host.log": {
+      "path": "build/feedback-20261021/network-stable/host.log",
+      "bytes": 50164,
+      "sha256": "8efc3e0ca335741b05dfc78496ba34804d0c4ef5089baa7e704c3073c9da7245"
+    },
+    "network-stable/client.log": {
+      "path": "build/feedback-20261021/network-stable/client.log",
+      "bytes": 50248,
+      "sha256": "13e44c88a126ef2660e8e96712cb0478469ea8f53118d86b45ff4ca3fcbd4ff4"
+    }
+  },
+  "logicTests": {
+    "passed": 370,
+    "failed": 0
+  },
+  "limitations": [
+    "Windows headless contracts only; no macOS or Linux client run.",
+    "Runtime resource pack is the installed 1.1.1 pack; localization edits were checked from source, no package exported.",
+    "Exact reported LibraryOfRuina and SkinChanger assemblies were unavailable for isolated comparison.",
+    "CFC binary differential was not rerun; existing CFC ownership exclusion and exact seed/save contracts passed.",
+    "No general frame-time profiling or four-player live Steam session.",
+    "No changes to relic random state, historical save migrations, public feedback statuses, GitHub or Workshop."
+  ],
+  "modifiedSourceFiles": [
+    {
+      "path": "Cards/Standard/AntiAirBangBangFist.cs",
+      "sha256": "43b16d035b1ac8beec599391d92fada669905c3cdef925e546aa400319058cc0"
+    },
+    {
+      "path": "Code/Combat/DarkNinjaCombatMath.cs",
+      "sha256": "bfce8561f35cbd6e65eefe3b2d8220df9fce2aa784633e6883f2ec3804fc0cf8"
+    },
+    {
+      "path": "Code/Combat/EvasionResolution.cs",
+      "sha256": "fca2e0d48027900cfba73fe264b58c0da6119899145845bfe779325bbc18f9d1"
+    },
+    {
+      "path": "Code/ExternalAnimations/DarkNinjaSpecialAttackPresentation.cs",
+      "sha256": "b00fec4d6aee06ceb4ae3e969895a6e621974afa0f14e147ecbd8367d789488b"
+    },
+    {
+      "path": "Code/Nodes/NLowHealthBloodVfx.cs",
+      "sha256": "32307353c156224676a3eeff8dfd7d7b619f1f6364d55ef6b89e190b9dbb7e61"
+    },
+    {
+      "path": "Code/Patches/EvasionMissPatches.cs",
+      "sha256": "80dea0522418be5f057f9bd528aedbde1bc720afbea3f9ab2c4ac03d33e4f804"
+    },
+    {
+      "path": "Docs/card-catalog.md",
+      "sha256": "4cc66c0d030e18b87ff14c7506268866a09d4bf4b5947bf98fc184aa83ca344b"
+    },
+    {
+      "path": "Integrations/AutoAnthony/NinjaComponentRuntime.cs",
+      "sha256": "d1aeaccbff8d9ab098a19b00958c133af229c08a58e2749e1339737e72c02f24"
+    },
+    {
+      "path": "NinjaSlayer/localization/deu/powers.json",
+      "sha256": "83f3f977df2d7725cbff3fd46fe27c960ace97dd60289bda1db2ac7cd8047cdb"
+    },
+    {
+      "path": "NinjaSlayer/localization/eng/powers.json",
+      "sha256": "4d1b55eed31f879ab7532438a01533a02820fc009eac8f155de5fdcf7c30d771"
+    },
+    {
+      "path": "NinjaSlayer/localization/esp/powers.json",
+      "sha256": "e186a884eb8db8399dad62349346d6d73516c7f7631debc8135e0edb9a3bcf93"
+    },
+    {
+      "path": "NinjaSlayer/localization/fra/powers.json",
+      "sha256": "cdafbf887f6ee425a38f0bfec2a1a4792bbf766946881883d28b1da23291b9ec"
+    },
+    {
+      "path": "NinjaSlayer/localization/ind/powers.json",
+      "sha256": "3e4b47316a7337944d71bd3885466075b2a5e8421875f272eeb0a7e64c1ae2fa"
+    },
+    {
+      "path": "NinjaSlayer/localization/ita/powers.json",
+      "sha256": "10fe090f0f5c67162d31631e4134366492a1317b2a3233994ce800eb472b6ad3"
+    },
+    {
+      "path": "NinjaSlayer/localization/jpn/powers.json",
+      "sha256": "da72e8a20aa43aa76828d253b99f4bee2d2232001283b2588c0bf895ee743553"
+    },
+    {
+      "path": "NinjaSlayer/localization/kor/powers.json",
+      "sha256": "5c2b3e4f13602b040aad18149cbda918cb16cf5ecc99e54b83c37fbfd6afe492"
+    },
+    {
+      "path": "NinjaSlayer/localization/pol/powers.json",
+      "sha256": "2198ddf268561344b4dfec79de210caceff701ecdd6099d38c9dc82c3de30b91"
+    },
+    {
+      "path": "NinjaSlayer/localization/ptb/powers.json",
+      "sha256": "52e80d9139dbed36e5a1f272dcfc6da56e0907621d5b7b5f8e18b38407e12243"
+    },
+    {
+      "path": "NinjaSlayer/localization/rus/powers.json",
+      "sha256": "2ac238af059f2fe06eff9ce1e3fbc04613fdce6566054d4cda2d920949903bfb"
+    },
+    {
+      "path": "NinjaSlayer/localization/spa/powers.json",
+      "sha256": "29218d555dd7aaa133716d62603b2031d0be003e0de46c31400d78c7b43f23f8"
+    },
+    {
+      "path": "NinjaSlayer/localization/tha/powers.json",
+      "sha256": "cd199e0b5516cfb2132d3068d24466771a0e3319ed18d19a7b6151d5b3a38301"
+    },
+    {
+      "path": "NinjaSlayer/localization/tur/powers.json",
+      "sha256": "f0f44049e76975e3f8d5403040608e316da418766d600dd2b2d663d7b85704c8"
+    },
+    {
+      "path": "NinjaSlayer/localization/zhs/powers.json",
+      "sha256": "53d08c7a0a5b81fae60f8d052c852c47cfb97c3ad98b270df2d62126a2685e6e"
+    },
+    {
+      "path": "NinjaSlayer/localization/zht/powers.json",
+      "sha256": "5f85ce148dc7975ca0bdeb25f559591fbb662fe7d79825f3d63f6ad475bcf40a"
+    },
+    {
+      "path": "Powers/EvasionPower.cs",
+      "sha256": "d08273c8bb7b7e3563edf29988766aa64f4dbb504daf8b4ec476a4a6409505ef"
+    },
+    {
+      "path": "Tests/NinjaSlayer.LogicTests/DarkNinjaCombatMathTests.cs",
+      "sha256": "3c025ec3137963caab571e53475214ada03ddc08b361cf807840f5e4b889dde6"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.AutoAnthony.cs",
+      "sha256": "c8c99d4dce9649ec756b2e72d073b7ebef4429e911046f518c5d296537642b34"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.FeedbackOctober21.cs",
+      "sha256": "cbed0f7b56be2ef612d3be859d9b37e235ae3d8910a479b0301a19e7290f75f5"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Multiplayer.cs",
+      "sha256": "46210631a63ac66f9dda536dad6c34d4805b7d328d2376aff92758e539392c39"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Release113.cs",
+      "sha256": "12b5ae915c7321b5684cfb720dfa5557b42477b0a672cf88b7986523e54065aa"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.cs",
+      "sha256": "feb32189602fea7d8fda0775068ecd6796372dce808b5e0026050f032baa3dfc"
+    }
+  ]
+}

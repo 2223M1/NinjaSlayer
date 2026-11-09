@@ -52,7 +52,6 @@
     <Compile Include="..\..\Code\Combat\CombatBodyContours.cs" Link="CombatBodyContours.cs" />
     <Compile Include="..\..\Code\Combat\CombatMetricsSnapshot.cs" Link="CombatMetricsSnapshot.cs" />
     <Compile Include="..\..\Code\Combat\CombatHealthBar.cs" Link="CombatHealthBar.cs" />
-    <Compile Include="..\..\Code\Combat\ExtendedHealthBarLayout.cs" Link="ExtendedHealthBarLayout.cs" />
     <Compile Include="..\..\Code\Combat\FacingScaleMath.cs" Link="FacingScaleMath.cs" />
     <Compile Include="..\..\Code\Combat\AttackIntentPreviewContext.cs" Link="AttackIntentPreviewContext.cs" />
     <Compile Include="..\..\Code\Combat\FinisherForecastEngine.cs" Link="FinisherForecastEngine.cs" />

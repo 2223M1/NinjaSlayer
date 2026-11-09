@@ -48,6 +48,6 @@
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.description": "A cada {Cards} Ataques jogados, receba {Plating} de [gold]Blindagem[/gold].",
   "NINJA_SLAYER_RELIC_BIO_BAMBOO_SPLINT_RELIC.flavor": "O bambu partido ainda está úmido. Bem amarrado, pode desviar um golpe de raspão.",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.title": "Fragmento de Beppin",
-  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "Na primeira vez que perder PV ou [gold]Vida de Naraku[/gold] em cada combate, receba {Karate} de [gold]Karatê[/gold].",
+  "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.description": "Na primeira vez que perder PV em cada combate, receba {Karate} de [gold]Karatê[/gold].",
   "NINJA_SLAYER_RELIC_BEPPIN_SHARD_RELIC.flavor": "Um fragmento da lâmina demoníaca Beppin."
 }

@@ -12,7 +12,7 @@ public sealed class Training : NinjaSlayerUncommonCard
     protected override IEnumerable<DynamicVar> CanonicalVars => [new KarateVar(2)];
 
     public Training()
-        : base(nameof(Training), 2, CardType.Power, TargetType.Self) { }
+        : base(nameof(Training), 1, CardType.Power, TargetType.Self) { }
 
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
         PowerCmd.Apply<TrainingPower>(

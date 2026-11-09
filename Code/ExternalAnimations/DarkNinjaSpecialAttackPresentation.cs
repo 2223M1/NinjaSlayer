@@ -106,7 +106,9 @@ internal static class DarkNinjaSpecialAttackPresentation
         int returnSide = 1,
         Func<Creature, bool>? canPenetrate = null)
     {
-        Creature[] orderedTargets = OrderTargets(targets);
+        // Native target order is shared by peers; canvas positions put the local
+        // player first and must never decide damage or theft RNG consumption.
+        Creature[] orderedTargets = targets.Where(target => target.IsAlive).ToArray();
         if (orderedTargets.Length == 0)
         {
             return;
@@ -404,31 +406,6 @@ internal static class DarkNinjaSpecialAttackPresentation
             playedSuccessfulVoice = true;
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.DarkNinjaKirisuteGomenEvent);
         }
-    }
-
-    private static Creature[] OrderTargets(IReadOnlyList<Creature> targets)
-    {
-        Creature[] validTargets = targets.Where(target => target.IsAlive).ToArray();
-        float[] canvasX = validTargets
-            .Select(ResolveTargetCanvasCenterX)
-            .ToArray();
-        return DarkNinjaCombatMath.OrderTargetsByCanvasX(canvasX)
-            .Select(index => validTargets[index])
-            .ToArray();
-    }
-
-    private static float ResolveTargetCanvasCenterX(Creature target)
-    {
-        NCombatRoom? room = NCombatRoom.Instance;
-        if (room == null || !GodotObject.IsInstanceValid(room))
-        {
-            return float.MaxValue;
-        }
-
-        NCreature? targetNode = room.GetCreatureNode(target);
-        return targetNode != null && GodotObject.IsInstanceValid(targetNode)
-            ? targetNode.Visuals.Bounds.GetGlobalRect().GetCenter().X
-            : float.MaxValue;
     }
 
     private static async Task PlayTween(

@@ -233,6 +233,8 @@ public sealed class TheMovingJungleEvent : ModEventTemplate
         };
     }
 
+    internal Task CompleteRecordedChoice() => RunLocalSession(session => session.CompleteRecordedChoice());
+
     private Task TakeRegularLoot()
     {
         SetEventFinished(PageDescription("INTERMISSION"));

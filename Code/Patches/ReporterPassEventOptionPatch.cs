@@ -10,6 +10,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Events;
 using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using NinjaSlayer.Relics;
+using NinjaSlayer.Events;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
@@ -62,7 +63,7 @@ public sealed class ReporterPassEventOptionPatch : IPatchMethod
         );
     }
 
-    private static Task Record(EventModel eventModel)
+    private static async Task Record(EventModel eventModel)
     {
         eventModel.Owner?.GetRelic<NSTVPressPassRelic>()?.Flash();
 
@@ -83,6 +84,7 @@ public sealed class ReporterPassEventOptionPatch : IPatchMethod
         SetEventFinished.Invoke(
             eventModel,
             [new LocString("relics", $"{RelicLocPrefix}.record.done")]);
-        return Task.CompletedTask;
+        if (eventModel is TheMovingJungleEvent jungle)
+            await jungle.CompleteRecordedChoice();
     }
 }

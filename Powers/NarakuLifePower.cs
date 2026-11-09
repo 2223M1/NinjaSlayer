@@ -4,29 +4,13 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
-using STS2RitsuLib.Combat.HealthBars;
 
 namespace NinjaSlayer.Powers;
 
-public sealed class NarakuLifePower : NinjaSlayerPowerTemplate, IHealthBarVisualGraftSource
+public sealed class NarakuLifePower : NinjaSlayerPowerTemplate
 {
-    // Per-instance damage receipt; retained references also observe the final absorption at zero stock.
-    internal long TotalAbsorbed { get; private set; }
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
-
-    public HealthBarVisualGraftMetrics GetHealthBarVisualGraft(HealthBarVisualGraftContext context)
-    {
-        if (Amount <= 0 || context.Creature != Owner)
-        {
-            return new HealthBarVisualGraftMetrics(0);
-        }
-
-        return new HealthBarVisualGraftMetrics(
-            Amount,
-            NarakuLifeHealthBarColors.Foreground,
-            null);
-    }
 
     public override Task AfterPowerAmountChanged(
         PlayerChoiceContext choiceContext,
@@ -49,16 +33,14 @@ public sealed class NarakuLifePower : NinjaSlayerPowerTemplate, IHealthBarVisual
         return Task.CompletedTask;
     }
 
-    internal decimal AbsorbHpLoss(decimal amount)
+    internal decimal AbsorbDamage(decimal amount)
     {
         int absorbed = Math.Min(Amount, Math.Max(0, (int)amount));
         if (absorbed == 0) return amount;
 
-        TotalAbsorbed += absorbed;
         Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("naraku_absorbed", Owner, absorbed);
 
-        // HP loss is synchronous. Commit the shield before the host evaluates death,
-        // using the model operations that raise the native power/UI notifications.
+        // Commit before HP-loss hooks; previews do not enter this damage boundary.
         SetAmount(Amount - absorbed, silent: true);
         if (Amount == 0) RemoveInternal();
         CombatHealthBar.Refresh(Owner);

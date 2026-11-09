@@ -159,11 +159,11 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/AntiAirBangBangFist.png",
     "Vars": {
-      "Damage": 8,
-      "Repeat": 1,
+      "CalculatedHits": 0,
       "CalculationBase": 0,
       "CalculationExtra": 1,
-      "CalculatedHits": 0
+      "Damage": 8,
+      "Repeat": 1
     }
   },
   {
@@ -180,11 +180,11 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/AntiAirBangBangFist.png",
     "Vars": {
-      "Damage": 11,
-      "Repeat": 1,
+      "CalculatedHits": 0,
       "CalculationBase": 0,
       "CalculationExtra": 1,
-      "CalculatedHits": 0
+      "Damage": 11,
+      "Repeat": 1
     }
   },
   {
@@ -425,7 +425,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_BLACK_FLAME_INFERNO",
     "Upgraded": true,
-    "Cost": 1,
+    "Cost": 0,
     "X": false,
     "Type": "Power",
     "Rarity": "Uncommon",
@@ -436,7 +436,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BlackFlameInferno.png",
     "Vars": {
-      "EnemyHpLoss": 8
+      "EnemyHpLoss": 6
     }
   },
   {
@@ -633,11 +633,12 @@
     "Target": "AnyEnemy",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Ethereal"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/HellChop.png",
     "Vars": {
-      "Cards": 3,
       "Damage": 4,
       "Karate": 1
     }
@@ -652,11 +653,12 @@
     "Target": "AnyEnemy",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Ethereal"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/HellChop.png",
     "Vars": {
-      "Cards": 3,
       "Damage": 5,
       "Karate": 2
     }
@@ -1003,12 +1005,14 @@
     "Target": "AnyEnemy",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Ethereal"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Endurance.png",
     "Vars": {
       "Damage": 4,
-      "Karate": 4,
+      "Karate": 5,
       "Repeat": 3
     }
   },
@@ -1022,12 +1026,14 @@
     "Target": "AnyEnemy",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Ethereal"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Endurance.png",
     "Vars": {
       "Damage": 5,
-      "Karate": 5,
+      "Karate": 6,
       "Repeat": 3
     }
   },
@@ -1362,8 +1368,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/HiddenEdge.png",
     "Vars": {
-      "FocusPower": 3,
-      "DexterityPower": 1
+      "DexterityPower": 1,
+      "FocusPower": 3
     }
   },
   {
@@ -1380,8 +1386,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/HiddenEdge.png",
     "Vars": {
-      "FocusPower": 5,
-      "DexterityPower": 1
+      "DexterityPower": 1,
+      "FocusPower": 5
     }
   },
   {
@@ -1400,8 +1406,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/GrapplingHook.png",
     "Vars": {
-      "WeakPower": 1,
-      "StrengthLoss": 4
+      "StrengthLoss": 4,
+      "WeakPower": 1
     }
   },
   {
@@ -1420,8 +1426,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/GrapplingHook.png",
     "Vars": {
-      "WeakPower": 2,
-      "StrengthLoss": 6
+      "StrengthLoss": 6,
+      "WeakPower": 2
     }
   },
   {
@@ -1537,7 +1543,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_TRAINING",
     "Upgraded": false,
-    "Cost": 2,
+    "Cost": 1,
     "X": false,
     "Type": "Power",
     "Rarity": "Uncommon",
@@ -1554,7 +1560,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_TRAINING",
     "Upgraded": true,
-    "Cost": 2,
+    "Cost": 1,
     "X": false,
     "Type": "Power",
     "Rarity": "Uncommon",
@@ -1816,7 +1822,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/TomoeThrow.png",
     "Vars": {
-      "Block": 11,
+      "Block": 12,
       "WeakPower": 3
     }
   },
@@ -1873,7 +1879,8 @@
     "Portrait": "res://NinjaSlayer/images/cards/SomersaultKick.png",
     "Vars": {
       "Breath": 2,
-      "Damage": 14
+      "Damage": 7,
+      "Repeat": 2
     }
   },
   {
@@ -1891,7 +1898,8 @@
     "Portrait": "res://NinjaSlayer/images/cards/SomersaultKick.png",
     "Vars": {
       "Breath": 2,
-      "Damage": 18
+      "Damage": 9,
+      "Repeat": 2
     }
   },
   {
@@ -2158,7 +2166,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Jujutsu.png",
     "Vars": {
-      "Karate": 3
+      "Karate": 4
     }
   },
   {
@@ -2283,7 +2291,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_RIGHT_UPPERCUT",
+    "Id": "CARD.NINJA_SLAYER_CARD_FOCUSED_BLOWS",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -2296,12 +2304,51 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/RightUppercut.png",
     "Vars": {
+      "CalculatedDamage": 6,
+      "CalculationBase": 6,
+      "ExtraDamage": 3
+    }
+  },
+  {
+    "Id": "CARD.NINJA_SLAYER_CARD_FOCUSED_BLOWS",
+    "Upgraded": true,
+    "Cost": 1,
+    "X": false,
+    "Type": "Attack",
+    "Rarity": "Common",
+    "Target": "AnyEnemy",
+    "CanBeGeneratedInCombat": true,
+    "CanBeGeneratedByModifiers": true,
+    "Keywords": [],
+    "Tags": [],
+    "Portrait": "res://NinjaSlayer/images/cards/RightUppercut.png",
+    "Vars": {
+      "CalculatedDamage": 6,
+      "CalculationBase": 6,
+      "ExtraDamage": 4
+    }
+  },
+  {
+    "Id": "CARD.NINJA_SLAYER_CARD_LOW_UPPERCUT",
+    "Upgraded": false,
+    "Cost": 1,
+    "X": false,
+    "Type": "Attack",
+    "Rarity": "Common",
+    "Target": "AnyEnemy",
+    "CanBeGeneratedInCombat": true,
+    "CanBeGeneratedByModifiers": true,
+    "Keywords": [],
+    "Tags": [],
+    "Portrait": "res://NinjaSlayer/images/cards/LeftUppercut.png",
+    "Vars": {
       "Damage": 8,
+      "VulnerablePower": 1,
       "WeakPower": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_RIGHT_UPPERCUT",
+    "Id": "CARD.NINJA_SLAYER_CARD_LOW_UPPERCUT",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -2312,46 +2359,11 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/RightUppercut.png",
+    "Portrait": "res://NinjaSlayer/images/cards/LeftUppercut.png",
     "Vars": {
       "Damage": 10,
+      "VulnerablePower": 2,
       "WeakPower": 2
-    }
-  },
-  {
-    "Id": "CARD.NINJA_SLAYER_CARD_LEFT_UPPERCUT",
-    "Upgraded": false,
-    "Cost": 1,
-    "X": false,
-    "Type": "Attack",
-    "Rarity": "Common",
-    "Target": "AnyEnemy",
-    "CanBeGeneratedInCombat": true,
-    "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
-    "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/LeftUppercut.png",
-    "Vars": {
-      "Damage": 10,
-      "VulnerablePower": 1
-    }
-  },
-  {
-    "Id": "CARD.NINJA_SLAYER_CARD_LEFT_UPPERCUT",
-    "Upgraded": true,
-    "Cost": 1,
-    "X": false,
-    "Type": "Attack",
-    "Rarity": "Common",
-    "Target": "AnyEnemy",
-    "CanBeGeneratedInCombat": true,
-    "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
-    "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/LeftUppercut.png",
-    "Vars": {
-      "Damage": 12,
-      "VulnerablePower": 2
     }
   },
   {
@@ -2567,14 +2579,12 @@
     ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/ShurikenStorm.png",
-    "Vars": {
-      "Stock": 1
-    }
+    "Vars": {}
   },
   {
     "Id": "CARD.NINJA_SLAYER_CARD_SHURIKEN_STORM",
     "Upgraded": true,
-    "Cost": 1,
+    "Cost": 0,
     "X": false,
     "Type": "Skill",
     "Rarity": "Rare",
@@ -2586,9 +2596,7 @@
     ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/ShurikenStorm.png",
-    "Vars": {
-      "Stock": 3
-    }
+    "Vars": {}
   },
   {
     "Id": "CARD.NINJA_SLAYER_CARD_SIP",
@@ -3113,8 +3121,8 @@
     "Portrait": "res://NinjaSlayer/images/cards/TornadoFist.png",
     "Vars": {
       "Damage": 4,
-      "Threshold": 4,
-      "ExtraDamage": 4
+      "ExtraDamage": 4,
+      "Threshold": 4
     }
   },
   {
@@ -3132,8 +3140,8 @@
     "Portrait": "res://NinjaSlayer/images/cards/TornadoFist.png",
     "Vars": {
       "Damage": 6,
-      "Threshold": 4,
-      "ExtraDamage": 6
+      "ExtraDamage": 6,
+      "Threshold": 4
     }
   },
   {

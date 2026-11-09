@@ -32,7 +32,7 @@ public partial class OrbContractRunner
             await CreatureCmd.Damage(Choice, owner, 10, MegaCrit.Sts2.Core.ValueProps.ValueProp.Move, combat.Enemy);
             Require(owner.CurrentHp == hp - 6 && owner.Block == 0, "Macaco incorrectly evaded after its last layer.");
         }
-        GD.Print("PASS Macaco base/upgrade: native enemy damage consumes exactly one evasion layer per hit, protects HP/Block and expires.");
+        GD.Print("PASS Macaco base/upgrade: isolated damage commands outside a monster move consume one layer and protect HP/Block.");
         foreach (bool upgraded in new[] { false, true })
         foreach (int stock in new[] { 0, 1, 3 })
         {
@@ -70,8 +70,8 @@ public partial class OrbContractRunner
                 foreach (var old in PileType.Hand.GetPile(combat.Player).Cards.ToArray())
                     await CardPileCmd.RemoveFromCombat(old);
             }
-            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 6,
-                "Devour Flame must remain independent of Resilience's generated-status draw.");
+            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 0,
+                "Devour Flame must not trigger from Resilience's generated-status draw.");
         }
         using (var combat = new OrbCombat())
         {

@@ -3,6 +3,8 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.Lifecycle;
+using NinjaSlayer.Powers;
+using MegaCrit.Sts2.Core.Commands;
 
 namespace NinjaSlayer.Code.Combat;
 
@@ -31,11 +33,21 @@ internal static class EvasionResolution
         try
         {
             await task;
+            foreach (EvasionPower power in frame.EvadedPowers)
+                await PowerCmd.Decrement(power);
         }
         finally
         {
             frame.IsActive = false;
         }
+    }
+
+    public static bool DeferConsumption(EvasionPower power, Creature attacker)
+    {
+        if (!attacker.IsMonster || CurrentMove.Value is not { IsActive: true } frame)
+            return false;
+        frame.EvadedPowers.Add(power);
+        return true;
     }
 
     public static void RecordEvadedHit(
@@ -118,6 +130,7 @@ internal static class EvasionResolution
     {
         public MoveFrame? Previous { get; } = previous;
         public EvasionHitLedger Ledger { get; } = new();
+        public HashSet<EvasionPower> EvadedPowers { get; } = [];
         public bool IsActive { get; set; } = true;
     }
 }

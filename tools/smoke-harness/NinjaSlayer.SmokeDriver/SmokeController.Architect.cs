@@ -16,6 +16,7 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.ExternalAnimations;
+using NinjaSlayer.Code.Nodes;
 
 namespace NinjaSlayer.SmokeDriver;
 
@@ -199,7 +200,6 @@ internal sealed partial class SmokeController
             int hp = _player.Creature.CurrentHp;
             CardModel[] deck = _player.Deck.Cards.ToArray();
             Vector2 playerSlot = Node("ninja").Position;
-            float playerVisualX = Node("ninja").Visuals.GlobalPosition.X;
             var probabilities = Enumerable.Range(0, 1000)
                 .Select(i => AncientEntranceAnimation.FromRoll((i + .5f) / 1000f)).GroupBy(v => v)
                 .ToDictionary(g => g.Key, g => g.Count());
@@ -221,7 +221,6 @@ internal sealed partial class SmokeController
                 await architectEvent.CurrentOptions.Single().Chosen();
                 await Wait(1f);
                 playerSlot = Node("ninja").Position;
-                playerVisualX = Node("ninja").Visuals.GlobalPosition.X;
                 await architectEvent.CurrentOptions.Single().Chosen();
             }
             else
@@ -237,9 +236,12 @@ internal sealed partial class SmokeController
                 .GetValue(controller)!, "Architect cinematic did not complete", _cancel);
             Require(_player.Deck.Cards.SequenceEqual(deck) && _player.Creature.CurrentHp == hp,
                 "Architect visual execution changed the deck or player HP.");
+            Sprite2D body = NinjaSlayerVisualRig.GetBodySprite(Node("ninja").Visuals)
+                ?? throw new InvalidOperationException("Architect execution is missing the NinjaSlayer body sprite.");
+            Rect2 bodyBounds = body.GetGlobalTransformWithCanvas() * body.GetRect();
             Require(Node("ninja").Position.IsEqualApprox(playerSlot)
-                && Node("ninja").Visuals.GlobalPosition.X > playerVisualX + 800f,
-                "Architect execution must move the body across the stage without moving its combat UI root.");
+                && bodyBounds.Position.X > room.GetViewportRect().End.X,
+                "Architect execution must move the entire body and scarf beyond the viewport without moving its combat UI root.");
             _driver.PreviewEntranceVariant = null;
             await Wait(1.2);
             Cover("architect-production-execution");

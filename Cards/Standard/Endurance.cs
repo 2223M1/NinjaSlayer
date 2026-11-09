@@ -11,9 +11,10 @@ namespace NinjaSlayer.Cards.Standard;
 
 public sealed class Endurance : NinjaSlayerUncommonCard
 {
+    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Ethereal];
     public Endurance() : base(nameof(Endurance), 2, CardType.Attack, TargetType.AnyEnemy) { }
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(4, ValueProp.Move), new RepeatVar(3), new KarateVar(4)];
+        [new DamageVar(4, ValueProp.Move), new RepeatVar(3), new KarateVar(5)];
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

@@ -91,7 +91,7 @@ async function loadView() {
   snapshot.entities = models;
   snapshot.labels = versionCatalog?.labels?.[catalogLanguage] ?? {};
   renderVersionOptions(view.versions);
-  fillOptions($('#ascension'), view.ascensions, t('所有进阶'), value => `A${value}`);
+  fillOptions($('#ascension'), view.ascensions.filter(value => Number.isInteger(value) && value >= 0 && value <= 10), t('所有进阶'), value => `A${value}`);
   fillOptions($('#feedback-category'), [...new Set(view.feedback.map(item => item.category))].sort(), t('全部分类'), categoryName);
   const connected = view.sources.telemetry.state === 'ready' || Boolean(view.sources.telemetry.at);
   $('#metric-runs').textContent = connected ? view.runs.toLocaleString(locale) : '—';

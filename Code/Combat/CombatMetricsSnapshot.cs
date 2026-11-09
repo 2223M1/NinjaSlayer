@@ -31,11 +31,10 @@ internal sealed class CombatMetricsSnapshot<TPlayer>
     public void MarkCardDiscarded(TPlayer player) => GetOrCreatePlayerMetrics(player).DiscardedCard = true;
     public void MarkHpLost(TPlayer player) => GetOrCreatePlayerMetrics(player).LostHp = true;
 
-    public void AddFinishedCard(TPlayer player, bool isAttack, bool isSkill, bool isMelee)
+    public void AddFinishedCard(TPlayer player, bool isAttack, bool isMelee)
     {
         PlayerMetrics metrics = GetOrCreatePlayerMetrics(player);
         metrics.PreviousFinishedWasAttack = isAttack;
-        metrics.PreviousFinishedWasSkill = isSkill;
         if (isMelee)
         {
             metrics.MeleeAttacks++;
@@ -45,7 +44,6 @@ internal sealed class CombatMetricsSnapshot<TPlayer>
     public bool DiscardedCard(TPlayer player) => GetOrCreatePlayerMetrics(player).DiscardedCard;
     public bool LostHp(TPlayer player) => GetOrCreatePlayerMetrics(player).LostHp;
     public bool PreviousFinishedWasAttack(TPlayer player) => GetOrCreatePlayerMetrics(player).PreviousFinishedWasAttack;
-    public bool PreviousFinishedWasSkill(TPlayer player) => GetOrCreatePlayerMetrics(player).PreviousFinishedWasSkill;
     public int MeleeAttacks(TPlayer player) => GetOrCreatePlayerMetrics(player).MeleeAttacks;
 
     private PlayerMetrics GetOrCreatePlayerMetrics(TPlayer player)
@@ -64,7 +62,6 @@ internal sealed class CombatMetricsSnapshot<TPlayer>
         public bool DiscardedCard { get; set; }
         public bool LostHp { get; set; }
         public bool PreviousFinishedWasAttack { get; set; }
-        public bool PreviousFinishedWasSkill { get; set; }
         public int MeleeAttacks { get; set; }
 
         public void ResetTurn()

@@ -137,6 +137,55 @@ public partial class OrbContractRunner
         }
         GD.Print("PASS all 84 source definitions: base/upgraded construction and native card serialization.");
 
+        foreach (bool upgraded in new[] { false, true })
+        foreach (int stock in new[] { 0, 4 })
+        {
+            using var arena = new OrbCombat();
+            await PowerCmd.Apply<StrengthPower>(Choice, arena.Player.Creature, 3, arena.Player.Creature, null);
+            await PowerCmd.Apply<VigorPower>(Choice, arena.Player.Creature, 7, arena.Player.Creature, null);
+            if (stock > 0) await AddStock(arena.Player, stock);
+            await Play(arena, Create(arena, ModelDb.Card<FocusedBlows>(), upgraded));
+            Require(!arena.Player.Creature.HasPower<FocusPower>() && arena.Stock == stock
+                && arena.Enemy.CurrentHp == 1000 - (6 + stock * (upgraded ? 4 : 3) + 10)
+                && !arena.Player.Creature.HasPower<VigorPower>(),
+                "Generated Focused Blows must deal one stock-scaled hit with Strength/Vigor and no Focus or stock consumption.");
+            await Play(arena, Create(arena, ModelDb.Card<LowUppercut>(), upgraded));
+            Require(arena.Enemy.GetPowerAmount<WeakPower>() == (upgraded ? 2 : 1)
+                && arena.Enemy.GetPowerAmount<VulnerablePower>() == (upgraded ? 2 : 1),
+                "Generated Low Uppercut must apply both debuffs after a finished Attack.");
+        }
+
+        foreach (bool upgraded in new[] { false, true })
+        {
+            using var arena = new OrbCombat();
+            await PowerCmd.Apply<StrengthPower>(Choice, arena.Player.Creature, 3, arena.Player.Creature, null);
+            await PowerCmd.Apply<VigorPower>(Choice, arena.Player.Creature, 7, arena.Player.Creature, null);
+            await Play(arena, Create(arena, ModelDb.Card<SomersaultKick>(), upgraded));
+            Require(arena.Enemy.CurrentHp == 1000 - 2 * ((upgraded ? 9 : 7) + 10)
+                && !arena.Player.Creature.HasPower<VigorPower>(),
+                "Generated Somersault Kick must apply Strength/Vigor to both hits.");
+        }
+        foreach (bool upgraded in new[] { false, true })
+        {
+            using var arena = new OrbCombat();
+            var chop = Create(arena, ModelDb.Card<HellChop>(), upgraded);
+            await CardPileCmd.Add(chop, PileType.Draw);
+            await CardPileCmd.Draw(Choice, 1, arena.Player);
+            var hand = PileType.Hand.GetPile(arena.Player).Cards.ToArray();
+            Require(hand.Length == 2 && hand.All(c => c.Id == chop.Id && c.IsUpgraded == upgraded
+                && c.Keywords.Contains(CardKeyword.Ethereal)),
+                "Generated Hell Chop must copy exactly once on draw, retaining its upgrade and Ethereal.");
+            var copy = hand.Single(c => c != chop);
+            await CardPileCmd.Add(copy, PileType.Draw);
+            await CardPileCmd.Draw(Choice, 1, arena.Player);
+            Require(PileType.Hand.GetPile(arena.Player).Cards.Count == 3,
+                "A generated Hell Chop copy must copy again when actually drawn.");
+            await Play(arena, chop);
+            Require(arena.Enemy.CurrentHp == 1000 - (upgraded ? 5 : 4)
+                && arena.Player.Creature.GetPowerAmount<KaratePower>() == (upgraded ? 2 : 1),
+                "Generated Hell Chop must retain its damage and Karate effects.");
+        }
+
         using (var arena = new OrbCombat())
         {
             await Play(arena, Create(arena, ModelDb.Card<KillingIntent>()));
@@ -268,8 +317,11 @@ public partial class OrbContractRunner
             await Play(arena, Create(arena, ModelDb.Card<DevourFlame>(), upgraded));
             await Play(arena, Create(arena, ModelDb.Card<Kindle>(), upgraded));
             Require(PileType.Draw.GetPile(arena.Player).Cards.OfType<BlackFlame>().Count() == 1
-                && arena.Player.Creature.GetPowerAmount<NarakuLifePower>() == (upgraded ? 3 : 2),
-                "Generated Kindle must generate Black Flame in draw and trigger Devour Flame Naraku Life.");
+                && !arena.Player.Creature.HasPower<NarakuLifePower>(),
+                "Generated Kindle must generate Black Flame in draw without triggering exhaust rewards.");
+            await CardCmd.Exhaust(Choice, PileType.Draw.GetPile(arena.Player).Cards.OfType<BlackFlame>().Single());
+            Require(arena.Player.Creature.GetPowerAmount<NarakuLifePower>() == (upgraded ? 3 : 2),
+                "Generated Devour Flame must grant Naraku Life when a card is exhausted.");
         }
         foreach (bool upgraded in new[] { false, true })
         {
@@ -278,11 +330,21 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<VigorPower>(Choice, arena.Player.Creature, 7, arena.Player.Creature, null);
             await Play(arena, Create(arena, ModelDb.Card<Endurance>(), upgraded));
             Require(arena.Enemy.CurrentHp == 1000 - 3 * (upgraded ? 15 : 14)
-                && arena.Player.Creature.GetPowerAmount<KaratePower>() == (upgraded ? 5 : 4)
+                && arena.Player.Creature.GetPowerAmount<KaratePower>() == (upgraded ? 6 : 5)
                 && !arena.Player.Creature.HasPower<VigorPower>() && !arena.Player.Creature.HasPower<EndurancePower>(),
                 "Generated Endurance must preserve its three-hit Attack and post-hit Karate.");
         }
         GD.Print("PASS edited generated cards: single-hit Press the Attack, three-hit Endurance with Karate, and Kindle status/Naraku Life.");
+        foreach (bool upgraded in new[] { false, true })
+        foreach (int life in new[] { 1, 20 })
+        {
+            using var arena = new OrbCombat();
+            await PowerCmd.Apply<NarakuLifePower>(Choice, arena.Player.Creature, life, arena.Player.Creature, null);
+            await Play(arena, Create(arena, ModelDb.Card<AntiAirBangBangFist>(), upgraded));
+            Require(arena.Enemy.CurrentHp == 1000 - 2 * (upgraded ? 11 : 8),
+                "Generated Anti-Air must count Naraku Life once regardless of its stacks.");
+        }
+        GD.Print("PASS generated Anti-Air base/upgrade: Naraku Life at 1/20 stacks adds exactly one hit.");
         foreach (bool upgraded in new[] { false, true })
         {
             using var arena = new OrbCombat();

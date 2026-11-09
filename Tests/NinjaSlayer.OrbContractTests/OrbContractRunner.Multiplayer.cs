@@ -260,7 +260,7 @@ public partial class OrbContractRunner
                 RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(endurance, combat.Enemy));
             await WaitNetwork(() => completed > before, "native Endurance action");
             Require(combat.Enemy.CurrentHp == enemyHp - 3 * (upgraded ? 15 : 14)
-                && player.Creature.GetPowerAmount<KaratePower>() == (upgraded ? 5 : 4)
+                && player.Creature.GetPowerAmount<KaratePower>() == (upgraded ? 6 : 5)
                 && teammate.Creature.GetPowerAmount<KaratePower>() == teammateKarate
                 && !player.Creature.HasPower<VigorPower>() && !player.Creature.HasPower<EndurancePower>()
                 && endurance.Pile?.Type == PileType.Discard && player.PlayerCombatState!.Energy == 8,
@@ -536,6 +536,10 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<NarakuLifePower>(Choice, player.Creature, 20, player.Creature, null);
             await CreatureCmd.Damage(Choice, player.Creature, 1, ValueProp.Unpowered | ValueProp.Unblockable, player.Creature);
             await CreatureCmd.Damage(Choice, player.Creature, 1, ValueProp.Unpowered | ValueProp.Unblockable, player.Creature);
+            Require(player.Creature.GetPowerAmount<KaratePower>() == karate,
+                "Networked temporary HP loss must not trigger Fragment.");
+            await PowerCmd.Remove<NarakuLifePower>(player.Creature);
+            await CreatureCmd.Damage(Choice, player.Creature, 1, ValueProp.Unpowered | ValueProp.Unblockable, player.Creature);
             Require(player.Creature.GetPowerAmount<KaratePower>() == karate + 7
                 && other.Creature.GetPowerAmount<KaratePower>() == otherKarate,
                 "Networked Fragment repeated or crossed player ownership.");
@@ -600,6 +604,13 @@ public partial class OrbContractRunner
         GD.Print("PASS synchronized Sawatari knife transfers, native status plays, exhaust and immediate intents");
         GD.Print("PASS synchronized event relic obtain, native attack counters and Naraku loss ownership");
         await VerifySawatariNetworkTurnBarrier(combat, role, directory);
+        string darkStrike = await October21DarkStrikeTranscript(mirrored: role == "client");
+        File.WriteAllText(Path.Combine(directory, $"{role}.dark-strike.json"), darkStrike);
+        await FinishFixture("dark-strike");
+        Require(File.ReadAllText(Path.Combine(directory, "host.dark-strike.json"))
+            == File.ReadAllText(Path.Combine(directory, "client.dark-strike.json")),
+            "Dark Strike desynced stolen cards, HP or RNG across opposite local layouts.");
+        GD.Print("PASS two-process Dark Strike: opposite local layouts preserve stolen card owners, cards, HP and RNG.");
     }
 
     private static async Task WaitNetwork(Func<bool> predicate, string operation)

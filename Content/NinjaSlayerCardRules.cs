@@ -32,9 +32,9 @@ public static class NinjaSlayerCardRules
         "ReadTheEnemy",
         "KunaiThrow",
         "CrossGuard",
-        "LeftUppercut",
+        "LowUppercut",
         "PalmThrust",
-        "RightUppercut"
+        "FocusedBlows"
     ];
 
     public static IReadOnlyList<string> UncommonRewardCardIds { get; } =

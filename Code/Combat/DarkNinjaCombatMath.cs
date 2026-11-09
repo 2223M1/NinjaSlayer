@@ -139,12 +139,6 @@ internal static class DarkNinjaCombatMath
             DarkStrikeStartOffsetTextureY * (1f - progress));
     }
 
-    internal static int[] OrderTargetsByCanvasX(IReadOnlyList<float> canvasX) =>
-        Enumerable.Range(0, canvasX.Count)
-            .OrderBy(index => canvasX[index])
-            .ThenBy(index => index)
-            .ToArray();
-
     internal static DarkNinjaPoint SampleReturnParabola(
         DarkNinjaPoint start,
         DarkNinjaPoint end,
