@@ -45,6 +45,8 @@ public partial class OrbContractRunner
         await VerifyNovember9Cards();
         await VerifyTemporaryHpSemantics();
         await VerifyEventRelics();
+        VerifyEventAppearanceRates();
+        await VerifySushiEnchantment();
         await VerifyBoardFourthEdit();
         await VerifyMultiHitVigor();
         await VerifyNewCardInteractions();

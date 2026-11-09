@@ -6,7 +6,7 @@
   "NINJA_SLAYER_RELIC_DOGUSHA_TOOL_POUCH_RELIC.description": "At the start of your turn, gain 1 [gold]Shuriken[/gold].",
   "NINJA_SLAYER_RELIC_DOGUSHA_TOOL_POUCH_RELIC.flavor": "Saburo keeps no customer ledger. Every order exists only in his head.",
   "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.title": "Maguro Sushi",
-  "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.description": "Upon pickup, heal to full HP.",
+  "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.description": "Upon pickup, choose [blue]{Cards}[/blue] cards in your [gold]deck[/gold] to [gold]Enchant[/gold] with [purple]Nourishing[/purple].",
   "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.flavor": "No soy sauce, but beggars cannot be choosers.",
   "NINJA_SLAYER_RELIC_IRC_TERMINAL_RELIC.title": "IRC Terminal",
   "NINJA_SLAYER_RELIC_IRC_TERMINAL_RELIC.description": "At the start of your turn, gain 1 Energy and add a [gold]Busy Line[/gold] into your [gold]Hand[/gold].",

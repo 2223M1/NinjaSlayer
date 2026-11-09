@@ -1,5 +1,8 @@
 {
   "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.title": "Чёрное пламя",
   "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.description": "При попадании этой Атаки накладывает 3 карате на каждого поражённого врага.",
-  "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.extraCardText": "Накладывает 3 карате на каждого поражённого врага."
+  "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.extraCardText": "Накладывает 3 карате на каждого поражённого врага.",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.title": "Питательная",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.description": "Когда вы впервые разыгрываете эту карту в каждом бою, получите [blue]{Amount}[/blue] макс. ОЗ.",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.extraCardText": "При первом розыгрыше в каждом бою получите {Amount} макс. ОЗ."
 }

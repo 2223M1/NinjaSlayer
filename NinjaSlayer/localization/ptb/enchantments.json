@@ -1,5 +1,8 @@
 {
   "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.title": "Chama Negra",
   "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.description": "Quando este Ataque atingir, aplique 3 de Karatê a cada inimigo atingido.",
-  "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.extraCardText": "Aplique 3 de Karatê a cada inimigo atingido."
+  "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.extraCardText": "Aplique 3 de Karatê a cada inimigo atingido.",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.title": "Nutritiva",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.description": "Na primeira vez que jogar esta carta em cada combate, ganhe [blue]{Amount}[/blue] de PV máximo.",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.extraCardText": "Na primeira vez que jogar em cada combate, ganhe {Amount} de PV máximo."
 }

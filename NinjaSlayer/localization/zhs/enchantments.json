@@ -1,5 +1,8 @@
 {
   "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.title": "黑炎",
   "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.description": "这张攻击牌命中时，给予每个被命中的敌人3层空手道。",
-  "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.extraCardText": "给予每个被命中的敌人3层空手道。"
+  "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.extraCardText": "给予每个被命中的敌人3层空手道。",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.title": "滋养",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.description": "你第一次打出这张牌时，将你的最大生命值提升[blue]{Amount}[/blue]。",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.extraCardText": "第一次打出时，将你的最大生命值提升{Amount}。"
 }

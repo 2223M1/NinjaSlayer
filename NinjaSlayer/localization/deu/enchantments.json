@@ -1,5 +1,8 @@
 {
   "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.title": "Schwarze Flamme",
   "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.description": "Wenn dieser Angriff trifft, wende 3 Karate auf jeden getroffenen Gegner an.",
-  "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.extraCardText": "Wende 3 Karate auf jeden getroffenen Gegner an."
+  "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.extraCardText": "Wende 3 Karate auf jeden getroffenen Gegner an.",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.title": "Nahrhaft",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.description": "Wenn du diese Karte in einem Kampf zum ersten Mal ausspielst, erhältst du [blue]{Amount}[/blue] max. LP.",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.extraCardText": "Beim ersten Ausspielen pro Kampf erhältst du {Amount} max. LP."
 }

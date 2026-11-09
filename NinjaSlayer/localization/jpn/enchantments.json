@@ -1,5 +1,8 @@
 {
   "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.title": "黒い炎",
   "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.description": "このアタックが命中した敵すべてに3カラテを与える。",
-  "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.extraCardText": "命中した敵すべてに3カラテを与える。"
+  "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.extraCardText": "命中した敵すべてに3カラテを与える。",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.title": "滋養",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.description": "各戦闘でこのカードを初めてプレイした時、最大HPを[blue]{Amount}[/blue]増やす。",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.extraCardText": "各戦闘で初めてプレイした時、最大HPを{Amount}増やす。"
 }

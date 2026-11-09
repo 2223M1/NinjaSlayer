@@ -86,7 +86,7 @@ internal static class SawatariEventRoute
         return true;
     }
 
-    private static RoomSet GetRoomSet(ActModel act) =>
+    internal static RoomSet GetRoomSet(ActModel act) =>
         ActRooms.GetValue(act) switch
         {
             RoomSet rooms => rooms,
@@ -222,15 +222,22 @@ public sealed class SawatariUnknownRoomRollPatch : IPatchMethod
             && allowed.Contains(RoomType.Event)
             && !concreteRunState.VisitedEventIds.Contains(sawatari.Id)
             && !roll.TutorialUnknown;
-        float naturalChance = eligible
-            ? SawatariEventRules.ResolveMonsterReplacementChance(
-                roll.Odds.EventOdds,
-                roll.Act.AllEvents.Count(eventModel =>
-                    eventModel.IsAllowed(concreteRunState)
-                    && !concreteRunState.VisitedEventIds.Contains(eventModel.Id)),
-                roll.OriginalMonsterOdds)
-            : 0f;
-        roll.Chance = naturalChance;
+        if (!eligible)
+        {
+            return;
+        }
+
+        // Use the generated run pool: it already includes shared events and unlock filtering.
+        // Sawatari occupies one additional equal-weight slot, routed through monster rooms.
+        int validEventCount = 1 + SawatariEventRoute.GetRoomSet(roll.Act).events.Count(eventModel =>
+            eventModel.IsAllowed(concreteRunState)
+            && !concreteRunState.VisitedEventIds.Contains(eventModel.Id));
+        float eventOdds = Math.Max(0f, 1f - Math.Max(0f, roll.OriginalMonsterOdds)
+            - (allowed.Contains(RoomType.Elite) ? Math.Max(0f, roll.Odds.EliteOdds) : 0f)
+            - (allowed.Contains(RoomType.Treasure) ? Math.Max(0f, roll.Odds.TreasureOdds) : 0f)
+            - (allowed.Contains(RoomType.Shop) ? Math.Max(0f, roll.Odds.ShopOdds) : 0f));
+        roll.Chance = SawatariEventRules.ResolveMonsterReplacementChance(
+            eventOdds, validEventCount, roll.OriginalMonsterOdds);
     }
 
     private static void RestoreRoll(RollFrame roll)

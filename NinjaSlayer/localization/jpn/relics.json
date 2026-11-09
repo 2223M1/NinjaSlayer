@@ -12,7 +12,7 @@
   "NINJA_SLAYER_RELIC_DOGUSHA_TOOL_POUCH_RELIC.description": "ターン開始時、1[gold]スリケン[/gold]を得る。",
   "NINJA_SLAYER_RELIC_DOGUSHA_TOOL_POUCH_RELIC.flavor": "サブロは顧客名簿を残さない。注文はすべて頭の中だ。",
   "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.title": "マグロ・スシ",
-  "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.description": "獲得時、HPを全回復する。",
+  "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.description": "獲得時、[gold]デッキ[/gold]からカードを[blue]{Cards}[/blue]枚選び、[purple]滋養[/purple]を[gold]付与[/gold]する。",
   "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.flavor": "「ショーユは無いが、贅沢は言えぬ」",
   "NINJA_SLAYER_RELIC_IRC_TERMINAL_RELIC.title": "IRC端末",
   "NINJA_SLAYER_RELIC_IRC_TERMINAL_RELIC.description": "ターン開始時、1エナジーを得る。\n[gold]回線使用中[/gold]を1枚[gold]手札[/gold]に加える。",

@@ -1,5 +1,8 @@
 {
   "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.title": "Flamme noire",
   "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.description": "Lorsque cette Attaque touche, appliquez 3 de Karaté à chaque ennemi touché.",
-  "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.extraCardText": "Appliquez 3 de Karaté à chaque ennemi touché."
+  "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.extraCardText": "Appliquez 3 de Karaté à chaque ennemi touché.",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.title": "Nourrissante",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.description": "La première fois que vous jouez cette carte à chaque combat, gagnez [blue]{Amount}[/blue] PV max.",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.extraCardText": "La première fois que vous jouez cette carte à chaque combat, gagnez {Amount} PV max."
 }

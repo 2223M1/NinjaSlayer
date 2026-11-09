@@ -6,7 +6,7 @@
   "NINJA_SLAYER_RELIC_DOGUSHA_TOOL_POUCH_RELIC.description": "내 턴 시작 시, [gold]슈리켄[/gold]을 1 얻습니다.",
   "NINJA_SLAYER_RELIC_DOGUSHA_TOOL_POUCH_RELIC.flavor": "사부로는 고객 장부를 두지 않는다. 모든 주문은 그의 머릿속에만 있다.",
   "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.title": "마구로 스시",
-  "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.description": "획득 시, 체력을 전부 회복합니다.",
+  "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.description": "획득 시, [gold]덱[/gold]에서 카드 [blue]{Cards}[/blue]장을 골라 [purple]자양[/purple]을 [gold]부여[/gold]합니다.",
   "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.flavor": "간장은 없지만, 찬밥 더운밥 가릴 처지는 아니다.",
   "NINJA_SLAYER_RELIC_IRC_TERMINAL_RELIC.title": "IRC 단말기",
   "NINJA_SLAYER_RELIC_IRC_TERMINAL_RELIC.description": "내 턴 시작 시, 에너지를 1 얻고 [gold]손[/gold]에 [gold]통화 중[/gold]을 1장 추가합니다.",

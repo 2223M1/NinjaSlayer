@@ -1,5 +1,8 @@
 {
   "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.title": "Api Hitam",
   "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.description": "Saat Serangan ini mengenai musuh, terapkan 3 Karate pada setiap musuh yang terkena.",
-  "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.extraCardText": "Terapkan 3 Karate pada setiap musuh yang terkena."
+  "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.extraCardText": "Terapkan 3 Karate pada setiap musuh yang terkena.",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.title": "Bergizi",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.description": "Pertama kali kamu memainkan kartu ini setiap pertempuran, dapatkan [blue]{Amount}[/blue] HP Maks.",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.extraCardText": "Pertama kali dimainkan setiap pertempuran, dapatkan {Amount} HP Maks."
 }

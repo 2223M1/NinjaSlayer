@@ -6,7 +6,7 @@
   "NINJA_SLAYER_RELIC_DOGUSHA_TOOL_POUCH_RELIC.description": "All'inizio del tuo turno, ottieni 1 [gold]Shuriken[/gold].",
   "NINJA_SLAYER_RELIC_DOGUSHA_TOOL_POUCH_RELIC.flavor": "Saburo non tiene un registro dei clienti. Ogni ordine esiste solo nella sua testa.",
   "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.title": "Sushi Maguro",
-  "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.description": "Quando lo raccogli, recupera tutti i PV.",
+  "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.description": "Quando la raccogli, scegli [blue]{Cards}[/blue] carte dal tuo [gold]mazzo[/gold] e applica l'[gold]incantamento[/gold] [purple]Nutriente[/purple].",
   "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.flavor": "Niente salsa di soia, ma bisogna accontentarsi.",
   "NINJA_SLAYER_RELIC_IRC_TERMINAL_RELIC.title": "Terminale IRC",
   "NINJA_SLAYER_RELIC_IRC_TERMINAL_RELIC.description": "All'inizio del tuo turno, ottieni 1 Energia e aggiungi una [gold]Linea occupata[/gold] alla tua [gold]mano[/gold].",

@@ -1,5 +1,8 @@
 {
   "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.title": "Czarny płomień",
   "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.description": "Gdy ten Atak trafi, nałóż 3 pkt. Karate na każdego trafionego wroga.",
-  "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.extraCardText": "Nałóż 3 pkt. Karate na każdego trafionego wroga."
+  "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.extraCardText": "Nałóż 3 pkt. Karate na każdego trafionego wroga.",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.title": "Odżywcza",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.description": "Gdy zagrasz tę kartę po raz pierwszy w każdej walce, zyskaj [blue]{Amount}[/blue] maksymalnego PŻ.",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.extraCardText": "Przy pierwszym zagraniu w każdej walce zyskaj {Amount} maksymalnego PŻ."
 }

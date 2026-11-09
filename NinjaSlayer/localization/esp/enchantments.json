@@ -1,5 +1,8 @@
 {
   "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.title": "Llama negra",
   "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.description": "Cuando este ataque impacta, aplica 3 de Karate a cada enemigo alcanzado.",
-  "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.extraCardText": "Aplica 3 de Karate a cada enemigo alcanzado."
+  "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT.extraCardText": "Aplica 3 de Karate a cada enemigo alcanzado.",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.title": "Nutritiva",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.description": "La primera vez que juegues esta carta en cada combate, obtén [blue]{Amount}[/blue] de vida máxima.",
+  "NINJA_SLAYER_ENCHANTMENT_NOURISHING_ENCHANTMENT.extraCardText": "La primera vez que la juegues en cada combate, obtén {Amount} de vida máxima."
 }

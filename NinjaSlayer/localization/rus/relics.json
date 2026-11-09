@@ -6,7 +6,7 @@
   "NINJA_SLAYER_RELIC_DOGUSHA_TOOL_POUCH_RELIC.description": "В начале вашего хода получаете 1 [gold]сюрикен[/gold].",
   "NINJA_SLAYER_RELIC_DOGUSHA_TOOL_POUCH_RELIC.flavor": "Сабуро не ведёт списков клиентов. Каждый заказ существует лишь в его голове.",
   "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.title": "Магуро-суси",
-  "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.description": "При получении полностью восстанавливает ОЗ.",
+  "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.description": "При получении выберите [blue]{Cards}[/blue] карты из своей [gold]колоды[/gold] и [gold]зачаруйте[/gold] их эффектом [purple]Питательная[/purple].",
   "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.flavor": "Соевого соуса нет, но выбирать не приходится.",
   "NINJA_SLAYER_RELIC_IRC_TERMINAL_RELIC.title": "IRC-терминал",
   "NINJA_SLAYER_RELIC_IRC_TERMINAL_RELIC.description": "В начале вашего хода получаете 1 энергию и карту [gold]Линия занята[/gold] в [gold]руку[/gold].",
