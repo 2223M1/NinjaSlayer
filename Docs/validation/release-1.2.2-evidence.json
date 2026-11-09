@@ -1,0 +1,172 @@
+{
+  "version": "1.2.2",
+  "sourceRevision": "6aedbb9dd389e5593b2a792d8fded440e78dde46",
+  "verifiedAtUtc": "2026-11-09T18:21:08.143219+00:00",
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "bytes": 2223104,
+      "sha256": "afb6a1847c66dec318ef62b8cef40b7c363aae6dc0fce3f55e4f16ce5b998294"
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "bytes": 8,
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "bytes": 129024,
+      "sha256": "3b9b541954cf1aea96c4fe4a721b2ceae1194ca034b143d750a108259452a6d1"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "bytes": 2226688,
+      "sha256": "95f9d0b11696a4f47b3883d8e23ed91ec40a527c688ae843056c014f728da960"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "bytes": 522,
+      "sha256": "9d3588beb38aa06afeb9e114dc4318343839851c4616050d7d0152681e1541eb"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "bytes": 24576,
+      "sha256": "8c57ffff460f8dc6bf2061c40ce19fc540d428e5d4652fe0c2bf5c12d947c233"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "bytes": 362,
+      "sha256": "a934e1f00abd66d62b882e3f58e1d25d8bf406a433409fd01b063471e3a6091d"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "bytes": 216741376,
+      "sha256": "40f2663c75ac37c09bcad92fa522e7c2f4d2b061ef7a09a08cd5724457fb8c05"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 1008,
+      "sha256": "973946804c958c65bc8d376a8425ffa16983c1752c2da1a5d60e2bb46944578b"
+    }
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "afb6a1847c66dec318ef62b8cef40b7c363aae6dc0fce3f55e4f16ce5b998294",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "3b9b541954cf1aea96c4fe4a721b2ceae1194ca034b143d750a108259452a6d1",
+    "95f9d0b11696a4f47b3883d8e23ed91ec40a527c688ae843056c014f728da960",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "9d3588beb38aa06afeb9e114dc4318343839851c4616050d7d0152681e1541eb",
+    "8c57ffff460f8dc6bf2061c40ce19fc540d428e5d4652fe0c2bf5c12d947c233",
+    "a934e1f00abd66d62b882e3f58e1d25d8bf406a433409fd01b063471e3a6091d",
+    "40f2663c75ac37c09bcad92fa522e7c2f4d2b061ef7a09a08cd5724457fb8c05",
+    "973946804c958c65bc8d376a8425ffa16983c1752c2da1a5d60e2bb46944578b"
+  ],
+  "validation": {
+    "logicTestsPassed": 367,
+    "dualHostGameplay": true,
+    "dualHostFeedbackAndAlabamaClaws": true,
+    "dualHostPatchTransactions": true,
+    "backgroundDesktopNativeSpineGraphics": true,
+    "packagedLanguages": 16,
+    "catalogFingerprint": "3d2cb3a0230e284a7209b6c34b748ccc40cc5caada4c3ee37d0408553b29e544",
+    "websiteTests": {
+      "passed": 23,
+      "skipped": 1,
+      "skipReason": "No external native telemetry fixture supplied"
+    },
+    "logs": [
+      {
+        "path": "contracts-stable.log",
+        "sha256": "456b24fc07cf71d3480fdbfada6002d095fea97e3f29308584832f7ee6be28bb"
+      },
+      {
+        "path": "feedback-stable.log",
+        "sha256": "e3a2dc91e78cbf3f6fb9766e919b0373f9d5417917c935daaa08a5e1a24833dd"
+      },
+      {
+        "path": "patch-stable.log",
+        "sha256": "e998e9c9c45105773cc880b077b6b0e8842533bc5491137776670e90febbf3f7"
+      },
+      {
+        "path": "contracts-preview.log",
+        "sha256": "3fb5cc12d29c272984f975efb526951c1ece2404bf5f8a35e993839ee1a2ff41"
+      },
+      {
+        "path": "feedback-preview.log",
+        "sha256": "75d37d25cdfc97e70df4d42bcb0b3d0edaae92709b5c90c46121455cbd61a5c1"
+      },
+      {
+        "path": "patch-preview.log",
+        "sha256": "41e7e4a0026e0b744e6fa16527f6694b4291473e648d99e40d8b3eb260a3d733"
+      },
+      {
+        "path": "catalog-export.log",
+        "sha256": "f4ccce6e0b2a17d4afd2d760171f54ee41d79a10e8ed1ed0d559cb10d2b22edd"
+      },
+      {
+        "path": "feedback-render-preview.log",
+        "sha256": "bd99940c3701822ec2157af9d75b152d3ea953124420f2ccb4956a945a37c183"
+      },
+      {
+        "path": "logic-tests.log",
+        "sha256": "15647c6745a6fd38aaced5bf04e75dc446abb66879645410d2fa824ef372d531"
+      },
+      {
+        "path": "website-tests.log",
+        "sha256": "e024d78f55cfb4bc47117ccda036862ea6e9e82befef56ad9fd4ba3a630a7c0d"
+      },
+      {
+        "path": "upload.log",
+        "sha256": "7daad8be23ee70a54772908566e982e4e4b6e055692538da041386c2950252ca"
+      },
+      {
+        "path": "download.log",
+        "sha256": "76fdb7293848e96659edc5d601b701ae46e338ec25ae192465c9dc98e78e1146"
+      },
+      {
+        "path": "artifact-contract.log",
+        "sha256": "8c68d7ecfc716ab457e9a3f40984293d707812ed8d334f848487ea91105847e4"
+      }
+    ]
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "contentManifest": "4839555327513216092",
+    "updated": 1794248389,
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "changeNoteId": "1794248389",
+    "changeNote": "修复了用户反馈中沢渡快速SL卡住的问题。\n修复了用户反馈中首领音乐异常的问题。\n修复了用户反馈中帝皇蟹不爆炸的问题。\n修复了用户反馈中能力牌吞交叉防御的问题。\n修复了用户反馈中卡牌异常透明的问题。\n阿拉巴马落现在会真实抬起、翻转并摔落帝皇蟹的目标钳子。",
+    "localizedTitlesDescriptionsUnchanged": true,
+    "tagSetUnchangedCaseInsensitive": true,
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "downloadBytes": 221665213
+  },
+  "notRun": [
+    "Full game replay of user save",
+    "FMOD listening test",
+    "New Steam multiplayer run",
+    "macOS/Linux actual gameplay"
+  ],
+  "scope": "Sawatari quick reload, deferred boss BGM, shared Kaiser explosion, non-Power Cross Guard retention, interrupted card fade and real Alabama claw movement."
+}
