@@ -9,6 +9,29 @@ namespace NinjaSlayer.LogicTests;
 public sealed class CombatLogicTests
 {
     [Theory]
+    [InlineData(5, 5, 2, 1, 15)]
+    [InlineData(5, 5, 2, 2, 28)]
+    [InlineData(2, 1, 2, 4, 7)]
+    [InlineData(0, 2, 3, 5, 9)]
+    [InlineData(5, 5, 0, 2, 9)]
+    public void KaratePreviewSpendsOneLifePerHitBeforeRealStacks(int stacks, int life, int multiplier, int hits, int expected)
+    {
+        Assert.Equal(expected, KarateDamageMath.CumulativeDamage(stacks, hits, life, multiplier));
+    }
+
+    [Fact]
+    public void StackedOneMindConsumesOneLifePerWaveThenActualKarate()
+    {
+        var first = KarateWaveRules.Resolve(2, true, 3, narakuLife: 1, narakuMultiplier: 2);
+        Assert.Equal(4, first.BonusDamagePerTarget);
+        Assert.Equal(2, first.RemainingStacks);
+        Assert.Equal(0, first.RemainingNarakuLife);
+        var second = KarateWaveRules.Resolve(first.RemainingStacks, true, 3, first.RemainingNarakuLife, 2);
+        Assert.Equal(2, second.BonusDamagePerTarget);
+        Assert.Equal(1, second.RemainingStacks);
+    }
+
+    [Theory]
     [InlineData(5, 0, 0)]
     [InlineData(5, 2, 9)]
     [InlineData(3, 10, 6)]

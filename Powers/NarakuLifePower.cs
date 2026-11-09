@@ -21,7 +21,7 @@ public sealed class NarakuLifePower : NinjaSlayerPowerTemplate
     {
         if (ReferenceEquals(power, this) && Amount > 0)
         {
-            CombatHealthBar.Refresh(Owner);
+            Refresh(Owner);
         }
 
         return Task.CompletedTask;
@@ -29,7 +29,7 @@ public sealed class NarakuLifePower : NinjaSlayerPowerTemplate
 
     public override Task AfterRemoved(Creature oldOwner)
     {
-        CombatHealthBar.Refresh(oldOwner);
+        Refresh(oldOwner);
         return Task.CompletedTask;
     }
 
@@ -43,7 +43,13 @@ public sealed class NarakuLifePower : NinjaSlayerPowerTemplate
         // Commit before HP-loss hooks; previews do not enter this damage boundary.
         SetAmount(Amount - absorbed, silent: true);
         if (Amount == 0) RemoveInternal();
-        CombatHealthBar.Refresh(Owner);
+        Refresh(Owner);
         return amount - absorbed;
+    }
+
+    private static void Refresh(Creature owner)
+    {
+        CombatHealthBar.Refresh(owner);
+        if (owner.HasPower<OneMindOneBodyPower>()) KaratePower.RefreshAttackDisplay(owner);
     }
 }

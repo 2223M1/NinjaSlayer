@@ -128,6 +128,12 @@ public sealed class BlackFlame : NinjaSlayerStandaloneCardTemplate
     {
         targets ??= player.Creature.CombatState!.HittableEnemies;
         if (targets.Count == 0) return;
+        // Reward each flame activation once, including Naraku Form and turn-end flames.
+        if (player.Creature.GetPower<RekindlePower>() is { } rekindle)
+        {
+            await PowerCmd.Apply<NarakuLifePower>(choiceContext, player.Creature,
+                rekindle.Amount, player.Creature, source);
+        }
         var results = await CreatureCmd.Damage(choiceContext, targets,
             baseDamage + player.Creature.GetPowerAmount<BlackFlameInfernoPower>(),
             ValueProp.Unblockable | ValueProp.Unpowered, player.Creature, source

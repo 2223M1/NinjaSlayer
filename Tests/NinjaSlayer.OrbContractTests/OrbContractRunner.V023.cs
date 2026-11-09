@@ -88,6 +88,7 @@ public partial class OrbContractRunner
                 "One Body must no longer award Karate on breathing.");
             await ChadoBreathCmd.Apply(Choice, combat.Player, 1);
             Require(combat.Player.Creature.GetPowerAmount<KaratePower>() == 0, "Further breathing must not grant Karate.");
+            await PowerCmd.Remove<NarakuLifePower>(combat.Player.Creature);
             int hp = combat.Player.Creature.CurrentHp;
             var flame = AddCard<BlackFlame>(combat);
 #if NINJASLAYER_CHANNEL_STABLE

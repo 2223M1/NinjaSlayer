@@ -25,8 +25,7 @@ public sealed class KarateHealthBarForecastSource : IHealthBarForecastSource
             return [];
         }
 
-        int stacks = attacker.GetPowerAmount<KaratePower>();
-        int damage = KarateForecastCalculator.ResolveForecastDamage(stacks, previewCard, target);
+        int damage = KarateForecastCalculator.ResolveForecastDamage(attacker, previewCard, target);
         if (damage <= 0)
         {
             return [];

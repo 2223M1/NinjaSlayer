@@ -25,6 +25,8 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
     private readonly FinisherTargeting _targeting;
     private readonly int _hits;
     private readonly int _ownerKarate;
+    private readonly int _ownerNarakuLife;
+    private readonly int _ownerOneMind;
     private readonly int _hashCode;
 
     public FinisherForecastFrameKey(
@@ -48,6 +50,8 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
         _targeting = descriptor.Targeting;
         _hits = hits;
         _ownerKarate = owner.GetPowerAmount<KaratePower>();
+        _ownerNarakuLife = owner.GetPowerAmount<NarakuLifePower>();
+        _ownerOneMind = owner.GetPowerAmount<OneMindOneBodyPower>();
         _enemies = enemies.Select((enemy, index) => new EnemySnapshot(
             enemy,
             enemy.CurrentHp,
@@ -67,6 +71,8 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
         hash.Add(_targeting);
         hash.Add(_hits);
         hash.Add(_ownerKarate);
+        hash.Add(_ownerNarakuLife);
+        hash.Add(_ownerOneMind);
         AddReferenceSequenceHash(ref hash, _fixedTargets);
         foreach (EnemySnapshot enemy in _enemies)
         {
@@ -92,6 +98,8 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
         && _targeting == other._targeting
         && _hits == other._hits
         && _ownerKarate == other._ownerKarate
+        && _ownerNarakuLife == other._ownerNarakuLife
+        && _ownerOneMind == other._ownerOneMind
         && ReferenceSequenceEqual(_fixedTargets, other._fixedTargets)
         && _enemies.AsSpan().SequenceEqual(other._enemies)
         && _effects.AsSpan().SequenceEqual(other._effects);

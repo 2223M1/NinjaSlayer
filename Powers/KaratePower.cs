@@ -1,6 +1,7 @@
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.Combat;
 
@@ -10,10 +11,16 @@ public sealed class KaratePower : NinjaSlayerPowerTemplate
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
+    public override int DisplayAmount => GetAttackAmount(Owner);
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("AttackAmount", 0)];
+
+    // Keep actual Karate in Amount. Only attack triggers and their previews include Naraku Life.
+    public static int GetAttackAmount(Creature owner) => owner.GetPowerAmount<KaratePower>()
+        + owner.GetPowerAmount<OneMindOneBodyPower>() * owner.GetPowerAmount<NarakuLifePower>();
 
     public override Task AfterApplied(Creature? applier, CardModel? cardSource)
     {
-        RefreshOpposingHealthBars(Owner);
+        RefreshAttackDisplay(Owner);
         return Task.CompletedTask;
     }
 
@@ -26,7 +33,7 @@ public sealed class KaratePower : NinjaSlayerPowerTemplate
     {
         if (ReferenceEquals(power, this))
         {
-            RefreshOpposingHealthBars(Owner);
+            RefreshAttackDisplay(Owner);
         }
 
         return Task.CompletedTask;
@@ -34,12 +41,17 @@ public sealed class KaratePower : NinjaSlayerPowerTemplate
 
     public override Task AfterRemoved(Creature oldOwner)
     {
-        RefreshOpposingHealthBars(oldOwner);
+        RefreshAttackDisplay(oldOwner);
         return Task.CompletedTask;
     }
 
-    private static void RefreshOpposingHealthBars(Creature owner)
+    internal static void RefreshAttackDisplay(Creature owner)
     {
+        if (owner.GetPower<KaratePower>() is { } karate)
+        {
+            karate.DynamicVars["AttackAmount"].BaseValue = GetAttackAmount(owner);
+            karate.InvokeDisplayAmountChanged();
+        }
         foreach (Creature creature in owner.CombatState?.Creatures.Where(creature => creature.Side != owner.Side) ?? [])
         {
             CombatHealthBar.Refresh(creature);

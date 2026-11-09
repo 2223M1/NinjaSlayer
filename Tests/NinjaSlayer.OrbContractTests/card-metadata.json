@@ -239,7 +239,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Rekindle.png",
     "Vars": {
-      "NarakuLife": 3
+      "NarakuLife": 2
     }
   },
   {
@@ -258,7 +258,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Rekindle.png",
     "Vars": {
-      "NarakuLife": 4
+      "NarakuLife": 3
     }
   },
   {
@@ -1842,7 +1842,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/OneMindOneBody.png",
     "Vars": {
-      "NarakuLife": 3
+      "NarakuLife": 5
     }
   },
   {
@@ -1861,7 +1861,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/OneMindOneBody.png",
     "Vars": {
-      "NarakuLife": 4
+      "NarakuLife": 8
     }
   },
   {
@@ -2472,7 +2472,6 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/ShurikenCreation.png",
     "Vars": {
-      "Scry": 1,
       "Stock": 3
     }
   },
@@ -2492,7 +2491,6 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/ShurikenCreation.png",
     "Vars": {
-      "Scry": 2,
       "Stock": 4
     }
   },

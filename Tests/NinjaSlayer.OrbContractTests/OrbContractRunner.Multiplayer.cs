@@ -331,8 +331,10 @@ public partial class OrbContractRunner
             foreach (CardModel card in PileType.Hand.GetPile(player).Cards.ToArray())
                 await CardPileCmd.Add(card, PileType.Discard);
             var discard = combat.State.CreateCard<Survivor>(player);
-            var sly = combat.State.CreateCard<ShurikenCreation>(player);
-            var nested = combat.State.CreateCard<ShurikenCreation>(player);
+            var sly = combat.State.CreateCard<Assess>(player);
+            sly.AddKeyword(CardKeyword.Sly);
+            var nested = combat.State.CreateCard<Assess>(player);
+            nested.AddKeyword(CardKeyword.Sly);
             var last = combat.State.CreateCard<DefendIronclad>(player);
             await CardPileCmd.Add(discard, PileType.Hand);
             await CardPileCmd.Add(sly, PileType.Hand);
@@ -350,8 +352,8 @@ public partial class OrbContractRunner
             Require(sly.Pile?.Type == PileType.Discard && nested.Pile?.Type == PileType.Discard
                 && last.Pile?.Type == PileType.Discard && discard.Pile?.Type == PileType.Discard,
                 "Native synchronized choices must resolve both Sly cards and the nested discard.");
-            Require(player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 6,
-                "Nested discard chains must finish before each Sly card replenishes its stock.");
+            Require(!player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Any(),
+                "Sly Assess chains must not create Shuriken stock.");
             await FinishFixture(fixture);
         }
         Require(localSelections == 3, "Only the local player may make the three synchronized choices.");

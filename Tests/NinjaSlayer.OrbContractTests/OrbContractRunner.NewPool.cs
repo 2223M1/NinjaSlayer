@@ -191,7 +191,8 @@ public partial class OrbContractRunner
         using (var combat = new OrbCombat())
         {
             var judge = AddCard<ReadAhead>(combat);
-            var sly = AddCard<ShurikenCreation>(combat, PileType.Draw);
+            var sly = AddCard<Assess>(combat, PileType.Draw);
+            sly.AddKeyword(CardKeyword.Sly);
             var discarded = AddCard<DefendIronclad>(combat, PileType.Draw);
             var nested = AddCard<DefendIronclad>(combat, PileType.Draw);
             int drawRemoved = 0;
@@ -208,15 +209,16 @@ public partial class OrbContractRunner
                 return [nested];
             }));
             await CardCmd.AutoPlay(Choice, judge, null);
-            Require(selection == 2 && combat.Stock == 3 && combat.Enemy.CurrentHp == 982,
-                "Scry/Sly must dispatch three discards and then gain three stock exactly once.");
+            Require(selection == 2 && combat.Stock == 0 && combat.Enemy.CurrentHp == 982,
+                "Scry/Sly must dispatch three discards without creating stock.");
             Require(drawRemoved == 3, "Nested Scry must update the native draw-pile counter for all three removals.");
-            Require(combat.Player.Creature.Block == 8 && combat.Player.Creature.GetPower<EvokeObserver>()!.Discarded == 3,
-                "ReadAhead must count its two discards only; discard powers must also see the nested discard.");
+            Require(combat.Player.Creature.Block == 12 && combat.Player.Creature.GetPower<EvokeObserver>()!.Discarded == 3,
+                "ReadAhead must grant eight block for its two discards plus four from Assess; discard powers see the nested discard.");
         }
         using (var combat = new OrbCombat())
         {
-            var sly = AddCard<ShurikenCreation>(combat, PileType.Draw);
+            var sly = AddCard<Assess>(combat, PileType.Draw);
+            sly.AddKeyword(CardKeyword.Sly);
             var second = AddCard<DefendIronclad>(combat, PileType.Draw);
             int selections = 0;
             using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
@@ -228,7 +230,7 @@ public partial class OrbContractRunner
             }));
             await PowerCmd.Apply<WatchfulBladesPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await ScryCmd.Execute(Choice, combat.Player, 2);
-            Require(selections == 2 && combat.Stock == 5 && second.Pile?.Type == PileType.Discard && sly.Pile?.Type == PileType.Discard,
+            Require(selections == 2 && combat.Stock == 2 && second.Pile?.Type == PileType.Discard && sly.Pile?.Type == PileType.Discard,
                 "Both outer and shuffled nested Scry must finish their discards before rewarding stock.");
         }
         using (var combat = new OrbCombat())
@@ -268,10 +270,7 @@ public partial class OrbContractRunner
                     Require(options.SequenceEqual(cards.Take(3)), "Mother UNIX must inspect the undrawn top three cards.");
                     return scenario is "discard" or "nested" ? cards.Take(2) : [];
                 }
-                Require(scenario == "nested" && selections == 2 && cards[1].Pile?.Type == PileType.Discard,
-                    "Nested Sly must run once, after the entire outer discard batch.");
-                Require(options.SequenceEqual(cards.Skip(2).Take(1)), "Nested Scry must see the remaining draw pile.");
-                return [cards[2]];
+                throw new InvalidOperationException("Shuriken Creation must not open another Scry choice.");
             }));
 
             var other = MegaCrit.Sts2.Core.Entities.Players.Player.CreateForNewRun<MegaCrit.Sts2.Core.Models.Characters.Ironclad>(
@@ -290,10 +289,10 @@ public partial class OrbContractRunner
             object[] args = [AccessTools.Field(typeof(CombatManager), "_turnState").GetValue(CombatManager.Instance)!, combat.Player, context];
 #endif
             await (Task)AccessTools.Method(typeof(CombatManager), "SetupPlayerTurn").Invoke(CombatManager.Instance, args)!;
-            int removed = scenario == "nested" ? 3 : scenario == "discard" ? 2 : 0;
+            int removed = scenario is "nested" or "discard" ? 2 : 0;
             Require(PileType.Hand.GetPile(combat.Player).Cards.SequenceEqual(cards.Skip(removed).Take(5)),
                 $"Turn {turn}, {scenario}: native hand draw must use the post-Scry pile.");
-            Require(selections == (scenario == "empty" ? 0 : scenario == "nested" ? 2 : 1),
+            Require(selections == (scenario == "empty" ? 0 : 1),
                 "Mother UNIX must not Scry again after the hand draw.");
             Require(combat.Stock == (scenario == "nested" ? 3 : 0), "Nested Sly must finish its effect exactly once.");
         }
@@ -335,11 +334,11 @@ public partial class OrbContractRunner
                 && PileType.Hand.GetPile(combat.Player).Cards.OfType<BlackFlame>().Count() == 1,
                 "Recovery must transform exactly one selected card.");
             await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
-            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 4,
-                "Recovery must ignore itself and attacks.");
+            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 6,
+                "Rekindle must grant two Naraku Life when the transformed Black Flame triggers.");
             await CardCmd.AutoPlay(Choice, second, null);
-            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 7,
-                "Recovery must grant Naraku Life for a subsequent Skill.");
+            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 6,
+                "Rekindle must not grant Naraku Life for a subsequent Skill.");
 #if NINJASLAYER_CHANNEL_STABLE
             await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
 #else

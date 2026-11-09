@@ -39,7 +39,7 @@ public sealed class KarateCardPreviewTargetPatch : IPatchMethod
             return;
         }
 
-        if (card.Owner.Creature.GetPowerAmount<KaratePower>() <= 0)
+        if (KaratePower.GetAttackAmount(card.Owner.Creature) <= 0)
         {
             KaratePreviewScopeRegistry.Release(__instance);
             return;
@@ -71,7 +71,7 @@ public sealed class KarateCardPreviewAllEnemiesPatch : IPatchMethod
         if (card?.Type != CardType.Attack
             || card.TargetType != TargetType.AllEnemies
             || card.CombatState == null
-            || card.Owner.Creature.GetPowerAmount<KaratePower>() <= 0)
+            || KaratePower.GetAttackAmount(card.Owner.Creature) <= 0)
         {
             KaratePreviewScopeRegistry.Release(__instance);
             return;
@@ -178,7 +178,7 @@ public sealed class KarateHealthBarTextPreviewPatch : IPatchMethod
         }
 
         int karateDamage = KarateForecastCalculator.ResolveHpPreviewDamage(
-            attacker.GetPowerAmount<KaratePower>(),
+            attacker,
             previewCard,
             creature);
         if (karateDamage <= 0)

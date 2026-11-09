@@ -18,6 +18,17 @@ public partial class OrbContractRunner
         foreach (bool upgraded in new[] { false, true })
         {
             using var combat = new OrbCombat();
+            var untouched = AddCard<DefendIronclad>(combat, PileType.Draw);
+            await PowerCmd.Apply<WatchfulBladesPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ =>
+                throw new InvalidOperationException("Shuriken Creation must not open a Scry choice.")));
+            await CardCmd.AutoPlay(Choice, AddCard<ShurikenCreation>(combat, upgraded: upgraded), null);
+            Require(combat.Stock == (upgraded ? 4 : 3) && untouched.Pile?.Type == PileType.Draw,
+                "Shuriken Creation must grant only three/four stock without Scry, extra Watchful Blades stock or draw-pile changes.");
+        }
+        foreach (bool upgraded in new[] { false, true })
+        {
+            using var combat = new OrbCombat();
             await PowerCmd.Apply<VigorPower>(Choice, combat.Player.Creature, 7, combat.Player.Creature, null);
             await CardCmd.AutoPlay(Choice, AddCard<PalmThrust>(combat, upgraded: upgraded), null);
             Require(combat.Enemy.CurrentHp == 1000 - 13 * (upgraded ? 3 : 2)
@@ -32,10 +43,10 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<FrailPower>(Choice, owner, 2, combat.Enemy, null);
             await PowerCmd.Apply<KaratePower>(Choice, owner, 4, owner, null);
             await CreatureCmd.Damage(Choice, new[] { combat.Enemy, combat.AddEnemy() }, 1, ValueProp.Move, owner);
-            Require(owner.GetPowerAmount<NarakuLifePower>() == 7 && owner.GetPowerAmount<KaratePower>() == 3,
-                "One Body grants seven Naraku Life once for an AOE Karate wave.");
+            Require(owner.GetPowerAmount<NarakuLifePower>() == 12 && owner.GetPowerAmount<KaratePower>() == 4,
+                "One Body grants thirteen initial life across two plays, then spends one life for an AOE Karate wave.");
             await CardCmd.AutoPlay(Choice, AddCard<PalmThrust>(combat, upgraded: true), null);
-            Require(owner.GetPowerAmount<NarakuLifePower>() == 28 && !owner.HasPower<KaratePower>(), "Each multihit Karate wave grants Naraku Life separately.");
+            Require(owner.GetPowerAmount<NarakuLifePower>() == 9 && owner.GetPowerAmount<KaratePower>() == 4, "Each multihit Karate wave spends life without consuming base Karate, even at two conversion layers.");
         }
         using (var combat = new OrbCombat())
         {
@@ -70,8 +81,8 @@ public partial class OrbContractRunner
             int selections = 0;
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => ++selections == 1 ? [sly, outer] : [inner]));
             await ScryCmd.Execute(Choice, combat.Player, 2);
-            Require(selections == 2 && combat.Tokens == 2 && combat.Enemy.CurrentHp == 982,
-                "Nested Sly Scry generates another token only when its card gains stock.");
+            Require(selections == 1 && combat.Tokens == 2 && combat.Enemy.CurrentHp == 988,
+                "Sly Shuriken Creation gains stock and a token without a nested Scry.");
         }
         using (var combat = new OrbCombat())
         {

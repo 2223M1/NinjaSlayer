@@ -46,11 +46,14 @@ public partial class OrbContractRunner
                 AddCard<DefendIronclad>(combat);
                 await CardCmd.AutoPlay(Choice, AddCard<Rekindle>(combat, upgraded: upgraded), null);
                 Require(!combat.Player.Creature.HasPower<NarakuLifePower>(),
-                    "Neither the first nor a subsequent Rekindle may trigger its own Skill reward.");
+                    "Playing Rekindle and transforming a card must not grant Naraku Life by itself.");
             }
             await CardCmd.AutoPlay(Choice, AddCard<DefendIronclad>(combat), null);
-            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 7,
-                "A subsequent Skill must receive both base and upgraded Rekindle rewards.");
+            Require(!combat.Player.Creature.HasPower<NarakuLifePower>(),
+                "Playing a Skill must not trigger Rekindle.");
+            await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
+            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 10,
+                "Each of the two transformed flames must grant the stacked base and upgraded reward of five.");
         }
         GD.Print("PASS v1.19: single-hit Vigor and Kindle destination.");
     }

@@ -55,6 +55,9 @@ internal static class FinisherForecast
         IRunState? runState = ResolveRunState(owner);
         if (combatState == null
             || runState == null
+            // Thorns can spend Naraku Life before Karate; this simulation only tracks enemy damage.
+            || (owner.HasPower<OneMindOneBodyPower>() && owner.GetPowerAmount<NarakuLifePower>() > 0
+                && enemies.Any(enemy => enemy.HasPower<ThornsPower>()))
             || Hook.ShouldStopCombatFromEnding(combatState)
             || enemies.Any(enemy => !Hook.ShouldDie(runState, combatState, enemy, out _)))
         {
@@ -97,7 +100,8 @@ internal static class FinisherForecast
             enemy.CurrentHp,
             enemy.Block,
             owner.GetPowerAmount<KaratePower>(),
-            enemy.IsPrimaryEnemy, enemy.GetPowerAmount<ArtifactPower>())).ToArray();
+            enemy.IsPrimaryEnemy, enemy.GetPowerAmount<ArtifactPower>(),
+            NarakuLife: owner.GetPowerAmount<NarakuLifePower>())).ToArray();
         Creature? singleTarget = descriptor.SingleTarget ?? spec.CardPlay.Target;
         int? singleTargetIndex = singleTarget != null && enemyIndices.TryGetValue(singleTarget, out int singleIndex)
             ? singleIndex
@@ -193,6 +197,8 @@ internal static class FinisherForecast
             || runState == null
             || descriptor.HitCount <= 0
             || enemies.Count == 0
+            || (owner.HasPower<OneMindOneBodyPower>() && owner.GetPowerAmount<NarakuLifePower>() > 0
+                && enemies.Any(enemy => enemy.HasPower<ThornsPower>()))
             || Hook.ShouldStopCombatFromEnding(combatState)
             || enemies.Any(enemy => !Hook.ShouldDie(runState, combatState, enemy, out _)))
         {
@@ -230,7 +236,7 @@ internal static class FinisherForecast
             enemy.CurrentHp,
             enemy.Block,
             owner.GetPowerAmount<KaratePower>(),
-            enemy.IsPrimaryEnemy)).ToArray();
+            enemy.IsPrimaryEnemy, NarakuLife: owner.GetPowerAmount<NarakuLifePower>())).ToArray();
         decimal[] damageByTarget = enemies.Select(descriptor.Damage).ToArray();
         var simulation = new FinisherForecastSimulation<ForecastState, ForecastState>(
             states,
@@ -282,7 +288,7 @@ internal static class FinisherForecast
             enemy.CurrentHp,
             enemy.Block,
             owner.GetPowerAmount<KaratePower>(),
-            enemy.IsPrimaryEnemy)).ToArray();
+            enemy.IsPrimaryEnemy, NarakuLife: owner.GetPowerAmount<NarakuLifePower>())).ToArray();
         Creature[] missileDealers = [.. missiles];
         decimal[] missileDamage = missileDealers
             .Select(missile => (decimal)((OrigamiMissileMonster)missile.Monster!).GetExplodeDamage())
@@ -455,7 +461,9 @@ internal static class FinisherForecast
             stacks,
             triggersKarate
                 && props.IsPoweredAttack(),
-            targets.Length);
+            targets.Length,
+            states.Length > 0 ? states[0].NarakuLife : 0,
+            dealer.GetPowerAmount<OneMindOneBodyPower>());
         if (!wave.Triggered)
         {
             return;
@@ -477,7 +485,7 @@ internal static class FinisherForecast
 
         for (int index = 0; index < states.Length; index++)
         {
-            states[index] = states[index] with { Karate = wave.RemainingStacks };
+            states[index] = states[index] with { Karate = wave.RemainingStacks, NarakuLife = wave.RemainingNarakuLife };
         }
     }
 
@@ -570,7 +578,7 @@ internal static class FinisherForecast
     // FinisherForecastEngine.DefaultMaximumSearchStates nodes, and as a record class every one of
     // those was a heap allocation during targeting.
     private readonly record struct ForecastState(int Hp, int Block, int Karate, bool IsPrimaryEnemy,
-        int Artifact = 0, bool GainedVulnerable = false);
+        int Artifact = 0, bool GainedVulnerable = false, int NarakuLife = 0);
     private readonly record struct CachedForecast(
         FinisherForecastOutcome Outcome,
         FinisherForecastResult Result);

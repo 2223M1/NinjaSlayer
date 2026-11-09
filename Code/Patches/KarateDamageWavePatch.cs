@@ -52,8 +52,7 @@ public sealed class KarateDamageWavePatch : IPatchMethod
             return;
         }
 
-        KaratePower? karate = dealer.GetPower<KaratePower>();
-        if (karate == null || karate.Amount <= 0)
+        if (!dealer.HasPower<KaratePower>() && !dealer.HasPower<OneMindOneBodyPower>())
         {
             return;
         }
@@ -63,9 +62,7 @@ public sealed class KarateDamageWavePatch : IPatchMethod
             choiceContext,
             props,
             dealer,
-            cardSource,
-            karate,
-            karate.Amount);
+            cardSource);
     }
 
     private static async Task<IEnumerable<DamageResult>> ApplyWaveEffects(
@@ -73,9 +70,7 @@ public sealed class KarateDamageWavePatch : IPatchMethod
         PlayerChoiceContext choiceContext,
         ValueProp props,
         Creature dealer,
-        CardModel? cardSource,
-        KaratePower karate,
-        int stacks)
+        CardModel? cardSource)
     {
         List<DamageResult> results = (await damageTask).ToList();
         List<Creature> targets = results
@@ -85,14 +80,15 @@ public sealed class KarateDamageWavePatch : IPatchMethod
             .Select(result => result.Receiver)
             .Distinct()
             .ToList();
-        KarateWaveResolution wave = KarateWaveRules.Resolve(stacks, props.IsPoweredAttack(), targets.Count);
+        KarateWaveResolution wave = KarateWaveRules.Resolve(dealer.GetPowerAmount<KaratePower>(),
+            props.IsPoweredAttack(), targets.Count,
+            dealer.GetPowerAmount<NarakuLifePower>(), dealer.GetPowerAmount<OneMindOneBodyPower>());
         if (wave.Triggered)
         {
             await TriggerKarateWave(
                 choiceContext,
                 dealer,
                 targets.Where(target => !target.IsDead).ToList(),
-                karate,
                 wave.BonusDamagePerTarget,
                 cardSource);
         }
@@ -103,7 +99,6 @@ public sealed class KarateDamageWavePatch : IPatchMethod
         PlayerChoiceContext choiceContext,
         Creature dealer,
         List<Creature> targets,
-        KaratePower karate,
         int extraDamage,
         CardModel? cardSource)
     {
@@ -120,19 +115,26 @@ public sealed class KarateDamageWavePatch : IPatchMethod
             Telemetry.NinjaSlayerCombatTelemetry.AttributeDamage(damage, "karate");
         }
 
-        int amountBeforeConsumption = karate.Amount;
-        await PowerCmd.ModifyAmount(choiceContext, karate, -1, dealer, cardSource);
+        PowerModel? consumed = dealer.HasPower<OneMindOneBodyPower>()
+            && dealer.GetPower<NarakuLifePower>() is { Amount: > 0 } life
+                ? life : dealer.GetPower<KaratePower>();
+        if (consumed is { Amount: > 0 })
+        {
+            int amountBeforeConsumption = consumed.Amount;
+            await PowerCmd.ModifyAmount(choiceContext, consumed, -1, dealer, cardSource);
+            if (CombatManager.Instance.IsEnding && consumed.Amount == amountBeforeConsumption)
+            {
+                // The last enemy can die during the bonus; the triggering wave still spends one resource.
+                consumed.SetAmount(amountBeforeConsumption - 1, silent: true);
+                if (consumed.Amount == 0) consumed.RemoveInternal();
+                CombatHealthBar.Refresh(dealer);
+                KaratePower.RefreshAttackDisplay(dealer);
+            }
+        }
         foreach (Creature creature in combatState.Creatures.ToArray())
         {
             if (!creature.IsDead && creature.GetPower<GuardStancePower>() is { } guard)
                 await guard.AfterKarate();
-        }
-        if (dealer.GetPower<OneMindOneBodyPower>() is { } soul)
-            await soul.AfterKarate(choiceContext);
-        if (CombatManager.Instance.IsEnding && karate.Amount == amountBeforeConsumption)
-        {
-            // PowerCmd rejects amount changes after the bonus ends combat, but the triggering wave still resolves its stack change.
-            karate.SetAmount(Math.Max(0, amountBeforeConsumption - 1), silent: true);
         }
     }
 }

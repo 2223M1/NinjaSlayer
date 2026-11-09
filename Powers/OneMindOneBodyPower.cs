@@ -1,8 +1,7 @@
 using NinjaSlayer.Content;
-using MegaCrit.Sts2.Core.Commands;
-using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using STS2RitsuLib.Scaffolding.Content;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.Nodes;
 
@@ -18,15 +17,17 @@ public sealed class OneMindOneBodyPower : NinjaSlayerCounterPower
         return Task.CompletedTask;
     }
 
-    public override Task AfterRemoved(Creature oldOwner)
+    public override Task AfterPowerAmountChanged(PlayerChoiceContext choiceContext, PowerModel power,
+        decimal amount, Creature? applier, CardModel? cardSource)
     {
-        NarakuVisualOverlay.Sync(oldOwner);
+        if (ReferenceEquals(power, this)) KaratePower.RefreshAttackDisplay(Owner);
         return Task.CompletedTask;
     }
 
-    internal async Task AfterKarate(PlayerChoiceContext choiceContext)
+    public override Task AfterRemoved(Creature oldOwner)
     {
-        Flash();
-        await PowerCmd.Apply<NarakuLifePower>(choiceContext, Owner, Amount, Owner, null);
+        NarakuVisualOverlay.Sync(oldOwner);
+        KaratePower.RefreshAttackDisplay(oldOwner);
+        return Task.CompletedTask;
     }
 }
