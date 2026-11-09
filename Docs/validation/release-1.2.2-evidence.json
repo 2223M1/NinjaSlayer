@@ -1,7 +1,7 @@
 {
   "version": "1.2.2",
   "sourceRevision": "6aedbb9dd389e5593b2a792d8fded440e78dde46",
-  "verifiedAtUtc": "2026-11-09T18:21:08.143219+00:00",
+  "verifiedAtUtc": "2026-11-10T02:21:08.143219+08:00",
   "files": [
     {
       "path": "Box2D.NET.dll",
@@ -144,7 +144,43 @@
         "path": "artifact-contract.log",
         "sha256": "8c68d7ecfc716ab457e9a3f40984293d707812ed8d334f848487ea91105847e4"
       }
-    ]
+    ],
+    "renderedEvidence": [
+      {
+        "name": "alabama-before.png",
+        "bytes": 788702,
+        "sha256": "2bf495b4231012cfcf993ac42995102a9f261bae31978ed162edf478c6d6a783"
+      },
+      {
+        "name": "alabama-left-lift.png",
+        "bytes": 803349,
+        "sha256": "8ca677055ed503005c75d5b162ede5ef01ebcd5d4c927da93e6bc18225d62e3d"
+      },
+      {
+        "name": "alabama-right-lift.png",
+        "bytes": 803305,
+        "sha256": "767de90064088e527b1e965851434ab7dfb1763a6a2e8887e4f6721d1740854c"
+      },
+      {
+        "name": "kaiser-atlas.png",
+        "bytes": 2980781,
+        "sha256": "318e5fb38c56657b4c8672d7d3a6f19f2d436f0ba673a649dd1d991e2817789f"
+      }
+    ],
+    "remoteCi": {
+      "runs": [
+        42673428934,
+        42674225183
+      ],
+      "validateJobStarted": false,
+      "status": "platform_error",
+      "correlationIds": [
+        "3d6a18f6-4153-4248-ae01-2a51e628ecfc",
+        "f30e427e-f266-4bb8-b711-67fea52422d3"
+      ],
+      "powershellJobPassed": true,
+      "error": "Internal server error"
+    }
   },
   "workshop": {
     "itemId": "3776911445",
@@ -168,5 +204,58 @@
     "New Steam multiplayer run",
     "macOS/Linux actual gameplay"
   ],
-  "scope": "Sawatari quick reload, deferred boss BGM, shared Kaiser explosion, non-Power Cross Guard retention, interrupted card fade and real Alabama claw movement."
+  "scope": "Sawatari quick reload, deferred boss BGM, shared Kaiser explosion, non-Power Cross Guard retention, interrupted card fade and real Alabama claw movement.",
+  "cleanup": {
+    "reason": "Automatic approval rejected recursive cleanup: blocked by policy",
+    "retainedBytes": 1044406762.0,
+    "status": "blocked",
+    "retainedDirectories": [
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.2\\final-bundle",
+        "bytes": 221665213.0
+      },
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.2\\final-bundle-build",
+        "bytes": 154882.0
+      },
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.2\\final-channel-build",
+        "bytes": 486411128.0
+      },
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.2\\uploader-final",
+        "bytes": 235701942.0
+      },
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.2\\patch-runtime",
+        "bytes": 5084672.0
+      },
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.2\\catalog",
+        "bytes": 95388925.0
+      }
+    ],
+    "commandExecuted": false
+  },
+  "website": {
+    "workflowRun": 42673428258,
+    "liveVersionLastObserved": "1.1.1",
+    "incidentLatestUpdate": "Pages is experiencing degraded performance. We are continuing to investigate.",
+    "desiredVersion": "1.2.2",
+    "buildSucceeded": true,
+    "incidentName": "Incident with Actions and Checks API",
+    "artifactId": 13698358928,
+    "deploymentRevision": "f7c5415d35c16e623b849c94e42c23e0ee249ef5",
+    "deploymentStatus": "deployment_cancelled",
+    "artifactSha256": "abc53199e4516eba1b23fff98c16c0fb5018dd4e7871585000910f7b54ff794e",
+    "sourceRevision": "6aedbb9dd389e5593b2a792d8fded440e78dde46",
+    "remoteVerified": false,
+    "workflowUrl": "https://github.com/2223M1/NinjaSlayer/actions/runs/42673428258",
+    "incidentUrl": "https://stspg.io/7yw63xl9ztrv",
+    "localCatalogVerified": true,
+    "incidentStatus": "investigating",
+    "checkedAtUtc": "2026-11-09T18:41:50.1144291+00:00",
+    "workflowConclusion": "failure",
+    "failureLogSha256": "b5c48a8da4f66d2e7af028bdae9c7e2ba453435ff6530b76bdf9ac1de09d3d38"
+  }
 }
