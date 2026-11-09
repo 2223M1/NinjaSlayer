@@ -152,7 +152,7 @@ internal static class WebsiteCatalogExporter
         if (exhaust.Title != new LocString("card_keywords", "EXHAUST.title").GetFormattedText()
             || exhaust.Description != new LocString("card_keywords", "EXHAUST.description").GetFormattedText())
             throw new InvalidOperationException($"Cached keyword text has the wrong language: {language}");
-        // Powers use Amount/Damage rather than card dynamic vars. Exercise singular,
+        // Exercise power counters and attack-display values in singular,
         // few, and many forms, including Russian and Polish three-branch plurals.
         using JsonDocument powers = JsonDocument.Parse(Godot.FileAccess.GetFileAsString(
             $"res://NinjaSlayer/localization/{language}/powers.json"));
@@ -162,6 +162,7 @@ internal static class WebsiteCatalogExporter
             {
                 var text = new LocString("powers", entry.Name);
                 text.Add("Amount", amount);
+                text.Add("AttackAmount", amount);
                 text.Add("Damage", 7);
                 string result = text.GetFormattedText();
                 if (System.Text.RegularExpressions.Regex.IsMatch(result, @"\{[A-Za-z_]"))

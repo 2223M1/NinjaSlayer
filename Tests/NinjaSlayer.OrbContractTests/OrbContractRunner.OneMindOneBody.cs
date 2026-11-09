@@ -3,6 +3,7 @@ using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Models.Characters;
 using MegaCrit.Sts2.Core.Models.Powers;
@@ -43,7 +44,8 @@ public partial class OrbContractRunner
             var karate = owner.GetPower<KaratePower>()!;
             await CardCmd.AutoPlay(Choice, AddCard<OneMindOneBody>(combat), null);
             Require(karate.Amount == 5 && karate.DisplayAmount == 10
-                && karate.DynamicVars["AttackAmount"].IntValue == 10,
+                && karate.DynamicVars["AttackAmount"].IntValue == 10
+                && karate.HoverTips.OfType<HoverTip>().Any(tip => tip.Description.Contains("10")),
                 "Five actual Karate plus five life must display ten in the power and tooltip.");
             int displays = 0;
             karate.DisplayAmountChanged += () => displays++;
@@ -57,6 +59,7 @@ public partial class OrbContractRunner
             await CardCmd.AutoPlay(Choice, strike, combat.Enemy);
             Require(combat.Enemy.CurrentHp == 984 && karate.Amount == 5 && karate.DisplayAmount == 9
                 && karate.DynamicVars["AttackAmount"].IntValue == 9
+                && karate.HoverTips.OfType<HoverTip>().Any(tip => tip.Description.Contains("9"))
                 && owner.GetPowerAmount<NarakuLifePower>() == 4 && displays > 0,
                 "User example: Strike deals six plus ten, life becomes four, displayed Karate becomes nine, real Karate remains five.");
 
