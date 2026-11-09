@@ -132,5 +132,10 @@
     "macOS/Linux gameplay",
     "Four-player Steam gameplay"
   ],
-  "scope": "11 card changes; Ready Shuriken/Resilience renames; Sushi selects 3 cards for first-play +1 max HP enchantment; full-pool Sawatari event odds; combat/display fixes; 61 card illustrations; 16 languages. Workshop only."
+  "scope": "11 card changes; Ready Shuriken/Resilience renames; Sushi selects 3 cards for first-play +1 max HP enchantment; full-pool Sawatari event odds; combat/display fixes; 61 card illustrations; 16 languages. Workshop only.",
+  "cleanup": {
+    "status": "blocked",
+    "reason": "Automatic approval rejected generated-directory batch deletion: blocked by policy. Command was not executed.",
+    "plannedGeneratedBytes": 2075559003.0
+  }
 }

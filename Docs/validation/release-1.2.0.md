@@ -28,3 +28,5 @@
 ## 实现依据
 
 原版 stable 0.107.1、preview 0.111.0 的 `Core/Models/ActModel.cs`（GenerateRooms）、`Core/Rooms/RoomSet.cs`（EnsureNextEventIsValid）、`Core/Odds/UnknownMapPointOdds.cs`（Roll）完全一致。寿司使用 `Kifuda` 同款原生附魔选择命令、`Swift` 的 `EnchantmentStatus` 首次打出规则及 `CreatureCmd.GainMaxHp`。未添加新的私有API反射入口。
+
+发布后的生成目录清理已检查进程和路径，但自动审批以 `blocked by policy` 拒绝批量删除，命令未执行；约1.93 GiB的本轮重复包、测试缓存仍保留。已保存路径清单和紧凑发布证据，未绕过审批改用其他删除方式。
