@@ -1,0 +1,244 @@
+{
+  "version": "1.2.1",
+  "sourceRevision": "73960bfd8b0e157280f1e3c28d8900a3a9de029a",
+  "verifiedAtUtc": "2026-11-09T15:15:31.779673+00:00",
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "bytes": 2214400,
+      "sha256": "c2c58af535613038cdb244bb6d72f49c84f62ef59c4c8b46d0b9febd756a4f06"
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "bytes": 8,
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "bytes": 129024,
+      "sha256": "a0fa2293e1782d3a5a642e8b1299aec7bf1f4e5cd8f9e46938f2ea1e3dcd27e4"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "bytes": 2217984,
+      "sha256": "077bed23d201b099a989c1829d8230be52a499281fb00e7776a5437c8df3886f"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "bytes": 522,
+      "sha256": "df05208fa326ee0da95b4310b1c1e6aec7d6eae896f34819b162bbc07e77a605"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "bytes": 24576,
+      "sha256": "9d86678763305dc14d56a27601e705d4cf60f95fc4507ff0877f8c18cb0a9f20"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "bytes": 362,
+      "sha256": "af984cd637663ebe119e8ceee681a1f1f09834539974f3d139fdb97e027a8f53"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "bytes": 216511628,
+      "sha256": "ce138fd91b4d537b7fd9d428412c27c738bed9bfc363976d2a3a2bb62d28b0a9"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 1008,
+      "sha256": "6e9bd67b791aaa82c776d099d7a4e13595cce50636c22f82865f64d29f747e61"
+    }
+  ],
+  "validation": {
+    "logicTestsPassed": 367,
+    "dualHostGameplayIncludingOneMindRekindleShuriken": true,
+    "dualHostPatchTransactions": true,
+    "dualHostNativeEnet": true,
+    "autoAnthonyComponents": true,
+    "packagedLanguages": 16,
+    "cardDescriptionsZhs": {
+      "ONE_MIND_ONE_BODY": [
+        "虚无。\n获得5点奈落生命。\n每点奈落生命使你的空手道额外造成1点伤害。\n触发空手道时，优先失去1点奈落生命。",
+        "虚无。\n获得8点奈落生命。\n每点奈落生命使你的空手道额外造成1点伤害。\n触发空手道时，优先失去1点奈落生命。"
+      ],
+      "REKINDLE": [
+        "选择你手牌中的一张牌，将其变化为黑炎。\n本回合内，每当你触发黑炎时，获得2点奈落生命。\n消耗。",
+        "选择你手牌中的一张牌，将其变化为黑炎。\n本回合内，每当你触发黑炎时，获得3点奈落生命。\n消耗。"
+      ],
+      "SHURIKEN_CREATION": [
+        "奇巧。\n获得3层手里剑。",
+        "奇巧。\n获得4层手里剑。"
+      ]
+    },
+    "logs": [
+      {
+        "path": "contracts-stable.log",
+        "sha256": "c520f17508e2dbeb12895220094377397566566cd6c35d7392a039754904c440"
+      },
+      {
+        "path": "patch-stable.log",
+        "sha256": "84d5d8663367e2ba7ea5b3fcf90384cf6fbcabf9470168228c7584d0c20313cf"
+      },
+      {
+        "path": "network-final-stable-r2/host.log",
+        "sha256": "691612e478a71a5e75db57c35622c21a7368223bf99ab20df3ca5b3dc7089f40"
+      },
+      {
+        "path": "network-final-stable-r2/client.log",
+        "sha256": "da0998ef580ad46b0b50655165c9d717c8964779f8a3cecd7e440b89bf2d29dc"
+      },
+      {
+        "path": "contracts-preview.log",
+        "sha256": "664a0266da54fe4006134f009043a4613620a833ec00657ac583172fcde9b62b"
+      },
+      {
+        "path": "patch-preview.log",
+        "sha256": "d9fa79a388a64d4f9131742551b04a5b76eddf8187a99462394c08836e19d29d"
+      },
+      {
+        "path": "network-final-preview-r2/host.log",
+        "sha256": "21883922d3f3832c606477b3130849e3eef5bc561eddb62a1ce9f2071a323a77"
+      },
+      {
+        "path": "network-final-preview-r2/client.log",
+        "sha256": "926f72a6c16b06a99b3b000b1f05d9c798ce1e8b4df0ed55e436f9efeabcc496"
+      },
+      {
+        "path": "anthony-preview.log",
+        "sha256": "178692ba113c4d55dbb34a73a94a2ba852ad0d6a78c854ff5236440134edc39b"
+      },
+      {
+        "path": "catalog-export.log",
+        "sha256": "e2571b77614627ebb578cbd1abf25ddd15fbac5217390bde7f363a4eb75eb01d"
+      },
+      {
+        "path": "logic-tests.log",
+        "sha256": "571eee2ae611c01fd146c5f3b58ba7b2ee550f8f2842f99a09a5f775f8d52daa"
+      },
+      {
+        "path": "upload.log",
+        "sha256": "2fe2204be99749860c65f6c6dd587688703ba149347765c936ab890a90ebe5a6"
+      },
+      {
+        "path": "download.log",
+        "sha256": "db64f6701a595c2f3c2649bea2ecabdb1f8db6cec22746e3c0ddc6cc1520ebef"
+      },
+      {
+        "path": "artifact-contract.log",
+        "sha256": "aa2abf9281d145e4d061f23e9544c1b95a23d9e47e770868ea8934a1ebaa1fcf"
+      },
+      {
+        "path": "logic-tests/logic-tests.trx",
+        "sha256": "2b5e7cf9322824fc50308bb66b7c46911d051522e10adcba79e5f2a87b29d74f"
+      },
+      {
+        "path": "verify-published.py",
+        "sha256": "d137d2f3a7b9cbd1820f10b5c9647febac3e669d108a1446e7c5dffc5d528be1"
+      },
+      {
+        "path": "frozen-SHA256SUMS",
+        "sha256": "6e9bd67b791aaa82c776d099d7a4e13595cce50636c22f82865f64d29f747e61"
+      },
+      {
+        "path": "workshop-before.json.log",
+        "sha256": "19d9d5c0542c055b2aee2dd3c8e9709390abd7db1fc64e6acce2764284dca7df"
+      },
+      {
+        "path": "workshop-after.json.log",
+        "sha256": "a1f60d24c3e60abea95f1af0442a71b13893fab66fb941e6c98241b878305b4c"
+      },
+      {
+        "path": "workshop-public-after.json",
+        "sha256": "07628df329eada1fc7b4a79da3bc7e79de87a54d04afe263a3ed02e76ba2f9b8"
+      },
+      {
+        "path": "workshop-changelog.html",
+        "sha256": "0b92c2661a1c563f8118a3723cde3d8f48ce51ea4657394adf5e501439681f1c"
+      }
+    ],
+    "catalogSha256": "c95472c6eafd17f66bf9612ac3fe3ca9ecba55620787a4eb8446c54c7846c9ea",
+    "localizationTablesPerLanguage": 17,
+    "localizedEntriesPerLanguage": 626,
+    "powerEntriesRenderedAtAmounts": {
+      "entries": 92,
+      "amounts": [
+        1,
+        2,
+        5
+      ]
+    },
+    "repositoryConsistency": true,
+    "compatibilityConfiguration": true,
+    "diffCheck": true
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "contentManifest": "928451032279405551",
+    "updated": 1794237282,
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "changeNoteId": "1794237282",
+    "changeNote": "浴火由本回合每打出一张其他技能牌获得3→4奈落生命，改为每触发一次黑炎获得2→3奈落生命，保留选择一张手牌变化为黑炎。\n一心同体由每次空手道触发获得3→4奈落生命，改为打出时获得5→8奈落生命，并使每点奈落生命计入1点空手道伤害。\n一心同体重复打出可叠加换算倍率，每次空手道触发仍只优先消耗1点奈落生命；基础空手道不会承受伤害，其他按实际空手道层数计算的效果不变。\n手里剑生成移除预见1→2，保留1费、奇巧和获得3→4层手里剑。\n同步16种语言、伤害预览及东尼算法卡牌组件。",
+    "localizedTitlesDescriptionsUnchanged": true,
+    "tagSetUnchangedCaseInsensitive": true,
+    "tagCasingNormalizedByUploader": true,
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "downloadBytes": 221418057
+  },
+  "notRun": [
+    "Full graphical client replay (isolated launcher needs elevated firewall configuration)",
+    "macOS/Linux gameplay",
+    "Four-player Steam gameplay"
+  ],
+  "scope": "One Mind stacking Naraku-to-Karate conversion with 5/8 life and one-life consumption; Rekindle grants 2/3 life per Black Flame activation this turn; Shuriken Creation removes Scry; dynamic previews, 16 languages and AutoAnthony. Workshop only.",
+  "cleanup": {
+    "status": "blocked",
+    "reason": "Automatic approval rejected the recursive cleanup command: blocked by policy",
+    "commandExecuted": false,
+    "retainedDirectories": [
+      {
+        "path": "build/validation-1.2.1/final-bundle",
+        "bytes": 221418057
+      },
+      {
+        "path": "build/validation-1.2.1/final-bundle-build",
+        "bytes": 154882
+      },
+      {
+        "path": "build/validation-1.2.1/final-channel-build",
+        "bytes": 485857703
+      },
+      {
+        "path": "build/validation-1.2.1/uploader-final",
+        "bytes": 235456116
+      },
+      {
+        "path": "build/validation-1.2.1/patch-runtime",
+        "bytes": 5067264
+      },
+      {
+        "path": "build/validation-1.2.1/catalog",
+        "bytes": 95384895
+      }
+    ],
+    "retainedBytes": 1043338917
+  }
+}
