@@ -1,0 +1,136 @@
+{
+  "version": "1.2.0",
+  "sourceRevision": "3b749fa1e36aabd52fa9448a3ed73a108e86d781",
+  "verifiedAtUtc": "2026-11-09T12:56:57.060262+00:00",
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "bytes": 2212864,
+      "sha256": "25132bc91b4e9e0e52f01beee4b31adf8cc8dedd68184a4bbcd3e0d37c0a64e0"
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "bytes": 8,
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "bytes": 129024,
+      "sha256": "0855363549d11b3c8b6a48601291a6876fd3c4827005fba5fa34179cfd79a5ce"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "bytes": 2216960,
+      "sha256": "f7113a5ae5659a5f2a0be5d78d6d86f3cf9db2efb09edf37566e7133b0723e22"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "bytes": 522,
+      "sha256": "180c095b8d837bed1748304ed36dd09b0e2ecdee71b2b82aecb1c4351026197d"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "bytes": 24576,
+      "sha256": "475c32869c1d1b2a75a236bf5f34b3d81e9f66ab4214176e9776c10e116fd249"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "bytes": 362,
+      "sha256": "3828af403df8b4942a2b08267be0c66dc046c21e914d0c2bcfed0368925df4d0"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "bytes": 216498676,
+      "sha256": "331a5e2e854c56a90d2df07066b6c00e93f250d90d864a1ee5b2373b6874324b"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 1008,
+      "sha256": "8a5c1b251d8e958df74b6d54e668dede025cf954bb2533b8323885324f4a5b83"
+    }
+  ],
+  "validation": {
+    "logicTestsPassed": 361,
+    "dualHostGameplayIncludingSushiAndEventRates": true,
+    "dualHostPatchTransactions": true,
+    "dualHostNativeEnet": true,
+    "autoAnthonyComponents": true,
+    "packagedLanguages": 16,
+    "logs": [
+      {
+        "path": "contracts-stable.log",
+        "sha256": "9c58a6444cc767e627ae4ff528f0b4ae8880580c190c8d22a003ffff31d758ec"
+      },
+      {
+        "path": "patch-stable.log",
+        "sha256": "72be71560d6c3de68614a9fc47181e9d8738ed750dff2952ec37b0a781e01564"
+      },
+      {
+        "path": "network-final-stable-r2/host.log",
+        "sha256": "bcf9c0081c502e41c68d13cb62458459c4fd2405e69e9ffcd10a22a2cd741084"
+      },
+      {
+        "path": "network-final-stable-r2/client.log",
+        "sha256": "dd3b1ddaa7eb35c6702d4f7c0c3066bd0ab90ff4b3d3a227cce5e4d4c884deaf"
+      },
+      {
+        "path": "contracts-preview.log",
+        "sha256": "bf6ae0fa18f6234cfd102d635fc68e96437e9f5a37bd2629b0f0c7647470556f"
+      },
+      {
+        "path": "patch-preview.log",
+        "sha256": "747de8a9bfcb77819b8ed52683c68f824a7887c7a0fbfdbd20d13cee73165f5b"
+      },
+      {
+        "path": "network-final-preview-r2/host.log",
+        "sha256": "028a4ce9aba82421f955fbbcc330477ad2706ffbc517afe679233166a47a39ac"
+      },
+      {
+        "path": "network-final-preview-r2/client.log",
+        "sha256": "1c4661e57615d5259279022cab51fe5ae7995491804571cea54b4e81c39e226f"
+      },
+      {
+        "path": "anthony-preview.log",
+        "sha256": "d625f39c546c30a665dd182abc471e65aeaf3b3249fef330503fa3a036dfe01b"
+      }
+    ]
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "contentManifest": "4137949201132317770",
+    "updated": 1794228897,
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "changeNoteId": "1794228897",
+    "changeNote": "噬火从生成状态牌触发改为每消耗一张牌获得2→3奈落生命，包括虚无消耗。\n忍耐更名为连打，新增虚无，空手道由4→5调整为5→6，保留4→5伤害三次。\n修行费用由2调整为1。\n柔术空手道由3→5调整为4→5。\n巴投格挡由9→11调整为9→12。\n左·上勾拳替换为低空上勾拳，伤害由10→12调整为8→10；无条件给予1→2易伤改为上一张牌为攻击时给予1→2虚弱和易伤。\n倒挂金钩踢由14→18伤害一次调整为7→9伤害两次，保留弃牌后茶道呼吸2。\n烈焰费用由1调整为1→0，黑炎增伤由6→8调整为固定6。\n右·上勾拳替换为破势一击，伤害由8→10调整为6加手里剑层数乘3→4，移除上一张技能牌给予虚弱，采用灰烬打击同款伤害预览。\n手里剑风暴移除先获得1→3手里剑，弃掉手牌后获得等量手里剑；费用由1调整为1→0，保留消耗。\n地狱·Chop新增虚无，每三张攻击回手改为每次抽到时加入一张复制品；保留4→5伤害和1→2空手道。\n备镖更名为戒备。\n韧性及其能力更名为转机。\n鲔鱼寿司由拾起时回复所有生命改为选择3张牌附魔滋养，每张牌每场战斗首次打出时增加1点最大生命。\n沢渡事件保留强敌阶段的问号战斗触发，出率按本局完整可用事件池计算，包含共享事件并排除未解锁、已遇到和不符合条件的事件。\n奈落生命按临时生命结算，伤害先扣格挡再扣奈落生命，完全吸收不触发真实掉血效果。\n修复了用户反馈中心形图标错位的问题，奈落生命使用与火焰特效一致的紫色爱心。\n修复了用户反馈中回避多段扣层的问题，改为每次敌人行动消耗一层。\n对空砰砰拳将奈落生命计入正面效果种类。\n修复了用户反馈中暗忍偷牌不同步的问题。\n修复了用户反馈中低血量特效报错的问题。\n修复了用户反馈中记者证卡事件的问题。\n修复了用户反馈中围巾退场残留的问题。\n替换61张卡牌插画。\n同步16种语言及东尼算法卡牌组件。",
+    "localizedTitlesDescriptionsUnchanged": true,
+    "tagSetUnchangedCaseInsensitive": true,
+    "tagCasingNormalizedByUploader": true,
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "downloadBytes": 221402545
+  },
+  "notRun": [
+    "Full graphical client replay (isolated launcher needs elevated firewall configuration)",
+    "macOS/Linux gameplay",
+    "Four-player Steam gameplay"
+  ],
+  "scope": "11 card changes; Ready Shuriken/Resilience renames; Sushi selects 3 cards for first-play +1 max HP enchantment; full-pool Sawatari event odds; combat/display fixes; 61 card illustrations; 16 languages. Workshop only."
+}
