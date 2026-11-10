@@ -1,7 +1,7 @@
 {
   "version": "1.2.2",
   "sourceRevision": "6aedbb9dd389e5593b2a792d8fded440e78dde46",
-  "verifiedAtUtc": "2026-11-09T18:21:08.143219+00:00",
+  "verifiedAtUtc": "2026-11-10T02:21:08.143219+08:00",
   "files": [
     {
       "path": "Box2D.NET.dll",
@@ -144,7 +144,67 @@
         "path": "artifact-contract.log",
         "sha256": "8c68d7ecfc716ab457e9a3f40984293d707812ed8d334f848487ea91105847e4"
       }
-    ]
+    ],
+    "renderedEvidence": [
+      {
+        "name": "alabama-before.png",
+        "bytes": 788702,
+        "sha256": "2bf495b4231012cfcf993ac42995102a9f261bae31978ed162edf478c6d6a783"
+      },
+      {
+        "name": "alabama-left-lift.png",
+        "bytes": 803349,
+        "sha256": "8ca677055ed503005c75d5b162ede5ef01ebcd5d4c927da93e6bc18225d62e3d"
+      },
+      {
+        "name": "alabama-right-lift.png",
+        "bytes": 803305,
+        "sha256": "767de90064088e527b1e965851434ab7dfb1763a6a2e8887e4f6721d1740854c"
+      },
+      {
+        "name": "kaiser-atlas.png",
+        "bytes": 2980781,
+        "sha256": "318e5fb38c56657b4c8672d7d3a6f19f2d436f0ba673a649dd1d991e2817789f"
+      }
+    ],
+    "remoteCi": {
+      "status": "success",
+      "workflowRun": 42748335892,
+      "workflowUrl": "https://github.com/2223M1/NinjaSlayer/actions/runs/42748335892",
+      "headSha": "f7c5415d35c16e623b849c94e42c23e0ee249ef5",
+      "completedAtUtc": "2026-11-10T03:19:40Z",
+      "validateJobStarted": true,
+      "powershellJobPassed": true,
+      "validateJobPassed": true,
+      "jobs": [
+        {
+          "name": "powershell7",
+          "id": 129605716678,
+          "conclusion": "success"
+        },
+        {
+          "name": "validate",
+          "id": 129606046532,
+          "conclusion": "success"
+        }
+      ],
+      "previousAttempts": [
+        {
+          "runs": [
+            42673428934,
+            42674225183
+          ],
+          "validateJobStarted": false,
+          "status": "platform_error",
+          "correlationIds": [
+            "3d6a18f6-4153-4248-ae01-2a51e628ecfc",
+            "f30e427e-f266-4bb8-b711-67fea52422d3"
+          ],
+          "powershellJobPassed": true,
+          "error": "Internal server error"
+        }
+      ]
+    }
   },
   "workshop": {
     "itemId": "3776911445",
@@ -168,5 +228,136 @@
     "New Steam multiplayer run",
     "macOS/Linux actual gameplay"
   ],
-  "scope": "Sawatari quick reload, deferred boss BGM, shared Kaiser explosion, non-Power Cross Guard retention, interrupted card fade and real Alabama claw movement."
+  "scope": "Sawatari quick reload, deferred boss BGM, shared Kaiser explosion, non-Power Cross Guard retention, interrupted card fade and real Alabama claw movement.",
+  "cleanup": {
+    "status": "completed",
+    "verifiedAtUtc": "2026-11-10T03:18:16.5512700+00:00",
+    "method": "Native PowerShell Remove-Item -LiteralPath with individual verified absolute paths, without Force",
+    "commandExecuted": true,
+    "removedDirectories": [
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.2\\final-bundle",
+        "bytes": 221665213.0,
+        "removed": true
+      },
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.2\\final-bundle-build",
+        "bytes": 154882.0,
+        "removed": true
+      },
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.2\\final-channel-build",
+        "bytes": 486411128.0,
+        "removed": true
+      },
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.2\\uploader-final",
+        "bytes": 235701942.0,
+        "removed": true
+      },
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.2\\patch-runtime",
+        "bytes": 5084672.0,
+        "removed": true
+      },
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.2\\catalog",
+        "bytes": 95388925.0,
+        "removed": true
+      }
+    ],
+    "removedDirectoryBytes": 1044406762,
+    "preservedUploaderLogBytes": 3133,
+    "reclaimedBytes": 1044403629,
+    "preservedUploaderLogSha256": "619d8cefb55214bdbdb0d7d026ee450bbf3e96f02ca6d32c884893aac7d66ea4",
+    "retainedTargetDirectories": [],
+    "permissionsChanged": false,
+    "originalDenialCause": "The tool returned only blocked by policy; the specific matching rule was not disclosed.",
+    "previousAttempts": [
+      {
+        "reason": "Automatic approval rejected recursive cleanup: blocked by policy",
+        "retainedBytes": 1044406762.0,
+        "status": "blocked",
+        "retainedDirectories": [
+          {
+            "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.2\\final-bundle",
+            "bytes": 221665213.0
+          },
+          {
+            "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.2\\final-bundle-build",
+            "bytes": 154882.0
+          },
+          {
+            "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.2\\final-channel-build",
+            "bytes": 486411128.0
+          },
+          {
+            "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.2\\uploader-final",
+            "bytes": 235701942.0
+          },
+          {
+            "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.2\\patch-runtime",
+            "bytes": 5084672.0
+          },
+          {
+            "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.2\\catalog",
+            "bytes": 95388925.0
+          }
+        ],
+        "commandExecuted": false
+      }
+    ]
+  },
+  "website": {
+    "verifiedAtUtc": "2026-11-10T03:16:48.983Z",
+    "version": "1.2.2",
+    "sourceRevision": "6aedbb9dd389e5593b2a792d8fded440e78dde46",
+    "fingerprint": "3d2cb3a0230e284a7209b6c34b748ccc40cc5caada4c3ee37d0408553b29e544",
+    "languages": 16,
+    "sampledImages": [
+      "images/e179aa6a6b6bc9c53ee6cbbfb5aec516a520c80c80a6d5761b64a20635d67e0f.webp",
+      "images/e2c6fda3501dd08e85c637a55ddc08acf980a63e9d0ebf09028e9d18031e47d5.webp",
+      "images/4350901f8f95d6c9061939c0a6e59af92ac6f16d1d430bb84aff64fb046264c5.webp"
+    ],
+    "independentAscensionOptions": "A0–A10",
+    "workflowRun": 42698566726,
+    "deploymentRevision": "f7c5415d35c16e623b849c94e42c23e0ee249ef5",
+    "url": "https://2223m1.github.io/NinjaSlayer/",
+    "desiredVersion": "1.2.2",
+    "liveVersionLastObserved": "1.2.2",
+    "remoteVerified": true,
+    "localCatalogVerified": true,
+    "buildSucceeded": true,
+    "workflowConclusion": "success",
+    "deploymentStatus": "succeed",
+    "workflowUrl": "https://github.com/2223M1/NinjaSlayer/actions/runs/42698566726",
+    "artifactId": 13711046786,
+    "artifactSha256": "c46c9044b44499a20bb38bdc276b0ab341d683907ec8d9e2dde956c6fa5273e4",
+    "incidentStatus": "resolved",
+    "incidentResolvedAtUtc": "2026-11-09T18:59:32.565Z",
+    "incidentUrl": "https://stspg.io/7yw63xl9ztrv",
+    "previousAttempts": [
+      {
+        "workflowRun": 42673428258,
+        "liveVersionLastObserved": "1.1.1",
+        "incidentLatestUpdate": "Pages is experiencing degraded performance. We are continuing to investigate.",
+        "desiredVersion": "1.2.2",
+        "buildSucceeded": true,
+        "incidentName": "Incident with Actions and Checks API",
+        "artifactId": 13698358928,
+        "deploymentRevision": "f7c5415d35c16e623b849c94e42c23e0ee249ef5",
+        "deploymentStatus": "deployment_cancelled",
+        "artifactSha256": "abc53199e4516eba1b23fff98c16c0fb5018dd4e7871585000910f7b54ff794e",
+        "sourceRevision": "6aedbb9dd389e5593b2a792d8fded440e78dde46",
+        "remoteVerified": false,
+        "workflowUrl": "https://github.com/2223M1/NinjaSlayer/actions/runs/42673428258",
+        "incidentUrl": "https://stspg.io/7yw63xl9ztrv",
+        "localCatalogVerified": true,
+        "incidentStatus": "investigating",
+        "checkedAtUtc": "2026-11-09T18:41:50.1144291+00:00",
+        "workflowConclusion": "failure",
+        "failureLogSha256": "b5c48a8da4f66d2e7af028bdae9c7e2ba453435ff6530b76bdf9ac1de09d3d38"
+      }
+    ]
+  }
 }
