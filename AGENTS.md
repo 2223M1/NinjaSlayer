@@ -41,6 +41,7 @@
 - After publishing and re-downloading a release to verify all files, remove redundant local release packages, superseded build outputs and completed test caches. Do not retain a full local copy for every version.
 - Keep compact release evidence, source and artifact hashes, and validation summaries. Preserve source files, uncommitted work, intentional archives, production assets, normal saves, and the reference runtimes still needed for supported-host validation.
 - Inspect active processes and resolved paths before deleting generated directories. Use the app's archive-worktree tool for eligible managed checkouts; never shell-delete a worktree or a parent containing one.
+- On Windows, inspect cleanup targets in a separate read-only step, preserve their validation logs, then remove each verified generated directory with native PowerShell `Remove-Item -LiteralPath` and its explicit absolute path. Do not use computed deletion loops, cross-shell commands, or `-Force` by default.
 
 ## Workshop publication policy
 
