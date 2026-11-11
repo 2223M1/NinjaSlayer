@@ -117,6 +117,7 @@ public class Entry
             requiredPatcher.RegisterPatch<YamotoKokiFinishedCombatRestorePatch>();
             requiredPatcher.RegisterPatch<SawatariActRoomGenerationPatch>();
             requiredPatcher.RegisterPatch<SawatariRoomRevealPatch>();
+            requiredPatcher.RegisterPatch<SawatariEventOptionReadyPatch>();
             requiredPatcher.RegisterPatch<SawatariUnknownRoomTypeCapturePatch>();
             requiredPatcher.RegisterPatch<SawatariUnknownRoomRollPatch>();
             requiredPatcher.RegisterPatch<SawatariPullEventPatch>();

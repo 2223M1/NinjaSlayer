@@ -2,7 +2,7 @@
   "title": "忍者杀手 Ninja Slayer",
   "description": "[h1]Domo. Ninja Slayer desu.[/h1]\r\n\r\n[h2]Something wrong?[/h2]\r\nPress [b]F2[/b] in game to report bugs or send suggestions.\r\nWant to see what cards everyone is picking and where their runs end? [url=https://2223m1.github.io/NinjaSlayer/?lang=eng]Ninja Slayer Intel[/url]\r\n\r\nDiscord Community：Previous invite expired. New invite: https://discord.gg/eHuQqjrAyf\r\nPatreon：https://www.patreon.com/cw/bobbizerri\r\n\r\n[i]Unofficial fan-made Mod.[/i]",
   "visibility": "public",
-  "changeNote": "修复了用户反馈中沢渡快速SL卡住的问题。\n修复了用户反馈中首领音乐异常的问题。\n修复了用户反馈中帝皇蟹不爆炸的问题。\n修复了用户反馈中能力牌吞交叉防御的问题。\n修复了用户反馈中卡牌异常透明的问题。\n阿拉巴马落现在会真实抬起、翻转并摔落帝皇蟹的目标钳子。",
+  "changeNote": "修复了用户反馈中沢渡事件手柄失灵的问题。",
   "tags": [
     "Characters",
     "English",
