@@ -1,5 +1,6 @@
 import { t, tr, locale, language, localizePage } from './i18n.mjs';
 import { summarizePublic } from './public-data.mjs';
+import { selectedCardVersions } from './version-filter.mjs';
 import { renderCharts, renderMechanisms } from './chart-view.mjs';
 import { renderReports } from './replay-view.mjs';
 import { cardPreview, loadCatalog, plain } from './catalog-view.mjs';
@@ -78,9 +79,17 @@ function fillOptions(select, values, first, label = value => value) {
 }
 async function loadView() {
   const request = ++viewRequest;
+  const nextSnapshot = await api(isPages ? './data.json' : '/api/snapshot', { cache: 'no-cache' });
+  if (request !== viewRequest) return;
+  const canonical = selectedCardVersions([...selectedVersions], nextSnapshot.cardVersions);
+  selectedVersions.clear();
+  for (const version of canonical) selectedVersions.add(version);
   const query = filters();
   const params = filterParams();
-  const nextSnapshot = await api(isPages ? './data.json' : '/api/snapshot', { cache: 'no-cache' });
+  const url = new URL(location.href);
+  url.searchParams.delete('version');
+  for (const version of canonical) url.searchParams.append('version', version);
+  history.replaceState(null, '', url);
   const nextView = isPages ? summarizePublic(nextSnapshot, query) : await api(`/api/view?${params}`);
   const versionCatalog = await loadCatalog(nextSnapshot.currentVersion);
   if (request !== viewRequest) return;

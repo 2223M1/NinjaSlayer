@@ -1,6 +1,6 @@
 export const messages = {
   "已选 {0} 个版本": ["{0} versions selected", "{0} バージョンを選択中"],
-  "可多选；不选则统计所有版本。": ["Select any number. Leave empty for all versions.", "複数選択可。未選択なら全バージョンを集計します。"],
+  "无卡牌规则改动的版本合并统计。可多选，不选则统计全部。": ["Versions with unchanged card rules share statistics. Select multiple groups, or leave empty for all.","カードの仕様が同じバージョンはまとめて集計します。複数選択可。未選択ならすべてを集計します。"],
   "选择统计版本": ["Select versions to include", "集計するバージョンを選択"],
   "解决状态": ["Resolution status", "対応状況"],
   "全部状态": ["All statuses", "すべての状態"],

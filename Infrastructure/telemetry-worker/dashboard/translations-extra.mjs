@@ -2,7 +2,7 @@
 export const additionalMessages = {
   "zht": {
     "已选 {0} 个版本": "已選 {0} 個版本",
-    "可多选；不选则统计所有版本。": "可多選；不選則統計所有版本。",
+    "无卡牌规则改动的版本合并统计。可多选，不选则统计全部。": "未變更卡牌規則的版本合併統計。可複選，未選則統計全部。",
     "选择统计版本": "選擇統計版本",
     "解决状态": "解決狀態",
     "全部状态": "全部狀態",
@@ -275,7 +275,7 @@ export const additionalMessages = {
   },
   "deu": {
     "已选 {0} 个版本": "{0} Versionen ausgewählt",
-    "可多选；不选则统计所有版本。": "Mehrfachauswahl möglich. Ohne Auswahl werden alle Versionen ausgewertet.",
+    "无卡牌规则改动的版本合并统计。可多选，不选则统计全部。": "Versionen ohne Änderungen an Kartenregeln werden gemeinsam ausgewertet. Mehrfachauswahl möglich; ohne Auswahl werden alle berücksichtigt.",
     "选择统计版本": "Versionen für die Statistik auswählen",
     "解决状态": "Bearbeitungsstatus",
     "全部状态": "Alle Status",
@@ -548,7 +548,7 @@ export const additionalMessages = {
   },
   "esp": {
     "已选 {0} 个版本": "{0} versiones seleccionadas",
-    "可多选；不选则统计所有版本。": "Puedes seleccionar varias. Sin selección se incluyen todas las versiones.",
+    "无卡牌规则改动的版本合并统计。可多选，不选则统计全部。": "Las versiones sin cambios en las reglas de las cartas comparten estadísticas. Selecciona varios grupos o ninguno para incluir todos.",
     "选择统计版本": "Elegir versiones para las estadísticas",
     "解决状态": "Estado de resolución",
     "全部状态": "Todos los estados",
@@ -821,7 +821,7 @@ export const additionalMessages = {
   },
   "fra": {
     "已选 {0} 个版本": "{0} versions sélectionnées",
-    "可多选；不选则统计所有版本。": "Sélection multiple possible. Sans sélection, toutes les versions sont incluses.",
+    "无卡牌规则改动的版本合并统计。可多选，不选则统计全部。": "Les versions sans changement des règles des cartes partagent leurs statistiques. Sélectionnez plusieurs groupes, ou aucun pour tout inclure.",
     "选择统计版本": "Sélectionner les versions à inclure",
     "解决状态": "État de résolution",
     "全部状态": "Tous les états",
@@ -1094,7 +1094,7 @@ export const additionalMessages = {
   },
   "ind": {
     "已选 {0} 个版本": "{0} versi dipilih",
-    "可多选；不选则统计所有版本。": "Boleh memilih beberapa. Kosongkan untuk semua versi.",
+    "无卡牌规则改动的版本合并统计。可多选，不选则统计全部。": "Versi tanpa perubahan aturan kartu digabung dalam statistik. Pilih beberapa kelompok, atau kosongkan untuk semua.",
     "选择统计版本": "Pilih versi untuk statistik",
     "解决状态": "Status penyelesaian",
     "全部状态": "Semua status",
@@ -1367,7 +1367,7 @@ export const additionalMessages = {
   },
   "ita": {
     "已选 {0} 个版本": "{0} versioni selezionate",
-    "可多选；不选则统计所有版本。": "Puoi selezionarne più di una. Nessuna selezione include tutte le versioni.",
+    "无卡牌规则改动的版本合并统计。可多选，不选则统计全部。": "Le versioni senza modifiche alle regole delle carte condividono le statistiche. Seleziona più gruppi, oppure nessuno per includerli tutti.",
     "选择统计版本": "Seleziona le versioni da includere",
     "解决状态": "Stato di risoluzione",
     "全部状态": "Tutti gli stati",
@@ -1640,7 +1640,7 @@ export const additionalMessages = {
   },
   "kor": {
     "已选 {0} 个版本": "버전 {0}개 선택됨",
-    "可多选；不选则统计所有版本。": "여러 개를 선택할 수 있습니다. 선택하지 않으면 모든 버전을 집계합니다.",
+    "无卡牌规则改动的版本合并统计。可多选，不选则统计全部。": "카드 규칙이 바뀌지 않은 버전은 통계를 합칩니다. 여러 그룹을 선택할 수 있으며, 선택하지 않으면 전체를 집계합니다.",
     "选择统计版本": "집계할 버전 선택",
     "解决状态": "해결 상태",
     "全部状态": "모든 상태",
@@ -1913,7 +1913,7 @@ export const additionalMessages = {
   },
   "pol": {
     "已选 {0} 个版本": "Wybrano wersje: {0}",
-    "可多选；不选则统计所有版本。": "Możesz wybrać kilka. Brak wyboru obejmuje wszystkie wersje.",
+    "无卡牌规则改动的版本合并统计。可多选，不选则统计全部。": "Wersje bez zmian zasad kart mają wspólne statystyki. Wybierz kilka grup lub pozostaw puste, aby uwzględnić wszystkie.",
     "选择统计版本": "Wybierz wersje do statystyk",
     "解决状态": "Stan rozwiązania",
     "全部状态": "Wszystkie stany",
@@ -2186,7 +2186,7 @@ export const additionalMessages = {
   },
   "ptb": {
     "已选 {0} 个版本": "{0} versões selecionadas",
-    "可多选；不选则统计所有版本。": "Selecione quantas quiser. Deixe vazio para incluir todas as versões.",
+    "无卡牌规则改动的版本合并统计。可多选，不选则统计全部。": "Versões sem mudanças nas regras das cartas compartilham estatísticas. Selecione vários grupos ou deixe vazio para incluir todos.",
     "选择统计版本": "Selecionar versões incluídas",
     "解决状态": "Status de resolução",
     "全部状态": "Todos os status",
@@ -2459,7 +2459,7 @@ export const additionalMessages = {
   },
   "rus": {
     "已选 {0} 个版本": "Выбрано версий: {0}",
-    "可多选；不选则统计所有版本。": "Можно выбрать несколько. Без выбора учитываются все версии.",
+    "无卡牌规则改动的版本合并统计。可多选，不选则统计全部。": "Статистика версий без изменений правил карт объединяется. Выберите несколько групп или оставьте поле пустым для всех.",
     "选择统计版本": "Выбрать версии для статистики",
     "解决状态": "Статус решения",
     "全部状态": "Все статусы",
@@ -2732,7 +2732,7 @@ export const additionalMessages = {
   },
   "spa": {
     "已选 {0} 个版本": "{0} versiones seleccionadas",
-    "可多选；不选则统计所有版本。": "Puedes seleccionar varias. Sin selección se incluyen todas las versiones.",
+    "无卡牌规则改动的版本合并统计。可多选，不选则统计全部。": "Las versiones sin cambios en las reglas de las cartas comparten estadísticas. Selecciona varios grupos o ninguno para incluir todos.",
     "选择统计版本": "Elegir versiones para las estadísticas",
     "解决状态": "Estado de resolución",
     "全部状态": "Todos los estados",
@@ -3005,7 +3005,7 @@ export const additionalMessages = {
   },
   "tha": {
     "已选 {0} 个版本": "เลือก {0} เวอร์ชัน",
-    "可多选；不选则统计所有版本。": "เลือกได้หลายเวอร์ชัน ไม่เลือกเพื่อรวมทุกเวอร์ชัน",
+    "无卡牌规则改动的版本合并统计。可多选，不选则统计全部。": "เวอร์ชันที่ไม่เปลี่ยนกฎของการ์ดจะรวมสถิติเข้าด้วยกัน เลือกได้หลายกลุ่ม หรือไม่เลือกเพื่อรวมทั้งหมด",
     "选择统计版本": "เลือกเวอร์ชันสำหรับสถิติ",
     "解决状态": "สถานะการแก้ไข",
     "全部状态": "ทุกสถานะ",
@@ -3278,7 +3278,7 @@ export const additionalMessages = {
   },
   "tur": {
     "已选 {0} 个版本": "{0} sürüm seçildi",
-    "可多选；不选则统计所有版本。": "Birden fazla seçebilirsin. Tüm sürümler için boş bırak.",
+    "无卡牌规则改动的版本合并统计。可多选，不选则统计全部。": "Kart kuralları değişmeyen sürümlerin istatistikleri birleştirilir. Birden fazla grup seçin veya tümü için boş bırakın.",
     "选择统计版本": "İstatistiklere katılacak sürümleri seç",
     "解决状态": "Çözüm durumu",
     "全部状态": "Tüm durumlar",

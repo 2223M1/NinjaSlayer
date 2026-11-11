@@ -55,7 +55,7 @@ export function renderReports(snapshot, filters, onCard) {
     (report) =>
       Date.parse(report.expires) > Date.now() &&
       Date.parse(report.at) >= cutoff &&
-      matchesVersion(report.version, filters.version) &&
+      matchesVersion(report.version, filters.version, snapshot.cardVersions) &&
       (filters.ascension === "" ||
         filters.ascension == null ||
         report.ascension === Number(filters.ascension)) &&

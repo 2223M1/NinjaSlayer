@@ -1,6 +1,6 @@
 {
   "已选 {0} 个版本": "{0} versions sélectionnées",
-  "可多选；不选则统计所有版本。": "Sélection multiple possible. Sans sélection, toutes les versions sont incluses.",
+  "无卡牌规则改动的版本合并统计。可多选，不选则统计全部。": "Les versions sans changement des règles des cartes partagent leurs statistiques. Sélectionnez plusieurs groupes, ou aucun pour tout inclure.",
   "选择统计版本": "Sélectionner les versions à inclure",
   "解决状态": "État de résolution",
   "全部状态": "Tous les états",

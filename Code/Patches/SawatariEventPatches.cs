@@ -9,7 +9,9 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Acts;
 using MegaCrit.Sts2.Core.Odds;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using MegaCrit.Sts2.Core.Nodes.Events;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Nodes.Screens.ScreenContext;
 using MegaCrit.Sts2.Core.Random;
 using MegaCrit.Sts2.Core.Rewards;
 using MegaCrit.Sts2.Core.Rooms;
@@ -23,6 +25,24 @@ using NinjaSlayer.Monsters;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
+
+public sealed class SawatariEventOptionReadyPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_sawatari_event_option_ready";
+    public static string Description => "Focus Sawatari choices after the native button entrance finishes.";
+    public static bool IsCritical => true;
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(typeof(NEventOptionButton), nameof(NEventOptionButton.EnableButton), [])
+    ];
+
+    public static void Postfix(NEventOptionButton __instance)
+    {
+        if (__instance.Event is TheMovingJungleEvent && __instance.IsVisibleInTree()
+            && NEventRoom.Instance?.Layout?.OptionButtons.FirstOrDefault() == __instance)
+            ActiveScreenContext.Instance.Update();
+    }
+}
 
 internal static class SawatariEventRoute
 {

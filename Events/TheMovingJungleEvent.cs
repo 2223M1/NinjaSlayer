@@ -269,6 +269,11 @@ public sealed class TheMovingJungleEvent : ModEventTemplate
 
 internal static class SawatariEventUi
 {
+    private static readonly Action<NCombatEventLayout, bool> SetCombatStarted =
+        (AccessTools.PropertySetter(typeof(NCombatEventLayout), nameof(NCombatEventLayout.HasCombatStarted))
+            ?? throw new MissingMethodException(typeof(NCombatEventLayout).FullName, "set_HasCombatStarted"))
+        .CreateDelegate<Action<NCombatEventLayout, bool>>();
+
     public static void Hide() =>
         (NEventRoom.Instance?.Layout as NCombatEventLayout)?.HideEventVisuals();
 
@@ -280,10 +285,14 @@ internal static class SawatariEventUi
             throw new InvalidOperationException("Sawatari event layout is unavailable.");
         }
 
+        // Native default focus and ActiveScreenContext both read this state.
+        // HideEventVisuals restores combat mode when the decision is over.
+        SetCombatStarted(layout, false);
         layout.GetNode<CanvasItem>("%EventDescription").Visible = true;
         layout.GetNode<CanvasItem>("%SharedEventLabel").Visible = isMultiplayer;
         Control options = layout.GetNode<Control>("%OptionsContainer");
         options.Visible = true;
-        // Native option AnimateIn enables focus after its deferred entrance.
+        // SawatariEventOptionReadyPatch restores the event screen context once
+        // the first native option finishes its entrance, including instant mode.
     }
 }

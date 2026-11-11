@@ -277,6 +277,13 @@ public partial class OrbContractRunner : Node
             SaveManager.Instance.InitSettingsDataForTest();
             SaveManager.Instance.InitPrefsDataForTest();
             MegaCrit.Sts2.Core.Localization.LocManager.Initialize();
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_SAWATARI_CONTROLLER") == "1")
+            {
+                await VerifySawatariController();
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_FEEDBACK_20261110") == "1")
             {
                 await VerifyNovemberFeedback();

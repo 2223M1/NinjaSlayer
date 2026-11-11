@@ -1,0 +1,272 @@
+{
+  "version": "1.2.3",
+  "sourceRevision": "d21910fb48aa45e9a46cbb0087c636b226b69563",
+  "verifiedAtUtc": "2026-11-11T02:12:04.869Z",
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "bytes": 2224128,
+      "sha256": "a47f5f733e16588fbc5d7e5d79bdf3c3d870a1bf8ff0b1cf3dc81649a5178307"
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "bytes": 8,
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "bytes": 129024,
+      "sha256": "a6f7b33ae9f59b6c5f743a446fd79934f3f4bf8c3bd869425a6f23f1c32e01c8"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "bytes": 2227712,
+      "sha256": "bd5e86917c1f346ae069856f6e8e825be436c35c27bd90c431989e520e7ecfcc"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "bytes": 522,
+      "sha256": "8bdd2c389dded610b5a46934cc965149dd7f3832cb5981d949d0081d7c7140ba"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "bytes": 24576,
+      "sha256": "996f1571dca5a1700fda033e7d24b802e1079e27677abd827d113a3232da0a41"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "bytes": 362,
+      "sha256": "f8e44371a11c70e738a59a07c5b3adf3e5d8610c6f02a7f92b48f44b327ef6df"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "bytes": 214176240,
+      "sha256": "db9c2e4730624c823a40efb946fd9d88184519eafcca731674cadbb3d13c1ecb"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 1008,
+      "sha256": "bb85c226278a59a255f761943d7ecc991bed954c2ca063debaf1ab507818d710"
+    }
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "a47f5f733e16588fbc5d7e5d79bdf3c3d870a1bf8ff0b1cf3dc81649a5178307",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "a6f7b33ae9f59b6c5f743a446fd79934f3f4bf8c3bd869425a6f23f1c32e01c8",
+    "bd5e86917c1f346ae069856f6e8e825be436c35c27bd90c431989e520e7ecfcc",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "8bdd2c389dded610b5a46934cc965149dd7f3832cb5981d949d0081d7c7140ba",
+    "996f1571dca5a1700fda033e7d24b802e1079e27677abd827d113a3232da0a41",
+    "f8e44371a11c70e738a59a07c5b3adf3e5d8610c6f02a7f92b48f44b327ef6df",
+    "db9c2e4730624c823a40efb946fd9d88184519eafcca731674cadbb3d13c1ecb",
+    "bb85c226278a59a255f761943d7ecc991bed954c2ca063debaf1ab507818d710"
+  ],
+  "validation": {
+    "dualHostGameplay": true,
+    "dualHostSawatariController": true,
+    "dualHostPatchTransactions": true,
+    "packagedLanguages": 16,
+    "cardContentIdenticalTo": "1.2.2",
+    "catalogFingerprint": "1976b98d54a2ace4af950b4c2fe40d0263ed3a6e2c677dd79fa183034a3e953c",
+    "logs": [
+      {
+        "path": "contracts-stable.log",
+        "sha256": "c0fab3c72bf68225ca78e52a718069d67ea44ade1014320172d520bcd690ff18"
+      },
+      {
+        "path": "controller-stable.log",
+        "sha256": "63f4e5709cf40d0e04665bcfd60317b65d2397277f6ea4d3288023abac7ab73c"
+      },
+      {
+        "path": "patch-stable.log",
+        "sha256": "2b60d0520106787826c03d020037d76430484f0ce4155a8ac0e37ecbe5eaece0"
+      },
+      {
+        "path": "contracts-preview.log",
+        "sha256": "7705e5591a90ffe42f44d80e16c4eb65acfee2ac72fe68e49dbfc0fa0f8f5bab"
+      },
+      {
+        "path": "controller-preview.log",
+        "sha256": "3dde8a2236cd71132de134b567661e554a43324331288aed8d05530b2c9c4f8e"
+      },
+      {
+        "path": "patch-preview.log",
+        "sha256": "e0687337086d5e5919caa9ace096460b4eed3f36beeec89a7c31fe7176884481"
+      },
+      {
+        "path": "catalog-export.log",
+        "sha256": "96f70fc4ee260f1f75eea19a50a18cbf8927888ddcc5313170bb177150edecf8"
+      },
+      {
+        "path": "upload.log",
+        "sha256": "ce46efba7f1884271af3e097528f29f3d75bf3e7c989ea3e6ab4145158ab991f"
+      },
+      {
+        "path": "download.log",
+        "sha256": "b1d29fde978f78a7e71e7a74439b81ccf2517930bfb07840eca6e52a868bfdfd"
+      },
+      {
+        "path": "artifact-contract.log",
+        "sha256": "6e4f7007b62f8e7ff00b8a6e299ff80b2a940b2786e669a21928ba06bae0cfb0"
+      },
+      {
+        "path": "all-website-tests.log",
+        "sha256": "d003a9d2c0f6f379bb1511a616f11afae101261cfb8cba110575f709ba0cff4f"
+      },
+      {
+        "path": "logic-tests.log",
+        "sha256": "fe3c4fe4733fba555a193942bd4bb4593c1846e20bc592ce0a09ff2b8b7a3001"
+      },
+      {
+        "path": "package-stable.log",
+        "sha256": "88499e04d6ec352dbc85265ef694a89d1ecd753e16d75aed27fd4975d584346f"
+      },
+      {
+        "path": "package-preview.log",
+        "sha256": "6acea4ada6935ea8a8f2c3513db14e859dc6c809c066c897456b26699c3ef809"
+      },
+      {
+        "path": "bundle.log",
+        "sha256": "57fcd9c948a79c968415820af934d842b69282bbb1d2075981a8f20c58ecd49f"
+      }
+    ],
+    "logicTestsPassed": 367,
+    "websiteTests": {
+      "passed": 82,
+      "skipped": 1,
+      "skipReason": "No external native telemetry fixture supplied"
+    }
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "contentManifest": "860395281216278375",
+    "updated": 1794363012,
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "changeNoteId": "1794363012",
+    "changeNote": "修复了用户反馈中沢渡事件手柄失灵的问题。",
+    "localizedTitlesDescriptionsUnchanged": true,
+    "tagSetUnchangedCaseInsensitive": true,
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "downloadBytes": 219102125
+  },
+  "notRun": [
+    "Physical PS5 controller / Steam Input test",
+    "Full graphical game replay",
+    "New Steam multiplayer run",
+    "macOS/Linux actual gameplay"
+  ],
+  "website": {
+    "version": "1.2.3",
+    "cardVersion": "1.2.2",
+    "localCatalogVerified": true,
+    "remoteVerified": false,
+    "groupingSample": {
+      "allRuns": 14674,
+      "allWins": 4918,
+      "originalVersions": 48,
+      "selectableCardVersions": 30,
+      "merged1015Runs": 1947,
+      "latestGroup": "1.2.2",
+      "catalog": "1.2.3"
+    },
+    "browserChecks": [
+      "Old 1.2.3 link canonicalizes to 1.2.2",
+      "1.2.3 is absent from checkbox options",
+      "Multi-select 1.2.2 + 1.0.15 shows 2018 runs",
+      "No browser console errors"
+    ]
+  },
+  "cleanup": {
+    "status": "completed",
+    "verifiedAtUtc": "2026-11-11T02:19:30.977Z",
+    "directories": [
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.3\\final-bundle",
+        "bytes": 219102125,
+        "links": 0,
+        "gitMarkers": 0,
+        "tracked": 0
+      },
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.3\\final-bundle-build",
+        "bytes": 154882,
+        "links": 0,
+        "gitMarkers": 0,
+        "tracked": 0
+      },
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.3\\final-channel-build",
+        "bytes": 481292596,
+        "links": 0,
+        "gitMarkers": 0,
+        "tracked": 0
+      },
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.3\\uploader-final",
+        "bytes": 233179027,
+        "links": 0,
+        "gitMarkers": 0,
+        "tracked": 0
+      },
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.3\\catalog",
+        "bytes": 95387881,
+        "links": 0,
+        "gitMarkers": 0,
+        "tracked": 0
+      },
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.3\\patch-runtime",
+        "bytes": 5086720,
+        "links": 0,
+        "gitMarkers": 0,
+        "tracked": 0
+      },
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-1.2.3\\pages",
+        "bytes": 688931161,
+        "links": 0,
+        "gitMarkers": 0,
+        "tracked": 0
+      },
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-sawatari-controller-20261111\\stable",
+        "bytes": 14628249,
+        "links": 0,
+        "gitMarkers": 0,
+        "tracked": 0
+      },
+      {
+        "path": "C:\\Users\\theon\\Documents\\STS2 MOD\\NinjaSlayer\\NinjaSlayer\\build\\validation-sawatari-controller-20261111\\preview",
+        "bytes": 15915962,
+        "links": 0,
+        "gitMarkers": 0,
+        "tracked": 0
+      }
+    ],
+    "reclaimedBytes": 1759687240,
+    "logsPreserved": true,
+    "permissionsChanged": false
+  }
+}

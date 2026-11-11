@@ -2,7 +2,7 @@ import { mkdir, writeFile, readFile, copyFile, cp } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { useCurrentCatalog } from './public-data.mjs';
-import { chartSchemaVersion, publishSnapshot, publicFeedback, readCatalog, readCurrentRelease } from './publish.mjs';
+import { chartSchemaVersion, publishSnapshot, publicFeedback, readCatalog, readCurrentRelease, readCardVersions } from './publish.mjs';
 import { loadTelemetry } from './posthog.mjs';
 import { loadRemoteFeedback } from '../scripts/feedback-reader.js';
 import { readCopy, copyModule } from './copy-store.mjs';
@@ -48,6 +48,7 @@ if (process.env.OBSERVATORY_READ_TOKEN) {
 }
 snapshot.generatedAt = new Date().toISOString();
 snapshot.currentVersion = (await readCurrentRelease()).version;
+snapshot.cardVersions = await readCardVersions();
 try {
   const reports = []; let cursor;
   do {

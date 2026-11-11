@@ -1,4 +1,4 @@
-import { matchesVersion } from './version-filter.mjs';
+import { matchesVersion, selectedCardVersions } from './version-filter.mjs';
 import { selectGroups } from './charts.mjs';
 export const choiceCounters = ['offered', 'picked', 'held', 'wins', 'removed', 'upgraded', 'pickFloorTotal', 'chosenRuns', 'chosenWins', 'skippedRuns', 'skippedWins'];
 export const combatCounters = ['combatSamples', 'drawn', 'started', 'finished', 'manual_plays', 'auto_plays', 'energy_spent', 'stars_spent'];
@@ -29,14 +29,14 @@ export function summarizePublic(snapshot, filters = {}, now = Date.now()) {
     day.runs += group.runs; day.wins += group.wins; dates.set(group.date, day);
     for (const card of group.cards) for (const key of choiceCounters) cards.get(card.id)[key] += card[key];
     for (const combat of group.combats) {
-      if (!matchesVersion(combat.version, filters.version)) continue;
+      if (!matchesVersion(combat.version, filters.version, snapshot.cardVersions)) continue;
       result.measuredCombats += combat.measuredCombats;
       for (const card of combat.cards) for (const key of combatCounters) cards.get(card.id)[key] += card[key];
     }
   }
   return { ...result, averageFloor: result.runs ? result.floorTotal / result.runs : null, cards: [...cards.values()],
     trend: [...dates.values()].sort((a, b) => a.date.localeCompare(b.date)),
-    versions: [...new Set(groups.map(group => group.version))].sort((a, b) => b.localeCompare(a, undefined, { numeric: true })),
+    versions: selectedCardVersions(groups.map(group => group.version), snapshot.cardVersions).sort((a, b) => b.localeCompare(a, undefined, { numeric: true })),
     ascensions: [...new Set(groups.map(group => group.ascension))].sort((a, b) => a - b),
     sources, feedback, feedbackWarnings: [], ...excluded, view: 'public' };
 }

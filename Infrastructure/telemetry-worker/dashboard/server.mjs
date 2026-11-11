@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
 import { parseData, normalizeEvents } from './data.mjs';
 import { summarizePublic } from './public-data.mjs';
-import { readCatalog, readCurrentRelease, publishSnapshot, publicFeedback } from './publish.mjs';
+import { readCatalog, readCurrentRelease, readCardVersions, publishSnapshot, publicFeedback } from './publish.mjs';
 import { loadTelemetry, QUERY_HOSTS } from './posthog.mjs';
 import { loadFeedback, readCompletedFeedback, readFeedbackObject, loadFeedbackReview, saveFeedbackReview, loadFeedbackDetails } from '../scripts/feedback-reader.js';
 import { UUID_PATTERN } from '../src/validation.js';
@@ -32,6 +32,7 @@ async function body(request) {
 
 export async function createDashboardServer({ feedbackReader = { loadFeedback, readCompletedFeedback, readFeedbackObject, loadFeedbackReview, saveFeedbackReview, loadFeedbackDetails }, feedbackPublisher = { feedbackPublication, publishFeedback }, draftPath = draftCopyPath } = {}) {
   const catalog = await readCatalog();
+  const cardVersions = await readCardVersions();
   for (const name of await readdir(new URL('assets/', import.meta.url))) {
     const type = { png: 'image/png', jpg: 'image/jpeg', gif: 'image/gif' }[name.split('.').at(-1)];
     if (type) publicFiles.set('/assets/' + name, ['assets/' + name, type]);
@@ -117,10 +118,10 @@ export async function createDashboardServer({ feedbackReader = { loadFeedback, r
         catch (error) { if (error.code === 'ENOENT') { send(404, { error: '未找到此版本的资料。' }); return; } throw error; }
         send(200, url.pathname.endsWith('.json') ? JSON.parse(bytes) : bytes, url.pathname.endsWith('.json') ? 'application/json' : 'image/webp');
       } else if (request.method === 'GET' && url.pathname === '/api/snapshot') {
-        send(200, { ...publishSnapshot(telemetry, catalog), currentVersion: (await readCurrentRelease()).version, sources, feedback: publicFeedback(feedback) });
+        send(200, { ...publishSnapshot(telemetry, catalog), cardVersions, currentVersion: (await readCurrentRelease()).version, sources, feedback: publicFeedback(feedback) });
       } else if (request.method === 'GET' && url.pathname === '/api/view') {
         const filters = { ...Object.fromEntries(url.searchParams), version: url.searchParams.getAll('version').filter(Boolean) };
-        send(200, { application: 'NinjaSlayerDashboard', ...summarizePublic(publishSnapshot(telemetry, catalog), filters), sources, feedback, feedbackWarnings,
+        send(200, { application: 'NinjaSlayerDashboard', ...summarizePublic({ ...publishSnapshot(telemetry, catalog), cardVersions }, filters), sources, feedback, feedbackWarnings,
           rejected: telemetry.rejected, duplicates: telemetry.duplicates, conflicts: telemetry.conflicts,
           invalidCombats: telemetry.invalidCombats,
           connection: { host: config.host, projectId: config.projectId, configured: Boolean(config.key) } });
