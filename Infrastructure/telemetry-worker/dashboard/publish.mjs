@@ -9,6 +9,10 @@ export const chartSchemaVersion = 1;
 export async function readCurrentRelease() {
   return JSON.parse(await readFile(new URL('current.json', contentRoot), 'utf8'));
 }
+export async function readCardVersions() {
+  const groups = JSON.parse(await readFile(new URL('card-version-groups.json', contentRoot), 'utf8'));
+  return Object.fromEntries(Object.entries(groups).flatMap(([group, versions]) => versions.map(version => [version, group])));
+}
 export async function readCatalog() {
   const { version } = await readCurrentRelease();
   const exported = JSON.parse(await readFile(new URL('versions/' + version + '/catalog.json', contentRoot), 'utf8'));

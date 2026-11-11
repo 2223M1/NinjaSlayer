@@ -1,6 +1,6 @@
 {
   "已选 {0} 个版本": "{0} versi dipilih",
-  "可多选；不选则统计所有版本。": "Boleh memilih beberapa. Kosongkan untuk semua versi.",
+  "无卡牌规则改动的版本合并统计。可多选，不选则统计全部。": "Versi tanpa perubahan aturan kartu digabung dalam statistik. Pilih beberapa kelompok, atau kosongkan untuk semua.",
   "选择统计版本": "Pilih versi untuk statistik",
   "解决状态": "Status penyelesaian",
   "全部状态": "Semua status",

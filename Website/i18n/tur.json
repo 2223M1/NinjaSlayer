@@ -1,6 +1,6 @@
 {
   "已选 {0} 个版本": "{0} sürüm seçildi",
-  "可多选；不选则统计所有版本。": "Birden fazla seçebilirsin. Tüm sürümler için boş bırak.",
+  "无卡牌规则改动的版本合并统计。可多选，不选则统计全部。": "Kart kuralları değişmeyen sürümlerin istatistikleri birleştirilir. Birden fazla grup seçin veya tümü için boş bırakın.",
   "选择统计版本": "İstatistiklere katılacak sürümleri seç",
   "解决状态": "Çözüm durumu",
   "全部状态": "Tüm durumlar",

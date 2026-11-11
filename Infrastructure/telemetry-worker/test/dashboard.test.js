@@ -10,7 +10,8 @@ import { normalizeEvents, parseData, summarize } from '../dashboard/data.mjs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createDashboardServer } from '../dashboard/server.mjs';
-import { chartSchemaVersion, publicFeedback, publishSnapshot } from '../dashboard/publish.mjs';
+import { chartSchemaVersion, publicFeedback, publishSnapshot, readCardVersions } from '../dashboard/publish.mjs';
+import { cardVersion, matchesVersion, selectedCardVersions } from '../dashboard/version-filter.mjs';
 import { summarizePublic, useCurrentCatalog } from '../dashboard/public-data.mjs';
 import { selectGroups, chartRows, chartValue, charts } from '../dashboard/charts.mjs';
 import { loadTelemetry } from '../dashboard/posthog.mjs';
@@ -310,6 +311,59 @@ test('version subsets combine counts once, retain weighted chart totals and resp
     const expected = chartRows(snapshot.groups.filter(group => selected.includes(group.version)), chart);
     assert.deepEqual(chartRows(groups, chart), expected, chart.id);
   }
+});
+
+test('card-version groups combine run and combat counts once while preserving original releases', async () => {
+  const cardVersions = await readCardVersions();
+  const first = event({ seed: 'first', version: '1.2.2' });
+  const patch = event({ seed: 'patch', version: '1.2.3', won: false });
+  const older = event({ seed: 'older', version: '1.2.1' });
+  const mixed = event({ seed: 'mixed', version: '1.2.3' });
+  mixed.properties.payload.applicant_payload.mod_payload.combats['1/0'].version = '1.2.1';
+  const snapshot = { ...publishSnapshot(normalizeEvents([first, patch, older, mixed]), catalog), cardVersions };
+  const original = JSON.stringify(snapshot);
+  const filters = { version: ['1.2.2', '1.2.3', '1.2.3'] };
+  const summary = summarizePublic(snapshot, filters, now);
+  assert.deepEqual(summary.versions, ['1.2.2', '1.2.1']);
+  assert.equal(summary.runs, 3);
+  assert.equal(summary.wins, 2);
+  assert.equal(summary.cards[0].offered, 3);
+  assert.equal(summary.cards[0].picked, 3);
+  assert.equal(summary.cards[0].manual_plays, 2);
+  assert.equal(summary.measuredCombats, 2, 'older card-rule combats stay excluded');
+  assert.equal(summary.totalCombats, 3);
+  assert.deepEqual(summarizePublic(snapshot, { version: '1.2.3' }, now), summary, 'old patch links select the whole group');
+  assert.equal(summarizePublic(snapshot, { ...filters, outcome: 'loss' }, now).runs, 1);
+  assert.equal(summarizePublic(snapshot, {}, now).runs, 4);
+  const chart = charts.find(chart => chart.id === 'ascension-wins');
+  const [row] = chartRows(selectGroups(snapshot, filters, now), chart);
+  assert.equal(row.n, 3);
+  assert.equal(row.wins, 2);
+  assert.equal(chartValue(chart, row), 200 / 3);
+  assert.equal(JSON.stringify(snapshot), original, 'historical records, feedback and replay versions are not rewritten');
+  assert.deepEqual(selectedCardVersions(['1.2.3', '1.2.2'], cardVersions), ['1.2.2']);
+  assert.equal(matchesVersion('1.2.3', '1.2.2', cardVersions), true);
+  assert.equal(matchesVersion('1.2.1', '1.2.2', cardVersions), false);
+  assert.equal(cardVersion('1.2.4-dev.1', cardVersions), '1.2.4-dev.1', 'unreviewed versions are not guessed');
+});
+
+test('every published catalog has one explicit card group, including uncatalogued card changes', async () => {
+  const root = new URL('../../../Website/content/', import.meta.url);
+  const groups = JSON.parse(await readFile(new URL('card-version-groups.json', root), 'utf8'));
+  const seen = new Set();
+  let previous;
+  for (const [group, members] of Object.entries(groups)) {
+    assert.equal(members[0], group);
+    for (const version of members) {
+      assert.match(version, /^\d+\.\d+\.\d+$/);
+      assert.ok(!seen.has(version), version);
+      if (previous) assert.ok(version.localeCompare(previous, undefined, { numeric: true }) > 0, version);
+      seen.add(version); previous = version;
+    }
+  }
+  for (const version of await readdir(new URL('versions/', root))) assert.ok(seen.has(version), `Classify published ${version} before deployment`);
+  for (const version of ['0.3.0', '0.3.4', '1.0.12', '1.0.18', '1.0.23', '1.0.24', '1.2.0', '1.2.1'])
+    assert.equal(groups[version][0], version, 'card-rule changes must not depend on a historical catalog existing');
 });
 
 test('local statistics API accepts repeated version parameters without losing selected versions', async t => {
