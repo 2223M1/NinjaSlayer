@@ -2978,7 +2978,9 @@
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Ethereal"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Meditation.png",
     "Vars": {}
@@ -2993,7 +2995,9 @@
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Ethereal"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Meditation.png",
     "Vars": {}
