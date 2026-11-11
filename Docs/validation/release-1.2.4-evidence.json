@@ -1,0 +1,164 @@
+{
+  "version": "1.2.4",
+  "sourceRevision": "9dec06fa56f238e4130b1eaaadc0920196857967",
+  "verifiedAtUtc": "2026-11-11T04:39:37.888Z",
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "bytes": 2224128,
+      "sha256": "59179de85f5d944ec9984ceab2e80cb6070f5225249170380bd002bb910b72e2"
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "bytes": 8,
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "bytes": 129024,
+      "sha256": "5dfcd54e43d98bf1b4a39a2927b0db5703d3c9a5be11610b1308b2582972a2c2"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "bytes": 2227712,
+      "sha256": "392e329d884fae0f6a69e02196d52d545ecd43672a89bf647bed016ab250163c"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "bytes": 522,
+      "sha256": "0e6a3d1e769cee487e8066e1f0b1ddee96c41a8ffd65cde15905bdc33368c07b"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "bytes": 24576,
+      "sha256": "ab07d4958c950f2c7bdbda7e3d3defa81966d044452712b2851f189a3b0a2212"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "bytes": 362,
+      "sha256": "e7618c3482f37e27ce1384c6798988dc007dd1a142e5537084bdd64ca197bed3"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "bytes": 214177696,
+      "sha256": "012c996d68418c1f6a5caf30876fc77c10984ecfc5658747f271858f5a20dcec"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 1008,
+      "sha256": "fada3bc3daed2f9f4127e4f822f380847158ad6d8a2401fb6af23d3274f85154"
+    }
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "59179de85f5d944ec9984ceab2e80cb6070f5225249170380bd002bb910b72e2",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "5dfcd54e43d98bf1b4a39a2927b0db5703d3c9a5be11610b1308b2582972a2c2",
+    "392e329d884fae0f6a69e02196d52d545ecd43672a89bf647bed016ab250163c",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "0e6a3d1e769cee487e8066e1f0b1ddee96c41a8ffd65cde15905bdc33368c07b",
+    "ab07d4958c950f2c7bdbda7e3d3defa81966d044452712b2851f189a3b0a2212",
+    "e7618c3482f37e27ce1384c6798988dc007dd1a142e5537084bdd64ca197bed3",
+    "012c996d68418c1f6a5caf30876fc77c10984ecfc5658747f271858f5a20dcec",
+    "fada3bc3daed2f9f4127e4f822f380847158ad6d8a2401fb6af23d3274f85154"
+  ],
+  "validation": {
+    "dualHostGameplay": true,
+    "packagedLanguages": 16,
+    "cardChange": "Meditation base and upgrade gain Ethereal; all other card fields unchanged from 1.2.3",
+    "catalogFingerprint": "dc564104c76930ec8253399a5e2c30a82faf7218a00a382560bc6cbfdbe3607a",
+    "logs": [
+      {
+        "path": "contracts-stable.log",
+        "sha256": "c8a51d3d69d7208e66c696cb39d29c74c80ceab282c853c9d38d982acdd2cc44"
+      },
+      {
+        "path": "contracts-preview.log",
+        "sha256": "ded82aa074dcb41d9047d8d2091e186310c92187d4b37c7317485e1bdc2b798a"
+      },
+      {
+        "path": "catalog-export.log",
+        "sha256": "22d232b284150b1604b257e354e2a9cd43739330be828399952ce1cf0c0c73f4"
+      },
+      {
+        "path": "upload.log",
+        "sha256": "4a94b28662e49cde1013ed468701df3d1b45f93cd68f66bd42c322801a93dcf4"
+      },
+      {
+        "path": "download.log",
+        "sha256": "4da0d89afc20a0f698108d8b6ece002188ef6f4042f179d16e372e49d3019481"
+      },
+      {
+        "path": "artifact-contract.log",
+        "sha256": "8fac69afbd491dd378f2f1a61e999af405070b33920dbbbf741e4c04e16d3caf"
+      }
+    ],
+    "logicTests": {
+      "passed": 367,
+      "failed": 0,
+      "skipped": 0
+    },
+    "websiteTests": {
+      "passed": 82,
+      "failed": 0,
+      "skipped": 1,
+      "skipReason": "No external native telemetry fixture supplied"
+    }
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "contentManifest": "5056074581160766664",
+    "updated": 1794371823,
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "changeNoteId": "1794371823",
+    "changeNote": "入定和入定＋新增虚无。",
+    "localizedTitlesDescriptionsUnchanged": true,
+    "tagSetUnchangedCaseInsensitive": true,
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "downloadBytes": 219103581
+  },
+  "notRun": [
+    "Physical PS5 controller / Steam Input test",
+    "Full graphical game replay",
+    "New Steam multiplayer run",
+    "macOS/Linux actual gameplay"
+  ],
+  "cleanup": {
+    "verifiedAtUtc": "2026-11-11T04:41:39.202Z",
+    "removedBytes": 1736765977,
+    "removedPaths": [
+      "build/validation-1.2.4/final-channel-build",
+      "build/validation-1.2.4/final-bundle",
+      "build/validation-1.2.4/final-bundle-build",
+      "build/validation-1.2.4/verified-channel-build",
+      "build/validation-1.2.4/verified-bundle",
+      "build/validation-1.2.4/verified-bundle-build",
+      "build/validation-1.2.4/catalog",
+      "build/validation-1.2.4/uploader-final",
+      "build/validation-1.2.4/steam-fetch/bin",
+      "build/validation-1.2.4/steam-fetch/obj",
+      "build/validation-1.2.4/ModUploader-win-x64.zip"
+    ],
+    "retained": "Source, validation logs and compact evidence, Steam-managed verified install, supported-host runtimes"
+  }
+}
