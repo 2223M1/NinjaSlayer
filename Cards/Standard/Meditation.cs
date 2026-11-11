@@ -9,6 +9,8 @@ namespace NinjaSlayer.Cards.Standard;
 
 public sealed class Meditation : NinjaSlayerRareCard
 {
+    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Ethereal];
+
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [NinjaSlayerHoverTips.ChadoBreathing, HoverTipFactory.FromKeyword(CardKeyword.Retain), .. HoverTipFactory.FromCardWithCardHoverTips<Chado>()];
 
