@@ -1,0 +1,177 @@
+{
+  "version": "1.2.5",
+  "sourceRevision": "35a659efa8873db8d0bc4917982bb0ff87675cf6",
+  "verifiedAtUtc": "2026-11-13T03:40:27.331Z",
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "bytes": 2209280,
+      "sha256": "6f4e2a95d380569bc6f416f5e2435debabcaf12cae3c54b888915fa30c605203"
+    },
+    {
+      "path": "lib/0.113.0/compat-target.txt",
+      "bytes": 8,
+      "sha256": "26fd86e2f9907afc82560a95115d6face007ef51cae459c493ff7370b9bdd512"
+    },
+    {
+      "path": "lib/0.113.0/NinjaSlayer.dll",
+      "bytes": 2212864,
+      "sha256": "0d52a05bb8981eb7fc0a559990c6b03685709f329a7014ab21e2f73935c8fe1d"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "bytes": 522,
+      "sha256": "d469d9151073435257f60177714de0394c99187f6d0aad5d477659fc9d863a6f"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "bytes": 24576,
+      "sha256": "b804c0466b7b627c1a3f656a943bd4321bdd8d9e50521119b417cab87235d16e"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "bytes": 362,
+      "sha256": "1406db1aafdfdad9ff20e03c77c4fe547562e4f587cbcee910d39ee43ff9c9f4"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "bytes": 214440184,
+      "sha256": "801d01647bb11fa661126b810fc130fdbb002f0fb220be9c6d46dc8ad8de9000"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 901,
+      "sha256": "d9bc66cf6b6fa1192a15395eaf124190303547462f8805a03ad6843af315c6bd"
+    }
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "6f4e2a95d380569bc6f416f5e2435debabcaf12cae3c54b888915fa30c605203",
+    "26fd86e2f9907afc82560a95115d6face007ef51cae459c493ff7370b9bdd512",
+    "0d52a05bb8981eb7fc0a559990c6b03685709f329a7014ab21e2f73935c8fe1d",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "d469d9151073435257f60177714de0394c99187f6d0aad5d477659fc9d863a6f",
+    "b804c0466b7b627c1a3f656a943bd4321bdd8d9e50521119b417cab87235d16e",
+    "1406db1aafdfdad9ff20e03c77c4fe547562e4f587cbcee910d39ee43ff9c9f4",
+    "801d01647bb11fa661126b810fc130fdbb002f0fb220be9c6d46dc8ad8de9000",
+    "d9bc66cf6b6fa1192a15395eaf124190303547462f8805a03ad6843af315c6bd"
+  ],
+  "validation": {
+    "supportedGameVersions": [
+      "0.107.1",
+      "0.113.0"
+    ],
+    "ritsuLibVersion": "0.6.11",
+    "dualHostGameplay": true,
+    "dualHostPatchInstallRollback": true,
+    "previewClientPhases": [
+      "Fresh",
+      "Resume",
+      "ReverseFinisher"
+    ],
+    "clientCheckpoints": 60,
+    "packagedLanguages": 16,
+    "modCards": 93,
+    "logicTests": 367,
+    "websiteTests": {
+      "passed": 82,
+      "skipped": 1
+    },
+    "catalogFingerprint": "de33d095d4a8eeef3e9c032d34b55881c8a2d38b20335d021dc53e9700624ce1",
+    "logs": [
+      {
+        "path": "all-stable.log",
+        "sha256": "efdd2443b4678bc4cf8b7100e2561949be525c040715afaf0203364f0d7c2e93"
+      },
+      {
+        "path": "patch-stable.log",
+        "sha256": "a16b3040de85e076af1605def83685788c647169d5e65c255167629ecf2ffc35"
+      },
+      {
+        "path": "all-preview.log",
+        "sha256": "ea5ab58af52bd49173c4483f44adea6ef6b52cb322f894da0834c5392ec8fd7d"
+      },
+      {
+        "path": "patch-preview.log",
+        "sha256": "b9c49e0c58dc2be2c7e84d337111edfd7082b954e3ac265d131666e310e2fa2e"
+      },
+      {
+        "path": "catalog-export.log",
+        "sha256": "47e3f088367d96a2ed6c7374b9c37da382fb416ae5582c4041e4da6ef7ff4435"
+      },
+      {
+        "path": "upload.log",
+        "sha256": "208b6a2a2bee84070c64f618ffa9122672b0dcb149cdba55fea23bdae1d995d8"
+      },
+      {
+        "path": "download.log",
+        "sha256": "463cd6310c9237f0da9105788dd6ef70c1370a9ae980f82257871d9f6d1a91f1"
+      },
+      {
+        "path": "artifact-contract.log",
+        "sha256": "25d11a19d31e95e57cd87423f13d73c38f5871087811ebace1b9943e672f89cf"
+      },
+      {
+        "path": "logic-tests.log",
+        "sha256": "fe3c4fe4733fba555a193942bd4bb4593c1846e20bc592ce0a09ff2b8b7a3001"
+      },
+      {
+        "path": "website-tests.log",
+        "sha256": "af96a3d9b1cc48f7a81b7373bffe904b88929a61b706fea83a505ae2939aa2ac"
+      },
+      {
+        "path": "client-console.log",
+        "sha256": "3779007f19fc2e3fae63627ab14f15a43972d76365f3f63a5aeea0523ac885e7"
+      },
+      {
+        "path": "client-preview/checkpoints.jsonl",
+        "sha256": "b38d4ce3ad170a60d38c322a89d6e6553c4829591554a8e6a8a7f415f164bc77"
+      }
+    ]
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "contentManifest": "1239004295536239123",
+    "updated": 1794541134,
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "changeNoteId": "1794541134",
+    "changeNote": "适配游戏 0.113.0，保留正式版 0.107.1 兼容，停止支持 0.111.0。\nRitsuLib 最低版本由 0.5.12 更新为 0.6.11。\n移除固定随机数机制，不再提供东尼算法支持。\n寿司附魔“滋养”更名为“小啖”。\n空手道描述删除“群攻只失去 1 层”的补充说明。\n一心同体的奈落生命由 5→8 提高至 7→10，转化效果描述简化为“你的奈落生命视作空手道”。\n审势由获得 4→6 点格挡改为获得 5→7 点拉伸，预见由 4→6 调整为 4→5。\n拉伸计入对空砰砰拳的正面效果数量。\n奈落事件“令其闭嘴”新增移除一张牌。\n巴投格挡由 9→12 提高至 11→14。\n破势一击由造成 6 点伤害、每层手里剑增加 3→4 点伤害，改为造成 6→9 点伤害并给予 2→3 层瞄准。\n瞄准使敌人受到的手里剑伤害增加 50%，并被手里剑优先攻击；每个敌方回合结束时失去 1 层。\n强手里剑同样获得瞄准增伤，瞄准与易伤的增伤相乘。",
+    "localizedTitlesDescriptionsUnchanged": true,
+    "tagSetUnchangedCaseInsensitive": true,
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "downloadBytes": 219207242
+  },
+  "limitations": [
+    "Stable validated against exact 0.107.1 host binaries with 0.113.0 presentation resources; no full stable graphical client run",
+    "Preview client used isolated saves and a hidden desktop with Steam and telemetry disabled, without administrator firewall isolation",
+    "RitsuLib confirmation-dialog signal warning, Godot Invalid Task ID during character selection, and shutdown resource warnings remain; no failed gameplay checkpoint",
+    "Physical controller, fresh Steam multiplayer, macOS and Linux gameplay not run"
+  ],
+  "cleanup": {
+    "note": "Hard-linked game files are not counted as reclaimed logical bytes; normal Steam installation and Workshop content are preserved.",
+    "observedFreedBytes": 7688597504,
+    "freeAfter": 403097227264,
+    "completedAtUtc": "2026-11-13T03:42:31.2205956Z",
+    "freeBefore": 395408629760
+  }
+}
