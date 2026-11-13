@@ -60,7 +60,11 @@ internal sealed partial class SmokeController
         SaveManager.Instance.SetFtuesEnabled(false);
         Engine.MaxFps = 60;
         _previewAutoSlayer = new AutoSlayer();
-        _previewAutoSlayer.Start(_configuration.Seed, _configuration.AutoSlayLogPath);
+        _previewAutoSlayer.Start(_configuration.Seed,
+#if NINJASLAYER_CHANNEL_PREVIEW
+            mode: null,
+#endif
+            logFile: _configuration.AutoSlayLogPath);
         await WaitTaskAsync(_firstCombatCompleted.Task, "Tornado preview did not complete", TimeSpan.FromMinutes(4));
         await FinishPreviewAsync();
     }

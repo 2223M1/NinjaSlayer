@@ -39,7 +39,11 @@ internal sealed partial class SmokeController
     {
         NGame.Instance!.DebugSeedOverride = _configuration.Seed;
         SaveManager.Instance.SetFtuesEnabled(false);
-        new AutoSlayer().Start(_configuration.Seed, _configuration.AutoSlayLogPath);
+        new AutoSlayer().Start(_configuration.Seed,
+#if NINJASLAYER_CHANNEL_PREVIEW
+            mode: null,
+#endif
+            logFile: _configuration.AutoSlayLogPath);
         await WaitTaskAsync(_modCompatibilityCompleted.Task, "mod compatibility scenarios did not complete", TimeSpan.FromMinutes(4));
         _checkpoints.Write("compatibility.completed");
         _tree.Quit(0);

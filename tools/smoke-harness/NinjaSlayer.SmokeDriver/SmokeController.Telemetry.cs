@@ -48,7 +48,11 @@ internal sealed partial class SmokeController
             _checkpoints.Write("telemetry.run-ended", data: new JsonObject { ["victory"] = evt.IsVictory });
         });
         NGame.Instance!.DebugSeedOverride = _configuration.Seed;
-        new AutoSlayer().Start(_configuration.Seed, _configuration.AutoSlayLogPath);
+        new AutoSlayer().Start(_configuration.Seed,
+#if NINJASLAYER_CHANNEL_PREVIEW
+            mode: null,
+#endif
+            logFile: _configuration.AutoSlayLogPath);
         await WaitTaskAsync(_telemetryCapture!.Captured.Task, "Defeat did not deliver its local telemetry envelope.", TimeSpan.FromMinutes(2));
         ValidateTelemetryCapture();
         Require(_telemetryCapture.Captured.Task.Result["applicant_payload"]!["mod_payload"]!["combats"]!.AsObject()
