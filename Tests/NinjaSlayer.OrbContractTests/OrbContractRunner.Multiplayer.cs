@@ -136,7 +136,7 @@ public partial class OrbContractRunner
             PileType.Discard, PileType.Discard, PileType.Exhaust, PileType.Exhaust, null, PileType.Discard, PileType.Discard];
         foreach (var (card, _) in plays) await CardPileCmd.Add(card, PileType.Hand);
         System.IO.File.WriteAllText(Path.Combine(directory, role + ".ready"), "ready");
-        using var openingSelector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
+        using var openingSelector = UseCardSelector(new SelectCards(_ => []));
         await WaitNetwork(() => System.IO.File.Exists(Path.Combine(directory, "host.ready"))
             && System.IO.File.Exists(Path.Combine(directory, "client.ready")), "both combat fixtures");
         for (int step = 0; step < plays.Length; step++)
@@ -314,7 +314,7 @@ public partial class OrbContractRunner
 #if !NINJASLAYER_CHANNEL_STABLE
         int localSelections = 0;
         bool selectCombatPile = false;
-        using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
+        using var selector = UseCardSelector(new SelectCards(options =>
         {
             localSelections++;
             Player owner = options[0].Owner;

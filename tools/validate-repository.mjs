@@ -709,7 +709,7 @@ if (!/NShivThrowVfx\.Create\(origin,\s*targetPosition,\s*TrailTint\)/.test(shuri
     || !/ScaleMin\s*=\s*ProjectileScale[\s\S]*?ScaleMax\s*=\s*ProjectileScale/.test(shurikenCombatSource)
     || !/HeadAngularVelocity\s*=\s*360f\s*\/\s*FlightSeconds/.test(shurikenCombatSource)
     || !/AngularVelocityMin\s*=\s*HeadAngularVelocity[\s\S]*?AngularVelocityMax\s*=\s*HeadAngularVelocity/.test(shurikenCombatSource)
-    || !/CreatureCmd\.Damage\([\s\S]*?originOrb\.EvokeVal/.test(shurikenCombatSource)
+    || !/targets\.GroupBy\(target => originOrb\.EvokeVal \* ShurikenAimPower\.Multiplier\(target\)\)[\s\S]*?CreatureCmd\.Damage\([\s\S]*?wave\.Key/.test(shurikenCombatSource)
     || !/NOrb\s*\{\s*Model:\s*ShurikenOrb\s+model\s*\}[\s\S]*?held\s*=\s*FindShurikenVisual\(node\)[\s\S]*?held\?\.SyncNow\(\)[\s\S]*?node\.GlobalPosition/.test(shurikenCombatSource)
     || !/beforeThrow\(\)[\s\S]*?daggerThrow[\s\S]*?CreateThrowVfx/.test(shurikenCombatSource)
     || /trail\.Texture\s*=/.test(shurikenCombatSource)
@@ -827,6 +827,8 @@ for (const powerClass of powerClasses) {
     /NinjaSlayerPowerAssets\.Named\((?:nameof\((\w+Power)\)|"(\w+Power)")\)/,
   );
   const reusedIcon = reusedIconMatch?.[1] ?? reusedIconMatch?.[2];
+  // Native model icons are resolved by the installed host, including its beta-art fallback.
+  if (/IconPath:\s*ModelDb\.Power<(\w+Power)>\(\)\.IconPath,\s*BigIconPath:\s*ModelDb\.Power<\1>\(\)\.ResolvedBigIconPath/.test(powerClass.source)) continue;
   const iconName = reusedIcon ?? powerClass.name;
   const iconPath = join(root, 'NinjaSlayer', 'images', 'powers', `${iconName}.png`);
   const iconSize = readPngSize(iconPath);

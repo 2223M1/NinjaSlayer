@@ -22,7 +22,7 @@ internal sealed partial class SmokeController
     private async Task RunGreetingBowAsync()
     {
         SaveManager.Instance.SetFtuesEnabled(false);
-        var run = await NGame.Instance!.StartNewSingleplayerRun(
+        var run = await StartSmokeRun(
             ModelDb.Character<NinjaSlayerCharacter>(), true, ActModel.GetDefaultList(),
             [], _configuration.Seed, GameMode.Standard, 0);
         await RunManager.Instance.EnterAct(0);

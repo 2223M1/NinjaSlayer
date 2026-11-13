@@ -43,11 +43,11 @@ namespace NinjaSlayer.RitsuLibContractTests;
 public partial class ContractRunner : Node
 {
 #if NINJASLAYER_CHANNEL_STABLE
-    private const int ExpectedRequiredPatchTargetCount = 144;
-    private const int ExpectedCriticalRequiredPatchTargetCount = 111;
+    private const int ExpectedRequiredPatchTargetCount = 127;
+    private const int ExpectedCriticalRequiredPatchTargetCount = 94;
 #else
-    private const int ExpectedRequiredPatchTargetCount = 145;
-    private const int ExpectedCriticalRequiredPatchTargetCount = 112;
+    private const int ExpectedRequiredPatchTargetCount = 128;
+    private const int ExpectedCriticalRequiredPatchTargetCount = 95;
 #endif
     private static readonly List<ModPatcher> CapturedPatchers = [];
     private static Assembly? _productAssembly;
@@ -76,6 +76,10 @@ public partial class ContractRunner : Node
         try
         {
             VerifyOutboundNetworkIsolation();
+            string hostPack = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_HOST_PACK")
+                ?? throw new InvalidOperationException("Supply the exact host resource pack for framework assets.");
+            Require(ProjectSettings.LoadResourcePack(hostPack, replaceFiles: false), "Could not mount the host resource pack.");
+            NinjaSlayer.Tests.RitsuTestAssets.Configure();
             if (!RitsuLibFramework.IsInitialized)
             {
                 RitsuLibFramework.Initialize();
@@ -89,6 +93,7 @@ public partial class ContractRunner : Node
             VerifyRunOriginalContract();
             ModelDb.Inject(typeof(StrikeIronclad));
             ModelDb.Inject(typeof(DampCultist));
+            ModelDb.Inject(typeof(MegaCrit.Sts2.Core.Models.Characters.Ironclad));
             VerifyFinisherProtectionTransaction();
             VerifyFinisherSessionCompletionContracts();
             VerifyTransitionOwnershipContracts();
@@ -872,6 +877,7 @@ public partial class ContractRunner : Node
             var player = (Player)RuntimeHelpers.GetUninitializedObject(typeof(Player));
             SetField(player, "<Deck>k__BackingField", new CardPile(PileType.Deck));
             SetField(player, "_runState", NullRunState.Instance);
+            SetField(player, "<Character>k__BackingField", ModelDb.Character<MegaCrit.Sts2.Core.Models.Characters.Ironclad>());
             var creature = new Creature(player, currentHp: 80, maxHp: 80)
             {
                 CombatState = combatState

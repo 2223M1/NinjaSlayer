@@ -23,6 +23,7 @@ public partial class NinjaSlayerFeedbackScreen : Control, IScreenContext
     private static Task<bool>? _opening;
     private byte[] _screenshotBytes = [];
     private NMegaTextEdit _description = null!;
+    private TextEdit _descriptionInput = null!;
     private OptionButton _category = null!;
     private ModSettingsSidebarButton _send = null!;
     private MegaRichTextLabel _status = null!;
@@ -94,17 +95,33 @@ public partial class NinjaSlayerFeedbackScreen : Control, IScreenContext
         _category.AddThemeFontSizeOverride("font_size", 24);
         categoryRow.AddChild(_category);
         rows.AddChild(categoryRow);
+#if NINJASLAYER_CHANNEL_STABLE
         _description = new NMegaTextEdit
         {
             Name = "DescriptionInput", PlaceholderText = Text("DESCRIPTION_PLACEHOLDER"),
             CustomMinimumSize = new Vector2(0, 240), SizeFlagsVertical = SizeFlags.ExpandFill,
             WrapMode = TextEdit.LineWrappingMode.Boundary, FocusMode = FocusModeEnum.All
         };
-        _description.AddThemeFontSizeOverride("font_size", 24);
-        _description.AddThemeStyleboxOverride("normal", ModSettingsUiFactory.CreateEntryFieldFrameStyle(false));
-        _description.AddThemeStyleboxOverride("focus", ModSettingsUiFactory.CreateEntryFieldFrameStyle(true));
-        _description.TextChanged += () => _send.Disabled = _sending || _sent
-            || string.IsNullOrWhiteSpace(_description.Text) || _description.Text.Length > 8000;
+        _descriptionInput = _description;
+#else
+        _description = new NMegaTextEdit
+        {
+            Name = "DescriptionInput", CustomMinimumSize = new Vector2(0, 240),
+            SizeFlagsVertical = SizeFlags.ExpandFill, FocusMode = FocusModeEnum.All
+        };
+        _descriptionInput = new TextEdit
+        {
+            Name = "TextEdit", PlaceholderText = Text("DESCRIPTION_PLACEHOLDER"),
+            WrapMode = TextEdit.LineWrappingMode.Boundary, FocusMode = FocusModeEnum.All
+        };
+        _descriptionInput.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        _description.AddChild(_descriptionInput);
+#endif
+        _descriptionInput.AddThemeFontSizeOverride("font_size", 24);
+        _descriptionInput.AddThemeStyleboxOverride("normal", ModSettingsUiFactory.CreateEntryFieldFrameStyle(false));
+        _descriptionInput.AddThemeStyleboxOverride("focus", ModSettingsUiFactory.CreateEntryFieldFrameStyle(true));
+        _descriptionInput.TextChanged += () => _send.Disabled = _sending || _sent
+            || string.IsNullOrWhiteSpace(_descriptionInput.Text) || _descriptionInput.Text.Length > 8000;
         rows.AddChild(_description);
         _status = ModSettingsUiFactory.CreateInlineDescription("");
         _status.Name = "SendStatus";
@@ -132,17 +149,17 @@ public partial class NinjaSlayerFeedbackScreen : Control, IScreenContext
 
     public async Task<bool> SubmitAsync()
     {
-        if (_sending || _sent || string.IsNullOrWhiteSpace(_description.Text) || _description.Text.Length > 8000)
+        if (_sending || _sent || string.IsNullOrWhiteSpace(_descriptionInput.Text) || _descriptionInput.Text.Length > 8000)
             return false;
         _sending = true;
         _send.Disabled = true;
-        _description.Editable = false;
+        _descriptionInput.Editable = false;
         _category.Disabled = true;
         _status.Text = NativeText("FEEDBACK_SENDING_LABEL");
         var release = ReleaseInfoManager.Instance.ReleaseInfo;
         var data = new FeedbackData
         {
-            description = _description.Text, category = Categories[_category.Selected],
+            description = _descriptionInput.Text, category = Categories[_category.Selected],
             gameVersion = release?.Version ?? "unknown", commit = release?.Commit ?? GitHelper.ShortCommitId ?? "unknown",
             platformBranch = PlatformUtil.GetPlatformBranch().ToName(),
             isModded = ModManager.IsRunningModded() || ModManager.HasHarmonyPatches(),
@@ -159,7 +176,7 @@ public partial class NinjaSlayerFeedbackScreen : Control, IScreenContext
             _sending = false;
             _sent = success;
             _send.Disabled = success;
-            _description.Editable = !success;
+            _descriptionInput.Editable = !success;
             _category.Disabled = success;
             _status.Text = NativeText(success ? "FEEDBACK_SEND_SUCCESS_LABEL" : "FEEDBACK_SEND_FAILED_LABEL");
         }

@@ -55,7 +55,11 @@ internal sealed partial class SmokeController
                 foreach (NCreature node in new[] { architect, reference })
                 {
                     node.AnimHideIntent();
+#if NINJASLAYER_CHANNEL_STABLE
                     node.AnimDisableUi();
+#else
+                    node.AnimateOutStateDisplay();
+#endif
                     using Variant skeleton = node.Body.Call("get_skeleton");
                     using GodotObject native = skeleton.AsGodotObject();
                     Rect2 bounds = CharacterBounds(native);

@@ -1,3 +1,4 @@
+using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Players;
@@ -100,10 +101,12 @@ public sealed class NarakuEvent : ModEventTemplate
         SetEventFinished(PageDescription("ACCEPTED"));
     }
 
-    private Task SilenceNaraku()
+    private async Task SilenceNaraku()
     {
+        var cards = (await CardSelectCmd.FromDeckForRemoval(
+            Owner!, new CardSelectorPrefs(CardSelectorPrefs.RemoveSelectionPrompt, 1))).ToList();
+        await CardPileCmd.RemoveFromDeck(cards);
         SetEventFinished(PageDescription("SILENCED"));
-        return Task.CompletedTask;
     }
 
     private async Task DealNarakuDamage()

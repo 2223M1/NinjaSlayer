@@ -121,7 +121,11 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
             creatureNode.AnimHideIntent();
         }
 
+#if NINJASLAYER_CHANNEL_STABLE
         creatureNode.AnimDisableUi();
+#else
+        creatureNode.AnimateOutStateDisplay();
+#endif
         SfxCmd.PlayDeath(creatureNode.Entity.Monster);
         try
         {

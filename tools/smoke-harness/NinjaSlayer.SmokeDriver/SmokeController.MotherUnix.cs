@@ -22,7 +22,7 @@ internal sealed partial class SmokeController
 {
     private async Task VerifyMotherUnixLive(string directory, CancellationToken ct)
     {
-        using var manualSelection = CardSelectCmd.SuspendSelectorForTest();
+        using var manualSelection = SuspendSmokeSelector();
         var player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState())!;
         var state = CombatManager.Instance.DebugOnlyGetState()!;
         foreach (var existing in player.Relics.ToArray()) await RelicCmd.Remove(existing);

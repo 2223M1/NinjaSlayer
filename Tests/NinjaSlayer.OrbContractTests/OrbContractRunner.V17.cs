@@ -153,7 +153,7 @@ public partial class OrbContractRunner
             var jujutsu = AddCard<Jujutsu>(combat, upgraded: upgraded);
             var held = combat.Card();
             await AddStock(combat.Player, 3);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ =>
+            using var selector = UseCardSelector(new SelectCards(_ =>
                 throw new InvalidOperationException("Jujutsu must never request a discard.")));
             await CardCmd.AutoPlay(Choice, jujutsu, null);
             Require(held.Pile?.Type == PileType.Hand && jujutsu.Pile?.Type == PileType.Exhaust

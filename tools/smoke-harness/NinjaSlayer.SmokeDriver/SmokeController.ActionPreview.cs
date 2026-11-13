@@ -69,7 +69,7 @@ internal sealed partial class SmokeController
                 await WaitFrames(60);
                 await NGame.Instance!.ReturnToMainMenu();
                 await WaitFrames(60);
-                Require(NGame.Instance.MainMenu != null, "Native return to main menu did not finish.");
+                Require(NGame.Instance!.MainMenu != null, "Native return to main menu did not finish.");
                 _checkpoints.Write("preview.menu-return-completed");
                 await recorder.Stop();
                 recording = false;
@@ -171,7 +171,11 @@ internal sealed partial class SmokeController
             long start = recorder.StartTimestamp;
             void Section(string name)
             {
+#if NINJASLAYER_CHANNEL_STABLE
                 AutoSlayer.CurrentWatchdog?.Reset(name);
+#else
+                MegaCrit.Sts2.Core.AutoSlay.Helpers.Watchdog.Current?.Reset(name);
+#endif
                 sections.Add(new JsonObject { ["name"] = name, ["seconds"] = Stopwatch.GetElapsedTime(start).TotalSeconds });
                 _checkpoints.Write("action.preview-section", data: new JsonObject { ["name"] = name });
             }

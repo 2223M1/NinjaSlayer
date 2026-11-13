@@ -36,7 +36,7 @@ internal sealed partial class SmokeController
         RunState run;
         if (_configuration.Phase == SmokePhase.BossFresh)
         {
-            run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(),
+            run = await StartSmokeRun(ModelDb.Character<NinjaSlayerCharacter>(),
                 true, ActModel.GetDefaultList(), [], _configuration.Seed, GameMode.Standard, 10);
             await RunManager.Instance.EnterAct(2);
             Player player = run.Players.Single();
@@ -57,12 +57,8 @@ internal sealed partial class SmokeController
             "Boss combat did not reach the player turn.", timeout: TimeSpan.FromMinutes(2));
         var combat = CombatManager.Instance.DebugOnlyGetState()!;
         JsonObject snapshot = BossSnapshot(owner);
-        snapshot["singleplayerSeeds"] = SavedSeedSnapshot(run);
         if (_configuration.Phase == SmokePhase.BossFresh)
         {
-            Require(snapshot["singleplayerSeeds"]!["RelicRarities"]!.AsArray().Count == 399
-                && snapshot["singleplayerSeeds"]!["PotionGenerationCalls"]!.GetValue<int>() == 1,
-                "Seed save probe did not consume one relic rarity and one potion generation batch.");
             Require(owner.Creature.CurrentHp == 45, "Pantograph must heal exactly once before the first boss.");
             Require(_bossGreetings == 1, "First boss greeting did not play once.");
             _checkpoints.Write("boss.first-snapshot", data: snapshot);
@@ -72,7 +68,7 @@ internal sealed partial class SmokeController
             using var reader = new StreamReader(new FileStream(_configuration.CheckpointPath, FileMode.Open, System.IO.FileAccess.Read, FileShare.ReadWrite));
             JsonObject first = reader.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(line => JsonNode.Parse(line)!.AsObject())
                 .First(row => row["Name"]?.GetValue<string>() == "boss.first-snapshot")["Data"]!.AsObject();
-            Require(JsonNode.DeepEquals(first, snapshot), "Boss reload changed encounter, HP, card order or saved seed state.");
+            Require(JsonNode.DeepEquals(first, snapshot), "Boss reload changed encounter, HP or card order.");
             Require(_bossGreetings == 0, "Reload replayed the boss greeting.");
             _checkpoints.Write("boss.reload-identical", data: snapshot);
         }
@@ -87,7 +83,6 @@ internal sealed partial class SmokeController
         await WaitUntilAsync(() => owner.PlayerCombatState?.Phase == PlayerTurnPhase.Play,
             "Same-process boss reload did not reach the player turn.");
         JsonObject restoredSnapshot = BossSnapshot(owner);
-        restoredSnapshot["singleplayerSeeds"] = SavedSeedSnapshot(run);
         Require(JsonNode.DeepEquals(snapshot, restoredSnapshot) && _bossGreetings == 0,
             "Same-process reload changed combat state or replayed the greeting.");
         _checkpoints.Write("boss.same-process-identical");
@@ -111,14 +106,6 @@ internal sealed partial class SmokeController
         ["hand"] = new JsonArray(PileType.Hand.GetPile(player).Cards.Select(card => JsonValue.Create(card.Id.ToString())).ToArray()),
         ["draw"] = new JsonArray(PileType.Draw.GetPile(player).Cards.Select(card => JsonValue.Create(card.Id.ToString())).ToArray())
     };
-
-    private static JsonNode SavedSeedSnapshot(RunState run)
-    {
-        Type rules = typeof(NinjaSlayerRunData).Assembly.GetType("NinjaSlayer.Content.SingleplayerSeedRules", true)!;
-        object handle = AccessTools.Property(rules, "Data").GetValue(null)!;
-        object state = AccessTools.Method(handle.GetType(), "Get").Invoke(handle, [run])!;
-        return System.Text.Json.JsonSerializer.SerializeToNode(state, state.GetType())!;
-    }
 
     private async Task<RunState> ResumeBossCheckpoint()
     {

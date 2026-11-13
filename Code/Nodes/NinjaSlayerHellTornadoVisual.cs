@@ -45,6 +45,8 @@ internal sealed partial class NinjaSlayerHellTornadoVisual : Node2D
         return node;
     }
 
+    public override void _EnterTree() => RenderingServer.FramePreDraw += SyncNow;
+
     public override void _Ready()
     {
         _source = NinjaSlayerVisualRig.GetBodySprite(_actor.Visuals)!;
@@ -54,7 +56,6 @@ internal sealed partial class NinjaSlayerHellTornadoVisual : Node2D
         _blur = new FreeControlMotionBlur { Name = "BodyExposure", ShowBehindParent = true };
         AddChild(_torso); AddChild(_head); AddChild(_blur);
         Hide();
-        RenderingServer.FramePreDraw += SyncNow;
     }
 
     internal Task Accelerate(float seconds)

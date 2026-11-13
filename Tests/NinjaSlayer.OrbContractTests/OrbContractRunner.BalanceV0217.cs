@@ -20,7 +20,7 @@ public partial class OrbContractRunner
             using var combat = new OrbCombat();
             var untouched = AddCard<DefendIronclad>(combat, PileType.Draw);
             await PowerCmd.Apply<WatchfulBladesPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ =>
+            using var selector = UseCardSelector(new SelectCards(_ =>
                 throw new InvalidOperationException("Shuriken Creation must not open a Scry choice.")));
             await CardCmd.AutoPlay(Choice, AddCard<ShurikenCreation>(combat, upgraded: upgraded), null);
             Require(combat.Stock == (upgraded ? 4 : 3) && untouched.Pile?.Type == PileType.Draw,
@@ -43,10 +43,10 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<FrailPower>(Choice, owner, 2, combat.Enemy, null);
             await PowerCmd.Apply<KaratePower>(Choice, owner, 4, owner, null);
             await CreatureCmd.Damage(Choice, new[] { combat.Enemy, combat.AddEnemy() }, 1, ValueProp.Move, owner);
-            Require(owner.GetPowerAmount<NarakuLifePower>() == 12 && owner.GetPowerAmount<KaratePower>() == 4,
-                "One Body grants thirteen initial life across two plays, then spends one life for an AOE Karate wave.");
+            Require(owner.GetPowerAmount<NarakuLifePower>() == 16 && owner.GetPowerAmount<KaratePower>() == 4,
+                "One Body grants seventeen initial life across two plays, then spends one life for an AOE Karate wave.");
             await CardCmd.AutoPlay(Choice, AddCard<PalmThrust>(combat, upgraded: true), null);
-            Require(owner.GetPowerAmount<NarakuLifePower>() == 9 && owner.GetPowerAmount<KaratePower>() == 4, "Each multihit Karate wave spends life without consuming base Karate, even at two conversion layers.");
+            Require(owner.GetPowerAmount<NarakuLifePower>() == 13 && owner.GetPowerAmount<KaratePower>() == 4, "Each multihit Karate wave spends life without consuming base Karate, even at two conversion layers.");
         }
         using (var combat = new OrbCombat())
         {
@@ -79,7 +79,7 @@ public partial class OrbContractRunner
             var outer = AddCard<DefendIronclad>(combat, PileType.Draw);
             var inner = AddCard<DefendIronclad>(combat, PileType.Draw);
             int selections = 0;
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => ++selections == 1 ? [sly, outer] : [inner]));
+            using var selector = UseCardSelector(new SelectCards(_ => ++selections == 1 ? [sly, outer] : [inner]));
             await ScryCmd.Execute(Choice, combat.Player, 2);
             Require(selections == 1 && combat.Tokens == 2 && combat.Enemy.CurrentHp == 988,
                 "Sly Shuriken Creation gains stock and a token without a nested Scry.");
@@ -91,7 +91,7 @@ public partial class OrbContractRunner
             var kept1 = AddCard<Wound>(combat, PileType.Draw);
             var kept2 = AddCard<Wound>(combat, PileType.Draw);
             combat.Player.Creature.GetPower<EvokeObserver>()!.DrawOnDiscard = true;
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [first, second]));
+            using var selector = UseCardSelector(new SelectCards(_ => [first, second]));
             var result = await ScryCmd.Execute(Choice, combat.Player, 2);
             Require(result.Discarded == 2 && first.Pile?.Type == PileType.Discard && second.Pile?.Type == PileType.Discard
                 && kept1.Pile?.Type == PileType.Hand && kept2.Pile?.Type == PileType.Hand,
@@ -112,7 +112,7 @@ public partial class OrbContractRunner
                 "Press the Attack discards only its directly drawn non-attack cards, preserving the existing hand.");
             var retrieve = AddCard<Recover>(combat, upgraded: upgraded);
             await CardCmd.Exhaust(Choice, wound);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
+            using var selector = UseCardSelector(new SelectCards(options =>
             {
                 Require(options.Contains(wound) && !options.Contains(drawn), "Recover must select only exhausted cards.");
                 return [wound];
@@ -125,7 +125,7 @@ public partial class OrbContractRunner
         foreach (bool echo in new[] { false, true })
         {
             using var combat = new OrbCombat();
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
+            using var selector = UseCardSelector(new SelectCards(_ => []));
             var strike = AddCard<StrikeStrike>(combat, upgraded: upgraded);
             strike.EnergyCost.SetCustomBaseCost(0);
             if (echo) await PowerCmd.Apply<EchoFormPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
@@ -138,7 +138,7 @@ public partial class OrbContractRunner
         }
         using (var combat = new OrbCombat())
         {
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
+            using var selector = UseCardSelector(new SelectCards(_ => []));
             for (int i = 0; i < 9; i++) AddCard<Wound>(combat);
             var strike = AddCard<StrikeStrike>(combat, upgraded: true);
             await PowerCmd.Apply<EchoFormPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);

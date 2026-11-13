@@ -316,7 +316,11 @@ internal sealed class SawatariEventSession
 
             transform.Apply(duelNode);
             SetFacing(duelCreature, faceRight: false);
+#if NINJASLAYER_CHANNEL_STABLE
             _room.SetCreatureIsInteractable(duelCreature, on: true);
+#else
+            duelNode.SetIsInteractable(on: true, changeVisibilityImmediately: true);
+#endif
             duelNode.Show();
 
             if (!_phases.TryMove(SawatariEventPhase.DuelTransition, SawatariEventPhase.Duel))

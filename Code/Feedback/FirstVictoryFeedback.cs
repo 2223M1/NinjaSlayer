@@ -39,6 +39,9 @@ internal static class FirstVictoryFeedback
     private static void OnRunEnded(RunEndedEvent evt)
     {
         if (!evt.IsVictory || evt.IsAbandoned || evt.Run.GameMode != GameMode.Standard
+#if NINJASLAYER_CHANNEL_PREVIEW
+            || evt.Run.IsCustomGame
+#endif
             || LocalContext.GetMe(evt.Run)?.CharacterId != ModelDb.Character<NinjaSlayerCharacter>().Id
             || !RunManager.Instance.ShouldSave) return;
         // OnEnded has already saved native progress. Only 0 -> 1 standard wins qualifies;

@@ -30,11 +30,11 @@ public partial class OrbContractRunner
             Require(form.EnergyCost.GetWithModifiers(CostModifiers.Local) == 3
                 && form.Keywords.Contains(CardKeyword.Ethereal), "Both One Mind versions must remain three-cost and Ethereal.");
             await CardCmd.AutoPlay(Choice, form, null);
-            Require(owner.GetPowerAmount<NarakuLifePower>() == (upgraded ? 8 : 5)
-                && !owner.HasPower<KaratePower>(), "One Mind grants five/eight life without creating real Karate.");
+            Require(owner.GetPowerAmount<NarakuLifePower>() == (upgraded ? 10 : 7)
+                && !owner.HasPower<KaratePower>(), "One Mind grants seven/ten life without creating real Karate.");
             await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
-            Require(combat.Enemy.CurrentHp == 1000 - 6 - (upgraded ? 8 : 5)
-                && owner.GetPowerAmount<NarakuLifePower>() == (upgraded ? 7 : 4),
+            Require(combat.Enemy.CurrentHp == 1000 - 6 - (upgraded ? 10 : 7)
+                && owner.GetPowerAmount<NarakuLifePower>() == (upgraded ? 9 : 6),
                 "Naraku Life alone must trigger Karate and spend one life.");
         }
         using (var combat = new OrbCombat())
@@ -43,6 +43,7 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<KaratePower>(Choice, owner, 5, owner, null);
             var karate = owner.GetPower<KaratePower>()!;
             await CardCmd.AutoPlay(Choice, AddCard<OneMindOneBody>(combat), null);
+            await PowerCmd.ModifyAmount(Choice, owner.GetPower<NarakuLifePower>()!, -2, owner, null); // Keep the five-life mechanics fixture.
             Require(karate.Amount == 5 && karate.DisplayAmount == 10
                 && karate.DynamicVars["AttackAmount"].IntValue == 10
                 && karate.HoverTips.OfType<HoverTip>().Any(tip => tip.Description.Contains("10")),
@@ -94,10 +95,10 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<KaratePower>(Choice, owner, 5, owner, null);
             await CardCmd.AutoPlay(Choice, AddCard<OneMindOneBody>(combat), null);
             await CardCmd.AutoPlay(Choice, AddCard<OneMindOneBody>(combat), null);
-            Require(owner.GetPowerAmount<NarakuLifePower>() == 10
+            Require(owner.GetPowerAmount<NarakuLifePower>() == 14
                 && owner.GetPower<OneMindOneBodyPower>()!.DisplayAmount == 2,
-                "Two base plays must grant ten life and show two conversion layers.");
-            await PowerCmd.ModifyAmount(Choice, owner.GetPower<NarakuLifePower>()!, -5, owner, null);
+                "Two base plays must grant fourteen life and show two conversion layers.");
+            await PowerCmd.ModifyAmount(Choice, owner.GetPower<NarakuLifePower>()!, -9, owner, null);
             Require(owner.GetPower<KaratePower>()!.DisplayAmount == 15, "Two forms with five real Karate and five life must display fifteen.");
             await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
             Require(combat.Enemy.CurrentHp == 979 && owner.GetPowerAmount<NarakuLifePower>() == 4
@@ -109,12 +110,12 @@ public partial class OrbContractRunner
                 && owner.GetPowerAmount<NarakuLifePower>() == 3 && owner.GetPower<KaratePower>()!.DisplayAmount == 11,
                 "Two-layer AOE must use thirteen bonus damage on every target and spend only one life total.");
             await CardCmd.AutoPlay(Choice, AddCard<OneMindOneBody>(combat, upgraded: true), null);
-            Require(owner.GetPowerAmount<NarakuLifePower>() == 11 && owner.GetPowerAmount<OneMindOneBodyPower>() == 3
-                && owner.GetPower<KaratePower>()!.DisplayAmount == 38,
-                "An upgraded third play must add eight life and one conversion layer, not eight conversion layers.");
+            Require(owner.GetPowerAmount<NarakuLifePower>() == 13 && owner.GetPowerAmount<OneMindOneBodyPower>() == 3
+                && owner.GetPower<KaratePower>()!.DisplayAmount == 44,
+                "An upgraded third play must add ten life and one conversion layer, not ten conversion layers.");
             await PowerCmd.ModifyAmount(Choice, owner.GetPower<OneMindOneBodyPower>()!, -1, owner, null);
-            Require(owner.GetPower<KaratePower>()!.DisplayAmount == 27
-                && owner.GetPower<KaratePower>()!.DynamicVars["AttackAmount"].IntValue == 27,
+            Require(owner.GetPower<KaratePower>()!.DisplayAmount == 31
+                && owner.GetPower<KaratePower>()!.DynamicVars["AttackAmount"].IntValue == 31,
                 "Losing a conversion layer must refresh the Karate number and tooltip immediately.");
         }
         foreach (int multiplier in new[] { 1, 2 })
@@ -133,6 +134,7 @@ public partial class OrbContractRunner
         {
             var owner = combat.Player.Creature;
             await CardCmd.AutoPlay(Choice, AddCard<OneMindOneBody>(combat), null);
+            await PowerCmd.ModifyAmount(Choice, owner.GetPower<NarakuLifePower>()!, -2, owner, null); // Keep the five-life mechanics fixture.
             await PowerCmd.Apply<GuardStancePower>(Choice, owner, 3, owner, null);
             await CardCmd.AutoPlay(Choice, AddCard<PalmThrust>(combat, upgraded: true), null);
             Require(combat.Enemy.CurrentHp == 970 && owner.Block == 9
@@ -154,6 +156,7 @@ public partial class OrbContractRunner
         {
             var owner = combat.Player.Creature;
             await CardCmd.AutoPlay(Choice, AddCard<OneMindOneBody>(combat), null);
+            await PowerCmd.ModifyAmount(Choice, owner.GetPower<NarakuLifePower>()!, -2, owner, null); // Keep the five-life mechanics fixture.
             await PowerCmd.Apply<KaratePower>(Choice, owner, 5, owner, null);
             await CardCmd.AutoPlay(Choice, AddCard<AlabamaDrop>(combat), combat.Enemy);
             Require(combat.Enemy.CurrentHp == 965 && owner.GetPowerAmount<KaratePower>() == 5
@@ -173,6 +176,7 @@ public partial class OrbContractRunner
             var run = RunState.CreateForTest([combat.Player]);
             AccessTools.Field(combat.State.GetType(), "<RunState>k__BackingField").SetValue(combat.State, run);
             await CardCmd.AutoPlay(Choice, AddCard<OneMindOneBody>(combat), null);
+            await PowerCmd.ModifyAmount(Choice, owner.GetPower<NarakuLifePower>()!, -2, owner, null); // Keep the five-life mechanics fixture.
             var card = AddCard<StrikeIronclad>(combat);
             using (KarateCombatPreviewContext.Enter(card, combat.Enemy))
                 Require(new KarateHealthBarForecastSource().GetHealthBarForecastSegments(new(combat.Enemy))
@@ -225,6 +229,6 @@ public partial class OrbContractRunner
             Require(combat.Enemy.CurrentHp == 2 && owner.GetPowerAmount<NarakuLifePower>() == 2,
                 "Thorns must reduce five life to three before the three-damage Karate trigger spends one more life.");
         }
-        GD.Print("PASS One Mind: 5/8 life, 3-cost Ethereal, one/two/three conversion layers, 10->9 and 15->13 display/damage, one-life multihit/AOE spending, real-stack card isolation, dynamic gains/losses/removal, Guard Stance, teammate isolation, descending multi-hit forecasts and Thorns.");
+        GD.Print("PASS One Mind: 7/10 life, 3-cost Ethereal, one/two/three conversion layers, 10->9 and 15->13 display/damage, one-life multihit/AOE spending, real-stack card isolation, dynamic gains/losses/removal, Guard Stance, teammate isolation, descending multi-hit forecasts and Thorns.");
     }
 }

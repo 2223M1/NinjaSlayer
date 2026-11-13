@@ -267,7 +267,7 @@ ${Object.entries(value.channels).map(([name, channel]) =>
     `| \`${name}\` | \`${channel.gameApiVersion}\` | \`${channel.ritsuLibPackageId} ${value.ritsuLibVersion}\` | \`${channel.distributionChannel}\` |`
   ).join('\n')}
 
-Only these two rolling channels are active. Runtime players receive the current RitsuLib Workshop build; \`${value.ritsuLibVersion}\` is the pinned, reproducible compile baseline and minimum manifest dependency. Protected builds use each channel's real game assemblies. No intermediate game host or RefLib approximation is a release target.
+Only the official stable release and the latest preview are active, not the two highest version numbers. Retired intermediate previews are unsupported. Keep only these channels' source exports under \`../Slay the Spire 2/Slay the Spire 2 v<gameApiVersion>/\`. Runtime players receive the current RitsuLib Workshop build; \`${value.ritsuLibVersion}\` is the pinned, reproducible compile baseline and minimum manifest dependency. Protected builds use each channel's real game assemblies. No intermediate game host or RefLib approximation is a release target.
 <!-- compatibility:end -->`;
 }
 

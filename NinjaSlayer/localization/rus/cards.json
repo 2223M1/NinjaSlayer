@@ -141,7 +141,7 @@
   "NINJA_SLAYER_CARD_COLLAPSE_FIST.title": "Сокрушительный кулак",
   "NINJA_SLAYER_CARD_COLLAPSE_FIST.description": "Наносит {Damage:diff()} урона.\nДает {Karate:diff()} [gold]карате[/gold].",
   "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.title": "Единые дух и тело",
-  "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.description": "Получите {NarakuLife:diff()} ед. [gold]Жизнь Нараку[/gold].\nКаждая единица [gold]Жизнь Нараку[/gold] добавляет 1 к урону [gold]Карате[/gold].\nПри срабатывании [gold]Карате[/gold] сначала расходуется 1 ед. [gold]Жизнь Нараку[/gold]; [gold]Карате[/gold] расходуется, только если [gold]Жизнь Нараку[/gold] закончилась.",
+  "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.description": "Получите {NarakuLife:diff()} ед. [gold]Жизнь Нараку[/gold].\nВаша [gold]Жизнь Нараку[/gold] считается [gold]Карате[/gold].",
   "NINJA_SLAYER_CARD_ZAZEN_DRINK.title": "Напиток Дзадзэн",
   "NINJA_SLAYER_CARD_ZAZEN_DRINK.description": "Вы добираете карты, пока [gold]рука[/gold] не заполнится, сбрасывая все взятые карты [gold]Статуса[/gold].\n[gold]Предвидение[/gold] {Cards:diff()}.",
   "NINJA_SLAYER_CARD_READ_AHEAD.description": "[gold]Предвидение[/gold] {Scry:diff()}.\nДает {Block:diff()} [gold]защиты[/gold] за каждую сброшенную так карту.",
@@ -149,7 +149,7 @@
   "NINJA_SLAYER_CARD_SHURIKEN_CREATION.description": "Дает {Stock:diff()} [gold]{Stock:plural(ru):сюрикен|сюрикена|сюрикенов}[/gold].",
   "NINJA_SLAYER_CARD_ONSLAUGHT.description": "Когда [gold]сюрикен[/gold] наносит урон врагу, получаете {StrengthPower:diff()} [gold]силы[/gold] на этот ход.",
   "NINJA_SLAYER_CARD_REKINDLE.description": "[gold]Преобразуйте[/gold] карту в [gold]руке[/gold] в [gold]Чёрное пламя[/gold].\nКаждый раз, когда вы активируете [gold]Чёрное пламя[/gold] на этом ходу, получаете {NarakuLife:diff()} [gold]жизни Нараку[/gold].",
-  "NINJA_SLAYER_CARD_ASSESS.description": "Дает {Block:diff()} [gold]защиты[/gold].\n[gold]Предвидение[/gold] {Scry:diff()}.",
+  "NINJA_SLAYER_CARD_ASSESS.description": "Дает {StretchPower:diff()} [gold]растяжки[/gold].\n[gold]Предвидение[/gold] {Scry:diff()}.",
   "NINJA_SLAYER_CARD_TOMOE_THROW.description": "Выберите [gold]Тядо[/gold] в [gold]руке[/gold], чтобы [gold]сжечь[/gold].\nДает {Block:diff()} [gold]защиты[/gold].\nНакладывает {WeakPower:diff()} [gold]слабости[/gold].",
   "NINJA_SLAYER_CARD_RESILIENCE.description": "При создании карты Статуса возьмите карты: {Cards:diff()}.",
   "NINJA_SLAYER_CARD_ENDURANCE.description": "Наносит {Damage:diff()} урона {Repeat} {Repeat:plural(ru):раз|раза|раз}.\nДает {Karate:diff()} [gold]карате[/gold].",
@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "Низкий апперкот",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "Наносит {Damage:diff()} урона.\nЕсли предыдущая разыгранная карта — Атака, накладывает {WeakPower:diff()} [gold]слабости[/gold] и [gold]уязвимости[/gold].",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "Пробивающий удар",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Наносит {CalculatedDamage:diff()} урона.\nНаносит на {ExtraDamage:diff()} урона больше за каждый ваш заряд [gold]Сюрикен[/gold]."
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Наносит {Damage:diff()} урона.\nНакладывает {ShurikenAimPower:diff()} [gold]Прицел[/gold]."
 }

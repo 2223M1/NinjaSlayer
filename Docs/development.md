@@ -5,10 +5,10 @@
 <!-- compatibility:start -->
 | Channel | Game API | RitsuLib compile package | Distribution |
 |---|---|---|---|
-| `stable` | `0.107.1` | `STS2.RitsuLib.Compat.0.107.1 0.5.12` | `public` |
-| `preview` | `0.111.0` | `STS2.RitsuLib 0.5.12` | `beta` |
+| `stable` | `0.107.1` | `STS2.RitsuLib.Compat.0.107.1 0.6.11` | `public` |
+| `preview` | `0.113.0` | `STS2.RitsuLib 0.6.11` | `beta` |
 
-Only these two rolling channels are active. Runtime players receive the current RitsuLib Workshop build; `0.5.12` is the pinned, reproducible compile baseline and minimum manifest dependency. Protected builds use each channel's real game assemblies. No intermediate game host or RefLib approximation is a release target.
+Only the official stable release and the latest preview are active, not the two highest version numbers. Retired intermediate previews are unsupported. Keep only these channels' source exports under `../Slay the Spire 2/Slay the Spire 2 v<gameApiVersion>/`. Runtime players receive the current RitsuLib Workshop build; `0.6.11` is the pinned, reproducible compile baseline and minimum manifest dependency. Protected builds use each channel's real game assemblies. No intermediate game host or RefLib approximation is a release target.
 <!-- compatibility:end -->
 
 All repository automation targets PowerShell 7 Core and must be invoked through `pwsh`. Windows PowerShell 5.1 is not supported.
@@ -88,7 +88,7 @@ The paths are saved in the ignored `build/fast-release/settings.json`. Keep old 
 pwsh .\tools\release\Invoke-OneClickRelease.ps1 -Version 0.1.30 -Confirm
 ```
 
-The command requires `main` to match `origin/main`, permits only local `AGENTS.md` and `.agents/` changes, and requires the tracked `Workshop/change-note.md` to differ from the previous SemVer release. It runs the fast repository checks and builds both host packages. It keeps the two exact six-file host archives for diagnostics, then creates a third universal archive containing a loader, both implementations and their shared Box2D.NET dependency and license. The schema 2 loader selects the exact supported version from native `ReleaseInfoManager.Instance.SemVer` (0.107.1 stable or 0.111.0 preview), validates both variant markers and DLL hashes, and rejects missing, unknown or prerelease versions. Runtime MVIDs are diagnostic only; build reference MVID checks remain. The command installs the host-specific archive matching the active local game, creates and pushes the tag, creates the GitHub Release with all three archives, and uploads only the universal archive contents through the local Workshop uploader. Stable and preview build caches are retained between releases. `-Resume` reuses all three archives only when they remain bound to the same commit and compatibility manifest. `-DryRun` never changes the local game install, and `-SkipLocalInstall` explicitly disables the normal host-matched install.
+The command requires `main` to match `origin/main`, permits only local `AGENTS.md` and `.agents/` changes, and requires the tracked `Workshop/change-note.md` to differ from the previous SemVer release. It runs the fast repository checks and builds both host packages. It keeps the two exact six-file host archives for diagnostics, then creates a third universal archive containing a loader, both implementations and their shared Box2D.NET dependency and license. The schema 2 loader selects the exact supported version from native `ReleaseInfoManager.Instance.SemVer` (0.107.1 stable or 0.113.0 preview), validates both variant markers and DLL hashes, and rejects missing, unknown or prerelease versions. Runtime MVIDs are diagnostic only; build reference MVID checks remain. The command installs the host-specific archive matching the active local game, creates and pushes the tag, creates the GitHub Release with all three archives, and uploads only the universal archive contents through the local Workshop uploader. Stable and preview build caches are retained between releases. `-Resume` reuses all three archives only when they remain bound to the same commit and compatibility manifest. `-DryRun` never changes the local game install, and `-SkipLocalInstall` explicitly disables the normal host-matched install.
 
 Routine releases deliberately do not wait for Contract, Smoke, protected environments, attestations, pull requests, or a self-hosted Actions runner. Those checks remain available as optional audits. The five-minute budget covers local preparation and normal uploads; unusually slow GitHub or Steam network transfer can still exceed it without corrupting the completed release.
 
@@ -132,7 +132,7 @@ There is no single-channel MSBuild Workshop target. The protected Workshop workf
 
 `tools/private-contract/Start-EphemeralContractRunner.ps1` starts the short-lived Windows runner used by Contract, Release, or Smoke workflows. Supply the runner purpose, short-lived registration token, exact runner version, and official archive SHA-256 shown by GitHub.
 
-Contract and Release runners require both `GameDataDirectoryStable` and `GameDataDirectoryPreview`. Smoke requires both `GameRootDirectoryStable` and `GameRootDirectoryPreview`, plus the current Workshop RitsuLib installation. The launcher derives all expected versions, package ids, runtime assemblies, and MVIDs from `eng/compatibility.json`, exposes private inputs read-only, uploads no private binaries, and removes its work directory after completion. Detailed setup is in [tools/private-contract/README.md](../tools/private-contract/README.md).
+Contract and Release runners require both `GameDataDirectoryStable` and `GameDataDirectoryPreview`. Contract also requires matching host PCKs and `RitsuLibModDirectory` with assets matching the pinned framework version. Smoke requires both `GameRootDirectoryStable` and `GameRootDirectoryPreview`, plus the current Workshop RitsuLib installation. The launcher derives all expected versions, package ids, runtime assemblies, and MVIDs from `eng/compatibility.json`, exposes private inputs read-only, uploads no private binaries, and removes its work directory after completion. Detailed setup is in [tools/private-contract/README.md](../tools/private-contract/README.md).
 
 ## Real-game smoke
 

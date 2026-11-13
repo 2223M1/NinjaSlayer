@@ -71,18 +71,18 @@ internal sealed partial class SmokeController
             foreach (FastModeType speed in new[] { FastModeType.Normal, FastModeType.Fast, FastModeType.Instant })
             {
                 run = await StartFeedbackEvent(speed);
-                await NGame.Instance.ReturnToMainMenu();
+                await NGame.Instance!.ReturnToMainMenu();
                 Release114EntranceProbe.Count = 0;
                 run = await ResumeBossCheckpoint();
                 await RequireFeedbackEntrance(run.Players[0]);
                 await ReachFeedbackIntermission();
-                await NGame.Instance.ReturnToMainMenu();
+                await NGame.Instance!.ReturnToMainMenu();
                 Release114EntranceProbe.Count = 0;
                 run = await ResumeBossCheckpoint();
                 await RequireFeedbackEntrance(run.Players[0]);
                 await VerifySawatariEventCombat(CancellationToken.None, verifyFinisher: false);
                 _checkpoints.Write("feedback119.reload." + speed);
-                await NGame.Instance.ReturnToMainMenuAfterRun();
+                await NGame.Instance!.ReturnToMainMenuAfterRun();
                 await WaitFrames(30);
             }
             _checkpoints.Write("feedback119.completed");
@@ -98,7 +98,7 @@ internal sealed partial class SmokeController
     private async Task<RunState> StartFeedbackEvent(FastModeType speed)
     {
         SaveManager.Instance.PrefsSave.FastMode = speed;
-        var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(), true,
+        var run = await StartSmokeRun(ModelDb.Character<NinjaSlayerCharacter>(), true,
             ActModel.GetDefaultList(), [], _configuration.Seed, GameMode.Standard, 0);
         await RunManager.Instance.EnterAct(0);
         Release114EntranceProbe.Count = 0;
@@ -138,7 +138,7 @@ internal sealed partial class SmokeController
         foreach (bool swallow in new[] { false, true })
         {
             SaveManager.Instance.PrefsSave.FastMode = speed;
-            var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(), true,
+            var run = await StartSmokeRun(ModelDb.Character<NinjaSlayerCharacter>(), true,
                 ActModel.GetDefaultList(), [], _configuration.Seed, GameMode.Standard, 0);
             await RunManager.Instance.EnterAct(swallow ? 1 : 0);
             await SaveManager.Instance.SaveRun(null);
@@ -158,13 +158,13 @@ internal sealed partial class SmokeController
             await CombatManager.Instance.CheckWinCondition();
             await WaitUntilAsync(() => FindDescendant<NGameOverScreen>(_tree.Root) != null, "Death did not reach native game over.");
             _checkpoints.Write($"feedback119.death.{speed}.{(swallow ? "swallow" : "damage")}");
-            await NGame.Instance.ReturnToMainMenuAfterRun();
+            await NGame.Instance!.ReturnToMainMenuAfterRun();
             await WaitFrames(30);
         }
         SaveManager.Instance.PrefsSave.FastMode = FastModeType.Normal;
         foreach (bool reflect in new[] { true, false })
         {
-            var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(), true,
+            var run = await StartSmokeRun(ModelDb.Character<NinjaSlayerCharacter>(), true,
                 ActModel.GetDefaultList(), [], _configuration.Seed, GameMode.Standard, 0);
             await RunManager.Instance.EnterAct(0);
             if (reflect) await RelicCmd.Obtain<BronzeScales>(run.Players[0]);
@@ -191,7 +191,7 @@ internal sealed partial class SmokeController
             await WaitUntilAsync(() => FindDescendant<NRewardsScreen>(_tree.Root) != null, "Kill did not reach native rewards.",
                 timeout: TimeSpan.FromSeconds(60));
             _checkpoints.Write(reflect ? "feedback119.ink-reflection" : "feedback119.vantom-kill");
-            await NGame.Instance.ReturnToMainMenuAfterRun();
+            await NGame.Instance!.ReturnToMainMenuAfterRun();
             await WaitFrames(30);
         }
         _checkpoints.Write("feedback119.combat-completed");
@@ -207,7 +207,7 @@ internal sealed partial class SmokeController
         foreach (bool alabama in new[] { false, true })
         {
             SaveManager.Instance.PrefsSave.FastMode = speed;
-            var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(), true,
+            var run = await StartSmokeRun(ModelDb.Character<NinjaSlayerCharacter>(), true,
                 ActModel.GetDefaultList(), [], _configuration.Seed, GameMode.Standard, 0);
             await RunManager.Instance.EnterAct(0);
             await SaveManager.Instance.SaveRun(null);
@@ -317,7 +317,7 @@ internal sealed partial class SmokeController
             observations.Add(new System.Text.Json.Nodes.JsonObject { ["speed"] = speed.ToString(), ["alabama"] = alabama,
                 ["samples"] = samples, ["meshSamples"] = meshSamples, ["meshKind"] = meshKind, ["shapeError"] = shapeError, ["headFloorError"] = headError, ["headMeshFloorError"] = meshHeadError, ["windupCompressed"] = sawWindupCompression });
             _checkpoints.Write($"feedback119.victim-shape.{speed}.{alabama}");
-            await NGame.Instance.ReturnToMainMenuAfterRun();
+            await NGame.Instance!.ReturnToMainMenuAfterRun();
             await WaitFrames(30);
         }
         File.WriteAllText(Path.Combine(Path.GetDirectoryName(_configuration.CheckpointPath)!, "victim-shapes.json"), observations.ToJsonString());

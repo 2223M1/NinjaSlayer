@@ -43,11 +43,16 @@ internal static class WebsiteCatalogExporter
             .DistinctBy(model => model.Id).ToArray();
         var translations = new Dictionary<string, object>();
         var labels = new Dictionary<string, object>();
+        string[] languages = DirAccess.GetDirectoriesAt("res://NinjaSlayer/localization");
+        if (languages.Length == 0)
+            throw new InvalidOperationException("The candidate pack has no NinjaSlayer localization directories.");
         string originalLanguage = LocManager.Instance.Language;
         try
         {
-            foreach (string language in LocManager.Languages)
+            foreach (string language in languages.Order(StringComparer.Ordinal))
             {
+                if (!LocManager.Languages.Contains(language))
+                    throw new InvalidOperationException($"Unsupported packed localization language: {language}");
                 SetExportLanguage(language, models);
                 VerifyLocalizedTables(language);
                 translations[language] = models.Select(model => Describe(model, assets, exportImages)).ToArray();

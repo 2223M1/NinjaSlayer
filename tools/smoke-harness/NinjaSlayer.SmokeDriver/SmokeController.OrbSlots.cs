@@ -112,7 +112,7 @@ internal sealed partial class SmokeController
             await WaitFrames(30);
             Require(!GodotObject.IsInstanceValid(manager) || !manager.IsInsideTree(), "Combat exit retained the orb manager.");
             _checkpoints.Write("orb-slots.combat-exit");
-            var resume = NGame.Instance.MainMenu!.GetNode<NButton>("MainMenuTextButtons/ContinueButton");
+            var resume = NGame.Instance!.MainMenu!.GetNode<NButton>("MainMenuTextButtons/ContinueButton");
             await WaitUntilAsync(() => resume.Visible && resume.IsEnabled, "Continue was not available after the native combat save.", ct);
             await UiHelper.Click(resume);
             await WaitUntilAsync(() => CombatManager.Instance.IsInProgress && NCombatRoom.Instance != null
@@ -130,7 +130,7 @@ internal sealed partial class SmokeController
             await OrbCmd.Channel<LightningOrb>(choice, player);
             Require(queue.Capacity == 1 && StockCount() == 2, "Normal/dedicated channeling failed after native Continue.");
             await Snapshot("native-continue-mixed");
-            await NGame.Instance.ReturnToMainMenu();
+            await NGame.Instance!.ReturnToMainMenu();
         }
         finally
         {

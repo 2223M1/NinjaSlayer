@@ -1804,7 +1804,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/TomoeThrow.png",
     "Vars": {
-      "Block": 9,
+      "Block": 11,
       "WeakPower": 2
     }
   },
@@ -1822,7 +1822,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/TomoeThrow.png",
     "Vars": {
-      "Block": 12,
+      "Block": 14,
       "WeakPower": 3
     }
   },
@@ -1842,7 +1842,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/OneMindOneBody.png",
     "Vars": {
-      "NarakuLife": 5
+      "NarakuLife": 7
     }
   },
   {
@@ -1861,7 +1861,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/OneMindOneBody.png",
     "Vars": {
-      "NarakuLife": 8
+      "NarakuLife": 10
     }
   },
   {
@@ -2304,9 +2304,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/RightUppercut.png",
     "Vars": {
-      "CalculatedDamage": 6,
-      "CalculationBase": 6,
-      "ExtraDamage": 3
+      "Damage": 6,
+      "ShurikenAimPower": 2
     }
   },
   {
@@ -2323,9 +2322,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/RightUppercut.png",
     "Vars": {
-      "CalculatedDamage": 6,
-      "CalculationBase": 6,
-      "ExtraDamage": 4
+      "Damage": 9,
+      "ShurikenAimPower": 3
     }
   },
   {
@@ -3086,8 +3084,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Assess.png",
     "Vars": {
-      "Block": 4,
-      "Scry": 4
+      "Scry": 4,
+      "StretchPower": 5
     }
   },
   {
@@ -3104,8 +3102,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Assess.png",
     "Vars": {
-      "Block": 6,
-      "Scry": 6
+      "Scry": 5,
+      "StretchPower": 7
     }
   },
   {

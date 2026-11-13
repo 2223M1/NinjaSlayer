@@ -196,13 +196,20 @@ public sealed partial class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
             nameof(CreatureCmd.Damage),
             [
                 typeof(PlayerChoiceContext),
+#if NINJASLAYER_CHANNEL_PREVIEW
+                typeof(IEnumerable<DamageTargetData>),
+#else
                 typeof(IEnumerable<Creature>),
+#endif
                 typeof(decimal),
                 typeof(ValueProp),
                 typeof(Creature),
                 typeof(CardModel)
 #if !NINJASLAYER_LEGACY_DAMAGE_API
                 , typeof(CardPlay)
+#endif
+#if NINJASLAYER_CHANNEL_PREVIEW
+                , typeof(MegaCrit.Sts2.Core.Hooks.ModifyDamageHookType)
 #endif
             ])
     ];
@@ -237,22 +244,22 @@ public sealed partial class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
 #else
     public static bool Prefix(
         PlayerChoiceContext choiceContext,
-        ref IEnumerable<Creature>? targets,
+        ref IEnumerable<DamageTargetData>? targetData,
         decimal amount,
         ValueProp props,
         Creature? dealer,
         CardModel? cardSource,
         CardPlay? cardPlay,
-        ref Task<IEnumerable<DamageResult>> __result) =>
-        PrefixCore(
-            choiceContext,
-            ref targets,
-            amount,
-            props,
-            dealer,
-            cardSource,
-            cardPlay,
-            ref __result);
+        ModifyDamageHookType modifyDamageHookType,
+        ref Task<IEnumerable<DamageResult>> __result)
+    {
+        DamageTargetData[]? entries = targetData?.ToArray();
+        targetData = entries;
+        IEnumerable<Creature>? targets = entries?.Select(entry => entry.target);
+        return PrefixCore(choiceContext, ref targets, amount, props, dealer, cardSource, cardPlay,
+            ref __result, () => CreatureCmd.Damage(choiceContext, entries, amount, props, dealer,
+                cardSource, cardPlay, modifyDamageHookType));
+    }
 #endif
 #pragma warning restore CA1707
 
@@ -264,10 +271,11 @@ public sealed partial class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
         Creature? dealer,
         CardModel? cardSource,
         CardPlay? cardPlay,
-        ref Task<IEnumerable<DamageResult>> resultTask)
+        ref Task<IEnumerable<DamageResult>> resultTask,
+        Func<Task<IEnumerable<DamageResult>>>? originalDamage = null)
     {
         if (NinjaSlayerFinisherCinematic.TryInterceptRangedDamage(
-                choiceContext, targets, amount, props, dealer, cardSource, cardPlay, out var rangedResult))
+                choiceContext, targets, amount, props, dealer, cardSource, cardPlay, out var rangedResult, originalDamage))
         {
             resultTask = rangedResult!;
             return false;
@@ -280,7 +288,7 @@ public sealed partial class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
                 dealer,
                 cardSource,
                 cardPlay,
-                out Task<IEnumerable<DamageResult>>? result))
+                out Task<IEnumerable<DamageResult>>? result, originalDamage))
         {
             FinisherAttackVfxBaselineContext.ObserveDamage(dealer, cardSource, props);
             FinisherSessionRegistry.GetActiveSession()?.NotifyPrimaryDamage(dealer, cardSource, cardPlay);
@@ -312,7 +320,11 @@ public sealed class NinjaSlayerIncomingDamageCapturePatch : IPatchMethod
             nameof(CreatureCmd.Damage),
             [
                 typeof(PlayerChoiceContext),
+#if NINJASLAYER_CHANNEL_PREVIEW
+                typeof(IEnumerable<DamageTargetData>),
+#else
                 typeof(IEnumerable<Creature>),
+#endif
                 typeof(decimal),
                 typeof(ValueProp),
                 typeof(Creature),
@@ -320,17 +332,30 @@ public sealed class NinjaSlayerIncomingDamageCapturePatch : IPatchMethod
 #if !NINJASLAYER_LEGACY_DAMAGE_API
                 , typeof(CardPlay)
 #endif
+#if NINJASLAYER_CHANNEL_PREVIEW
+                , typeof(MegaCrit.Sts2.Core.Hooks.ModifyDamageHookType)
+#endif
             ])
     ];
 
     public static void Prefix(
+#if NINJASLAYER_CHANNEL_PREVIEW
+        ref IEnumerable<DamageTargetData>? targetData,
+#else
         ref IEnumerable<Creature>? targets,
+#endif
         Creature? dealer,
         ValueProp props,
         out object? __state)
     {
+#if NINJASLAYER_CHANNEL_PREVIEW
+        DamageTargetData[]? entries = targetData?.ToArray();
+        targetData = entries;
+        List<Creature> targetList = entries?.Select(entry => entry.target).ToList() ?? [];
+#else
         List<Creature> targetList = targets?.ToList() ?? [];
         targets = targetList;
+#endif
         __state = DeathAnimation.BeginIncomingDamageCapture(targetList, dealer, props);
     }
 
@@ -435,7 +460,11 @@ public sealed class NinjaSlayerDeathCompletionPatch : IPatchMethod
         new(
             typeof(Hook),
             nameof(Hook.AfterDeath),
-            [typeof(IRunState), typeof(ICombatState), typeof(Creature), typeof(bool), typeof(float)])
+            [typeof(IRunState), typeof(ICombatState), typeof(Creature),
+#if NINJASLAYER_CHANNEL_PREVIEW
+                typeof(CardModel),
+#endif
+                typeof(bool), typeof(float)])
     ];
 
     public static void Postfix(Creature creature, ref Task __result)

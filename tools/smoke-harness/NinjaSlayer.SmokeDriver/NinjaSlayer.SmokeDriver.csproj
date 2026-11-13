@@ -34,6 +34,10 @@
       <HintPath>$(PinnedRitsuLibAssemblyPath)</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="STS2-RitsuLib.Runtime;STS2-RitsuLib.Shared;STS2-RitsuLib.Ui;STS2-RitsuLib.Settings">
+      <HintPath>$([System.IO.Path]::GetDirectoryName('$(PinnedRitsuLibAssemblyPath)'))/%(Identity).dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
   <Target Name="ValidateSmokeReferences" BeforeTargets="ResolveReferences">
     <Error Condition="!Exists('$(Sts2DataDir)\sts2.dll')" Text="SmokeDriver requires Sts2DataDir." />

@@ -51,6 +51,32 @@ namespace NinjaSlayer.SmokeDriver;
 
 internal sealed partial class SmokeController
 {
+    private static Task<RunState> StartSmokeRun(CharacterModel character, bool shouldSave,
+        IReadOnlyList<ActModel> acts, IReadOnlyList<ModifierModel> modifiers, string seed,
+        GameMode gameMode, int ascensionLevel, bool isCustom = false) =>
+#if NINJASLAYER_CHANNEL_STABLE
+        NGame.Instance!.StartNewSingleplayerRun(character, shouldSave, acts, modifiers, seed,
+            isCustom ? GameMode.Custom : gameMode, ascensionLevel);
+#else
+        NGame.Instance!.StartNewSingleplayerRun(
+            Player.CreateForNewRun(character, SaveManager.Instance.GenerateUnlockStateFromProgress(), 1),
+            shouldSave, acts, modifiers, seed, gameMode, isCustom, ascensionLevel);
+#endif
+
+    private static IDisposable UseSmokeSelector(MegaCrit.Sts2.Core.TestSupport.ICardSelector selector) =>
+#if NINJASLAYER_CHANNEL_STABLE
+        CardSelectCmd.UseSelector(selector);
+#else
+        MegaCrit.Sts2.Core.CardSelection.CardSelectorStack.SetTestSelector(selector);
+#endif
+
+    private static IDisposable SuspendSmokeSelector() =>
+#if NINJASLAYER_CHANNEL_STABLE
+        CardSelectCmd.SuspendSelectorForTest();
+#else
+        MegaCrit.Sts2.Core.CardSelection.CardSelectorStack.SuspendTestSelector();
+#endif
+
     private const int RestartRequestedExitCode = 20;
     private const string InjectedDarkStrikeFailure = "Injected Dark Strike damage-hook failure.";
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(45);
@@ -1054,8 +1080,14 @@ internal sealed partial class SmokeController
             null);
         await mixedMove.PerformMove([target]);
 
-        Require(firstResults.Count == 0, "The first hit did not consume the only Evasion layer.");
-        Require(secondResults.Any(result => ReferenceEquals(result.Receiver, target)), "The second hit did not connect.");
+        Require(firstResults.Count == 0 && secondResults.Count == 0,
+            "One Evasion layer must evade every hit in the same enemy move.");
+        Require(!target.HasPower<EvasionPower>() && !target.HasPower<WeakPower>(),
+            "The evaded move must consume one layer after completion and suppress its debuff.");
+        await mixedMove.PerformMove([target]);
+        Require(firstResults.Any(result => ReferenceEquals(result.Receiver, target))
+            && secondResults.Any(result => ReferenceEquals(result.Receiver, target)),
+            "Both hits of the next move must connect after Evasion expires.");
         Require(target.HasPower<WeakPower>(), "A connected hit incorrectly suppressed its move debuff.");
         await PowerCmd.Remove<WeakPower>(target);
 
@@ -1309,7 +1341,7 @@ internal sealed partial class SmokeController
                 mixedEntries.Length == 2
                 && ReferenceEquals(mixedEntries[0].Receiver, target)
                 && ReferenceEquals(mixedEntries[1].Receiver, blockedTarget),
-                "Dark Strike did not preserve left-to-right result order for mixed multiplayer targets.");
+                "Dark Strike did not preserve native target order for mixed multiplayer targets.");
             DamageResult mixedNormalResult = mixedEntries[0].Result;
             DamageResult mixedBlockedResult = mixedEntries[1].Result;
             Require(!mixedNormalResult.WasFullyBlocked && mixedNormalResult.UnblockedDamage > 0,
@@ -1524,7 +1556,7 @@ internal sealed partial class SmokeController
             historyBefore = AttackHistoryCount();
             var thornsObservation = await PerformObservedDarkStrike(
                 monster,
-                [evadedTarget, target],
+                [target, evadedTarget],
                 useMonsterExecution: false);
             RequireObservation(
                 thornsObservation,
@@ -1868,7 +1900,11 @@ internal sealed partial class SmokeController
         SaveManager.Instance.SetFtuesEnabled(enabled: false);
         _checkpoints.Write("fresh.autoslay-starting");
         var autoSlayer = new AutoSlayer();
-        autoSlayer.Start(_configuration.Seed, _configuration.AutoSlayLogPath);
+        autoSlayer.Start(_configuration.Seed,
+#if NINJASLAYER_CHANNEL_PREVIEW
+            mode: null,
+#endif
+            logFile: _configuration.AutoSlayLogPath);
 
         await WaitTaskAsync(_firstCombatCompleted.Task, "first combat scenario did not complete", TimeSpan.FromMinutes(3));
         await WaitTaskAsync(_firstMapReached.Task, "map did not stabilize after first combat", TimeSpan.FromMinutes(2));
@@ -1887,7 +1923,11 @@ internal sealed partial class SmokeController
         NGame.Instance!.DebugSeedOverride = _configuration.Seed;
         _checkpoints.Write("full-autoslay.starting");
         var autoSlayer = new AutoSlayer();
-        autoSlayer.Start(_configuration.Seed, _configuration.AutoSlayLogPath);
+        autoSlayer.Start(_configuration.Seed,
+#if NINJASLAYER_CHANNEL_PREVIEW
+            mode: null,
+#endif
+            logFile: _configuration.AutoSlayLogPath);
         // AutoSlay disables native Pause(), so operate visible in-combat choices directly.
         while (true)
         {
@@ -1909,7 +1949,11 @@ internal sealed partial class SmokeController
         SaveManager.Instance.SetFtuesEnabled(enabled: false);
         _checkpoints.Write("finisher.reverse.starting");
         var autoSlayer = new AutoSlayer();
-        autoSlayer.Start(_configuration.Seed, _configuration.AutoSlayLogPath);
+        autoSlayer.Start(_configuration.Seed,
+#if NINJASLAYER_CHANNEL_PREVIEW
+            mode: null,
+#endif
+            logFile: _configuration.AutoSlayLogPath);
         await WaitTaskAsync(
             _reverseFinisherCompleted.Task,
             "reverse Finisher scenario did not complete",
@@ -1922,7 +1966,11 @@ internal sealed partial class SmokeController
         NGame.Instance!.DebugSeedOverride = _configuration.Seed;
         _checkpoints.Write("sawatari.starting");
         var autoSlayer = new AutoSlayer();
-        autoSlayer.Start(_configuration.Seed, _configuration.AutoSlayLogPath);
+        autoSlayer.Start(_configuration.Seed,
+#if NINJASLAYER_CHANNEL_PREVIEW
+            mode: null,
+#endif
+            logFile: _configuration.AutoSlayLogPath);
 
         await WaitTaskAsync(
             _sawatariCompleted.Task,

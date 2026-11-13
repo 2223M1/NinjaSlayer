@@ -65,7 +65,7 @@ internal sealed partial class SmokeController
             await RunGreetingPreview(script);
             return;
         }
-        var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(),
+        var run = await StartSmokeRun(ModelDb.Character<NinjaSlayerCharacter>(),
             true, ActModel.GetDefaultList(), [], script.Seed, GameMode.Standard, 0);
         await RunManager.Instance.EnterAct(script.Act - 1);
         Player owner = LocalContext.GetMe(run)!;
@@ -77,7 +77,7 @@ internal sealed partial class SmokeController
             var relic = (RelicModel)AccessTools.Method(typeof(ModelDb), "Relic", [], [type]).Invoke(null, null)!;
             var selector = new TestCardSelector();
             selector.PrepareToSelect(name == "YummyCookie" ? [0, 1, 2, 3] : [0]);
-            using var selected = CardSelectCmd.UseSelector(selector);
+            using var selected = UseSmokeSelector(selector);
             if (!owner.Relics.Any(r => r.GetType() == type)) await RelicCmd.Obtain(relic.ToMutable(), owner);
         }
         MapPoint point = run.Map.GetAllMapPoints().First(p => p.PointType == MapPointType.Monster);
@@ -86,7 +86,7 @@ internal sealed partial class SmokeController
         if (script.Purpose == "yukano-popup" && script.Cues.Any(cue => cue.Id == "save_reload"))
             await VerifyYukanoPopupNextCombat(run, point);
         _checkpoints.Write("theater.native-quit");
-        NGame.Instance.Quit();
+        NGame.Instance!.Quit();
     }
 
     private async Task ExecuteTheaterAsync(CancellationToken cancellationToken)
@@ -359,7 +359,7 @@ internal sealed partial class SmokeController
             }
             var selector = new TestCardSelector();
             selector.PrepareToSelect(step.Selection);
-            using var selection = CardSelectCmd.UseSelector(selector);
+            using var selection = UseSmokeSelector(selector);
             await PlayCreatedCard(card, card.TargetType is TargetType.AnyEnemy or TargetType.AnyAlly ? Actor(step.Target) : null);
         }
 

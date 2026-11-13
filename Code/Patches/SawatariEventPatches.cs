@@ -135,7 +135,11 @@ public sealed class SawatariActRoomGenerationPatch : IPatchMethod
         new(
             typeof(ActModel),
             nameof(ActModel.GenerateRooms),
-            [typeof(Rng), typeof(UnlockState), typeof(bool)])
+            [typeof(Rng), typeof(UnlockState), typeof(bool)
+#if NINJASLAYER_CHANNEL_PREVIEW
+                , typeof(bool)
+#endif
+            ])
     ];
 
     public static void Postfix(ActModel __instance)

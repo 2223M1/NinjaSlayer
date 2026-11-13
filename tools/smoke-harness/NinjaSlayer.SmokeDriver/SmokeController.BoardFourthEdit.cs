@@ -38,7 +38,7 @@ internal sealed partial class SmokeController
             foreach (FastModeType speed in new[] { FastModeType.Normal, FastModeType.Fast })
             {
                 SaveManager.Instance.PrefsSave.FastMode = speed;
-                var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(), true,
+                var run = await StartSmokeRun(ModelDb.Character<NinjaSlayerCharacter>(), true,
                     ActModel.GetDefaultList(), [], _configuration.Seed, GameMode.Standard, 0);
                 await RunManager.Instance.EnterAct(0);
                 await RunManager.Instance.EnterRoomDebug(RoomType.Monster, model: ModelDb.Encounter<GremlinMercNormal>().ToMutable());
@@ -90,21 +90,22 @@ internal sealed partial class SmokeController
                             await CardPileCmd.Add(combat.CreateCard<StrikeIronclad>(player), PileType.Hand);
                             selector.PrepareToSelect([0]);
                             int hp = selected.CurrentHp;
-                            using (CardSelectCmd.UseSelector(selector)) await Play(card, selected);
+                            using (UseSmokeSelector(selector)) await Play(card, selected);
                             Require(hp - selected.CurrentHp == (upgraded ? 11 : 9) && PileType.Hand.GetPile(player).Cards.Count == 1,
                                 "Rendered Kunai changed damage or failed its final one-card hand discard.");
                         }
                         else
                         {
-                            using (CardSelectCmd.UseSelector(selector)) await Play(card);
-                            Require(player.Creature.Block == (upgraded ? 8 : 6), "Rendered Assess did not grant native Dexterity-modified Block4/6.");
+                            using (UseSmokeSelector(selector)) await Play(card);
+                            Require(player.Creature.Block == 0 && player.Creature.GetPowerAmount<StretchPower>() == (upgraded ? 7 : 5),
+                                "Rendered Assess did not grant Stretch5/7.");
                         }
-                        int expected = card is KunaiThrow ? upgraded ? 4 : 3 : upgraded ? 6 : 4;
+                        int expected = card is KunaiThrow ? upgraded ? 4 : 3 : upgraded ? 5 : 4;
                         Require(FourthBoardScryProbe.Amounts.SequenceEqual([expected]), "Rendered Scry amount or command count differs from the edited rule.");
                     }
                     _checkpoints.Write("fourth-board.card", data: new JsonObject { ["card"] = card.Id.ToString(), ["upgraded"] = upgraded, ["speed"] = speed.ToString() });
                 }
-                await NGame.Instance.ReturnToMainMenuAfterRun();
+                await NGame.Instance!.ReturnToMainMenuAfterRun();
                 await WaitFrames(30);
             }
         }

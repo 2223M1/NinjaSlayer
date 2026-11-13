@@ -4,7 +4,8 @@ import { readFileSync, writeFileSync, readdirSync, mkdirSync } from 'node:fs';
 import OpenCC from '../../build/localization-tools/node_modules/opencc-js/dist/esm/full.js';
 import { messages } from '../../Infrastructure/telemetry-worker/dashboard/translations.mjs';
 const convert = OpenCC.Converter({ from: 'cn', to: 'twp' });
-const reference = process.argv[2] ?? '../Slay the Spire 2/Slay the Spire 2 v0.111.0/localization';
+const previewVersion = JSON.parse(readFileSync('eng/compatibility.json', 'utf8')).channels.preview.gameApiVersion;
+const reference = process.argv[2] ?? `../Slay the Spire 2/Slay the Spire 2 v${previewVersion}/localization`;
 const glossary = new Map();
 for (const table of ['powers','card_keywords','static_hover_tips','gameplay_ui']) {
   const read = lang => JSON.parse(readFileSync(`${reference}/${lang}/${table}.json`, 'utf8'));

@@ -31,7 +31,7 @@ internal sealed partial class SmokeController
         foreach (FastModeType speed in new[] { FastModeType.Normal, FastModeType.Fast, FastModeType.Instant })
         {
             SaveManager.Instance.PrefsSave.FastMode = speed;
-            var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(), true,
+            var run = await StartSmokeRun(ModelDb.Character<NinjaSlayerCharacter>(), true,
                 ActModel.GetDefaultList(), [], _configuration.Seed, GameMode.Standard, 0);
             var player = run.Players[0];
             await RelicCmd.Obtain<OrigamiPactRelic>(player);
@@ -120,7 +120,7 @@ internal sealed partial class SmokeController
             _checkpoints.Write("feedback120.sandpit-companions." + speed, data: new System.Text.Json.Nodes.JsonObject
                 { ["initialSpacingX"] = initialSpacing.X, ["finalSpacingX"] = companion.GlobalPosition.X - actor.GlobalPosition.X,
                   ["playerMovementX"] = actor.GlobalPosition.X - initialGlobalX });
-            await NGame.Instance.ReturnToMainMenuAfterRun();
+            await NGame.Instance!.ReturnToMainMenuAfterRun();
             await WaitFrames(30);
         }
     }

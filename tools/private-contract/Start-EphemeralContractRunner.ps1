@@ -36,7 +36,6 @@ param(
 
     [string]$RitsuLibModDirectory,
 
-    [string]$AutoAnthonyAssemblyPath = $env:NINJASLAYER_AUTOANTHONY_ASSEMBLY_PATH,
 
     [string]$GodotExecutable = 'C:\Program Files\Godot_v4.5.1-stable_mono_win64\Godot_v4.5.1-stable_mono_win64.exe',
 
@@ -111,11 +110,23 @@ if ($RunnerPurpose -in @('Contract', 'Release')) {
     }
 }
 
-if ($RunnerPurpose -eq 'Smoke') {
+if ($RunnerPurpose -in @('Contract', 'Smoke')) {
     if ([string]::IsNullOrWhiteSpace($RitsuLibModDirectory)) {
-        throw 'RitsuLibModDirectory is required for Smoke and must point to the current Workshop RitsuLib installation.'
+        throw 'RitsuLibModDirectory is required for Contract and Smoke; supply the matching Workshop RitsuLib installation.'
     }
     $RitsuLibModDirectory = (Resolve-Path -LiteralPath $RitsuLibModDirectory -ErrorAction Stop).Path
+    foreach ($fileName in @('assets.zip', 'mod_manifest.json')) {
+        if (-not (Test-Path -LiteralPath (Join-Path $RitsuLibModDirectory $fileName) -PathType Leaf)) {
+            throw "Missing RitsuLib resource input: $fileName"
+        }
+    }
+    $manifest = Get-Content -LiteralPath (Join-Path $RitsuLibModDirectory 'mod_manifest.json') -Raw | ConvertFrom-Json
+    if ($RunnerPurpose -eq 'Contract' -and [string]$manifest.version -ne [string]$compatibility.ritsuLibVersion) {
+        throw 'Contract resources must exactly match compatibility.ritsuLibVersion.'
+    }
+}
+
+if ($RunnerPurpose -eq 'Smoke') {
     foreach ($hostInput in $hostInputs) {
         if ([string]::IsNullOrWhiteSpace($hostInput.GameRootDirectory)) {
             throw "GameRootDirectory$([char]::ToUpperInvariant($hostInput.Channel[0]))$($hostInput.Channel.Substring(1)) is required for Smoke."
@@ -146,9 +157,6 @@ if ($RunnerPurpose -eq 'Smoke') {
 }
 
 if ($RunnerPurpose -in @('Release', 'Smoke')) {
-    if (-not $AutoAnthonyAssemblyPath -or -not (Test-Path -LiteralPath $AutoAnthonyAssemblyPath -PathType Leaf)) {
-        throw 'Release and Smoke runners require the installed AutoAnthony 0.3.102 reference DLL.'
-    }
     $null = Get-NinjaSlayerVerifiedSpineExtension `
         -Compatibility $compatibility `
         -SourceDirectory $SpineExtensionDirectory
@@ -179,7 +187,6 @@ $managedEnvironmentVariables = @(
     'NINJASLAYER_RITSULIB_MOD_DIR',
     'NINJASLAYER_STS2_STABLE_DATA_DIR',
     'NINJASLAYER_STS2_PREVIEW_DATA_DIR',
-    'NINJASLAYER_AUTOANTHONY_ASSEMBLY_PATH',
     'NINJASLAYER_SMOKE_STABLE_GAME_ROOT',
     'NINJASLAYER_SMOKE_PREVIEW_GAME_ROOT'
 )
@@ -285,6 +292,12 @@ try {
     }
 
     if ($RunnerPurpose -eq 'Contract') {
+        New-Item -ItemType Directory -Path $ritsuLibSmokeDirectory -Force | Out-Null
+        foreach ($fileName in @('assets.zip', 'mod_manifest.json')) {
+            $destination = Join-Path $ritsuLibSmokeDirectory $fileName
+            Copy-Item -LiteralPath (Join-Path $RitsuLibModDirectory $fileName) -Destination $destination
+            (Get-Item -LiteralPath $destination).IsReadOnly = $true
+        }
         Copy-IsolatedDotnet9Runtime -Destination $dotnetRuntimeDirectory
     }
 
@@ -336,21 +349,12 @@ try {
     $previewHost = $hostInputs | Where-Object Channel -eq 'preview' | Select-Object -First 1
 
     Set-RunnerEnvironment -Name 'GODOT_EXE' -Value $GodotExecutable
-    $anthonyReference = $null
-    if ($RunnerPurpose -in @('Release', 'Smoke')) {
-        $anthonyDirectory = Join-Path $referenceDirectory 'optional'
-        [IO.Directory]::CreateDirectory($anthonyDirectory) | Out-Null
-        $anthonyReference = Join-Path $anthonyDirectory 'AutoAnthony.dll'
-        Copy-Item -LiteralPath $AutoAnthonyAssemblyPath -Destination $anthonyReference
-        (Get-Item -LiteralPath $anthonyReference).IsReadOnly = $true
-    }
-    Set-RunnerEnvironment -Name 'NINJASLAYER_AUTOANTHONY_ASSEMBLY_PATH' -Value $anthonyReference
     Set-RunnerEnvironment -Name 'NINJASLAYER_CONTRACT_DOTNET_ROOT' `
         -Value $(if ($RunnerPurpose -eq 'Contract') { $dotnetRuntimeDirectory } else { $null })
     Set-RunnerEnvironment -Name 'NINJASLAYER_SPINE_DIR' `
         -Value $(if ($RunnerPurpose -in @('Release', 'Smoke')) { $spineDirectory } else { $null })
     Set-RunnerEnvironment -Name 'NINJASLAYER_RITSULIB_MOD_DIR' `
-        -Value $(if ($RunnerPurpose -eq 'Smoke') { $ritsuLibSmokeDirectory } else { $null })
+        -Value $(if ($RunnerPurpose -in @('Contract', 'Smoke')) { $ritsuLibSmokeDirectory } else { $null })
     Set-RunnerEnvironment -Name 'NINJASLAYER_STS2_STABLE_DATA_DIR' `
         -Value $(if ($RunnerPurpose -in @('Contract', 'Release')) { $isolatedDataDirectories.stable } else { $null })
     Set-RunnerEnvironment -Name 'NINJASLAYER_STS2_PREVIEW_DATA_DIR' `

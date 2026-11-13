@@ -58,7 +58,7 @@ Use `Try*` only for an expected, recoverable failure at a real boundary where th
 
 ### Supported-host evidence
 
-The only active host targets are the rolling stable and preview entries in `eng/compatibility.json`.
+The only active host targets are the rolling official stable release and latest preview entries in `eng/compatibility.json`, not the two highest version numbers. Retire intermediate preview versions when the preview target advances.
 
 Keep a proven difference compile-time and in the owning feature. Prefer a direct local branch; use a minimal adapter only for one real external API boundary. Do not reintroduce global compatibility facades, runtime capability graphs, feature-state registries, method-body fingerprint platforms, runtime host guessing, best-fit parsing, speculative historical alignment, or imaginary forward compatibility.
 

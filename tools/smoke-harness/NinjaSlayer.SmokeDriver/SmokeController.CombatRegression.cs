@@ -37,7 +37,7 @@ internal sealed partial class SmokeController
     {
         SaveManager.Instance.SetFtuesEnabled(false);
         SaveManager.Instance.PrefsSave.FastMode = FastModeType.Normal;
-        var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(),
+        var run = await StartSmokeRun(ModelDb.Character<NinjaSlayerCharacter>(),
             true, ActModel.GetDefaultList(), [], _configuration.Seed, GameMode.Standard, 0);
         await RunManager.Instance.EnterAct(0);
         var point = run.Map.GetAllMapPoints().First(p => p.PointType == MapPointType.Monster);
@@ -218,7 +218,7 @@ internal sealed partial class SmokeController
             CombatRegressionProbe.Record = null;
         }
         _checkpoints.Write("combat-regression.completed");
-        NGame.Instance.Quit();
+        NGame.Instance!.Quit();
     }
 }
 

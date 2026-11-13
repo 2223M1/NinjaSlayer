@@ -139,7 +139,7 @@ public partial class OrbContractRunner
             var drawCards = Enumerable.Range(0, drawCount).Select(_ => AddCard<DefendIronclad>(combat, PileType.Draw)).ToArray();
             var discardCards = Enumerable.Range(0, discardCount).Select(_ => AddCard<DefendIronclad>(combat, PileType.Discard)).ToArray();
             int selections = 0;
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
+            using var selector = UseCardSelector(new SelectCards(options =>
             {
                 selections++;
                 Require(options.SequenceEqual(PileType.Draw.GetPile(combat.Player).Cards.Take(amount)),
@@ -162,7 +162,7 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<BladeCyclePower>(Choice, combat.Player.Creature, 2, combat.Player.Creature, null);
             int hp = combat.Enemy.CurrentHp;
             int evoked = _evoked;
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ =>
+            using var selector = UseCardSelector(new SelectCards(_ =>
             {
                 Require(_evoked == evoked + 3 && combat.Enemy.CurrentHp == hp - 18 && combat.Stock == 1,
                     "Scry must await native shuffle attacks and stock loss before selecting.");
@@ -182,7 +182,7 @@ public partial class OrbContractRunner
             draw.CardRemoved += _ => removed++;
             draw.CardRemoveFinished += () => finished++;
             draw.ContentsChanged += () => contentsChanged++;
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => cards.Take(selected).ToArray()));
+            using var selector = UseCardSelector(new SelectCards(_ => cards.Take(selected).ToArray()));
             await ScryCmd.Execute(Choice, combat.Player, 3, exhaust);
             Require(draw.Cards.Count == 3 - selected && removed == selected && finished == selected
                 && contentsChanged == selected,
@@ -199,7 +199,7 @@ public partial class OrbContractRunner
             PileType.Draw.GetPile(combat.Player).CardRemoveFinished += () => drawRemoved++;
             await AddStock(combat.Player, 3);
             int selection = 0;
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
+            using var selector = UseCardSelector(new SelectCards(options =>
             {
                 selection++;
                 if (selection == 1) return [sly, discarded];
@@ -212,8 +212,9 @@ public partial class OrbContractRunner
             Require(selection == 2 && combat.Stock == 0 && combat.Enemy.CurrentHp == 982,
                 "Scry/Sly must dispatch three discards without creating stock.");
             Require(drawRemoved == 3, "Nested Scry must update the native draw-pile counter for all three removals.");
-            Require(combat.Player.Creature.Block == 12 && combat.Player.Creature.GetPower<EvokeObserver>()!.Discarded == 3,
-                "ReadAhead must grant eight block for its two discards plus four from Assess; discard powers see the nested discard.");
+            Require(combat.Player.Creature.Block == 8 && combat.Player.Creature.GetPowerAmount<StretchPower>() == 5
+                && combat.Player.Creature.GetPower<EvokeObserver>()!.Discarded == 3,
+                "ReadAhead gains eight block; Stretch gained during its play remains for the next card, and discard powers see all three discards.");
         }
         using (var combat = new OrbCombat())
         {
@@ -221,7 +222,7 @@ public partial class OrbContractRunner
             sly.AddKeyword(CardKeyword.Sly);
             var second = AddCard<DefendIronclad>(combat, PileType.Draw);
             int selections = 0;
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
+            using var selector = UseCardSelector(new SelectCards(options =>
             {
                 selections++;
                 Require(options.SequenceEqual(selections == 1 ? [sly, second] : new CardModel[] { second }),
@@ -236,7 +237,7 @@ public partial class OrbContractRunner
         using (var combat = new OrbCombat())
         {
             var sly = AddCard<ShurikenCreation>(combat, PileType.Draw);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [sly]));
+            using var selector = UseCardSelector(new SelectCards(_ => [sly]));
             ScryResult result = await ScryCmd.Execute(Choice, combat.Player, 1, exhaustDiscarded: true);
             Require(result.ExhaustedCards == 1 && combat.Stock == 0 && sly.Pile?.Type == PileType.Exhaust,
                 "Exhausting a Scry selection must not activate Sly or discard effects.");
@@ -260,7 +261,7 @@ public partial class OrbContractRunner
                     : AddCard<DefendIronclad>(combat, PileType.Draw));
 
             int selections = 0;
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
+            using var selector = UseCardSelector(new SelectCards(options =>
             {
                 selections++;
                 Require(PileType.Hand.GetPile(combat.Player).IsEmpty,
@@ -326,7 +327,7 @@ public partial class OrbContractRunner
             var wound = AddCard<Wound>(combat);
             combat.Player.Creature.SetCurrentHpInternal(30);
             await PowerCmd.Apply<DevourFlamePower>(Choice, combat.Player.Creature, 4, combat.Player.Creature, null);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [first]));
+            using var selector = UseCardSelector(new SelectCards(_ => [first]));
             await CardCmd.AutoPlay(Choice, recovery, null);
             Require(combat.Player.Creature.CurrentHp == 30 && combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 4,
                 "Rekindle must grant Devour Flame life by exhausting itself, without healing or a Rekindle self-reward.");
@@ -365,7 +366,7 @@ public partial class OrbContractRunner
             var gather = AddCard<GatherKi>(combat);
             var tea = AddCard<Chado>(combat);
             tea.IncreaseEnergy(4);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [tea]));
+            using var selector = UseCardSelector(new SelectCards(_ => [tea]));
             await CardCmd.AutoPlay(Choice, gather, null);
             Require(combat.Player.Creature.GetPowerAmount<KaratePower>() == 10 && tea.Pile?.Type == PileType.Exhaust,
                 "Gather Ki must read the selected Chado's accumulated energy.");
@@ -530,7 +531,7 @@ public partial class OrbContractRunner
             var copy = AddCard<FurinKazan>(combat, upgraded: true);
             var first = AddCard<StrikeIronclad>(combat, upgraded: true);
             var second = AddCard<DefendIronclad>(combat);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [first, second]));
+            using var selector = UseCardSelector(new SelectCards(_ => [first, second]));
             await CardCmd.AutoPlay(Choice, copy, null);
             var clones = PileType.Draw.GetPile(combat.Player).Cards;
             Require(clones.Count == 2 && clones[0].Id == first.Id && clones[0].IsUpgraded
@@ -541,9 +542,10 @@ public partial class OrbContractRunner
         {
             var retained = AddCard<DefendIronclad>(combat);
             var card = AddCard<Assess>(combat);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
+            using var selector = UseCardSelector(new SelectCards(_ => []));
             await CardCmd.AutoPlay(Choice, card, null);
-            Require(!retained.ShouldRetainThisTurn && combat.Player.Creature.Block == 4, "Assess grants block without Retain.");
+            Require(!retained.ShouldRetainThisTurn && combat.Player.Creature.Block == 0
+                && combat.Player.Creature.GetPowerAmount<StretchPower>() == 5, "Assess grants Stretch without Retain.");
             retained.EndOfTurnCleanup();
             Require(!retained.ShouldRetainThisTurn, "Assess must not add Retain after cleanup.");
         }
@@ -560,11 +562,11 @@ public partial class OrbContractRunner
         {
             var second = combat.AddEnemy();
             var tea = AddCard<Chado>(combat);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [tea]));
+            using var selector = UseCardSelector(new SelectCards(_ => [tea]));
             await CardCmd.AutoPlay(Choice, AddCard<TomoeThrow>(combat, upgraded: true), combat.Enemy);
             Require(combat.Enemy.GetPowerAmount<WeakPower>() == 3 && !second.HasPower<WeakPower>()
-                && combat.Player.Creature.Block == 12 && tea.Pile?.Type == PileType.Exhaust,
-                "Sudden Guard must consume tea, grant twelve Block and weaken only its selected target.");
+                && combat.Player.Creature.Block == 14 && tea.Pile?.Type == PileType.Exhaust,
+                "Tomoe Throw must consume tea, grant fourteen Block and weaken only its selected target.");
         }
         GD.Print("PASS Endurance three hits, post-attack Karate and no delayed reward, two-card copying, retention, Shuriken Storm and selected-target Weak");
     }

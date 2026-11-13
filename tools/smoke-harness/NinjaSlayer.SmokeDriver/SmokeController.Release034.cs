@@ -30,7 +30,7 @@ internal sealed partial class SmokeController
                 postfix: new HarmonyMethod(typeof(Release034StageProbe), nameof(Release034StageProbe.Postfix)));
         SaveManager.Instance.SetFtuesEnabled(false);
         SaveManager.Instance.PrefsSave.FastMode = FastModeType.Normal;
-        var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(),
+        var run = await StartSmokeRun(ModelDb.Character<NinjaSlayerCharacter>(),
             true, ActModel.GetDefaultList(), [], _configuration.Seed, GameMode.Standard, 0);
         await RunManager.Instance.EnterAct(0);
         await RunManager.Instance.EnterMapCoord(run.Map.GetAllMapPoints().First(p => p.PointType == MapPointType.Monster).coord);
@@ -48,8 +48,8 @@ internal sealed partial class SmokeController
     private async Task VerifyArtifactGreetingLive()
     {
         await NGame.Instance!.ReturnToMainMenu();
-        await WaitUntilAsync(() => NGame.Instance.MainMenu != null, "Artifact fixture main menu missing.");
-        var run = await NGame.Instance.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(),
+        await WaitUntilAsync(() => NGame.Instance!.MainMenu != null, "Artifact fixture main menu missing.");
+        var run = await StartSmokeRun(ModelDb.Character<NinjaSlayerCharacter>(),
             true, ActModel.GetDefaultList(), [], _configuration.Seed + "_ARTIFACT", GameMode.Standard, 0);
         STS2RitsuLib.Data.ModDataStore.For("NinjaSlayer")
             .Get<NinjaSlayerSettingsData>("ninja_slayer_settings").BriefBossGreetingEnabled = false;

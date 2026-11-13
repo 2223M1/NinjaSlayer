@@ -202,7 +202,11 @@ internal sealed partial class SmokeController
 
         Task frameCapture = CaptureTransitionFramesAsync();
         var autoSlayer = new MegaCrit.Sts2.Core.AutoSlay.AutoSlayer();
-        autoSlayer.Start(_configuration.Seed, _configuration.AutoSlayLogPath);
+        autoSlayer.Start(_configuration.Seed,
+#if NINJASLAYER_CHANNEL_PREVIEW
+            mode: null,
+#endif
+            logFile: _configuration.AutoSlayLogPath);
         await WaitTaskAsync(
             _transitionPerfCompleted.Task,
             "TransitionPerf did not reveal and hold the Neow room",

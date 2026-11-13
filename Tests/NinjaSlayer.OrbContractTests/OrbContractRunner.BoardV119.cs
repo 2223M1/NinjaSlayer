@@ -40,7 +40,7 @@ public partial class OrbContractRunner
         }
         using (var combat = new OrbCombat())
         {
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(options => options.OfType<DefendIronclad>().Take(1)));
+            using var selector = UseCardSelector(new SelectCards(options => options.OfType<DefendIronclad>().Take(1)));
             foreach (bool upgraded in new[] { false, true })
             {
                 AddCard<DefendIronclad>(combat);

@@ -43,10 +43,23 @@ namespace NinjaSlayer.OrbContractTests;
 
 public partial class OrbContractRunner : Node
 {
+    private static IDisposable UseCardSelector(ICardSelector selector, bool localOnly = false) =>
+#if NINJASLAYER_CHANNEL_STABLE
+        CardSelectCmd.UseSelector(selector);
+#else
+        localOnly ? RunManager.Instance.CardSelectorStack.UseLocalSelector(selector)
+            : MegaCrit.Sts2.Core.CardSelection.CardSelectorStack.SetTestSelector(selector);
+#endif
+
     private static int _evoked;
     private static bool _hasPresentationResources;
     private MegaCrit.Sts2.Core.Assets.AtlasResourceLoader? _catalogAtlasLoader;
     private static readonly BlockingPlayerChoiceContext Choice = new();
+    private static bool ResolveSceneFixtureRoom(ref MegaCrit.Sts2.Core.Nodes.Rooms.NCombatRoom? __result)
+    {
+        __result = _hurtRoom;
+        return false;
+    }
 
     public override async void _Ready()
     {
@@ -69,6 +82,12 @@ public partial class OrbContractRunner : Node
         try
         {
             Assembly product = typeof(ShurikenOrb).Assembly;
+            // Install fixture getters before scene callbacks can inline their original bodies.
+            var sceneFixtures = new Harmony("NinjaSlayer.OrbContracts.SceneFixtures");
+            sceneFixtures.Patch(AccessTools.PropertyGetter(typeof(NinjaSlayerSettings), "FreeControlEnabled"),
+                prefix: new HarmonyMethod(typeof(OrbContractRunner), nameof(FreeSetting)));
+            sceneFixtures.Patch(AccessTools.PropertyGetter(typeof(MegaCrit.Sts2.Core.Nodes.Rooms.NCombatRoom), "Instance"),
+                prefix: new HarmonyMethod(typeof(OrbContractRunner), nameof(ResolveSceneFixtureRoom)));
             string? expected = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_EXPECTED_SOURCE_REVISION");
             Require(expected?.Length == 40 && Metadata(product, "NinjaSlayerSourceRevision") == expected,
                 "Candidate source revision must match the requested full SHA.");
@@ -107,7 +126,6 @@ public partial class OrbContractRunner : Node
 #endif
             };
             ((List<Mod>)AccessTools.Field(typeof(ModManager), "_mods").GetValue(null)!).Add(productMod);
-            Assembly? anthonyBridge = LoadAnthonyContractAssemblies(productMod);
 #if !NINJASLAYER_CHANNEL_STABLE
             AssemblyInfo.Init();
             AssemblyInfo.ModMap![product] = productMod;
@@ -128,7 +146,7 @@ public partial class OrbContractRunner : Node
             }
             else
                 GD.Print("NOT RUN: tooltip and native event presentation contracts (no product resource pack supplied).");
-            if (catalogDestination is not null)
+            if (_hasPresentationResources || catalogDestination is not null)
             {
                 // Native .sprites/*.tres paths are virtual atlas resources. The
                 // standalone test scene does not run the game's menu bootstrap.
@@ -139,6 +157,7 @@ public partial class OrbContractRunner : Node
             // Reproduce a mod patching AutoPlay before RitsuLib/NinjaSlayer install wrapper hooks.
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_EARLY_AUTOPLAY") == "1")
                 PatchAutoplayBeforeFramework();
+            NinjaSlayer.Tests.RitsuTestAssets.Configure();
             RitsuLibFramework.Initialize();
             using (RitsuLibFramework.BeginModDataRegistration("NinjaSlayer"))
             {
@@ -149,13 +168,6 @@ public partial class OrbContractRunner : Node
                 AccessTools.Method(typeof(StrongShuriken), "RegisterSavedData").Invoke(null, ["NinjaSlayer"]);
             }
             ModTypeDiscoveryHub.RegisterModAssembly("NinjaSlayer", product);
-            if (anthonyBridge is not null)
-            {
-                ModTypeDiscoveryHub.RegisterModAssembly("NinjaSlayer", anthonyBridge);
-                var integrationPatcher = RitsuLibFramework.CreatePatcher("NinjaSlayer", "AutoAnthonyContract");
-                anthonyBridge.GetType("NinjaSlayer.AutoAnthony.Bridge", true)!.GetMethod("Register")!.Invoke(null, [integrationPatcher]);
-                Require(integrationPatcher.PatchAll(), "Optional component integration patches failed.");
-            }
             var configureDeck = AccessTools.Method(typeof(Entry), "ConfigureStartingDeck")
                 .MakeGenericMethod(typeof(NinjaSlayerCharacter))
                 .CreateDelegate<Action<CharacterRegistrationEntry<NinjaSlayerCharacter>>>();
@@ -170,8 +182,10 @@ public partial class OrbContractRunner : Node
                 .Invoke(null, null);
             ModelDb.Init();
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_CATALOG_OUTPUT") is null)
+            {
                 ModelDb.Inject(typeof(EvokeObserver));
                 ModelDb.Inject(typeof(GuardAttackObserver));
+            }
             string? minionPath = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_MINION_DLL");
             Assembly? minion = minionPath is null ? null : System.Runtime.Loader.AssemblyLoadContext.GetLoadContext(typeof(Creature).Assembly)!
                 .LoadFromAssemblyPath(System.IO.Path.GetFullPath(minionPath));
@@ -237,22 +251,7 @@ public partial class OrbContractRunner : Node
                 return;
             }
 
-            if (anthonyBridge is not null)
-            {
-                ModelDb.InitIds();
-                await VerifyAnthonyPool(anthonyBridge);
-                GD.Print("NinjaSlayer orb product contracts passed.");
-                GetTree().Quit(0);
-                return;
-            }
 
-            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_SEEDS") == "1")
-            {
-                await VerifySingleplayerSeeds();
-                GD.Print("NinjaSlayer orb product contracts passed.");
-                GetTree().Quit(0);
-                return;
-            }
 
             var patcher = RitsuLibFramework.CreatePatcher("NinjaSlayer.OrbContracts", "Product");
             patcher.RegisterPatch<ShurikenOrbChannelPatch>();
@@ -402,6 +401,15 @@ public partial class OrbContractRunner : Node
                 await VerifyV023();
                 await VerifyV024();
                 GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_TELEMETRY") == "1")
+            {
+                VerifyTelemetryConsent();
+                await VerifyBalanceTelemetry();
+                await VerifyReplayJournal();
+                GD.Print("NinjaSlayer telemetry product contracts passed.");
                 GetTree().Quit(0);
                 return;
             }
@@ -800,16 +808,26 @@ public partial class OrbContractRunner : Node
             if (creature == Owner && delta > 0) Healing += delta;
             return Task.CompletedTask;
         }
-        public override Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
+        public override Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature,
+#if NINJASLAYER_CHANNEL_PREVIEW
+            CardModel? source,
+#endif
+            bool wasRemovalPrevented, float deathAnimLength)
         {
             if (creature == Owner && !wasRemovalPrevented) Deaths++;
             return Task.CompletedTask;
         }
     }
 
-    private sealed class OrbCombat : IDisposable
+    private sealed class OrbCombat : IDisposable, IPlayerCollection
     {
         public CombatState State { get; } = new();
+        public IReadOnlyList<Player> Players => State.Players;
+        public int GetPlayerSlotIndex(Player player) => Players.ToList().IndexOf(player);
+        public Player? GetPlayer(ulong netId) => Players.FirstOrDefault(player => player.NetId == netId);
+#if NINJASLAYER_CHANNEL_PREVIEW
+        private readonly MegaCrit.Sts2.Core.CardSelection.CardSelectorStack? _previousSelectors;
+#endif
         public Player Player { get; }
         public Creature Enemy { get; }
         public MegaCrit.Sts2.Core.Entities.Orbs.OrbQueue Queue => Player.PlayerCombatState!.OrbQueue;
@@ -826,6 +844,11 @@ public partial class OrbContractRunner : Node
             Player.InitializeSeed("orb-contract");
             State.AddPlayer(Player);
             Player.ResetCombatState();
+#if NINJASLAYER_CHANNEL_PREVIEW
+            _previousSelectors = RunManager.Instance.CardSelectorStack;
+            AccessTools.Property(typeof(RunManager), nameof(RunManager.CardSelectorStack)).SetValue(
+                RunManager.Instance, new MegaCrit.Sts2.Core.CardSelection.CardSelectorStack(this));
+#endif
             Enemy = AddEnemy();
 #if NINJASLAYER_CHANNEL_STABLE
             AccessTools.Field(typeof(CombatManager), "_pendingLoss").SetValue(CombatManager.Instance, null);
@@ -839,6 +862,17 @@ public partial class OrbContractRunner : Node
             field.SetValue(CombatManager.Instance, turn);
 #endif
             PowerCmd.Apply<EvokeObserver>(Choice, Player.Creature, 1, Player.Creature, null).GetAwaiter().GetResult();
+        }
+
+        public MegaCrit.Sts2.Core.Runs.RunState CreateRun(string seed)
+        {
+            var run = MegaCrit.Sts2.Core.Runs.RunState.CreateForTest([Player], seed: seed);
+            // Replace the standalone fixture's NullRunState so native singleton hooks reach this combat.
+            AccessTools.Field(typeof(CombatState), "<RunState>k__BackingField").SetValue(State, run);
+#if NINJASLAYER_CHANNEL_PREVIEW
+            AccessTools.Property(typeof(CombatState), nameof(CombatState.RunModels)).SetValue(State, run.RunModels);
+#endif
+            return run;
         }
 
         public Creature AddEnemy()
@@ -858,6 +892,13 @@ public partial class OrbContractRunner : Node
             return card;
         }
 
-        public void Dispose() => Player.PlayerCombatState!.AfterCombatEnd();
+        public void Dispose()
+        {
+            Player.PlayerCombatState!.AfterCombatEnd();
+#if NINJASLAYER_CHANNEL_PREVIEW
+            AccessTools.Property(typeof(RunManager), nameof(RunManager.CardSelectorStack)).SetValue(
+                RunManager.Instance, _previousSelectors);
+#endif
+        }
     }
 }

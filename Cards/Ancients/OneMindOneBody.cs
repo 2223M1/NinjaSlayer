@@ -16,7 +16,7 @@ public sealed class OneMindOneBody : NinjaSlayerStandaloneCardTemplate
     ];
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new NarakuLifeVar(5)
+        new NarakuLifeVar(7)
     ];
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>

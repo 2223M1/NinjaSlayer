@@ -86,7 +86,7 @@ public partial class OrbContractRunner
             cards.Add(card);
         }
         CardCmd.Enchant<Swift>(cards[4], 1);
-        using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
+        using var selector = UseCardSelector(new SelectCards(options =>
         {
             Require(!options.Contains(cards[4]), "Sushi offered an already-enchanted card.");
             return cards.Take(3);

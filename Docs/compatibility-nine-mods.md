@@ -28,36 +28,10 @@
 
 建筑师以原生 `WinRun` 作为“继续”边界，问候使用原生对话。仅装有投药水模组时，在其精确的 `ThrowAndConsume`／`ShouldOfferThrow` 边界跟踪本房间的飞行任务；继续后不接受新投掷，等待已有投掷与问候后执行处决。没有吞掉执行失败并自动胜利的降级路径。
 
-## 东尼算法
+## 已移除的集成
 
-代码在 `Integrations/AutoAnthony/`，主项目排除该目录的编译。普通产品不引用 `AutoAnthony.dll`。检测到东尼且处于 preview 时，在原生内容发现之前加载同目录的 `NinjaSlayer.AutoAnthony.dll`，关联原生模组身份，再经 Ritsu 安装必要接线。装有东尼而缺少桥接 DLL 会明确失败。
+本次 0.113.0 兼容更新移除东尼算法支持，包括生成牌、组件来源、保存接线、桥接程序集及发布依赖。上面的 0.3.3 验证记录仅供历史参考，不代表当前支持范围。
 
-- 使用 `ExternalComponentCharacterApi`、`ComponentPackageApi`、`ComponentRuntimeApi`、原生命名及价值接口。配置名为 `ninjaslayer`，基础平衡配置继承 Ironclad，使用忍者杀手能量图标。
-- 来源表是 `NinjaComponentSources.Sources` 的 84 行，包含 80 张奖励牌及 4 个初始牌模型；每行记录组件出现次数，数值从实际基础／升级实例读取。稳定槽位 000～089：10 初始、20 普通、35 罕见、25 稀有。关闭东尼后普通卡牌、初始卡组和奖励池不变。
-- 通用伤害、格挡、抽弃牌交给东尼原生组件；空手道、手里剑、茶道、奈落和预见调用现有 NinjaSlayer 命令。沿用原生初始牌池、奇巧、奥斯提及衍生牌约束修复和审计。保留固定规则的强·手里剑与事件大刀本体。
-- 继承启用、替换初始、保留原牌、数值随机、数值优化、终极混沌及随机卡图开关。当前卡图来源按来源表槽位分配，开启随机卡图后使用东尼的对应素材变体；并未移植东尼内部“最佳卡图来源”排序。
-- 使用独立的种子派生随机源，不消耗猫粮杯奖励随机流。多人采用东尼已有的权威开局设置与原生种子，不增加网络协议。
-- Ritsu 的 `autoanthony_pool` 保存本局设置、东尼原生序列化定义及卡图来源。每次原生保存前捕获编辑后的定义；在卡牌反序列化前恢复。快速读取不重新抽取牌池。
-- 三处非公开访问限于已核实的外部边界：东尼卡牌缓存重置、东尼卡图变体枚举、Ritsu 在卡牌反序列化前解码本模组的数据槽。升级这些依赖时必须重新检查；不承诺任意未来版本兼容。
+同时移除内置的单人固定随机数规则。奖励、洗牌、怪物、药水及遗物使用当前宿主的原生随机流程；不再注册或更新旧的 `cfc_singleplayer_rng` 数据槽。
 
-原有 [单人不歪种规则](singleplayer-seeds.md) 不变。一人 Host 仍是联机；原版角色和联机不启用本模组的不歪种接线。原猫粮杯自身存在时仍优先。
-
-## 构建与打包
-
-桥接单独构建，必须使用匹配的 preview NinjaSlayer 候选和已安装的 AutoAnthony 0.3.102 引用，引用均为 `Private=false`。例如从仓库根目录执行，路径变量指向实际本机文件：
-
-```powershell
-dotnet build Integrations/AutoAnthony/NinjaSlayer.AutoAnthony.csproj -c Release `
-  -p:NinjaSlayerHostChannel=preview -p:NinjaSlayerVersion=0.3.2 `
-  "-p:RepositoryCommit=$candidateBaseSha" "-p:Sts2DataDir=$previewReferences" `
-  "-p:NinjaSlayerAssemblyPath=$previewProductDll" `
-  "-p:AutoAnthonyAssemblyPath=$installedAnthonyDll" "-p:OutputPath=$bridgeOutput"
-```
-
-`New-NinjaSlayerWorkshopBundle.ps1 -AutoAnthonyBridgePath <DLL>` 将桥接仅加入 `lib/0.111.0/`。包契约检查程序集身份、来源 SHA、宿主、引用、调试与路径边界，不携带任何第三方 DLL。普通产品构建不需要安装东尼。
-
-0.3.3 已把桥接构建接入通用打包入口、两个发布脚本以及 release／smoke workflow。未提供预构建桥接时，打包入口使用 `-PreviewSts2DataDir` 和 `-AutoAnthonyAssemblyPath`（或 `NINJASLAYER_AUTOANTHONY_ASSEMBLY_PATH`）构建。缺少引用立即失败，不生成缺桥接的发布包；原生产品构建仍无需东尼。临时 Release／Smoke runner 通过同名参数接收引用，并复制为隔离只读输入。Workshop ZIP 和程序集契约均要求 preview 目录有该桥接，第三方 DLL 不进入包。
-
-## 普通卡牌目录
-
-本轮未改变正常模式卡牌效果、模型 ID 或牌池；不修改 `Docs/card-catalog.md`。东尼生成牌及组件来源由上述可选集成拥有，不加入普通卡牌目录。
+普通卡牌的费用、数值和关键词没有调整。

@@ -13,8 +13,6 @@ param(
     [Parameter(Mandatory)]
     [ValidatePattern('^[0-9a-fA-F]{40}$')]
     [string]$SourceRevision,
-    [string]$AutoAnthonyBridgePath,
-    [string]$AutoAnthonyAssemblyPath = $env:NINJASLAYER_AUTOANTHONY_ASSEMBLY_PATH,
     [string]$PreviewSts2DataDir = $env:NINJASLAYER_STS2_PREVIEW_DATA_DIR,
     [string]$BuildRoot,
     [string]$CompatibilityManifestPath
@@ -164,14 +162,9 @@ $stableMvid = Get-NinjaSlayerGameModuleMvid -AssemblyPath (Join-Path $stableData
 if ($stableMvid -cne [string]$stableProfile.hostContract.moduleMvid) {
     throw "Stable loader references use host MVID $stableMvid, expected $($stableProfile.hostContract.moduleMvid)."
 }
-if (-not $AutoAnthonyBridgePath) {
-    $previewData = Resolve-RequiredDirectory $PreviewSts2DataDir 'Preview STS2 data directory for the optional bridge'
-    if ((Get-NinjaSlayerGameModuleMvid -AssemblyPath (Join-Path $previewData 'sts2.dll')) -cne [string]$previewProfile.hostContract.moduleMvid) {
-        throw 'Optional bridge references must match the supported preview host.'
-    }
-    if (-not $AutoAnthonyAssemblyPath -or -not (Test-Path -LiteralPath $AutoAnthonyAssemblyPath -PathType Leaf)) {
-        throw 'Bundle creation requires AutoAnthony 0.3.102: supply -AutoAnthonyAssemblyPath or NINJASLAYER_AUTOANTHONY_ASSEMBLY_PATH. The external DLL is never packaged.'
-    }
+$previewData = Resolve-RequiredDirectory $PreviewSts2DataDir 'Preview STS2 data directory'
+if ((Get-NinjaSlayerGameModuleMvid -AssemblyPath (Join-Path $previewData 'sts2.dll')) -cne [string]$previewProfile.hostContract.moduleMvid) {
+    throw 'Preview references must match the supported preview host.'
 }
 if (Test-Path -LiteralPath $loaderOutput) {
     Remove-Item -LiteralPath $loaderOutput -Recurse -Force
@@ -193,18 +186,6 @@ if (-not (Test-Path -LiteralPath $loaderAssembly -PathType Leaf)) {
     throw "Loader build did not produce $loaderAssembly"
 }
 
-if (-not $AutoAnthonyBridgePath) {
-    $bridgeOutput = Join-Path $loaderOutput 'anthony'
-    Invoke-Native dotnet @(
-        'build', (Join-Path $repositoryRoot 'Integrations\AutoAnthony\NinjaSlayer.AutoAnthony.csproj'),
-        '--configuration', 'Release', '--output', $bridgeOutput, '-v:minimal',
-        '-p:NinjaSlayerHostChannel=preview', "-p:NinjaSlayerVersion=$Version",
-        "-p:RepositoryCommit=$SourceRevision", "-p:Sts2DataDir=$previewData",
-        "-p:NinjaSlayerAssemblyPath=$(Join-Path $previewPackage 'NinjaSlayer.dll')",
-        "-p:AutoAnthonyAssemblyPath=$AutoAnthonyAssemblyPath"
-    )
-    $AutoAnthonyBridgePath = Join-Path $bridgeOutput 'NinjaSlayer.AutoAnthony.dll'
-}
 
 if (Test-Path -LiteralPath $output) {
     Remove-Item -LiteralPath $output -Recurse -Force
@@ -228,9 +209,6 @@ foreach ($channelName in @('stable', 'preview')) {
     [IO.Directory]::CreateDirectory($variantDirectory) | Out-Null
     $variantAssembly = Join-Path $variantDirectory 'NinjaSlayer.dll'
     Copy-Item -LiteralPath (Join-Path $source 'NinjaSlayer.dll') -Destination $variantAssembly
-    if ($channelName -eq 'preview' -and $AutoAnthonyBridgePath) {
-        Copy-Item -LiteralPath $AutoAnthonyBridgePath -Destination (Join-Path $variantDirectory 'NinjaSlayer.AutoAnthony.dll')
-    }
     [IO.File]::WriteAllText(
         (Join-Path $variantDirectory 'compat-target.txt'),
         "$($profile.gameApiVersion)`n",

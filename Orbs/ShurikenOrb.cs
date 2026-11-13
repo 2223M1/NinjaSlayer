@@ -275,7 +275,8 @@ public sealed class ShurikenOrb : ModOrbTemplate
         }
         else
         {
-            Creature? target = Owner.RunState.Rng.CombatTargets.NextItem(candidates);
+            Creature[] aimed = candidates.Where(target => target.GetPowerAmount<ShurikenAimPower>() > 0).ToArray();
+            Creature? target = Owner.RunState.Rng.CombatTargets.NextItem(aimed.Length > 0 ? aimed : candidates);
             if (target is null)
             {
                 return [];

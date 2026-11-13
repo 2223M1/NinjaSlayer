@@ -141,7 +141,7 @@
   "NINJA_SLAYER_CARD_COLLAPSE_FIST.title": "หมัดทลาย",
   "NINJA_SLAYER_CARD_COLLAPSE_FIST.description": "สร้างความเสียหาย {Damage:diff()}\nได้รับ {Karate:diff()} [gold]คาราเต้[/gold]",
   "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.title": "จิตและกายเป็นหนึ่ง",
-  "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.description": "ได้รับ[gold]พลังชีวิตนาราคุ[/gold] {NarakuLife:diff()} หน่วย\n[gold]พลังชีวิตนาราคุ[/gold]แต่ละหน่วยเพิ่มความเสียหายของ[gold]คาราเต้[/gold] 1 หน่วย\nเมื่อ[gold]คาราเต้[/gold]ทำงาน จะเสีย[gold]พลังชีวิตนาราคุ[/gold] 1 หน่วยก่อนเสีย[gold]คาราเต้[/gold]",
+  "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.description": "ได้รับ[gold]พลังชีวิตนาราคุ[/gold] {NarakuLife:diff()} หน่วย\n[gold]พลังชีวิตนาราคุ[/gold]ของคุณนับเป็น[gold]คาราเต้[/gold]",
   "NINJA_SLAYER_CARD_ZAZEN_DRINK.title": "เครื่องดื่มซาเซ็น",
   "NINJA_SLAYER_CARD_ZAZEN_DRINK.description": "จั่วการ์ดจน[gold]มือ[/gold]เต็ม โดยทิ้งการ์ด[gold]สถานะ[/gold]ที่จั่วได้\n[gold]พยากรณ์[/gold] {Cards:diff()}",
   "NINJA_SLAYER_CARD_READ_AHEAD.description": "[gold]พยากรณ์[/gold] {Scry:diff()}\nได้รับ {Block:diff()} [gold]บล็อก[/gold] ต่อการ์ดแต่ละใบที่ทิ้งด้วยวิธีนี้",
@@ -149,7 +149,7 @@
   "NINJA_SLAYER_CARD_SHURIKEN_CREATION.description": "ได้รับ {Stock:diff()} [gold]ชุริเค็น[/gold]",
   "NINJA_SLAYER_CARD_ONSLAUGHT.description": "ทุกครั้งที่[gold]ชุริเค็น[/gold]ของคุณสร้างความเสียหายแก่ศัตรู ได้รับ {StrengthPower:diff()} [gold]ความแข็งแรง[/gold] ในเทิร์นนี้",
   "NINJA_SLAYER_CARD_REKINDLE.description": "[gold]แปรสภาพ[/gold]การ์ด 1 ใบใน[gold]มือ[/gold]เป็น[gold]เปลวไฟดำ[/gold]\nทุกครั้งที่คุณกระตุ้น[gold]เปลวไฟดำ[/gold]ในเทิร์นนี้ ได้รับ {NarakuLife:diff()} [gold]พลังชีวิตนาราคุ[/gold]",
-  "NINJA_SLAYER_CARD_ASSESS.description": "ได้รับ {Block:diff()} [gold]บล็อก[/gold]\n[gold]พยากรณ์[/gold] {Scry:diff()}",
+  "NINJA_SLAYER_CARD_ASSESS.description": "ได้รับ[gold]ยืดเหยียด[/gold] {StretchPower:diff()}\n[gold]พยากรณ์[/gold] {Scry:diff()}",
   "NINJA_SLAYER_CARD_TOMOE_THROW.description": "เลือก[gold]ชาโด[/gold] 1 ใบใน[gold]มือ[/gold]เพื่อ[gold]สลาย[/gold]\nได้รับ {Block:diff()} [gold]บล็อก[/gold]\nสร้าง {WeakPower:diff()} [gold]ความอ่อนแอ[/gold]",
   "NINJA_SLAYER_CARD_RESILIENCE.description": "ทุกครั้งที่คุณสร้างการ์ดสถานะ จั่วการ์ด {Cards:diff()} ใบ",
   "NINJA_SLAYER_CARD_ENDURANCE.description": "สร้างความเสียหาย {Damage:diff()} จำนวน {Repeat} ครั้ง\nได้รับ {Karate:diff()} [gold]คาราเต้[/gold]",
@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "อัปเปอร์คัตต่ำ",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "สร้างความเสียหาย {Damage:diff()}\nถ้าการ์ดที่คุณเล่นก่อนหน้านี้เป็นการโจมตี สร้าง {WeakPower:diff()} [gold]ความอ่อนแอ[/gold] และ [gold]จุดอ่อน[/gold]",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "โจมตีทะลวง",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "สร้างความเสียหาย {CalculatedDamage:diff()}\nสร้างความเสียหายเพิ่ม {ExtraDamage:diff()} ต่อ [gold]ชุริเค็น[/gold] แต่ละชั้นที่คุณมี"
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "สร้างความเสียหาย {Damage:diff()}\nสร้าง {ShurikenAimPower:diff()} [gold]เล็งเป้า[/gold]"
 }

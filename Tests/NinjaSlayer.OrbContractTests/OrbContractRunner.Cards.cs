@@ -24,6 +24,9 @@ public partial class OrbContractRunner
 {
     private static async Task VerifyCurrentCardInteractions()
     {
+#if NINJASLAYER_CHANNEL_PREVIEW
+        await VerifyHost113DamageEntries();
+#endif
         Require(typeof(ShurikenOrb).Assembly.GetTypes().Count(type =>
             !type.IsAbstract && typeof(CardModel).IsAssignableFrom(type)) == 93,
             "The product assembly must contain only the 93 current card models.");
@@ -60,6 +63,7 @@ public partial class OrbContractRunner
         await VerifyBlackFlameTurnEnd();
         await VerifyNarakuForms();
         VerifyNarakuEventEligibility();
+        await VerifyNarakuSilenceRemoval();
     }
 
     private static async Task VerifyGuardStanceAndCrossGuard()
@@ -329,6 +333,34 @@ public partial class OrbContractRunner
             && NinjaSlayerFormState.GetPresentation(combat.Player.Creature).Kind == NinjaSlayerFormKind.FullyReleasedNaraku,
             "The event relic must grant full presentation without the ordinary card damage power.");
         GD.Print("PASS ZBR, half Naraku, form removal and fully released event relic");
+    }
+
+    private static async Task VerifyNarakuSilenceRemoval()
+    {
+        foreach (string page in new[] { "INITIAL", "CALL_1", "CALL_2", "ACCEPT" })
+        {
+            using var combat = new OrbCombat(ninjaSlayer: true);
+            _ = RunState.CreateForTest([combat.Player]);
+            var model = ModelDb.Event<NarakuEvent>().ToMutable();
+            AccessTools.Property(typeof(EventModel), nameof(EventModel.Owner)).SetValue(model, combat.Player);
+            var option = (MegaCrit.Sts2.Core.Events.EventOption)AccessTools.Method(typeof(NarakuEvent), "CreateSilenceOption")
+                .Invoke(model, [page])!;
+            CardModel removed = combat.Player.Deck.Cards.First();
+            int count = combat.Player.Deck.Cards.Count;
+            int hp = combat.Player.Creature.CurrentHp;
+            using var selector = UseCardSelector(new SelectCards(options =>
+            {
+                Require(options.Contains(removed), "Silencing Naraku must offer the permanent deck for removal.");
+                return [removed];
+            }));
+            await ((Func<Task>)AccessTools.Property(typeof(MegaCrit.Sts2.Core.Events.EventOption), "OnChosen")
+                .GetValue(option)!)();
+            Require(model.IsFinished && combat.Player.Deck.Cards.Count == count - 1
+                && !combat.Player.Deck.Cards.Contains(removed) && combat.Player.Creature.CurrentHp == hp
+                && !combat.Player.Relics.OfType<NarakuUnleashedRelic>().Any(),
+                $"{page}: Silence must remove exactly the selected deck card, then end without damage or the acceptance relic.");
+        }
+        GD.Print("PASS Naraku Silence: permanent chosen-card removal and event completion on all four pages.");
     }
 
     private static void VerifyNarakuEventEligibility()

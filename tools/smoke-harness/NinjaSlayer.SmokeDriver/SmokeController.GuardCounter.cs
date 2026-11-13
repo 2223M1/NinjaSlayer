@@ -34,7 +34,7 @@ internal sealed partial class SmokeController
     private async Task RunGuardCounterAsync()
     {
         SaveManager.Instance.SetFtuesEnabled(false);
-        var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(),
+        var run = await StartSmokeRun(ModelDb.Character<NinjaSlayerCharacter>(),
             true, ActModel.GetDefaultList(), [], _configuration.Seed, GameMode.Standard, 0);
         await RunManager.Instance.EnterAct(0);
         await RunManager.Instance.EnterMapCoord(run.Map.GetAllMapPoints().First(p => p.PointType == MapPointType.Monster).coord);
@@ -82,7 +82,11 @@ internal sealed partial class SmokeController
                 RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(action);
                 await action.CompletionTask.WaitAsync(TimeSpan.FromSeconds(20));
                 if (action.Exception != null) throw action.Exception;
+#if NINJASLAYER_CHANNEL_STABLE
+                await Hook.AfterTurnEnd(combat, CombatSide.Player, [player.Creature]);
+#else
                 await Hook.AfterSideTurnEnd(combat, CombatSide.Player, [player.Creature]);
+#endif
                 await CreatureCmd.Damage(choice, player.Creature, 2, ValueProp.Move, targets[0]);
                 await CreatureCmd.Damage(choice, player.Creature, 2, ValueProp.Move, targets[1]);
                 for (int i = 0; i < targets.Length; i++) SetIntent(targets[i], i == 2);
@@ -96,7 +100,11 @@ internal sealed partial class SmokeController
                 GuardCounterProbe.Animations = 0;
                 GuardCounterProbe.ImpactTargets = [];
                 GuardCounterProbe.PeakBeforeImpact = false;
+#if NINJASLAYER_CHANNEL_STABLE
+                await Hook.AfterTurnEnd(combat, CombatSide.Enemy, targets);
+#else
                 await Hook.AfterSideTurnEnd(combat, CombatSide.Enemy, targets);
+#endif
                 int damage = upgraded ? 73 : 63;
                 Require(targets[0].CurrentHp == 1000 - damage && targets[1].CurrentHp == 1000 - damage
                     && targets[2].CurrentHp == 1000, "Rendered counter targets or native modifiers differ.");

@@ -33,7 +33,11 @@ internal sealed partial class SmokeController
             SaveManager.Instance.PrefsSave.FastMode = speed;
             var player = Player.CreateForNewRun<NinjaSlayerCharacter>(UnlockState.all, 1);
             var run = RunState.CreateForNewRun([player], ActModel.GetDefaultList().Select(act => act.ToMutable()).ToList(),
-                [], GameMode.Standard, 0, _configuration.Seed);
+                [], GameMode.Standard,
+#if NINJASLAYER_CHANNEL_PREVIEW
+                false,
+#endif
+                0, _configuration.Seed);
             RunManager.Instance.SetUpTest(run, new NetSingleplayerGameService(), true, false);
             AccessTools.Method(typeof(RunManager), "GenerateRooms").Invoke(RunManager.Instance, null);
             await (Task)AccessTools.Method(typeof(NGame), "StartRun").Invoke(NGame.Instance, [run])!;
@@ -49,7 +53,7 @@ internal sealed partial class SmokeController
                 await CardPileCmd.RemoveFromCombat(card);
             player.PlayerCombatState!.GainEnergy(100);
             var selector = new TestCardSelector();
-            using var selection = CardSelectCmd.UseSelector(selector);
+            using var selection = UseSmokeSelector(selector);
             async Task Play(CardModel card, int expectedDamage)
             {
                 if (card.Pile?.Type != PileType.Hand) await CardPileCmd.Add(card, PileType.Hand);

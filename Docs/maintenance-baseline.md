@@ -5,7 +5,7 @@ The staged maintainability work starts from commit `c85acf3b2f92b78710bad9616f0e
 ## Runtime contracts
 
 - Supported game hosts are the rolling `stable` and `preview` entries in `eng/compatibility.json`. RitsuLib uses one exact compile baseline and minimum manifest dependency; players receive the current Workshop runtime.
-- Workshop has one item and one universal bundle. Its schema 2 top-level loader selects the exact native release version (0.107.1 stable or 0.111.0 preview), verifies both implementation markers and SHA-256 hashes, and associates the selected assembly with the active mod. Missing, unknown and prerelease versions are rejected; runtime MVIDs are diagnostic only.
+- Workshop has one item and one universal bundle. Its schema 2 top-level loader selects the exact native release version from `eng/compatibility.json` (currently 0.107.1 stable or 0.113.0 preview), verifies both implementation markers and SHA-256 hashes, and associates the selected assembly with the active mod. Retired intermediate previews, including 0.111.0, are unsupported. Missing, unknown and prerelease versions are rejected; runtime MVIDs are diagnostic only.
 - Finisher capability owns attack interception, lethal protection, primary damage observation, post-card commit, and card-play cleanup. Presentation and Tornado cadence are separate optional capabilities.
 - Enhanced lethal protection resolves the exact `Creature.LoseHpInternal(decimal, ValueProp)` target after the version loader selects the host implementation. A foreign transpiler, skipping Prefix, or result-replacing Harmony patch disables the enhancement and keeps the original attack path.
 - Finisher search limits are 25,000 states and 8 ms; the active-time watchdog is 90 seconds.

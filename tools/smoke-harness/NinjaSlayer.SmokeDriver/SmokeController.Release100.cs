@@ -35,7 +35,7 @@ internal sealed partial class SmokeController
     private async Task RunRelease100Async()
     {
         SaveManager.Instance.SetFtuesEnabled(false);
-        var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(),
+        var run = await StartSmokeRun(ModelDb.Character<NinjaSlayerCharacter>(),
             true, ActModel.GetDefaultList(), [], _configuration.Seed, GameMode.Standard, 0);
         await RunManager.Instance.EnterAct(0);
         await RunManager.Instance.EnterMapCoord(run.Map.GetAllMapPoints().First(p => p.PointType == MapPointType.Monster).coord);
@@ -168,7 +168,7 @@ internal sealed partial class SmokeController
         _checkpoints.Write("release100.fake-merchant", data: new JsonObject
         { ["containerScale"] = container.Scale.ToString(), ["portraitScale"] = visual.Scale.ToString() });
         _checkpoints.Write("release100.completed");
-        NGame.Instance.Quit();
+        NGame.Instance!.Quit();
     }
 
     private async Task MouseClickAtAsync(Vector2 point)

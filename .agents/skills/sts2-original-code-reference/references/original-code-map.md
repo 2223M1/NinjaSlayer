@@ -4,6 +4,7 @@
 
 - Read active versions from `eng/compatibility.json` at the repository root.
 - Source exports normally live at `../Slay the Spire 2/Slay the Spire 2 v<gameApiVersion>/src`.
+- Retain only the official stable release and the latest preview, currently 0.107.1 and 0.113.0. The intermediate 0.111.0 export was retired on 2026-11-13; dated reports that cite it remain historical evidence, not active source roots.
 - Cards: `src\Core\Models\Cards`
 - Powers: `src\Core\Models\Powers`
 - Relics: `src\Core\Models\Relics`

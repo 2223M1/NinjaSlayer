@@ -83,20 +83,6 @@ public class Entry
             requiredPatcher.RegisterPatch<BlackFlameDamagePatch>();
             requiredPatcher.RegisterPatch<KarateDamageWavePatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbChannelPatch>();
-            requiredPatcher.RegisterPatch<SingleplayerRoomSeedPatch>();
-            requiredPatcher.RegisterPatch<SingleplayerRoomCountPatch>();
-            requiredPatcher.RegisterPatch<SingleplayerShuffleSeedPatch>();
-            requiredPatcher.RegisterPatch<SingleplayerEncounterSeedPatch>();
-            requiredPatcher.RegisterPatch<SingleplayerEventCardSeedPatch>();
-            requiredPatcher.RegisterPatch<SingleplayerRoomCardSeedPatch>();
-            requiredPatcher.RegisterPatch<SingleplayerCardRewardSeedPatch>();
-            requiredPatcher.RegisterPatch<SingleplayerCustomRewardSeedPatch>();
-            requiredPatcher.RegisterPatch<SingleplayerCardRarityPatch>();
-            requiredPatcher.RegisterPatch<SingleplayerCardRarityPreviewPatch>();
-            requiredPatcher.RegisterPatch<SingleplayerCardRaritySeedPatch>();
-            requiredPatcher.RegisterPatch<SingleplayerPotionDropSeedPatch>();
-            requiredPatcher.RegisterPatch<SingleplayerPotionGenerationSeedPatch>();
-            requiredPatcher.RegisterPatch<SingleplayerRelicRarityPatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbAddVisualPatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbRemoveSlotPatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbRemoveVisualPatch>();
@@ -274,31 +260,6 @@ public class Entry
     {
         TryInstallOptionalPatches("ArchitectPotionIntegration", _ => { }, ArchitectPotionIntegration.CreatePatches);
         TryInstallOptionalPatches("CookieCursorIntegration", _ => { }, CookieCursorIntegration.CreatePatches);
-#if !NINJASLAYER_CHANNEL_STABLE
-        // AutoAnthony 0.3.102 targets 0.111.0. Keep its types outside the product assembly.
-        if (AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "AutoAnthony"))
-        {
-            Assembly product = typeof(Entry).Assembly;
-            string bridgePath = Path.Combine(Path.GetDirectoryName(product.Location)!, "NinjaSlayer.AutoAnthony.dll");
-            Assembly bridge = System.Runtime.Loader.AssemblyLoadContext.GetLoadContext(product)!.LoadFromAssemblyPath(bridgePath);
-            MegaCrit.Sts2.Core.Modding.ModManager.AssociateAssemblyWithMod(NinjaSlayerIds.ModId, bridge);
-            ModTypeDiscoveryHub.RegisterModAssembly(NinjaSlayerIds.ModId, bridge);
-            ModPatcher patcher = RitsuLibFramework.CreatePatcher(NinjaSlayerIds.ModId, "AutoAnthony");
-            try
-            {
-                bridge.GetType("NinjaSlayer.AutoAnthony.Bridge", throwOnError: true)!
-                    .GetMethod("Register")!.Invoke(null, [patcher]);
-                if (!patcher.PatchAll() || patcher.AppliedPatchCount != patcher.RegisteredPatchCount)
-                    throw new InvalidOperationException("NinjaSlayer's AutoAnthony integration could not install its required patches.");
-            }
-            catch (Exception failure)
-            {
-                Exception? rollback = RollbackPatcherVerified(patcher, "AutoAnthony");
-                if (rollback is not null) throw new AggregateException(failure, rollback);
-                throw;
-            }
-        }
-#endif
     }
 
     private static void InstallOptionalTelemetry()

@@ -293,7 +293,11 @@ public sealed partial class ArchitectExecutionCinematic : Node
         AlabamaDropAnimation.ReleaseVictimBeforeDeath(_architectNode);
         CreatureDeathInteractionAdapter.Disable(_architectNode);
         _architectNode.AnimHideIntent();
+#if NINJASLAYER_CHANNEL_STABLE
         _architectNode.AnimDisableUi();
+#else
+        _architectNode.AnimateOutStateDisplay();
+#endif
         _architectDeathCommitted = true;
 
         BossDismembermentSnapshot? snapshot = _dismembermentSnapshot;

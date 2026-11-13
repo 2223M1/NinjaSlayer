@@ -58,7 +58,11 @@ public sealed class YamotoKokiFinishedCombatRestorePatch : IPatchMethod
                 candidate => ReferenceEquals(candidate.Entity, companion))
             ?? throw new InvalidOperationException(
                 "The combat room did not create a node for the restored Yamoto Koki companion.");
+#if NINJASLAYER_CHANNEL_STABLE
         node.ToggleIsInteractable(false);
+#else
+        node.SetIsInteractable(on: false, changeVisibilityImmediately: true);
+#endif
         node.IntentContainer.Visible = false;
 
         YamotoKokiAllyLayoutPatch.Reflow(room);

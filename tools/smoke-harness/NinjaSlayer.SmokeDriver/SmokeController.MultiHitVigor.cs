@@ -30,7 +30,7 @@ internal sealed partial class SmokeController
     private async Task RunMultiHitVigorAsync()
     {
         SaveManager.Instance.SetFtuesEnabled(false);
-        var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(),
+        var run = await StartSmokeRun(ModelDb.Character<NinjaSlayerCharacter>(),
             true, ActModel.GetDefaultList(), [], _configuration.Seed, GameMode.Standard, 0);
         await RunManager.Instance.EnterAct(0);
         await RunManager.Instance.EnterMapCoord(run.Map.GetAllMapPoints().First(p => p.PointType == MapPointType.Monster).coord);
@@ -68,7 +68,7 @@ internal sealed partial class SmokeController
         player.PlayerCombatState!.GainEnergy(3);
         var statusSelector = new MegaCrit.Sts2.Core.TestSupport.TestCardSelector();
         statusSelector.PrepareToSelect([0]);
-        using (CardSelectCmd.UseSelector(statusSelector))
+        using (UseSmokeSelector(statusSelector))
         {
             var action = new PlayCardAction(rekindle, null);
             RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(action);

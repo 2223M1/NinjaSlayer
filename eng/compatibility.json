@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "defaultBuildChannel": "preview",
-  "ritsuLibVersion": "0.5.12",
+  "ritsuLibVersion": "0.6.11",
   "workshop": {
     "itemId": "3776911445",
     "visibility": "public"
@@ -44,7 +44,7 @@
       }
     },
     "preview": {
-      "gameApiVersion": "0.111.0",
+      "gameApiVersion": "0.113.0",
       "ritsuLibPackageId": "STS2.RitsuLib",
       "distributionChannel": "beta",
       "runtimeAssemblies": [
@@ -52,11 +52,12 @@
         "Sentry.Godot.dll",
         "SmartFormat.dll",
         "SmartFormat.ZString.dll",
-        "Steamworks.NET.dll"
+        "Steamworks.NET.dll",
+        "System.IO.Hashing.dll"
       ],
       "compileFeatures": [],
       "hostContract": {
-        "moduleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e"
+        "moduleMvid": "ad562b4e-7352-4ca2-ae45-0ff44cd284bc"
       }
     }
   }

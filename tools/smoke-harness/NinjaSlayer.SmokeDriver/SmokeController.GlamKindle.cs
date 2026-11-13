@@ -37,7 +37,11 @@ internal sealed partial class SmokeController
             var remote = Player.CreateForNewRun<NinjaSlayerCharacter>(UnlockState.all, 2);
             var native = Player.CreateForNewRun<Ironclad>(UnlockState.all, 3);
             var run = RunState.CreateForNewRun([local, remote, native], ActModel.GetDefaultList().Select(a => a.ToMutable()).ToList(),
-                [], GameMode.Standard, 0, _configuration.Seed);
+                [], GameMode.Standard,
+#if NINJASLAYER_CHANNEL_PREVIEW
+                false,
+#endif
+                0, _configuration.Seed);
             RunManager.Instance.SetUpTest(run, new NetSingleplayerGameService(), true, false);
             AccessTools.Method(typeof(RunManager), "GenerateRooms").Invoke(RunManager.Instance, null);
             await (Task)AccessTools.Method(typeof(NGame), "StartRun").Invoke(NGame.Instance, [run])!;

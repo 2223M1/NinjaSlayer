@@ -108,8 +108,13 @@ internal sealed class EvasionTargetHitVfxPatch : IPatchMethod
 
     public static ModPatchTarget[] GetTargets() =>
     [
+#if NINJASLAYER_CHANNEL_PREVIEW
+        new(typeof(VfxCmd), nameof(VfxCmd.PlayOnCreatureCenter), [typeof(Creature), typeof(string), typeof(bool)]),
+        new(typeof(VfxCmd), nameof(VfxCmd.PlayOnCreature), [typeof(Creature), typeof(string), typeof(bool)])
+#else
         new(typeof(VfxCmd), nameof(VfxCmd.PlayOnCreatureCenter), [typeof(Creature), typeof(string)]),
         new(typeof(VfxCmd), nameof(VfxCmd.PlayOnCreature), [typeof(Creature), typeof(string)])
+#endif
     ];
 
     public static bool Prefix(Creature target, string path) =>
@@ -214,7 +219,11 @@ internal sealed class AttackEvasionDamagePatch : IPatchMethod
             nameof(CreatureCmd.Damage),
             [
                 typeof(PlayerChoiceContext),
+#if NINJASLAYER_CHANNEL_PREVIEW
+                typeof(IEnumerable<DamageTargetData>),
+#else
                 typeof(IEnumerable<Creature>),
+#endif
                 typeof(decimal),
                 typeof(ValueProp),
                 typeof(Creature),
@@ -222,20 +231,31 @@ internal sealed class AttackEvasionDamagePatch : IPatchMethod
 #if !NINJASLAYER_LEGACY_DAMAGE_API
                 , typeof(CardPlay)
 #endif
+#if NINJASLAYER_CHANNEL_PREVIEW
+                , typeof(MegaCrit.Sts2.Core.Hooks.ModifyDamageHookType)
+#endif
             ])
     ];
 
     public static void Prefix(
+#if NINJASLAYER_CHANNEL_PREVIEW
+        ref IEnumerable<DamageTargetData>? targetData,
+#else
         ref IEnumerable<Creature>? targets,
+#endif
         ValueProp props,
         Creature? dealer,
         CardModel? cardSource,
         out List<(EvasionPower Power, bool ConsumeLayer)>? __state)
     {
-        List<Creature> targetList = targets?
-            .Where(target => target.Monster is not OrigamiMissileMonster)
-            .ToList() ?? [];
+#if NINJASLAYER_CHANNEL_PREVIEW
+        List<DamageTargetData> entries = targetData?.Where(entry => entry.target.Monster is not OrigamiMissileMonster).ToList() ?? [];
+        targetData = entries;
+        List<Creature> targetList = entries.Select(entry => entry.target).ToList();
+#else
+        List<Creature> targetList = targets?.Where(target => target.Monster is not OrigamiMissileMonster).ToList() ?? [];
         targets = targetList;
+#endif
         __state = null;
 
         if (dealer is not { IsDead: false } attacker || !props.IsCardOrMonsterMove())
@@ -246,11 +266,18 @@ internal sealed class AttackEvasionDamagePatch : IPatchMethod
         var remainingTargets = new List<Creature>(targetList.Count);
         var evadedPowers = new List<(EvasionPower Power, bool ConsumeLayer)>();
         var reservedLayers = new Dictionary<EvasionPower, int>(ReferenceEqualityComparer.Instance);
-        foreach (Creature target in targetList)
+#if NINJASLAYER_CHANNEL_PREVIEW
+        var survivingEntries = new List<DamageTargetData>(targetList.Count);
+#endif
+        for (int targetIndex = 0; targetIndex < targetList.Count; targetIndex++)
         {
+            Creature target = targetList[targetIndex];
             if (target.IsDead || target.Side == attacker.Side)
             {
                 remainingTargets.Add(target);
+#if NINJASLAYER_CHANNEL_PREVIEW
+                survivingEntries.Add(entries[targetIndex]);
+#endif
                 continue;
             }
 
@@ -268,12 +295,19 @@ internal sealed class AttackEvasionDamagePatch : IPatchMethod
             }
 
             remainingTargets.Add(target);
+#if NINJASLAYER_CHANNEL_PREVIEW
+            survivingEntries.Add(entries[targetIndex]);
+#endif
             EvasionResolution.RecordConnectedHit(cardSource, attacker, target);
         }
 
         AttackEvasionFeedbackContext.ResolveDeferredHitSfx(
             remainingTargets.Any(target => target.IsAlive && target.Side != attacker.Side));
+#if NINJASLAYER_CHANNEL_PREVIEW
+        targetData = survivingEntries;
+#else
         targets = remainingTargets;
+#endif
         __state = evadedPowers.Count > 0 ? evadedPowers : null;
 
         NotifyCompanionImpact(targetList, attacker);

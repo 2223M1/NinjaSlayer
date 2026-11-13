@@ -25,13 +25,20 @@ public sealed partial class BlackFlameDamagePatch : IPatchMethod
             nameof(CreatureCmd.Damage),
             [
                 typeof(PlayerChoiceContext),
+#if NINJASLAYER_CHANNEL_PREVIEW
+                typeof(IEnumerable<DamageTargetData>),
+#else
                 typeof(IEnumerable<Creature>),
+#endif
                 typeof(decimal),
                 typeof(ValueProp),
                 typeof(Creature),
                 typeof(CardModel)
 #if !NINJASLAYER_LEGACY_DAMAGE_API
                 , typeof(CardPlay)
+#endif
+#if NINJASLAYER_CHANNEL_PREVIEW
+                , typeof(MegaCrit.Sts2.Core.Hooks.ModifyDamageHookType)
 #endif
             ])
     ];

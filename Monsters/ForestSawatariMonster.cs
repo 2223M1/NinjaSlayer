@@ -42,7 +42,9 @@ public sealed partial class ForestSawatariMonster : ModMonsterTemplate
         : SawatariEventRules.AttackDamage;
 
     public override int MaxInitialHp => MinInitialHp;
+#if NINJASLAYER_CHANNEL_STABLE
     public override bool IsHealthBarVisible => !IsMutable || Creature.Side == CombatSide.Enemy;
+#endif
     // All native and event death presentations share the model-owned one-shot.
     public override string DeathSfx => string.Empty;
     private bool _deathVoicePlayed;
@@ -132,6 +134,9 @@ public sealed partial class ForestSawatariMonster : ModMonsterTemplate
     public override Task AfterDeath(
         PlayerChoiceContext choiceContext,
         Creature creature,
+#if NINJASLAYER_CHANNEL_PREVIEW
+        CardModel? source,
+#endif
         bool wasRemovalPrevented,
         float deathAnimLength)
     {
