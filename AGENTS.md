@@ -15,6 +15,12 @@
 - Synchronization and performance infrastructure require demonstrated production concurrency or measurements. Keep supported-host differences compile-time and feature-local.
 - Delete or inline a single-caller thin abstraction, never recreate a deleted layer under another name, and keep tests focused on player-observable behavior.
 
+## Supported game versions and source retention
+
+- Maintain only the current official stable release and the latest preview in `eng/compatibility.json`; this means 0.107.1 and 0.113.0 as of 2026-11-13. Do not interpret this as the two highest version numbers. 0.111.0 is retired.
+- Keep their recovered reference projects together under `../Slay the Spire 2/Slay the Spire 2 v<gameApiVersion>/`. When a channel advances, retire its previous target, remove its redundant source export after the cleanup checks below, and retain compact recovery/validation evidence.
+- Do not retain compatibility branches or package variants solely for retired hosts. Shared tool runtimes and other mods' dependencies are outside this project's source-cleanup scope.
+
 ## Skill routing
 
 - Use `sts2-ritsulib-modding` for ordinary feature implementation and bug fixes involving documented RitsuLib, Godot, content, resource, or Patch integration.

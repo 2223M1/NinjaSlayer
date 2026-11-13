@@ -69,11 +69,19 @@ public static class ScryCmd
         }
         else
         {
+#if NINJASLAYER_CHANNEL_PREVIEW
+            // Native 0.113 only queues Sly from hand; Scry discards from the draw pile.
+            List<CardModel> slyCards = cardsToDiscard.Where(card => card.IsSlyThisTurn).ToList();
+#endif
             // Move the batch out before discard callbacks can draw it again. Keep native
             // pile notifications: skipVisuals also suppresses draw-pile counter updates.
             await CardPileCmd.Add(cardsToDiscard, PileType.Play);
             int historyStart = CombatManager.Instance.History.Entries.Count();
             await CardCmd.Discard(choiceContext, cardsToDiscard);
+#if NINJASLAYER_CHANNEL_PREVIEW
+            foreach (CardModel card in slyCards)
+                await CardCmd.AutoPlay(choiceContext, card, null, AutoPlayType.SlyDiscard);
+#endif
             discardedAmount = CombatManager.Instance.History.Entries.Skip(historyStart).OfType<CardDiscardedEntry>()
                 .Select(entry => entry.Card).Intersect(cardsToDiscard).Count();
             Telemetry.NinjaSlayerCombatTelemetry.Mechanic("scry_discard", player.Creature, discardedAmount);

@@ -42,7 +42,7 @@ public partial class OrbContractRunner
             bool Playable() => (bool)AccessTools.Property(typeof(HalfMoonCompassKick), "IsPlayable").GetValue(kick)!;
             Require(!Playable(), "Half-Moon must be unplayable without a Chado in hand.");
             var tea = AddCard<Chado>(combat);
-            using var selection = CardSelectCmd.UseSelector(new SelectCards(options => options.OfType<Chado>().Take(1)));
+            using var selection = UseCardSelector(new SelectCards(options => options.OfType<Chado>().Take(1)));
             Require(Playable(), "Hand Chado must enable Half-Moon.");
             await CardCmd.AutoPlay(Choice, kick, null);
             int damage = upgraded ? 13 : 10;
@@ -79,7 +79,7 @@ public partial class OrbContractRunner
         {
             var kick = AddCard<HalfMoonCompassKick>(combat);
             AddCard<Chado>(combat);
-            using var selection = CardSelectCmd.UseSelector(new SelectCards(options => options.OfType<Chado>().Take(1)));
+            using var selection = UseCardSelector(new SelectCards(options => options.OfType<Chado>().Take(1)));
             await CreatureCmd.GainBlock(combat.Enemy, 15, MegaCrit.Sts2.Core.ValueProps.ValueProp.Unpowered, null);
             await CardCmd.AutoPlay(Choice, kick, null);
             Require(combat.Enemy.CurrentHp == 1000 && combat.Enemy.Block == 5, "Half-Moon bypassed native Block.");

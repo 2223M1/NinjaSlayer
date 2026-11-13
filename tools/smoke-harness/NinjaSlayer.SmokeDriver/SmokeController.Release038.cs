@@ -35,7 +35,7 @@ internal sealed partial class SmokeController
         SaveManager.Instance.PrefsSave.FastMode = FastModeType.Normal;
         STS2RitsuLib.Data.ModDataStore.For("NinjaSlayer")
             .Get<NinjaSlayerSettingsData>("ninja_slayer_settings").BriefBossGreetingEnabled = true;
-        var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(),
+        var run = await StartSmokeRun(ModelDb.Character<NinjaSlayerCharacter>(),
             true, ActModel.GetDefaultList(), [], _configuration.Seed, GameMode.Standard, 0);
         await RunManager.Instance.EnterAct(0);
         await RunManager.Instance.EnterMapCoord(run.Map.GetAllMapPoints().First(p => p.PointType == MapPointType.Monster).coord);
@@ -185,7 +185,7 @@ internal sealed partial class SmokeController
             probe.UnpatchAll(probe.Id);
         }
         _checkpoints.Write("release038.completed");
-        NGame.Instance.Quit();
+        NGame.Instance!.Quit();
     }
 }
 

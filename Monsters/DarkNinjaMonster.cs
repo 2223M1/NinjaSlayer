@@ -194,6 +194,9 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
     public override Task AfterDeath(
         PlayerChoiceContext choiceContext,
         Creature creature,
+#if NINJASLAYER_CHANNEL_PREVIEW
+        CardModel? source,
+#endif
         bool wasRemovalPrevented,
         float deathAnimLength)
     {

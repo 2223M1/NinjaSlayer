@@ -23,7 +23,7 @@ internal sealed partial class SmokeController
 {
     private async Task VerifyBalanceV0216Live(string directory, CancellationToken ct)
     {
-        using var manualSelection = CardSelectCmd.SuspendSelectorForTest();
+        using var manualSelection = SuspendSmokeSelector();
         var player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState())!;
         var state = CombatManager.Instance.DebugOnlyGetState()!;
         var choice = new BlockingPlayerChoiceContext();

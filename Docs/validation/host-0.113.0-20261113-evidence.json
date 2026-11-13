@@ -1,0 +1,91 @@
+{
+  "date": "2026-11-13",
+  "sourceBaseline": "1e9f3eb1a25a74ba0704025902397a844d60dfbc",
+  "sourceStatus": "working-tree development artifacts; not a frozen release",
+  "ritsuLibVersion": "0.6.11",
+  "runtimeSource": "Installed Workshop item 3747602295",
+  "runtimeManifestSha256": "6ef0ad635defd622ccf26f897d324205eeaa6721190f4c1401f32097f3ee4afc",
+  "hosts": {
+    "stable": {
+      "gameApiVersion": "0.107.1",
+      "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+      "distributionChannel": "public",
+      "runtimeAssemblies": [
+        "Sentry.dll",
+        "SmartFormat.dll",
+        "SmartFormat.ZString.dll",
+        "Steamworks.NET.dll"
+      ],
+      "compileFeatures": [
+        "legacyCardPlayLinks",
+        "legacyCreaturePresentation",
+        "legacyDamageApi",
+        "legacyArchitectVictoryCompletion"
+      ],
+      "hostContract": {
+        "moduleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb"
+      }
+    },
+    "preview": {
+      "gameApiVersion": "0.113.0",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "distributionChannel": "beta",
+      "runtimeAssemblies": [
+        "Sentry.dll",
+        "Sentry.Godot.dll",
+        "SmartFormat.dll",
+        "SmartFormat.ZString.dll",
+        "Steamworks.NET.dll",
+        "System.IO.Hashing.dll"
+      ],
+      "compileFeatures": [],
+      "hostContract": {
+        "moduleMvid": "ad562b4e-7352-4ca2-ae45-0ff44cd284bc"
+      }
+    }
+  },
+  "results": {
+    "stableProduct": "PASS",
+    "previewProduct": "PASS",
+    "stablePatch": "PASS",
+    "previewPatch": "PASS",
+    "logicPassed": 367,
+    "nativeStableClient": "NOT RUN: stable PCK unavailable",
+    "liveSaveReload": "NOT RUN: no same-host save fixture",
+    "publication": "NOT RUN"
+  },
+  "artifacts": [
+    {
+      "path": "build/validation-0.113.0/dev-stable/NinjaSlayer.dll",
+      "sha256": "e5b3f02e1e1493a31c7a366b1894e44c88d31c7c7c96f16a17153a1fc5c9eee6"
+    },
+    {
+      "path": "build/validation-0.113.0/dev-preview/NinjaSlayer.dll",
+      "sha256": "1ee7e2235bef10b29f0b588761a895fefb067301c7a97fd7bf98c8b7b143b516"
+    },
+    {
+      "path": "build/validation-0.113.0/NinjaSlayer.pck",
+      "sha256": "d261ef2d5209c9bb909209ea0345310ff796e0b445056c91c42cb19766be04b1"
+    },
+    {
+      "path": "build/validation-0.113.0/all-stable.log",
+      "sha256": "0c1efb1f5f897d1ce2315de2d3e9dd1a5b1f2b6ba6cfce1319599f04acc994cf"
+    },
+    {
+      "path": "build/validation-0.113.0/all-preview.log",
+      "sha256": "f08c66e1b2ba52e2fb73ff0b7cc2d26bbe821fc405163738a8c7e7449787be47"
+    },
+    {
+      "path": "build/validation-0.113.0/patch-stable.log",
+      "sha256": "a16b3040de85e076af1605def83685788c647169d5e65c255167629ecf2ffc35"
+    },
+    {
+      "path": "build/validation-0.113.0/patch-preview.log",
+      "sha256": "b9c49e0c58dc2be2c7e84d337111edfd7082b954e3ac265d131666e310e2fa2e"
+    },
+    {
+      "path": "build/validation-0.113.0/final-logic.log",
+      "sha256": "fe3c4fe4733fba555a193942bd4bb4593c1846e20bc592ce0a09ff2b8b7a3001"
+    }
+  ]
+}

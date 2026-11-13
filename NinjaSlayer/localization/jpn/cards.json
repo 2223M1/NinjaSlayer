@@ -141,7 +141,7 @@
   "NINJA_SLAYER_CARD_COLLAPSE_FIST.title": "崩拳",
   "NINJA_SLAYER_CARD_COLLAPSE_FIST.description": "{Damage:diff()}ダメージを与える。\n{Karate:diff()}[gold]カラテ[/gold]を得る。",
   "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.title": "一心同体",
-  "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.description": "[gold]ナラク生命[/gold]を{NarakuLife:diff()}得る。\n[gold]ナラク生命[/gold]1につき、[gold]カラテ[/gold]のダメージが1増加する。\n[gold]カラテ[/gold]発動時、[gold]カラテ[/gold]より先に[gold]ナラク生命[/gold]を1失う。",
+  "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.description": "[gold]ナラク生命[/gold]を{NarakuLife:diff()}得る。\nあなたの[gold]ナラク生命[/gold]は[gold]カラテ[/gold]として扱う。",
   "NINJA_SLAYER_CARD_ZAZEN_DRINK.title": "ザゼン・ドリンク",
   "NINJA_SLAYER_CARD_ZAZEN_DRINK.description": "[gold]手札[/gold]が上限に達するまでカードを引く。[gold]状態異常[/gold]を引いた場合、それを捨てる。\n[gold]占術[/gold]{Cards:diff()}。",
   "NINJA_SLAYER_CARD_READ_AHEAD.description": "[gold]占術[/gold]{Scry:diff()}。\nこの効果で捨てたカード1枚につき、{Block:diff()}[gold]ブロック[/gold]を得る。",
@@ -149,7 +149,7 @@
   "NINJA_SLAYER_CARD_SHURIKEN_CREATION.description": "{Stock:diff()}[gold]スリケン[/gold]を得る。",
   "NINJA_SLAYER_CARD_ONSLAUGHT.description": "[gold]スリケン[/gold]が敵にダメージを与えるたび、このターン{StrengthPower:diff()}[gold]筋力[/gold]を得る。",
   "NINJA_SLAYER_CARD_REKINDLE.description": "[gold]手札[/gold]のカードを1枚[gold]黒い炎[/gold]に[gold]変化[/gold]させる。\nこのターン、[gold]黒い炎[/gold]を発動するたび、{NarakuLife:diff()}[gold]ナラク生命[/gold]を得る。",
-  "NINJA_SLAYER_CARD_ASSESS.description": "{Block:diff()}[gold]ブロック[/gold]を得る。\n[gold]占術[/gold]{Scry:diff()}。",
+  "NINJA_SLAYER_CARD_ASSESS.description": "[gold]ストレッチ[/gold]{StretchPower:diff()}を得る。\n[gold]占術[/gold]{Scry:diff()}。",
   "NINJA_SLAYER_CARD_TOMOE_THROW.description": "[gold]手札[/gold]の[gold]チャドー[/gold]を1枚選んで[gold]廃棄[/gold]する。\n{Block:diff()}[gold]ブロック[/gold]を得る。\n{WeakPower:diff()}[gold]脱力[/gold]を与える。",
   "NINJA_SLAYER_CARD_RESILIENCE.description": "状態異常カードを生成するたび、カードを{Cards:diff()}枚引く。",
   "NINJA_SLAYER_CARD_ENDURANCE.description": "{Damage:diff()}ダメージを{Repeat}回与える。\n{Karate:diff()}[gold]カラテ[/gold]を得る。",
@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "低空アッパーカット",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "{Damage:diff()}ダメージを与える。\n直前にプレイしたカードがアタックの場合、敵に{WeakPower:diff()}[gold]脱力[/gold]と[gold]弱体[/gold]を与える。",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "崩しの一撃",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "{CalculatedDamage:diff()}ダメージを与える。\n持っている[gold]スリケン[/gold]1スタックにつき、追加で{ExtraDamage:diff()}ダメージを与える。"
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "{Damage:diff()}ダメージを与える。\n{ShurikenAimPower:diff()}[gold]照準[/gold]を与える。"
 }

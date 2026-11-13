@@ -39,7 +39,11 @@ public sealed class OrigamiMissileMonster : ModMonsterTemplate
 
     public override int MinInitialHp => 1;
     public override int MaxInitialHp => 1;
+#if NINJASLAYER_CHANNEL_STABLE
     public override bool IsHealthBarVisible => false;
+#else
+    public override bool IsInteractable => false;
+#endif
     public override DamageSfxType TakeDamageSfxType => DamageSfxType.Magic;
     public override bool ShouldFadeAfterDeath => false;
     public override string DeathSfx => "event:/sfx/enemy/enemy_attacks/living_fog/living_fog_minion_die";

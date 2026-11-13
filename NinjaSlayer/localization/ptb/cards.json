@@ -141,7 +141,7 @@
   "NINJA_SLAYER_CARD_COLLAPSE_FIST.title": "Punho Demolidor",
   "NINJA_SLAYER_CARD_COLLAPSE_FIST.description": "Cause {Damage:diff()} de dano.\nReceba {Karate:diff()} de [gold]Karatê[/gold].",
   "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.title": "Uma Mente, Um Corpo",
-  "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.description": "Ganhe {NarakuLife:diff()} de [gold]Vida de Naraku[/gold].\nCada ponto de [gold]Vida de Naraku[/gold] adiciona 1 de dano ao seu [gold]Karatê[/gold].\nQuando [gold]Karatê[/gold] é ativado, perca 1 de [gold]Vida de Naraku[/gold] antes de perder [gold]Karatê[/gold].",
+  "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.description": "Ganhe {NarakuLife:diff()} de [gold]Vida de Naraku[/gold].\nSua [gold]Vida de Naraku[/gold] conta como [gold]Karatê[/gold].",
   "NINJA_SLAYER_CARD_ZAZEN_DRINK.title": "Bebida Zazen",
   "NINJA_SLAYER_CARD_ZAZEN_DRINK.description": "Compre até sua [gold]Mão[/gold] ficar cheia, descartando quaisquer cartas de [gold]Condição[/gold] compradas.\n[gold]Vidência[/gold] {Cards:diff()}.",
   "NINJA_SLAYER_CARD_READ_AHEAD.description": "[gold]Vidência[/gold] {Scry:diff()}.\nReceba {Block:diff()} de [gold]Proteção[/gold] para cada carta descartada desta forma.",
@@ -149,7 +149,7 @@
   "NINJA_SLAYER_CARD_SHURIKEN_CREATION.description": "Receba {Stock:diff()} [gold]Shuriken[/gold].",
   "NINJA_SLAYER_CARD_ONSLAUGHT.description": "Sempre que seu [gold]Shuriken[/gold] causar dano a um inimigo, receba {StrengthPower:diff()} de [gold]Força[/gold] neste turno.",
   "NINJA_SLAYER_CARD_REKINDLE.description": "[gold]Transforme[/gold] uma carta na sua [gold]Mão[/gold] em [gold]Chama Negra[/gold].\nSempre que ativar [gold]Chama Negra[/gold] neste turno, receba {NarakuLife:diff()} de [gold]Vida de Naraku[/gold].",
-  "NINJA_SLAYER_CARD_ASSESS.description": "Receba {Block:diff()} de [gold]Proteção[/gold].\n[gold]Vidência[/gold] {Scry:diff()}.",
+  "NINJA_SLAYER_CARD_ASSESS.description": "Receba {StretchPower:diff()} de [gold]Alongamento[/gold].\n[gold]Vidência[/gold] {Scry:diff()}.",
   "NINJA_SLAYER_CARD_TOMOE_THROW.description": "Escolha um [gold]Chado[/gold] na sua [gold]Mão[/gold] para [gold]Exaurir[/gold].\nReceba {Block:diff()} de [gold]Proteção[/gold].\nAplique {WeakPower:diff()} de [gold]Fraqueza[/gold].",
   "NINJA_SLAYER_CARD_RESILIENCE.description": "Sempre que gerar uma carta de Condição, compre {Cards:diff()} cartas.",
   "NINJA_SLAYER_CARD_ENDURANCE.description": "Cause {Damage:diff()} de dano {Repeat} vezes.\nReceba {Karate:diff()} de [gold]Karatê[/gold].",
@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "Gancho baixo",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "Cause {Damage:diff()} de dano.\nSe a carta jogada anteriormente foi um Ataque, aplique {WeakPower:diff()} de [gold]Fraqueza[/gold] e [gold]Vulnerável[/gold].",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "Golpe de ruptura",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Cause {CalculatedDamage:diff()} de dano.\nCausa {ExtraDamage:diff()} de dano adicional para cada acúmulo de [gold]Shuriken[/gold] que você tiver."
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Cause {Damage:diff()} de dano.\nAplique {ShurikenAimPower:diff()} de [gold]Na Mira[/gold]."
 }

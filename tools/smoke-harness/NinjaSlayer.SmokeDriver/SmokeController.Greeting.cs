@@ -141,7 +141,7 @@ internal sealed partial class SmokeController
             ProfileManager.Instance.GetFilePath("settings.json", SaveScope.Global, "NinjaSlayer"));
         Require(JsonNode.Parse(File.ReadAllText(settingsPath))!["BriefBossGreetingEnabled"]?.GetValue<bool>() == initialPreference,
             "Initial greeting preference was not saved to disk.");
-        var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(),
+        var run = await StartSmokeRun(ModelDb.Character<NinjaSlayerCharacter>(),
             true, ActModel.GetDefaultList(), [], script.Seed, GameMode.Standard, 0);
         await RunManager.Instance.EnterAct(2);
         if (script.GreetingEncounter != null)
@@ -198,7 +198,7 @@ internal sealed partial class SmokeController
         _greetingScript = null;
         _greetingRecording = null;
         int greetingsBeforeReload = _bossGreetings;
-        await NGame.Instance.ReturnToMainMenu();
+        await NGame.Instance!.ReturnToMainMenu();
         RunState resumed = await ResumeBossCheckpoint();
         Player restored = resumed.Players.Single();
         await WaitUntilAsync(() => restored.PlayerCombatState?.Phase == PlayerTurnPhase.Play,
@@ -206,7 +206,7 @@ internal sealed partial class SmokeController
         Require(_bossGreetings == greetingsBeforeReload, "Reload replayed the completed boss greeting.");
         Require(JsonNode.DeepEquals(openingSnapshot, BossSnapshot(restored)), "Reload changed opening HP or card order.");
         _checkpoints.Write("greeting-preview.reload-identical");
-        NGame.Instance.Quit();
+        NGame.Instance!.Quit();
     }
 }
 

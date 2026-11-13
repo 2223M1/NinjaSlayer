@@ -146,19 +146,13 @@ internal sealed partial class SmokeController
                 NonInteractiveMode.AutoSlayerCheck = oldAutoSlayer;
             }
 
-            Type seeds = typeof(NinjaSlayer.Content.NinjaSlayerRunData).Assembly.GetType("NinjaSlayer.Content.SingleplayerSeedRules", true)!;
-            object seedData = AccessTools.Property(seeds, "Data").GetValue(null)!;
-            object seedState = AccessTools.Method(seedData.GetType(), "Get").Invoke(seedData, [run])!;
-            AccessTools.Property(seedState.GetType(), "PotionDropCalls").SetValue(seedState, 17);
-            AccessTools.Method(seedData.GetType(), "Set").Invoke(seedData, [run, seedState]);
             await SaveManager.Instance.SaveRun(null);
             string seed = run.Rng.StringSeed;
             Type quick = AccessTools.TypeByName("QuickSlAndRerollStart.QuickRestartService");
             await (Task)AccessTools.Method(quick, "QuickLoadAsync").Invoke(null, [RunManager.Instance])!;
             run = RunManager.Instance.DebugOnlyGetState()!;
-            seedState = AccessTools.Method(seedData.GetType(), "Get").Invoke(seedData, [run])!;
-            Require(run.Rng.StringSeed == seed && (int)AccessTools.Property(seedState.GetType(), "PotionDropCalls").GetValue(seedState)! == 17,
-                "Better Menu quick load changed the seed or CFC counter.");
+            Require(run.Rng.StringSeed == seed,
+                "Better Menu quick load changed the seed.");
             Require(PopupShown(run), "Better Menu quick load lost the consumed Yukano popup flag.");
             foreach (bool sameSeed in new[] { true, false })
             {
@@ -173,10 +167,8 @@ internal sealed partial class SmokeController
                 }
                 await restart;
                 run = RunManager.Instance.DebugOnlyGetState()!;
-                seedState = AccessTools.Method(seedData.GetType(), "Get").Invoke(seedData, [run])!;
-                Require((run.Rng.StringSeed == seed) == sameSeed
-                    && (int)AccessTools.Property(seedState.GetType(), "PotionDropCalls").GetValue(seedState)! == 0,
-                    "Better Menu restart retained an old CFC counter or used the wrong seed.");
+                Require((run.Rng.StringSeed == seed) == sameSeed,
+                    "Better Menu restart used the wrong seed.");
                 Require(!PopupShown(run), "Restarting a run retained the previous Yukano popup flag.");
             }
             player = LocalContext.GetMe(run)!;

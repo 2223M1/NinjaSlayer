@@ -27,7 +27,7 @@ public partial class OrbContractRunner
             CardModel source = throwing ? AddCard<KunaiThrow>(combat) : AddCard<Survivor>(combat);
             CardModel? sly = handSize > 0 ? AddCard<ShurikenCreation>(combat) : null;
             CardModel? other = handSize > 1 ? AddCard<DefendIronclad>(combat) : null;
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
+            using var selector = UseCardSelector(new SelectCards(options =>
             {
                 Require(sly != null && options.Contains(sly), "Hand discard did not offer the Sly card.");
                 return [sly!];
@@ -54,7 +54,7 @@ public partial class OrbContractRunner
             var drawTea = AddCard<Chado>(combat, PileType.Draw);
             var discardTea = AddCard<Chado>(combat, PileType.Discard);
             var other = AddCard<DefendIronclad>(combat);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
+            using var selector = UseCardSelector(new SelectCards(options =>
             {
                 Require(options.All(card => teas.Contains(card)), "Healing offered a non-hand tea or another card.");
                 return [teas.Last()];

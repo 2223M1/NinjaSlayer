@@ -108,7 +108,11 @@ internal sealed partial class SmokeController
                 await recorder.Start();
                 foreach (int x in new[] { 3, 4, 6 })
                 {
+#if NINJASLAYER_CHANNEL_STABLE
                     AutoSlayer.CurrentWatchdog?.Reset($"Recording Tornado X={x}");
+#else
+                    MegaCrit.Sts2.Core.AutoSlay.Helpers.Watchdog.Current?.Reset($"Recording Tornado X={x}");
+#endif
                     foreach (Creature enemy in combat.HittableEnemies.ToArray())
                         await PowerCmd.Remove<VulnerablePower>(enemy);
                     await PlayerCmd.SetEnergy(x, player);
@@ -153,7 +157,11 @@ internal sealed partial class SmokeController
             AccessTools.Property(poseType, "UseTornadoHitStop").SetValue(pose, _configuration.TornadoHitStop);
             foreach (FastModeType mode in new[] { FastModeType.Normal, FastModeType.Fast, FastModeType.Instant })
             {
+#if NINJASLAYER_CHANNEL_STABLE
                 AutoSlayer.CurrentWatchdog?.Reset($"Verifying Tornado cadence in {mode}");
+#else
+                MegaCrit.Sts2.Core.AutoSlay.Helpers.Watchdog.Current?.Reset($"Verifying Tornado cadence in {mode}");
+#endif
                 SaveManager.Instance.PrefsSave.FastMode = mode;
                 var results = new List<double[]>();
                 foreach (bool native in new[] { true, false })
@@ -205,7 +213,11 @@ internal sealed partial class SmokeController
             await hurt;
             Require(actor.Position.IsEqualApprox(baseline), "Replacement hurt drifted after old pause cleanup.");
             _checkpoints.Write("tornado.png-pause-ownership");
+#if NINJASLAYER_CHANNEL_STABLE
             AutoSlayer.CurrentWatchdog?.Reset("Tornado preview cleanup");
+#else
+            MegaCrit.Sts2.Core.AutoSlay.Helpers.Watchdog.Current?.Reset("Tornado preview cleanup");
+#endif
             _firstCombatCompleted.TrySetResult();
             // The preview owns this combat until shutdown; AutoSlayer must not seek rewards.
             await Task.Delay(Timeout.Infinite, cancellationToken);

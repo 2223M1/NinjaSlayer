@@ -38,7 +38,7 @@ public partial class OrbContractRunner
             var retainedHand = AddCard<StrikeIronclad>(combat);
             var draw = Enumerable.Range(0, 6).Select(_ => AddCard<DefendIronclad>(combat, PileType.Draw)).ToArray();
             int seen = upgraded ? 4 : 3, selections = 0;
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
+            using var selector = UseCardSelector(new SelectCards(options =>
             {
                 if (selections++ == 0)
                 {
@@ -64,18 +64,32 @@ public partial class OrbContractRunner
             var draw = Enumerable.Range(0, 7).Select(_ => AddCard<DefendIronclad>(combat, PileType.Draw)).ToArray();
             await PowerCmd.Apply<DexterityPower>(Choice, combat.Player.Creature, 2, combat.Player.Creature, null);
             int selections = 0;
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
+            using var selector = UseCardSelector(new SelectCards(options =>
             {
                 selections++;
-                Require(options.Length == (upgraded ? 6 : 4) && options.SequenceEqual(draw.Take(upgraded ? 6 : 4)),
-                    "Assess must keep its four/six-card Scry.");
-                Require(combat.Player.Creature.Block == (upgraded ? 8 : 6), "Assess must gain four/six native Block before Scry.");
+                Require(options.Length == (upgraded ? 5 : 4) && options.SequenceEqual(draw.Take(upgraded ? 5 : 4)),
+                    "Assess must Scry four/five cards.");
+                Require(combat.Player.Creature.Block == 0
+                    && combat.Player.Creature.GetPowerAmount<StretchPower>() == (upgraded ? 7 : 5),
+                    "Assess grants five/seven Stretch before Scry, without gaining Block or applying Dexterity to Stretch.");
                 return [];
             }));
             await CardCmd.AutoPlay(Choice, card, null);
             Require(selections == 1 && !hand.ShouldRetainThisTurn && draw.All(c => c.Pile?.Type == PileType.Draw),
                 "Assess's zero-choice Scry must preserve piles and not add Retain.");
+            var punch = AddCard<AntiAirBangBangFist>(combat);
+            Require(((MegaCrit.Sts2.Core.Localization.DynamicVars.CalculatedVar)punch.DynamicVars["CalculatedHits"])
+                .Calculate(combat.Enemy) == 3, "Stretch and Dexterity each count once for Anti-Air Bang Bang Fist.");
+            int hp = combat.Enemy.CurrentHp;
+            await CardCmd.AutoPlay(Choice, punch, combat.Enemy);
+            Require(combat.Enemy.CurrentHp == hp - 24
+                && combat.Player.Creature.GetPowerAmount<StretchPower>() == (upgraded ? 7 : 5),
+                "Stretch must add a real punch hit without being consumed by an attack.");
+            await CardCmd.AutoPlay(Choice, hand, null);
+            Require(combat.Player.Creature.Block == (upgraded ? 14 : 12)
+                && combat.Player.Creature.GetPowerAmount<StretchPower>() == 0,
+                "The next Defend gains its five Block plus Dexterity and Stretch, then consumes Stretch.");
         }
-        GD.Print("PASS fourth v1.19 edit: selected-enemy Taunt base+upgrade/stacking, Kunai Scry3/4 before hand discard, Assess Block4/6 plus Scry4/6 and native Dexterity.");
+        GD.Print("PASS Taunt/Kunai and Assess Stretch5/7, Scry4/5, Dexterity, next-card consumption and Anti-Air buff synergy.");
     }
 }

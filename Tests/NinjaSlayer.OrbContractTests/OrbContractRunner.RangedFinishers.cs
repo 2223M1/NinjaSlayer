@@ -116,10 +116,17 @@ public partial class OrbContractRunner
         Require(patcher.PatchAll(), "Ranged native targets failed to install.");
         var observer = new Harmony("NinjaSlayer.OrbContracts.RangedObserver");
         var damage = AccessTools.Method(typeof(CreatureCmd), nameof(CreatureCmd.Damage),
-            [typeof(PlayerChoiceContext), typeof(IEnumerable<Creature>), typeof(decimal), typeof(ValueProp),
+            [typeof(PlayerChoiceContext),
+#if NINJASLAYER_CHANNEL_PREVIEW
+                typeof(IEnumerable<DamageTargetData>),
+#else
+                typeof(IEnumerable<Creature>),
+#endif
+                typeof(decimal), typeof(ValueProp),
                 typeof(Creature), typeof(CardModel)
 #if !NINJASLAYER_CHANNEL_STABLE
                 , typeof(MegaCrit.Sts2.Core.Entities.Cards.CardPlay)
+                , typeof(MegaCrit.Sts2.Core.Hooks.ModifyDamageHookType)
 #endif
             ]);
         observer.Patch(damage, prefix: new HarmonyMethod(typeof(OrbContractRunner), nameof(ObserveRangedDamage)));

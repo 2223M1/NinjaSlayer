@@ -43,7 +43,11 @@ internal sealed partial class SmokeController
             var third = Player.CreateForNewRun<Ironclad>(UnlockState.all, 3);
             var fourth = Player.CreateForNewRun<Ironclad>(UnlockState.all, 4);
             var run = RunState.CreateForNewRun([local, remote, third, fourth], ActModel.GetDefaultList().Select(a => a.ToMutable()).ToList(),
-                [], GameMode.Standard, 0, _configuration.Seed);
+                [], GameMode.Standard,
+#if NINJASLAYER_CHANNEL_PREVIEW
+                false,
+#endif
+                0, _configuration.Seed);
             RunManager.Instance.SetUpTest(run, new NetSingleplayerGameService(), true, false);
             AccessTools.Method(typeof(RunManager), "GenerateRooms").Invoke(RunManager.Instance, null);
             await (Task)AccessTools.Method(typeof(NGame), "StartRun").Invoke(NGame.Instance, [run])!;
@@ -89,7 +93,7 @@ internal sealed partial class SmokeController
             foreach (FastModeType speed in new[] { FastModeType.Normal, FastModeType.Fast })
             {
                 SaveManager.Instance.PrefsSave.FastMode = speed;
-                var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(), true,
+                var run = await StartSmokeRun(ModelDb.Character<NinjaSlayerCharacter>(), true,
                     ActModel.GetDefaultList(), [], _configuration.Seed, GameMode.Standard, 0);
                 await RunManager.Instance.EnterAct(0);
                 Type route = typeof(TheMovingJungleEvent).Assembly.GetType("NinjaSlayer.Code.Patches.SawatariEventRoute", true)!;
@@ -102,7 +106,7 @@ internal sealed partial class SmokeController
                 Require(Release114EntranceProbe.Count == 1 && player.Creature.GetCreatureNode()!.Visuals.IsVisibleInTree(),
                     "Sawatari must reveal exactly one visible Ninja Slayer entrance before combat.");
                 _checkpoints.Write("release114.entrance." + speed);
-                await NGame.Instance.ReturnToMainMenuAfterRun();
+                await NGame.Instance!.ReturnToMainMenuAfterRun();
                 await WaitFrames(30);
             }
         }

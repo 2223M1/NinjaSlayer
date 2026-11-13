@@ -24,7 +24,7 @@ public partial class OrbContractRunner
             var sly = AddCard<ShurikenCreation>(combat, PileType.Draw);
             for (int i = 0; i < 9; i++) AddCard<DefendIronclad>(combat, PileType.Draw);
             int choices = 0;
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
+            using var selector = UseCardSelector(new SelectCards(options =>
             {
                 choices++;
                 if (choices == 1)
@@ -52,7 +52,7 @@ public partial class OrbContractRunner
         using (var combat = new OrbCombat())
         {
             await CardCmd.AutoPlay(Choice, AddCard<Training>(combat), null);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ =>
+            using var selector = UseCardSelector(new SelectCards(_ =>
                 throw new InvalidOperationException("Empty-hand Training must not open a selector.")));
             foreach (var power in combat.Player.Creature.Powers.OfType<TrainingPower>().ToArray())
                 await power.AfterPlayerTurnStart(Choice, combat.Player);

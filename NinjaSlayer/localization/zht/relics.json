@@ -12,7 +12,7 @@
   "NINJA_SLAYER_RELIC_DOGUSHA_TOOL_POUCH_RELIC.description": "在你的回合開始時，獲得1層[gold]手裏劍[/gold]。",
   "NINJA_SLAYER_RELIC_DOGUSHA_TOOL_POUCH_RELIC.flavor": "三郎不留顧客名錄；所有訂單只存在他的腦中。",
   "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.title": "鮪魚壽司",
-  "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.description": "拾起時，從你的[gold]牌組[/gold]中選擇[blue]{Cards}[/blue]張牌，[gold]附魔[/gold]：[purple]滋養[/purple]。",
+  "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.description": "拾起時，從你的[gold]牌組[/gold]中選擇[blue]{Cards}[/blue]張牌，[gold]附魔[/gold]：[purple]小啖[/purple]。",
   "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.flavor": "“沒有醬油，但也不好挑剔。”",
   "NINJA_SLAYER_RELIC_IRC_TERMINAL_RELIC.title": "IRC終端機",
   "NINJA_SLAYER_RELIC_IRC_TERMINAL_RELIC.description": "在你的回合開始時，獲得1點能量。\n將1張[gold]佔線[/gold]加入你的[gold]手牌[/gold]。",

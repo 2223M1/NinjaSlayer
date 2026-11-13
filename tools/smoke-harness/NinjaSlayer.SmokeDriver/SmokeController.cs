@@ -51,6 +51,32 @@ namespace NinjaSlayer.SmokeDriver;
 
 internal sealed partial class SmokeController
 {
+    private static Task<RunState> StartSmokeRun(CharacterModel character, bool shouldSave,
+        IReadOnlyList<ActModel> acts, IReadOnlyList<ModifierModel> modifiers, string seed,
+        GameMode gameMode, int ascensionLevel, bool isCustom = false) =>
+#if NINJASLAYER_CHANNEL_STABLE
+        NGame.Instance!.StartNewSingleplayerRun(character, shouldSave, acts, modifiers, seed,
+            isCustom ? GameMode.Custom : gameMode, ascensionLevel);
+#else
+        NGame.Instance!.StartNewSingleplayerRun(
+            Player.CreateForNewRun(character, SaveManager.Instance.GenerateUnlockStateFromProgress(), 1),
+            shouldSave, acts, modifiers, seed, gameMode, isCustom, ascensionLevel);
+#endif
+
+    private static IDisposable UseSmokeSelector(MegaCrit.Sts2.Core.TestSupport.ICardSelector selector) =>
+#if NINJASLAYER_CHANNEL_STABLE
+        CardSelectCmd.UseSelector(selector);
+#else
+        MegaCrit.Sts2.Core.CardSelection.CardSelectorStack.SetTestSelector(selector);
+#endif
+
+    private static IDisposable SuspendSmokeSelector() =>
+#if NINJASLAYER_CHANNEL_STABLE
+        CardSelectCmd.SuspendSelectorForTest();
+#else
+        MegaCrit.Sts2.Core.CardSelection.CardSelectorStack.SuspendTestSelector();
+#endif
+
     private const int RestartRequestedExitCode = 20;
     private const string InjectedDarkStrikeFailure = "Injected Dark Strike damage-hook failure.";
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(45);

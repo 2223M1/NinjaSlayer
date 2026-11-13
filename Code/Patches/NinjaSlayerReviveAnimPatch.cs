@@ -18,7 +18,11 @@ public sealed class NinjaSlayerReviveAnimPatch : IPatchMethod
         new(typeof(NCreature), nameof(NCreature.StartReviveAnim))
     ];
 
-    public static bool Prefix(NCreature __instance, bool ____isRemotePlayerOrPet)
+    public static bool Prefix(NCreature __instance, bool ____isRemotePlayerOrPet
+#if NINJASLAYER_CHANNEL_PREVIEW
+        , ref bool ____interactionAllowedBecauseAlive, NCreatureStateDisplay ____stateDisplay
+#endif
+        )
     {
         if (__instance.Entity.Player?.Character is not INinjaSlayerCharacter || __instance.HasSpineAnimation)
             return true;
@@ -26,8 +30,14 @@ public sealed class NinjaSlayerReviveAnimPatch : IPatchMethod
         bool flewOut = DeathAnimation.HasFlightVisual(__instance.Entity);
         DeathAnimation.RestoreVisual(__instance.Entity);
         __instance.SetAnimationTrigger("Idle");
+#if NINJASLAYER_CHANNEL_STABLE
         if (!____isRemotePlayerOrPet) __instance.AnimEnableUi();
         __instance.Hitbox.MouseFilter = Godot.Control.MouseFilterEnum.Stop;
+#else
+        if (!____isRemotePlayerOrPet) ____stateDisplay.AnimateInSimple();
+        ____interactionAllowedBecauseAlive = true;
+        __instance.SetIsInteractable(on: true, changeVisibilityImmediately: true);
+#endif
         if (flewOut)
         {
             // Presentation-only randomness must not advance a gameplay RNG from

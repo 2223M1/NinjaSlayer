@@ -5,8 +5,8 @@
   <p><a href="README.md">简体中文</a> | <strong>English</strong> | <a href="README_JA.md">日本語</a></p>
   <!-- compatibility-badges:start -->
   <p>
-    <img src="https://img.shields.io/badge/Slay%20the%20Spire%202-0.107.1%20%7C%200.111.0-B51F24" alt="Slay the Spire 2 0.107.1 and 0.111.0">
-    <img src="https://img.shields.io/badge/RitsuLib-0.5.12-2D7D9A" alt="RitsuLib 0.5.12">
+    <img src="https://img.shields.io/badge/Slay%20the%20Spire%202-0.107.1%20%7C%200.113.0-B51F24" alt="Slay the Spire 2 0.107.1 and 0.113.0">
+    <img src="https://img.shields.io/badge/RitsuLib-0.6.11-2D7D9A" alt="RitsuLib 0.6.11">
     <a href="https://github.com/2223M1/NinjaSlayer/releases/latest"><img src="https://img.shields.io/github/v/release/2223M1/NinjaSlayer?display_name=tag&amp;sort=semver" alt="GitHub Release"></a>
   </p>
   <!-- compatibility-badges:end -->
@@ -35,7 +35,7 @@ A salaryman who lost his wife and child is possessed by a mysterious ninja soul,
 
 The Workshop item doesn't show up in search yet, so use the link above. The stable and beta branches share one download.
 
-MinionLib is optional. When another mod requires it, use an official package matching the game: this release was checked with MinionLib 0.5.2 on stable 0.107.1 and 0.6.3 on beta 0.111.0. MinionLib 0.6.3 requires game 0.110.1 or later and cannot run on 0.107.1.
+MinionLib is optional. When another mod requires it, use an official package matching the game: earlier releases were checked with MinionLib 0.5.2 on stable 0.107.1 and 0.6.3 on beta 0.111.0. Third-party minion combinations have not yet been rechecked on 0.113.0. MinionLib 0.6.3 requires game 0.110.1 or later and cannot run on 0.107.1.
 
 The latest version is published on the Workshop. [GitHub Releases](https://github.com/2223M1/NinjaSlayer/releases) keeps historical packages for rollbacks.
 
@@ -44,8 +44,8 @@ The latest version is published on the Workshop. [GitHub Releases](https://githu
 ## Versions and languages
 
 <!-- compatibility:start -->
-- Game stable `0.107.1` and beta `0.111.0`.
-- Requires RitsuLib `0.5.12` or later.
+- Game stable `0.107.1` and beta `0.113.0`.
+- Requires RitsuLib `0.6.11` or later.
 - Text is available in Simplified Chinese, English and Japanese, following the game's language setting.
 - Tested on Windows. Real-device testing on macOS, Linux and Steam Deck is not yet complete.
 <!-- compatibility:end -->

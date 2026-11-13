@@ -60,15 +60,11 @@ public partial class OrbContractRunner
         Node control = pose.GetNode("FreeControl");
         Type type = control.GetType();
         harmony.Patch(AccessTools.Method(type, "IsBlocked"), prefix: new HarmonyMethod(typeof(OrbContractRunner), nameof(FreeHeadlessFocus)));
-        harmony.Patch(AccessTools.PropertyGetter(typeof(NinjaSlayerSettings), "FreeControlEnabled"),
-            prefix: new HarmonyMethod(typeof(OrbContractRunner), nameof(FreeSetting)));
         _hurtRoom = new FreeInputContractRoom { Size = viewport.Size, MouseFilter = Control.MouseFilterEnum.Stop };
         var backSurface = new Control { MouseFilter = Control.MouseFilterEnum.Ignore };
         _hurtRoom.AddChild(backSurface);
         AccessTools.Property(typeof(NCombatRoom), "BackCombatVfxContainer").SetValue(_hurtRoom, backSurface);
         stage.AddChild(_hurtRoom); stage.MoveChild(_hurtRoom, 0);
-        harmony.Patch(AccessTools.PropertyGetter(typeof(NCombatRoom), nameof(NCombatRoom.Instance)),
-            prefix: new HarmonyMethod(typeof(OrbContractRunner), nameof(ResolveHurtRoom)));
         _freeSetting = true;
         object? Invoke(string name, params object?[] args) => AccessTools.Method(type, name).Invoke(control, args);
         void Set(string name, object value) => AccessTools.Field(type, name).SetValue(control, value);
@@ -96,6 +92,10 @@ public partial class OrbContractRunner
             Vector2 Position() { var p = Physics<System.Numerics.Vector2>("Position"); return new(p.X, p.Y); }
             void Place(Vector2 p) => AccessTools.Method(physics.GetType(), "SetTransform").Invoke(physics, [new System.Numerics.Vector2(p.X, p.Y), 0f]);
             await Frames(8);
+            Require((bool)AccessTools.Property(type, "Active").GetValue(control)!,
+                $"Free control stopped unexpectedly: alive={combat.Player.Creature.IsAlive}, phase={combat.Player.PlayerCombatState!.Phase}, turn={combat.Player.PlayerCombatState.TurnNumber}, ended={Get<int>("_endedTurn")}, network={RunManager.Instance.NetService.Type}, room={NCombatRoom.Instance != null}, combatOver={CombatManager.Instance.IsOverOrEnding}.");
+            Require(ReferenceEquals(physics, Get<object>("_physics")),
+                $"Free control replaced its solver during startup; generation={AccessTools.Property(type, "Generation").GetValue(control)}.");
             Require(Physics<bool>("Grounded"), $"Free walker never reached the actual authored ground: {Position()}.");
             Vector2 start = Position(), startCore = rig.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin;
             KeyInput(Key.D, true); await Frames(12); KeyInput(Key.D, false);

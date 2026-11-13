@@ -28,6 +28,7 @@
   </Target>
   <ItemGroup>
     <Compile Include="ContractRunner.cs" />
+    <Compile Include="../RitsuTestAssets.cs" Link="RitsuTestAssets.cs" />
     <Compile Include="ContractSupport.cs" />
     <Compile Include="..\..\Code\Combat\NinjaSlayerAttackExecution.cs" Link="NinjaSlayerAttackExecution.cs" />
     <Compile Include="..\..\Code\Combat\CombatPresentationPacingScope.cs" Link="CombatPresentationPacingScope.cs" />
@@ -62,5 +63,6 @@
     </Reference>
     <PackageReference Include="$(NinjaSlayerRitsuLibPackageId)" Version="$(NinjaSlayerRitsuLibVersion)" PrivateAssets="all" />
     <PackageReference Include="Box2D.NET" Version="$(NinjaSlayerBox2DVersion)" />
+    <PackageReference Include="System.IO.Hashing" Version="9.0.0" Condition="'$(NinjaSlayerHostChannel)' == 'stable'" />
   </ItemGroup>
 </Project>

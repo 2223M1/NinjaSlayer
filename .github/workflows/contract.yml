@@ -105,6 +105,13 @@ jobs:
             throw 'Candidate compatibility.json must match the protected main harness.'
           }
           $compatibility = Read-NinjaSlayerCompatibility -Path $compatibilityPath
+          if ([string]::IsNullOrWhiteSpace($env:NINJASLAYER_RITSULIB_MOD_DIR)) {
+            throw 'The contract runner requires the matching RitsuLib resource installation.'
+          }
+          foreach ($fileName in @('assets.zip', 'mod_manifest.json')) {
+            $file = Get-Item -LiteralPath (Join-Path $env:NINJASLAYER_RITSULIB_MOD_DIR $fileName) -ErrorAction Stop
+            if (-not $file.IsReadOnly) { throw "RitsuLib/$fileName must be mounted read-only." }
+          }
           $roots = @{
             stable = $env:NINJASLAYER_STS2_STABLE_DATA_DIR
             preview = $env:NINJASLAYER_STS2_PREVIEW_DATA_DIR

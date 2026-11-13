@@ -185,7 +185,11 @@ internal sealed partial class SmokeController
         }
 
         AccessTools.Property(typeof(RunManager), "AscensionManager").SetValue(RunManager.Instance,
-            new MegaCrit.Sts2.Core.Entities.Ascension.AscensionManager(10));
+            new MegaCrit.Sts2.Core.Entities.Ascension.AscensionManager(
+#if NINJASLAYER_CHANNEL_PREVIEW
+                GameMode.Standard,
+#endif
+                10));
         await (Task)AccessTools.Method(typeof(NinjaSlayer.Orbs.ShurikenOrb), "AddStock")
             .Invoke(null, [choice, player, 12])!;
         await WaitFrames(10);

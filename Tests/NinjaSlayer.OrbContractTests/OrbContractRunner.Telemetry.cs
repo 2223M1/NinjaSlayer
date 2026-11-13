@@ -41,7 +41,7 @@ public partial class OrbContractRunner
         BalanceCombat? measurement() => (BalanceCombat?)AccessTools.Field(collector, "_combat").GetValue(null);
         void begin(OrbCombat combat)
         {
-            var run = RunState.CreateForTest([combat.Player], seed: "telemetry-contract");
+            var run = combat.CreateRun("telemetry-contract");
             run.AppendToMapPointHistory(MegaCrit.Sts2.Core.Map.MapPointType.Monster, RoomType.Monster, new ModelId("ENCOUNTER", "TEST"));
             start(run, combat.State);
         }
@@ -75,7 +75,7 @@ public partial class OrbContractRunner
             await CreatureCmd.Heal(combat.Player.Creature, 3);
             Require(player.Metrics.HpLost == 5 && player.Metrics.Healed == 3 && player.Metrics.Blocked == 5
                 && player.Metrics.Mechanics["naraku_absorbed"] == 20,
-                "Actual HP loss, healing, block and Naraku absorption must remain separate native measurements.");
+                $"Actual HP loss, healing, block and Naraku absorption must remain separate native measurements: HP={player.Metrics.HpLost}, heal={player.Metrics.Healed}, block={player.Metrics.Blocked}, Naraku={player.Metrics.Mechanics["naraku_absorbed"]}.");
             var strength = await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, 5, combat.Player.Creature, null);
             string strengthId = ModelDb.Power<StrengthPower>().Id.ToString();
             Require(player.Metrics.PowerChanges[strengthId] == 5, "Native power application must be measured once.");

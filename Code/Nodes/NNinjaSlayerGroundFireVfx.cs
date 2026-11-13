@@ -70,7 +70,11 @@ public partial class NNinjaSlayerGroundFireVfx : Node2D
         tween.TweenProperty(mainFire, "modulate:a", 0.9f, 0.5)
             .SetEase(Tween.EaseType.Out)
             .SetTrans(Tween.TransitionType.Cubic);
-        if (await tween.AwaitFinished(this))
+        if (await tween.AwaitFinished(this)
+#if NINJASLAYER_CHANNEL_PREVIEW
+            == TweenOutcome.Finished
+#endif
+            )
         {
             flameSprites.Emitting = true;
             tween = CreateTween().SetParallel();
@@ -79,7 +83,11 @@ public partial class NNinjaSlayerGroundFireVfx : Node2D
             tween.TweenProperty(mainFire, "scale", Vector2.One * 2f, 2.0)
                 .SetEase(Tween.EaseType.InOut)
                 .SetTrans(Tween.TransitionType.Cubic);
-            if (await tween.AwaitFinished(this))
+            if (await tween.AwaitFinished(this)
+#if NINJASLAYER_CHANNEL_PREVIEW
+                == TweenOutcome.Finished
+#endif
+                )
             {
                 flameSprites.Emitting = false;
                 await emberDone;

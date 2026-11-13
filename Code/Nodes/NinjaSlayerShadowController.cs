@@ -44,6 +44,8 @@ public partial class NinjaSlayerShadowController : Node
     internal static NinjaSlayerShadowController? Get(Creature creature) =>
         creature.GetCreatureNode()?.Visuals.GetNodeOrNull<NinjaSlayerShadowController>(NinjaSlayerVisualRig.ShadowControllerNodeName);
 
+    public override void _EnterTree() => RenderingServer.FramePreDraw += SyncNow;
+
     public override void _Ready()
     {
         _rig = GetParent<Node2D>();
@@ -68,7 +70,6 @@ public partial class NinjaSlayerShadowController : Node
         _groundReferenceRect = new(_groundAnchor.Position - _shadow.Texture.GetSize() * _authoredScale * 0.5f,
             _shadow.Texture.GetSize() * _authoredScale);
         ProcessPriority = 200;
-        RenderingServer.FramePreDraw += SyncNow;
         SyncNow();
     }
 

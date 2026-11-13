@@ -79,7 +79,6 @@ function Get-NinjaSlayerWorkshopBundleFiles {
         $version = [string]$Compatibility.channels.$channelName.gameApiVersion
         $files.Add("lib/$version/compat-target.txt")
         $files.Add("lib/$version/NinjaSlayer.dll")
-        if ($channelName -eq 'preview') { $files.Add("lib/$version/NinjaSlayer.AutoAnthony.dll") }
     }
     return $files.ToArray()
 }

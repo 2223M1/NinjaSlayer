@@ -109,7 +109,11 @@ public sealed partial class BossDeathPresentationController : Node
             _boss.AnimHideIntent();
         }
 
+#if NINJASLAYER_CHANNEL_STABLE
         _boss.AnimDisableUi();
+#else
+        _boss.AnimateOutStateDisplay();
+#endif
         Begin();
         Task deathTask = WaitForPresentationAndRemove(shouldRemove);
         _boss.DeathAnimationTask = deathTask;

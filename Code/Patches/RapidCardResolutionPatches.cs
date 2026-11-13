@@ -139,7 +139,11 @@ internal static class RapidCardResolutionStateMachinePatch
     private static readonly MethodInfo AwaitTween = RequireMethod(
         typeof(TweenHelper),
         nameof(TweenHelper.AwaitFinished),
-        [typeof(Godot.Tween), typeof(Godot.Node)]);
+        [typeof(Godot.Tween), typeof(Godot.Node)
+#if NINJASLAYER_CHANNEL_PREVIEW
+                , typeof(CancellationToken)
+#endif
+                ]);
     private static readonly MethodInfo RemoveFromCombat = RequireMethod(
         typeof(CardPileCmd),
         nameof(CardPileCmd.RemoveFromCombat),
@@ -204,7 +208,11 @@ internal static class RapidCardResolutionStateMachinePatch
             RequireMethod(
                 typeof(RapidCardPresentationContext),
                 nameof(RapidCardPresentationContext.AwaitTweenUnlessActive),
-                [typeof(Godot.Tween), typeof(Godot.Node)]));
+                [typeof(Godot.Tween), typeof(Godot.Node)
+#if NINJASLAYER_CHANNEL_PREVIEW
+                , typeof(CancellationToken)
+#endif
+                ]));
         return rewriter.Instructions();
     }
 

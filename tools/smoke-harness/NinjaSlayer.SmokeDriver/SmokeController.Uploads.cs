@@ -53,7 +53,11 @@ internal sealed partial class SmokeController
                 request.Response.Close();
                 return id;
             });
+#if NINJASLAYER_CHANNEL_STABLE
             var description = (NMegaTextEdit)screen.FindChild("DescriptionInput", true, false);
+#else
+            var description = screen.FindChild("DescriptionInput", true, false).GetNode<TextEdit>("TextEdit");
+#endif
             description.InsertTextAtCaret("Isolated independent F2 upload contract");
             await WaitFrames(2);
             var button = (ModSettingsSidebarButton)screen.FindChild("SendButton", true, false);

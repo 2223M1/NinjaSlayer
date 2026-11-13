@@ -141,7 +141,7 @@
   "NINJA_SLAYER_CARD_COLLAPSE_FIST.title": "Yıkıcı Yumruk",
   "NINJA_SLAYER_CARD_COLLAPSE_FIST.description": "{Damage:diff()} hasar ver.\n{Karate:diff()} [gold]Karate[/gold] elde et.",
   "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.title": "Tek Zihin, Tek Beden",
-  "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.description": "{NarakuLife:diff()} [gold]Naraku Canı[/gold] kazan.\nHer [gold]Naraku Canı[/gold] puanı, [gold]Karate[/gold] hasarını 1 artırır.\n[gold]Karate[/gold] tetiklendiğinde, [gold]Karate[/gold] kaybetmeden önce 1 [gold]Naraku Canı[/gold] kaybet.",
+  "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.description": "{NarakuLife:diff()} [gold]Naraku Canı[/gold] kazan.\n[gold]Naraku Canı[/gold] değeriniz [gold]Karate[/gold] sayılır.",
   "NINJA_SLAYER_CARD_ZAZEN_DRINK.title": "Zazen İçeceği",
   "NINJA_SLAYER_CARD_ZAZEN_DRINK.description": "Çekilen tüm [gold]Durum[/gold] kartlarını atarak [gold]El[/gold]in dolana kadar kart çek.\n[gold]Öngörü[/gold] {Cards:diff()}.",
   "NINJA_SLAYER_CARD_READ_AHEAD.description": "[gold]Öngörü[/gold] {Scry:diff()}.\nBu şekilde atılan her kart için {Block:diff()} [gold]Blok[/gold] elde et.",
@@ -149,7 +149,7 @@
   "NINJA_SLAYER_CARD_SHURIKEN_CREATION.description": "{Stock:diff()} [gold]Shuriken[/gold] elde et.",
   "NINJA_SLAYER_CARD_ONSLAUGHT.description": "[gold]Shuriken[/gold] bir düşmana her hasar verdiğinde bu tur {StrengthPower:diff()} [gold]Kuvvet[/gold] elde et.",
   "NINJA_SLAYER_CARD_REKINDLE.description": "[gold]El[/gold]indeki bir kartı [gold]Kara Alev[/gold]e [gold]Dönüştür[/gold].\nBu tur her [gold]Kara Alev[/gold] tetiklediğinde {NarakuLife:diff()} [gold]Naraku Canı[/gold] elde et.",
-  "NINJA_SLAYER_CARD_ASSESS.description": "{Block:diff()} [gold]Blok[/gold] elde et.\n[gold]Öngörü[/gold] {Scry:diff()}.",
+  "NINJA_SLAYER_CARD_ASSESS.description": "{StretchPower:diff()} [gold]Gerinme[/gold] elde et.\n[gold]Öngörü[/gold] {Scry:diff()}.",
   "NINJA_SLAYER_CARD_TOMOE_THROW.description": "[gold]El[/gold]inden [gold]Tüketmek[/gold] için bir [gold]Chado[/gold] seç.\n{Block:diff()} [gold]Blok[/gold] elde et.\n{WeakPower:diff()} [gold]Zayıf[/gold] uygula.",
   "NINJA_SLAYER_CARD_RESILIENCE.description": "Her Durum kartı oluşturduğunda {Cards:diff()} kart çek.",
   "NINJA_SLAYER_CARD_ENDURANCE.description": "{Damage:diff()} hasar ver, {Repeat} kez.\n{Karate:diff()} [gold]Karate[/gold] elde et.",
@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "Alçak Aparkat",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "{Damage:diff()} hasar ver.\nÖnceki oynadığın kart Saldırıysa {WeakPower:diff()} [gold]Zayıf[/gold] ve [gold]Savunmasız[/gold] uygula.",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "Savunma Kıran Darbe",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "{CalculatedDamage:diff()} hasar ver.\nSahip olduğun her [gold]Shuriken[/gold] yükü için {ExtraDamage:diff()} ek hasar verir."
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "{Damage:diff()} hasar ver.\n{ShurikenAimPower:diff()} [gold]Hedef[/gold] uygula."
 }

@@ -141,7 +141,7 @@
   "NINJA_SLAYER_CARD_COLLAPSE_FIST.title": "붕 펀치",
   "NINJA_SLAYER_CARD_COLLAPSE_FIST.description": "피해를 {Damage:diff()} 줍니다.\n[gold]카라테[/gold]를 {Karate:diff()} 얻습니다.",
   "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.title": "일심동체",
-  "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.description": "[gold]나라쿠 생명[/gold]을 {NarakuLife:diff()} 얻습니다.\n[gold]나라쿠 생명[/gold] 1당 [gold]카라테[/gold] 피해가 1 증가합니다.\n[gold]카라테[/gold] 발동 시, [gold]카라테[/gold]보다 먼저 [gold]나라쿠 생명[/gold]을 1 잃습니다.",
+  "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.description": "[gold]나라쿠 생명[/gold]을 {NarakuLife:diff()} 얻습니다.\n[gold]나라쿠 생명[/gold]을 [gold]카라테[/gold]로 취급합니다.",
   "NINJA_SLAYER_CARD_ZAZEN_DRINK.title": "지젠 드링크",
   "NINJA_SLAYER_CARD_ZAZEN_DRINK.description": "[gold]손[/gold]이 가득 찰 때까지 카드를 뽑고, 뽑은 [gold]상태이상[/gold] 카드는 버립니다.\n[gold]예지[/gold] {Cards:diff()}.",
   "NINJA_SLAYER_CARD_READ_AHEAD.description": "[gold]예지[/gold] {Scry:diff()}.\n이 방법으로 버린 카드 1장마다 [gold]방어도[/gold]를 {Block:diff()} 얻습니다.",
@@ -149,7 +149,7 @@
   "NINJA_SLAYER_CARD_SHURIKEN_CREATION.description": "[gold]슈리켄[/gold]을 {Stock:diff()} 얻습니다.",
   "NINJA_SLAYER_CARD_ONSLAUGHT.description": "[gold]슈리켄[/gold]이 적에게 피해를 줄 때마다 이번 턴에 [gold]힘[/gold]을 {StrengthPower:diff()} 얻습니다.",
   "NINJA_SLAYER_CARD_REKINDLE.description": "[gold]손[/gold]의 카드를 1장 [gold]검은 불꽃[/gold]으로 [gold]변화[/gold]시킵니다.\n이번 턴에 [gold]검은 불꽃[/gold]을 발동할 때마다 [gold]나라쿠 생명[/gold]을 {NarakuLife:diff()} 얻습니다.",
-  "NINJA_SLAYER_CARD_ASSESS.description": "[gold]방어도[/gold]를 {Block:diff()} 얻습니다.\n[gold]예지[/gold] {Scry:diff()}.",
+  "NINJA_SLAYER_CARD_ASSESS.description": "[gold]스트레칭[/gold]을 {StretchPower:diff()} 얻습니다.\n[gold]예지[/gold] {Scry:diff()}.",
   "NINJA_SLAYER_CARD_TOMOE_THROW.description": "[gold]손[/gold]의 [gold]차도[/gold]를 1장 골라 [gold]소멸[/gold]시킵니다.\n[gold]방어도[/gold]를 {Block:diff()} 얻습니다.\n[gold]약화[/gold]를 {WeakPower:diff()} 부여합니다.",
   "NINJA_SLAYER_CARD_RESILIENCE.description": "상태이상 카드를 생성할 때마다 카드를 {Cards:diff()}장 뽑습니다.",
   "NINJA_SLAYER_CARD_ENDURANCE.description": "피해를 {Damage:diff()}만큼 {Repeat}번 줍니다.\n[gold]카라테[/gold]를 {Karate:diff()} 얻습니다.",
@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "저공 어퍼컷",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "피해를 {Damage:diff()} 줍니다.\n직전에 사용한 카드가 공격이라면, 적에게 [gold]약화[/gold]와 [gold]취약[/gold]을 {WeakPower:diff()} 부여합니다.",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "돌파의 일격",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "피해를 {CalculatedDamage:diff()} 줍니다.\n보유한 [gold]슈리켄[/gold] 중첩마다 피해량이 {ExtraDamage:diff()} 증가합니다."
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "피해를 {Damage:diff()} 줍니다.\n[gold]조준[/gold]를 {ShurikenAimPower:diff()} 부여합니다."
 }

@@ -34,15 +34,31 @@ internal static class RapidCardPresentationContext
             ? Task.CompletedTask
             : Cmd.CustomScaledWait(fastDuration, duration, ignoreFastMode, cancellationToken);
 
+#if NINJASLAYER_CHANNEL_STABLE
     public static Task<bool> AwaitTweenUnlessActive(Tween tween, Node owner)
+#else
+    public static Task<TweenOutcome> AwaitTweenUnlessActive(Tween tween, Node owner, CancellationToken cancellationToken)
+#endif
     {
         if (!IsActive)
         {
-            return tween.AwaitFinished(owner);
+            return tween.AwaitFinished(owner
+#if NINJASLAYER_CHANNEL_PREVIEW
+                , cancellationToken
+#endif
+                );
         }
 
-        TaskHelper.RunSafely(tween.AwaitFinished(owner));
+        TaskHelper.RunSafely(tween.AwaitFinished(owner
+#if NINJASLAYER_CHANNEL_PREVIEW
+                , cancellationToken
+#endif
+                ));
+#if NINJASLAYER_CHANNEL_STABLE
         return Task.FromResult(true);
+#else
+        return Task.FromResult(TweenOutcome.Finished);
+#endif
     }
 
     public static async Task RemoveFromCombat(CardModel card, bool skipVisuals)

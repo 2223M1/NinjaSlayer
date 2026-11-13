@@ -33,7 +33,8 @@ internal static class NinjaSlayerFinisherCinematic
     internal static bool TryInterceptRangedDamage(
         PlayerChoiceContext choiceContext, IEnumerable<Creature>? targets, decimal amount,
         ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay,
-        out Task<IEnumerable<DamageResult>>? result)
+        out Task<IEnumerable<DamageResult>>? result,
+        Func<Task<IEnumerable<DamageResult>>>? originalDamage = null)
     {
         result = null;
         if (DirectDamageBypassDepth.Value > 0 || FinisherRangedAction.For(dealer) is not { } ranged
@@ -63,7 +64,7 @@ internal static class NinjaSlayerFinisherCinematic
                 throw new OperationCanceledException("The ranged impact's combat ended before projectile arrival.");
             ranged.Session!.NotifyPrimaryDamage(dealer, cardSource, cardPlay, rangedImpact: true);
             IEnumerable<DamageResult> results = await ExecuteOriginalDirectDamage(
-                choiceContext, actualTargets, amount, props, dealer, cardSource, cardPlay);
+                choiceContext, actualTargets, amount, props, dealer, cardSource, cardPlay, originalDamage);
             if (session != null) await session.CompleteAsync(playPose: true);
             return results;
         }
@@ -123,7 +124,8 @@ internal static class NinjaSlayerFinisherCinematic
         Creature? dealer,
         CardModel? cardSource,
         CardPlay? cardPlay,
-        out Task<IEnumerable<DamageResult>>? result)
+        out Task<IEnumerable<DamageResult>>? result,
+        Func<Task<IEnumerable<DamageResult>>>? originalDamage = null)
     {
         result = null;
         if (DirectDamageBypassDepth.Value > 0
@@ -160,7 +162,7 @@ internal static class NinjaSlayerFinisherCinematic
                 props,
                 dealer,
                 cardSource,
-                cardPlay));
+                cardPlay, originalDamage));
         return true;
     }
 
@@ -334,11 +336,13 @@ internal static class NinjaSlayerFinisherCinematic
         ValueProp props,
         Creature? dealer,
         CardModel? cardSource,
-        CardPlay? cardPlay)
+        CardPlay? cardPlay,
+        Func<Task<IEnumerable<DamageResult>>>? originalDamage = null)
     {
         DirectDamageBypassDepth.Value++;
         try
         {
+            if (originalDamage is not null) return await originalDamage();
             return await CreatureCmd.Damage(
                 choiceContext,
                 targets,

@@ -47,7 +47,11 @@ public partial class OrbContractRunner
             Run = RunState.CreateForTest(Other == null ? [Combat.Player] : [Combat.Player, Other],
                 ascensionLevel: ascension, seed: seed);
             AccessTools.Property(typeof(RunManager), "State").SetValue(RunManager.Instance, Run);
-            AccessTools.Property(typeof(RunManager), "AscensionManager").SetValue(RunManager.Instance, new AscensionManager(ascension));
+            AccessTools.Property(typeof(RunManager), "AscensionManager").SetValue(RunManager.Instance, new AscensionManager(
+#if NINJASLAYER_CHANNEL_PREVIEW
+                GameMode.Standard,
+#endif
+                ascension));
             AccessTools.Field(Combat.State.GetType(), "<RunState>k__BackingField").SetValue(Combat.State, Run);
             Run.AppendToMapPointHistory(MapPointType.Monster, RoomType.Monster, new ModelId("ENCOUNTER", "TEST"));
             Run.PushRoom(new CombatRoom(Combat.State));

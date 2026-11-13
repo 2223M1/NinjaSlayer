@@ -10,6 +10,10 @@ public abstract class NinjaSlayerRelicTemplate : ModRelicTemplate
 {
     public override RelicAssetProfile AssetProfile => NinjaSlayerRelicAssets.For(this);
 
+#if NINJASLAYER_CHANNEL_STABLE
     public override bool IsAllowed(IRunState runState) =>
+#else
+    protected override bool IsAllowedInternal(IRunState runState) =>
+#endif
         NinjaSlayerContentAccess.HasNinjaSlayer(runState);
 }

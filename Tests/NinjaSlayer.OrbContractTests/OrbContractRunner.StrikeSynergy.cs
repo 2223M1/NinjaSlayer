@@ -25,7 +25,7 @@ public partial class OrbContractRunner
             int extra = ((relics & 1) != 0 ? 3 : 0) + ((relics & 2) != 0 ? 1 : 0);
             CardModel[] strikes = [AddCard<StrikeNinjaSlayer>(combat, upgraded: upgraded),
                 AddCard<ChopStrike>(combat, upgraded: upgraded), AddCard<StrikeStrike>(combat, upgraded: upgraded)];
-            using var selection = CardSelectCmd.UseSelector(new SelectCards(_ => []));
+            using var selection = UseCardSelector(new SelectCards(_ => []));
             foreach (CardModel card in strikes)
             {
                 Require(card.Tags.Contains(CardTag.Strike)

@@ -111,7 +111,11 @@ public sealed class FriendlyCompanionInteractionPatch : IPatchMethod
         foreach (NCreature node in __instance.CreatureNodes.Where(node =>
                      FriendlyCompanionTargeting.IsFriendlyCompanion(node.Entity)))
         {
+#if NINJASLAYER_CHANNEL_STABLE
             __instance.SetCreatureIsInteractable(node.Entity, on: true);
+#else
+            node.SetIsInteractable(on: true, changeVisibilityImmediately: true);
+#endif
             NCreatureStateDisplay stateDisplay =
                 node.GetNode<NCreatureStateDisplay>("%HealthBar");
             stateDisplay.GetNode<NHealthBar>("%HealthBar").Hide();

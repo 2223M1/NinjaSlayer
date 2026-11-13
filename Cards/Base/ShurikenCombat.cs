@@ -92,15 +92,18 @@ internal static class ShurikenCombat
     {
         using var ranged = FinisherRangedAction.Begin(owner, source);
         await using FinisherSession? finisher = FinisherEligibilityService.CreateActionSession(owner,
-            new FinisherActionForecastDescriptor(_ => originOrb.EvokeVal,
+            new FinisherActionForecastDescriptor(target => originOrb.EvokeVal * ShurikenAimPower.Multiplier(target),
                 MegaCrit.Sts2.Core.ValueProps.ValueProp.Unpowered | MegaCrit.Sts2.Core.ValueProps.ValueProp.Move,
                 1, FinisherTargeting.Fixed, CardSource: source, TriggersKarate: false, FixedTargets: targets));
         finisher?.Begin();
         await PlayStockThrowAnimation(owner, targets, originOrb, beforeThrow);
-        IReadOnlyList<DamageResult> results = (await CreatureCmd.Damage(
+        var results = new List<DamageResult>();
+        // Marked and unmarked targets have different orb damage; preserve one native wave per amount.
+        foreach (var wave in targets.GroupBy(target => originOrb.EvokeVal * ShurikenAimPower.Multiplier(target)))
+            results.AddRange(await CreatureCmd.Damage(
             choiceContext,
-            targets,
-            originOrb.EvokeVal,
+            wave,
+            wave.Key,
             MegaCrit.Sts2.Core.ValueProps.ValueProp.Unpowered
                 | MegaCrit.Sts2.Core.ValueProps.ValueProp.Move,
             owner,
@@ -108,7 +111,7 @@ internal static class ShurikenCombat
 #if !NINJASLAYER_LEGACY_DAMAGE_API
             , null
 #endif
-        )).ToList();
+        ));
         Code.Telemetry.NinjaSlayerCombatTelemetry.AttributeDamage(results, "shuriken");
         if (owner.GetPower<OnslaughtPower>() is { } wasshoi)
         {

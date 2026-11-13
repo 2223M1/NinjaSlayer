@@ -256,7 +256,7 @@ internal sealed partial class NinjaSlayerFreeControl
             }
             if (first != null)
             {
-                hits[first] = hits.GetValueOrDefault(first) + 6;
+                hits[first] = hits.GetValueOrDefault(first) + (int)(6 * NinjaSlayer.Powers.ShurikenAimPower.Multiplier(first));
                 shot.Effect?.Hit(Actor.GetCanvasTransform().AffineInverse() * (_spaceToCanvas * impact));
                 _projectiles.Remove(shot);
             }

@@ -39,8 +39,9 @@ internal sealed partial class SmokeController
                 if (scenario == "first") { stats.TotalWins = 0; shown.SetValue(data, false); }
                 if (scenario == "veteran") { stats.TotalWins = 4; shown.SetValue(data, false); }
                 if (scenario is "custom" or "other") { stats.TotalWins = 0; shown.SetValue(data, false); }
-                await NGame.Instance!.StartNewSingleplayerRun(scenario == "other" ? ModelDb.Character<Ironclad>() : ModelDb.Character<NinjaSlayerCharacter>(),
-                    true, ActModel.GetDefaultList(), [], _configuration.Seed + scenario, scenario == "custom" ? GameMode.Custom : GameMode.Standard, 0);
+                await StartSmokeRun(scenario == "other" ? ModelDb.Character<Ironclad>() : ModelDb.Character<NinjaSlayerCharacter>(),
+                    true, ActModel.GetDefaultList(), [], _configuration.Seed + scenario, GameMode.Standard, 0,
+                    isCustom: scenario == "custom");
                 await RunManager.Instance.EnterAct(0);
                 await RunManager.Instance.EnterRoomDebug(RoomType.Event, model: ModelDb.Event<TheArchitect>());
                 // The test uses native victory/progress/game-over, without recording a full run.
@@ -51,7 +52,7 @@ internal sealed partial class SmokeController
                 {
                     await WaitUntilAsync(() => NinjaSlayerFeedbackScreen.Instance is { Visible: true }, "First standard victory did not invite feedback.");
                     var feedback = NinjaSlayerFeedbackScreen.Instance!;
-                    Require(ending!.Visible && NGame.Instance.FeedbackScreen is not { Visible: true }
+                    Require(ending!.Visible && NGame.Instance!.FeedbackScreen is not { Visible: true }
                         && ReferenceEquals(MegaCrit.Sts2.Core.Nodes.CommonUi.NModalContainer.Instance!.OpenModal, feedback),
                         "First-win feedback must use the independent mod form, not the native form.");
                     await WaitFrames(3);
@@ -64,7 +65,7 @@ internal sealed partial class SmokeController
                 }
                 else { await WaitFrames(240); Require(NinjaSlayerFeedbackScreen.Instance is null, scenario + " incorrectly prompted again."); }
                 _checkpoints.Write("release102." + scenario, data: new JsonObject { ["wins"] = stats.TotalWins, ["shown"] = (bool)shown.GetValue(data)! });
-                await NGame.Instance.ReturnToMainMenuAfterRun();
+                await NGame.Instance!.ReturnToMainMenuAfterRun();
                 await WaitFrames(30);
             }
         }

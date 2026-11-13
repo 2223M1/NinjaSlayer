@@ -31,7 +31,9 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
 
     public override int MinInitialHp => 9999;
     public override int MaxInitialHp => 9999;
+#if NINJASLAYER_CHANNEL_STABLE
     public override bool IsHealthBarVisible => false;
+#endif
 
     protected override string VisualsPath =>
         "res://NinjaSlayer/scenes/creature_visuals/yamoto_koki.tscn";

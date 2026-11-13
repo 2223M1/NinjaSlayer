@@ -16,35 +16,30 @@ public partial class OrbContractRunner
         {
             using var combat = new OrbCombat();
             var card = AddCard<FocusedBlows>(combat, upgraded: upgraded);
-            var ash = AddCard<AshenStrike>(combat, upgraded: upgraded);
             var owner = combat.Player.Creature;
             if (stock > 0) await AddStock(combat.Player, stock);
-            for (int i = 0; i < stock; i++) AddCard<Wound>(combat, PileType.Exhaust);
             card.UpdateDynamicVarPreview(CardPreviewMode.Normal, combat.Enemy, card.DynamicVars);
-            Require(card.DynamicVars.CalculatedDamage.PreviewValue == 6 + stock * (upgraded ? 4 : 3),
-                "Focused Blows must display 6 plus the current Shuriken stock times 3/4.");
+            Require(card.DynamicVars.Damage.PreviewValue == (upgraded ? 9 : 6),
+                "Focused Blows must display fixed 6/9 damage independently of Shuriken stock.");
             await PowerCmd.Apply<StrengthPower>(Choice, owner, 3, owner, null);
             await PowerCmd.Apply<VigorPower>(Choice, owner, 7, owner, null);
             await PowerCmd.Apply<WeakPower>(Choice, owner, 1, combat.Enemy, null);
             await PowerCmd.Apply<VulnerablePower>(Choice, combat.Enemy, 1, owner, null);
             card.UpdateDynamicVarPreview(CardPreviewMode.Normal, combat.Enemy, card.DynamicVars);
-            ash.UpdateDynamicVarPreview(CardPreviewMode.Normal, combat.Enemy, ash.DynamicVars);
-            int expected = (int)card.DynamicVars.CalculatedDamage.PreviewValue;
-            Require(card.DynamicVars.CalculatedDamage.PreviewValue == ash.DynamicVars.CalculatedDamage.PreviewValue,
-                "Focused Blows preview must match native Ashen Strike with equivalent stacks and damage modifiers.");
-            string description = System.Text.RegularExpressions.Regex.Replace(
-                card.GetDescriptionForPile(PileType.Hand, combat.Enemy), @"\[[^\]]*\]", "");
-            Require(description.Contains(expected.ToString()), "Focused Blows must show the calculated damage in its description.");
+            decimal preview = ((upgraded ? 9 : 6) + 10) * .75m * 1.5m;
+            var strike = AddCard<StrikeIronclad>(combat, upgraded: upgraded);
+            strike.UpdateDynamicVarPreview(CardPreviewMode.Normal, combat.Enemy, strike.DynamicVars);
+            Require(card.DynamicVars.Damage.PreviewValue == preview
+                && card.DynamicVars.Damage.PreviewValue == strike.DynamicVars.Damage.PreviewValue,
+                "Focused Blows must match native Strike's unrounded preview with Strength, Vigor, Weak and Vulnerable.");
+            int expected = (int)preview;
             await CardCmd.AutoPlay(Choice, card, combat.Enemy);
             Require(combat.Enemy.CurrentHp == 1000 - expected && !owner.HasPower<VigorPower>()
-                && !owner.HasPower<FocusPower>() && combat.Stock == stock,
-                "Focused Blows actual damage must match its preview without spending stock or granting Focus.");
-            await AddStock(combat.Player, 2);
-            card.UpdateDynamicVarPreview(CardPreviewMode.Normal, combat.Enemy, card.DynamicVars);
-            Require(card.DynamicVars.CalculatedDamage.Calculate(combat.Enemy) == 6 + (stock + 2) * (upgraded ? 4 : 3),
-                "Focused Blows must update from live stock instead of retaining its old preview.");
+                && !owner.HasPower<FocusPower>() && combat.Stock == stock
+                && combat.Enemy.GetPowerAmount<NinjaSlayer.Powers.ShurikenAimPower>() == (upgraded ? 3 : 2),
+                "Focused Blows must deal its displayed damage, apply 2/3 Aim and preserve stock.");
         }
-
+        await VerifyShurikenAim();
         foreach (bool upgraded in new[] { false, true })
         foreach (bool handDraw in new[] { false, true })
         {
@@ -71,6 +66,6 @@ public partial class OrbContractRunner
             Require(chop.Pile?.Type == PileType.Discard && copy.Pile?.Type == PileType.Exhaust,
                 "Three other Attacks must not return discarded or exhausted Hell Chops.");
         }
-        GD.Print("PASS November 9: Focused Blows live stock/Ashen Strike preview/actual damage; Hell Chop draw copies, upgrades, Ethereal and no attack-count return.");
+        GD.Print("PASS November 9: Focused Blows fixed damage/native preview/Aim; Hell Chop draw copies, upgrades, Ethereal and no attack-count return.");
     }
 }

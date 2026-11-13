@@ -11,7 +11,11 @@ namespace NinjaSlayer.Content;
 [RegisterSingleton]
 public sealed class NinjaSlayerTelemetryHooks : NinjaSlayerCombatSingletonTemplate
 {
-    public override Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
+    public override Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature,
+#if NINJASLAYER_CHANNEL_PREVIEW
+        CardModel? source,
+#endif
+        bool wasRemovalPrevented, float deathAnimLength)
     {
         NinjaSlayerCombatTelemetry.AfterDeath(creature);
         return Task.CompletedTask;

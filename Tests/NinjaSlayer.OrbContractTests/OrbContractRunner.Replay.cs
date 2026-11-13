@@ -30,7 +30,7 @@ public partial class OrbContractRunner
         ReplayRunData journal() => (ReplayRunData)AccessTools.Field(replay, "_journal").GetValue(null)!;
         RunState begin(OrbCombat combat, string? journalId = null)
         {
-            var run = RunState.CreateForTest([combat.Player], seed: "replay-contract");
+            var run = combat.CreateRun("replay-contract");
             run.AppendToMapPointHistory(MapPointType.Monster, RoomType.Monster, new ModelId("ENCOUNTER", "TEST"));
             if (journalId is not null) store.Modify(run, data => data.JournalId = journalId);
             AccessTools.Method(collector, "Start").Invoke(null, [run, combat.State]);
@@ -91,7 +91,7 @@ public partial class OrbContractRunner
         {
             setReplay(enabled);
             using var combat = new OrbCombat(ninjaSlayer: true);
-            var run = RunState.CreateForTest([combat.Player], seed: "replay-determinism");
+            var run = combat.CreateRun("replay-determinism");
             run.AppendToMapPointHistory(MapPointType.Monster, RoomType.Monster, new ModelId("ENCOUNTER", "TEST"));
             AccessTools.Method(collector, "Start").Invoke(null, [run, combat.State]);
             for (int index = 0; index < 5; index++)

@@ -23,7 +23,7 @@ public partial class OrbContractRunner
             var owner = combat.Player.Creature;
             combat.AddEnemy();
             var selected = AddCard<DefendIronclad>(combat);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [selected]));
+            using var selector = UseCardSelector(new SelectCards(_ => [selected]));
             await CardCmd.AutoPlay(Choice, AddCard<Rekindle>(combat, upgraded: upgraded), null);
             int reward = upgraded ? 3 : 2;
             Require(owner.GetPowerAmount<RekindlePower>() == reward

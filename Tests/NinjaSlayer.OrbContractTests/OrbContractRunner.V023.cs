@@ -46,7 +46,7 @@ public partial class OrbContractRunner
         using (var combat = new OrbCombat())
         {
             await CardCmd.AutoPlay(Choice, AddCard<WatchfulBlades>(combat), null);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
+            using var selector = UseCardSelector(new SelectCards(_ => []));
             await ScryCmd.Execute(Choice, combat.Player, 2);
             Require(combat.Stock == 0, "Empty Scry must not award stock.");
             AddCard<DefendIronclad>(combat, PileType.Draw);
@@ -107,11 +107,12 @@ public partial class OrbContractRunner
             await CardCmd.AutoPlay(Choice, AddCard<WatchfulBlades>(combat), null);
             var kept = AddCard<DefendIronclad>(combat, PileType.Draw);
             var selected = AddCard<StrikeIronclad>(combat, PileType.Draw);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [selected]));
+            using var selector = UseCardSelector(new SelectCards(_ => [selected]));
             await ScryCmd.Execute(Choice, combat.Player, 2, exhaust);
             Require(kept.Pile?.Type == PileType.Draw && kept.Keywords.Contains(CardKeyword.Sly)
                 && !selected.Keywords.Contains(CardKeyword.Sly), "Planning grants Sly only to the unselected snapshot.");
             Require(combat.Stock == 1, "Recycled Blades awards one stock per Scry, including the exhaust selection path.");
+            await CardPileCmd.Add(kept, PileType.Hand);
             await CardCmd.Discard(Choice, kept);
             Require(combat.Player.Creature.Block == 5 && combat.Stock == 0,
                 "Granted native Sly must autoplay only when the kept card is actually discarded later.");
@@ -124,10 +125,11 @@ public partial class OrbContractRunner
             await CardPileCmd.AddGeneratedCardToCombat(later, PileType.Hand, combat.Player);
             Require(tea.Keywords.Contains(CardKeyword.Retain) && later.Keywords.Contains(CardKeyword.Retain),
                 "Meditation grants native Retain to existing and future tea.");
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
+            using var selector = UseCardSelector(new SelectCards(_ => []));
             await CardCmd.AutoPlay(Choice, AddCard<Assess>(combat), null);
-            Require(combat.Player.Creature.Block == 4 && tea.Pile?.Type == PileType.Draw,
-                "Assess grants four Block and scries without changing Tea Retain.");
+            Require(combat.Player.Creature.Block == 0 && combat.Player.Creature.GetPowerAmount<StretchPower>() == 5
+                && tea.Pile?.Type == PileType.Draw,
+                "Assess grants five Stretch and scries without changing Tea Retain.");
         }
         foreach (bool upgraded in new[] { false, true })
         {

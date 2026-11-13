@@ -106,7 +106,7 @@ public partial class OrbContractRunner
             using var combat = new OrbCombat();
             var selected = Enumerable.Range(0, selectedCount).Select(_ => AddCard<DefendIronclad>(combat, PileType.Draw)).ToArray();
             var discern = AddCard<Discern>(combat, upgraded: upgraded);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => selected));
+            using var selector = UseCardSelector(new SelectCards(_ => selected));
             await CardCmd.AutoPlay(Choice, discern, null);
             Require(discern.Pile?.Type == PileType.Exhaust && selected.All(card => card.Pile?.Type == PileType.Exhaust),
                 "Discern and its selections must exhaust through native commands.");

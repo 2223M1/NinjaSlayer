@@ -42,7 +42,11 @@ internal sealed partial class SmokeController
             for (int i = 1; i < playerCount; i++)
                 players.Add(Player.CreateForNewRun<Ironclad>(UnlockState.all, (ulong)i + 1));
             var run = RunState.CreateForNewRun(players, ActModel.GetDefaultList().Select(a => a.ToMutable()).ToList(),
-                [], GameMode.Standard, 0, _configuration.Seed);
+                [], GameMode.Standard,
+#if NINJASLAYER_CHANNEL_PREVIEW
+                false,
+#endif
+                0, _configuration.Seed);
             RunManager.Instance.SetUpTest(run, new NetSingleplayerGameService(), true, false);
             AccessTools.Method(typeof(RunManager), "GenerateRooms").Invoke(RunManager.Instance, null);
             await (Task)AccessTools.Method(typeof(NGame), "StartRun").Invoke(NGame.Instance, [run])!;
@@ -81,7 +85,7 @@ internal sealed partial class SmokeController
                     ["bodyVisible"] = body.Visible, ["hasTexture"] = body is not Sprite2D s || s.Texture != null });
                 var selector = new TestCardSelector();
                 selector.PrepareToSelect([0]);
-                using (CardSelectCmd.UseSelector(selector))
+                using (UseSmokeSelector(selector))
                 {
                     var action = new PlayCardAction(card, target);
                     RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(action);
@@ -91,7 +95,7 @@ internal sealed partial class SmokeController
                 await WaitFrames(30);
                 Require(tea.Pile?.Type == PileType.Exhaust && card.Pile?.Type == PileType.Discard,
                     "Tomoe did not finish tea exhaustion and leave the play pile.");
-                Require(player.Creature.Block - beforeBlock == (upgraded ? 11 : 9)
+                Require(player.Creature.Block - beforeBlock == (upgraded ? 14 : 11)
                     && target.GetPowerAmount<WeakPower>() - beforeWeak == (upgraded ? 3 : 2),
                     "Tomoe must apply its block and selected-target Weak exactly once.");
                 Require(node.GetGlobalTransform().IsEqualApprox(root) && body.Transform.IsEqualApprox(bodyBefore)

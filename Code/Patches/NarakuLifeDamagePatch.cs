@@ -25,10 +25,19 @@ public sealed class NarakuLifeDamagePatch : IPatchMethod
     public static ModPatchTarget[] GetTargets()
     {
         MethodInfo damage = AccessTools.DeclaredMethod(typeof(CreatureCmd), nameof(CreatureCmd.Damage),
-            [typeof(PlayerChoiceContext), typeof(IEnumerable<Creature>), typeof(decimal), typeof(ValueProp),
+            [typeof(PlayerChoiceContext),
+#if NINJASLAYER_CHANNEL_PREVIEW
+                typeof(IEnumerable<DamageTargetData>),
+#else
+                typeof(IEnumerable<Creature>),
+#endif
+                typeof(decimal), typeof(ValueProp),
                 typeof(Creature), typeof(CardModel)
 #if !NINJASLAYER_LEGACY_DAMAGE_API
                 , typeof(CardPlay)
+#endif
+#if NINJASLAYER_CHANNEL_PREVIEW
+                , typeof(MegaCrit.Sts2.Core.Hooks.ModifyDamageHookType)
 #endif
             ]) ?? throw new MissingMethodException(typeof(CreatureCmd).FullName, nameof(CreatureCmd.Damage));
         Type stateMachine = damage.GetCustomAttribute<AsyncStateMachineAttribute>()?.StateMachineType
@@ -43,7 +52,13 @@ public sealed class NarakuLifeDamagePatch : IPatchMethod
         var rewriter = HarmonyIlRewriter.From(instructions);
         var report = rewriter.ReplaceEach("Naraku temporary HP at the damage boundary",
             (code, index) => code[index].Calls(original), (_, _) => [HarmonyIl.Call(replacement)]);
-        return rewriter.InstructionsChecked(report, 3);
+        return rewriter.InstructionsChecked(report,
+#if NINJASLAYER_CHANNEL_PREVIEW
+            4
+#else
+            3
+#endif
+            );
     }
 
     private static decimal AbsorbBeforeHpLoss(IRunState runState, ICombatState? combatState, Creature target,

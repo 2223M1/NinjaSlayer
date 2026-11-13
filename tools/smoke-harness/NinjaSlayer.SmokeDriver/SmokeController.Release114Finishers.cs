@@ -37,7 +37,7 @@ internal sealed partial class SmokeController
                      ModelDb.Card<PalmThrust>(), ModelDb.Card<AntiAirBangBangFist>() })
         {
             SaveManager.Instance.PrefsSave.FastMode = speed;
-            var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(), true,
+            var run = await StartSmokeRun(ModelDb.Character<NinjaSlayerCharacter>(), true,
                 ActModel.GetDefaultList(), [], _configuration.Seed, GameMode.Standard, 0);
             await RunManager.Instance.EnterAct(0);
             await RunManager.Instance.EnterRoomDebug(RoomType.Monster, model: ModelDb.Encounter<GremlinMercNormal>().ToMutable());
@@ -131,7 +131,7 @@ internal sealed partial class SmokeController
                 ["speed"] = speed.ToString(), ["upgraded"] = upgraded, ["hits"] = hits, ["early"] = early,
                 ["preZoom"] = preZoom, ["retreatPixels"] = new JsonArray(retreats.Skip(1).Select(x => (JsonNode?)JsonValue.Create(x)).ToArray()),
                 ["renderedRetreatPixels"] = new JsonArray(shownRetreats.Skip(1).Select(x => (JsonNode?)JsonValue.Create(x)).ToArray()) });
-            await NGame.Instance.ReturnToMainMenuAfterRun();
+            await NGame.Instance!.ReturnToMainMenuAfterRun();
             await WaitFrames(30);
         }
     }

@@ -141,7 +141,7 @@
   "NINJA_SLAYER_CARD_COLLAPSE_FIST.title": "Poing fracassant",
   "NINJA_SLAYER_CARD_COLLAPSE_FIST.description": "Infligez {Damage:diff()} dégâts.\nGagnez {Karate:diff()} de [gold]Karaté[/gold].",
   "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.title": "Un esprit, un corps",
-  "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.description": "Gagnez {NarakuLife:diff()} [gold]Vie de Naraku[/gold].\nChaque point de [gold]Vie de Naraku[/gold] ajoute 1 aux dégâts de votre [gold]Karaté[/gold].\nQuand [gold]Karaté[/gold] se déclenche, perdez 1 [gold]Vie de Naraku[/gold] avant de perdre du [gold]Karaté[/gold].",
+  "NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY.description": "Gagnez {NarakuLife:diff()} [gold]Vie de Naraku[/gold].\nVotre [gold]Vie de Naraku[/gold] compte comme du [gold]Karaté[/gold].",
   "NINJA_SLAYER_CARD_ZAZEN_DRINK.title": "Boisson Zazen",
   "NINJA_SLAYER_CARD_ZAZEN_DRINK.description": "Piochez jusqu'à remplir votre [gold]Main[/gold], en défaussant les cartes [gold]Statut[/gold] piochées.\n[gold]Préscience[/gold] {Cards:diff()}.",
   "NINJA_SLAYER_CARD_READ_AHEAD.description": "[gold]Préscience[/gold] {Scry:diff()}.\nGagnez {Block:diff()} d'[gold]Armure[/gold] pour chaque carte défaussée ainsi.",
@@ -149,7 +149,7 @@
   "NINJA_SLAYER_CARD_SHURIKEN_CREATION.description": "Gagnez {Stock:diff()} de [gold]Shuriken[/gold].",
   "NINJA_SLAYER_CARD_ONSLAUGHT.description": "Chaque fois que vos [gold]Shuriken[/gold] infligent des dégâts à un ennemi, gagnez {StrengthPower:diff()} de [gold]Force[/gold] ce tour-ci.",
   "NINJA_SLAYER_CARD_REKINDLE.description": "[gold]Transformez[/gold] une carte de votre [gold]Main[/gold] en [gold]Flamme noire[/gold].\nChaque fois que vous déclenchez [gold]Flamme noire[/gold] ce tour-ci, gagnez {NarakuLife:diff()} de [gold]Vie de Naraku[/gold].",
-  "NINJA_SLAYER_CARD_ASSESS.description": "Gagnez {Block:diff()} d'[gold]Armure[/gold].\n[gold]Préscience[/gold] {Scry:diff()}.",
+  "NINJA_SLAYER_CARD_ASSESS.description": "Gagnez {StretchPower:diff()} de [gold]Souplesse[/gold].\n[gold]Préscience[/gold] {Scry:diff()}.",
   "NINJA_SLAYER_CARD_TOMOE_THROW.description": "[gold]Épuisez[/gold] un [gold]Chado[/gold] de votre [gold]Main[/gold].\nGagnez {Block:diff()} d'[gold]Armure[/gold].\nAppliquez {WeakPower:diff()} [gold]Affaibli[/gold].",
   "NINJA_SLAYER_CARD_RESILIENCE.description": "Chaque fois que vous créez une carte Statut, piochez {Cards:diff()} cartes.",
   "NINJA_SLAYER_CARD_ENDURANCE.description": "Infligez {Damage:diff()} dégâts {Repeat} fois.\nGagnez {Karate:diff()} de [gold]Karaté[/gold].",
@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "Uppercut bas",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "Infligez {Damage:diff()} dégâts.\nSi votre dernière carte jouée était une Attaque, appliquez {WeakPower:diff()} [gold]Affaibli[/gold] et [gold]Vulnérable[/gold].",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "Frappe de rupture",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Infligez {CalculatedDamage:diff()} dégâts.\nInflige {ExtraDamage:diff()} dégâts supplémentaires pour chaque cumul de [gold]Shuriken[/gold] que vous avez."
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Infligez {Damage:diff()} dégâts.\nAppliquez {ShurikenAimPower:diff()} [gold]Ciblé[/gold]."
 }

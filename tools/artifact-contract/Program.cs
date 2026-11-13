@@ -174,29 +174,7 @@ static void ValidateWorkshopBundle(IReadOnlyDictionary<string, string> options)
             ["NinjaSlayerSourceRevision"] = sourceRevision
         };
         ValidateImplementationAssembly(selected.AssemblyPath, metadata, forbiddenPathRoot);
-        string optionalAnthony = Path.Combine(Path.GetDirectoryName(selected.AssemblyPath)!, "NinjaSlayer.AutoAnthony.dll");
-        if (channelName == "preview")
-        {
-            if (!File.Exists(optionalAnthony))
-                throw new InvalidDataException("Workshop bundle is missing the optional AutoAnthony integration assembly.");
-            expectedPaths.Add($"lib/{gameApiVersion}/NinjaSlayer.AutoAnthony.dll");
-            ValidateImplementationAssembly(optionalAnthony, new Dictionary<string, string>
-            {
-                ["NinjaSlayerHostChannel"] = channelName,
-                ["NinjaSlayerSourceRevision"] = sourceRevision
-            }, forbiddenPathRoot);
-            using var optionalStream = File.OpenRead(optionalAnthony);
-            using var optionalReader = new PEReader(optionalStream);
-            ValidateReleaseDebugDirectory(optionalReader);
-            ValidateForbiddenPath(optionalReader, forbiddenPathRoot);
-            var optionalMetadata = optionalReader.GetMetadataReader();
-            if (optionalMetadata.GetString(optionalMetadata.GetAssemblyDefinition().Name) != "NinjaSlayer.AutoAnthony")
-                throw new InvalidDataException("Optional Anthony bridge has the wrong assembly identity.");
-            var references = optionalMetadata.AssemblyReferences.Select(handle =>
-                optionalMetadata.GetString(optionalMetadata.GetAssemblyReference(handle).Name)).ToHashSet(StringComparer.Ordinal);
-            if (!references.Contains("NinjaSlayer") || !references.Contains("AutoAnthony"))
-                throw new InvalidDataException("Optional Anthony bridge is missing its product or external API reference.");
-        }
+
     }
 
     string[] actualPaths = Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
@@ -496,44 +474,44 @@ static void TestLoaderContract()
     {
         Directory.CreateDirectory(root);
         string stableHash = WriteVariant(root, "0.107.1", "stable");
-        string previewHash = WriteVariant(root, "0.111.0", "preview");
+        string previewHash = WriteVariant(root, "0.113.0", "preview");
         WriteVariantManifest(root, stableHash, previewHash);
 
         BundleVariant stable = VariantBundleContract.Select(root, "0.107.1");
-        BundleVariant preview = VariantBundleContract.Select(root, "0.111.0");
+        BundleVariant preview = VariantBundleContract.Select(root, "0.113.0");
         if (stable.Channel != "stable" || preview.Channel != "preview")
         {
             throw new InvalidOperationException("Loader contract selected the wrong channel.");
         }
-        // macOS report: 0.111.0, MVID 57785517-0b16-42b9-8b36-bad6fb28384b.
-        // Runtime selection needs no platform MVID and loads the same exact API version.
-        foreach (string version in new[] { "", "0.110.0", "0.111.1", "0.111.0-beta", "0.111.00" })
+        // Runtime selection uses the exact supported API version on every platform.
+        // Platform-specific MVIDs are not required for variant selection.
+        foreach (string version in new[] { "", "0.110.0", "0.111.0", "0.113.1", "0.113.0-beta", "0.113.00" })
             ExpectInvalid(() => VariantBundleContract.Select(root, version), "unsupported or missing version");
         WriteVariantManifest(root, stableHash, previewHash, schemaVersion: 1);
-        ExpectInvalid(() => VariantBundleContract.Select(root, "0.111.0"), "old manifest with new loader");
+        ExpectInvalid(() => VariantBundleContract.Select(root, "0.113.0"), "old manifest with new loader");
         WriteVariantManifest(root, stableHash, previewHash, previewChannel: "stable");
-        ExpectInvalid(() => VariantBundleContract.Select(root, "0.111.0"), "duplicate channel");
+        ExpectInvalid(() => VariantBundleContract.Select(root, "0.113.0"), "duplicate channel");
         WriteVariantManifest(root, stableHash, stableHash, previewVersion: "0.107.1");
         ExpectInvalid(() => VariantBundleContract.Select(root, "0.107.1"), "duplicate version");
         WriteVariantManifest(root, stableHash, previewHash);
 
         File.AppendAllText(preview.AssemblyPath, "tampered");
-        ExpectInvalid(() => VariantBundleContract.Select(root, "0.111.0"), "hash mismatch");
-        previewHash = WriteVariant(root, "0.111.0", "preview");
+        ExpectInvalid(() => VariantBundleContract.Select(root, "0.113.0"), "hash mismatch");
+        previewHash = WriteVariant(root, "0.113.0", "preview");
         WriteVariantManifest(root, stableHash, previewHash);
         File.Delete(Path.Combine(
             root,
             "lib",
-            "0.111.0",
+            "0.113.0",
             VariantBundleContract.CompatTargetMarkerName));
-        ExpectInvalid(() => VariantBundleContract.Select(root, "0.111.0"), "missing marker");
-        previewHash = WriteVariant(root, "0.111.0", "preview");
-        File.WriteAllText(Path.Combine(root, "lib", "0.111.0", VariantBundleContract.CompatTargetMarkerName), "0.107.1");
-        ExpectInvalid(() => VariantBundleContract.Select(root, "0.111.0"), "wrong target marker");
-        previewHash = WriteVariant(root, "0.111.0", "preview");
+        ExpectInvalid(() => VariantBundleContract.Select(root, "0.113.0"), "missing marker");
+        previewHash = WriteVariant(root, "0.113.0", "preview");
+        File.WriteAllText(Path.Combine(root, "lib", "0.113.0", VariantBundleContract.CompatTargetMarkerName), "0.107.1");
+        ExpectInvalid(() => VariantBundleContract.Select(root, "0.113.0"), "wrong target marker");
+        previewHash = WriteVariant(root, "0.113.0", "preview");
         File.Delete(preview.AssemblyPath);
-        ExpectInvalid(() => VariantBundleContract.Select(root, "0.111.0"), "missing implementation");
-        previewHash = WriteVariant(root, "0.111.0", "preview");
+        ExpectInvalid(() => VariantBundleContract.Select(root, "0.113.0"), "missing implementation");
+        previewHash = WriteVariant(root, "0.113.0", "preview");
         WriteVariantManifest(root, stableHash, previewHash, "../outside");
         ExpectInvalid(() => VariantBundleContract.Select(root, "0.107.1"), "directory escape");
         Console.WriteLine("Loader variant contract tests passed.");
@@ -564,7 +542,7 @@ static void WriteVariantManifest(
     string? previewDirectory = null,
     int schemaVersion = 2,
     string previewChannel = "preview",
-    string previewVersion = "0.111.0")
+    string previewVersion = "0.113.0")
 {
     var manifest = new
     {
