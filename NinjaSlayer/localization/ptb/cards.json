@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "Gancho baixo",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "Cause {Damage:diff()} de dano.\nSe a carta jogada anteriormente foi um Ataque, aplique {WeakPower:diff()} de [gold]Fraqueza[/gold] e [gold]Vulnerável[/gold].",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "Golpe de ruptura",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Cause {Damage:diff()} de dano.\nAplique {ShurikenAimPower:diff()} de [gold]Na Mira[/gold]."
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Cause {Damage:diff()} de dano.\nAplique {ShurikenAimPower:diff()} de [gold]Alvo de Shuriken[/gold]."
 }

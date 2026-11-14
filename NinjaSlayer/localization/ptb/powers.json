@@ -94,7 +94,7 @@
   "NINJA_SLAYER_POWER_STRETCH_POWER.title": "Alongamento",
   "NINJA_SLAYER_POWER_STRETCH_POWER.description": "Na próxima vez que você receber [gold]Proteção[/gold] de uma carta, receba [gold]Proteção[/gold] adicional.",
   "NINJA_SLAYER_POWER_STRETCH_POWER.smartDescription": "Na próxima vez que você receber [gold]Proteção[/gold] de uma carta, receba [blue]{Amount}[/blue] de [gold]Proteção[/gold] adicional.",
-  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Na Mira",
+  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Alvo de Shuriken",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.description": "Recebe [blue]50%[/blue] mais dano de [gold]Shuriken[/gold] e é seu alvo prioritário.",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.smartDescription": "Recebe [blue]50%[/blue] mais dano de [gold]Shuriken[/gold] e é seu alvo prioritário.\nDura [blue]{Amount}[/blue] turnos."
 }

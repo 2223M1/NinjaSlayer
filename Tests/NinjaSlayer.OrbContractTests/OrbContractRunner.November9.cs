@@ -36,8 +36,8 @@ public partial class OrbContractRunner
             await CardCmd.AutoPlay(Choice, card, combat.Enemy);
             Require(combat.Enemy.CurrentHp == 1000 - expected && !owner.HasPower<VigorPower>()
                 && !owner.HasPower<FocusPower>() && combat.Stock == stock
-                && combat.Enemy.GetPowerAmount<NinjaSlayer.Powers.ShurikenAimPower>() == (upgraded ? 3 : 2),
-                "Focused Blows must deal its displayed damage, apply 2/3 Aim and preserve stock.");
+                && combat.Enemy.GetPowerAmount<NinjaSlayer.Powers.ShurikenAimPower>() == (upgraded ? 4 : 3),
+                "Focused Blows must deal its displayed damage, apply 3/4 Shuriken Target and preserve stock.");
         }
         await VerifyShurikenAim();
         foreach (bool upgraded in new[] { false, true })

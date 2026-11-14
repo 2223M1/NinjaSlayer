@@ -1,0 +1,157 @@
+{
+  "version": "1.2.6",
+  "sourceRevision": "9b8f0820025667c34cfd91b3f6a374c497ebf273",
+  "verifiedAtUtc": "2026-11-14T07:52:35.422Z",
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "bytes": 2209280,
+      "sha256": "50e5a96fb044295c665d1a45ca56e5fbbf46c2b051b20afe3322271463443910"
+    },
+    {
+      "path": "lib/0.113.0/compat-target.txt",
+      "bytes": 8,
+      "sha256": "26fd86e2f9907afc82560a95115d6face007ef51cae459c493ff7370b9bdd512"
+    },
+    {
+      "path": "lib/0.113.0/NinjaSlayer.dll",
+      "bytes": 2212864,
+      "sha256": "e9cf216a0d00ddb2afbe970a739e69a4545f68bec8c7a88fb443cbb334dec385"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "bytes": 522,
+      "sha256": "0c299297e5f0fdd660f40eab150a87ff14340dd572452634260c7e995cbd64c1"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "bytes": 24576,
+      "sha256": "b1fd885d3623c07f34ec97b4dfdfe7d77220ffe8a72e3ceeb9c47da3be93771e"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "bytes": 362,
+      "sha256": "1a5c8fde654c527d0169c1eebeff29fd56fe5a41f3de04d72b9b370987d71064"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "bytes": 214178584,
+      "sha256": "1f33835618117c1c40723b6434ba8b6a82f77a823dfd2fd24af11d615324ed59"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 901,
+      "sha256": "e66b5171ef286718c47207b678057160d5e869c1007b470d3141870ed1b97446"
+    }
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "50e5a96fb044295c665d1a45ca56e5fbbf46c2b051b20afe3322271463443910",
+    "26fd86e2f9907afc82560a95115d6face007ef51cae459c493ff7370b9bdd512",
+    "e9cf216a0d00ddb2afbe970a739e69a4545f68bec8c7a88fb443cbb334dec385",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "0c299297e5f0fdd660f40eab150a87ff14340dd572452634260c7e995cbd64c1",
+    "b1fd885d3623c07f34ec97b4dfdfe7d77220ffe8a72e3ceeb9c47da3be93771e",
+    "1a5c8fde654c527d0169c1eebeff29fd56fe5a41f3de04d72b9b370987d71064",
+    "1f33835618117c1c40723b6434ba8b6a82f77a823dfd2fd24af11d615324ed59",
+    "e66b5171ef286718c47207b678057160d5e869c1007b470d3141870ed1b97446"
+  ],
+  "validation": {
+    "supportedGameVersions": [
+      "0.107.1",
+      "0.113.0"
+    ],
+    "ritsuLibVersion": "0.6.11",
+    "dualHostGameplay": true,
+    "dualHostPatchInstallRollback": true,
+    "previewClientRun": false,
+    "packagedLanguages": 16,
+    "modCards": 93,
+    "logicTests": 367,
+    "websiteTests": {
+      "passed": 82,
+      "skipped": 1
+    },
+    "catalogFingerprint": "1f90bd97aefa8fcb91e9798289edaa0749998af6e06ae19eaea265975a435576",
+    "logs": [
+      {
+        "path": "all-stable.log",
+        "sha256": "dfa8f451b16ffdfb2c42784147cc5655b2c5676fb7d045141f5f39f84a7a1925"
+      },
+      {
+        "path": "patch-stable.log",
+        "sha256": "ce7c072d2624015d00d140d506dae6aa79c427cdf2e87b3ac60594204476cdc6"
+      },
+      {
+        "path": "all-preview.log",
+        "sha256": "b1ad6a955a86a25c86751448812612d2df96f77b15789edb6c6a6450e0fa043b"
+      },
+      {
+        "path": "patch-preview.log",
+        "sha256": "cb1c7504b0441defb3ff5b1ac3ea79c5ce8fe4efdb160404927732c0839abf62"
+      },
+      {
+        "path": "catalog-export.log",
+        "sha256": "a88978f7c4ca2519aa13d762a77bfc4304417832c50c5a33bad3c48b74ecbca9"
+      },
+      {
+        "path": "upload.log",
+        "sha256": "d0b67667bead7ec66744319e4b2de6327caaa0213efe1af24ee1d925765c582e"
+      },
+      {
+        "path": "download.log",
+        "sha256": "752a1e316a5dabdd9dd6cf3051712870550e0aec0a948e714ac68132091ca9f9"
+      },
+      {
+        "path": "artifact-contract.log",
+        "sha256": "0028682c334ee754d8977f9d29cbdf3dfb501402734c6681f9591d8fc9a7d1be"
+      },
+      {
+        "path": "logic-tests.log",
+        "sha256": "53266bda5dab0349d8650dec4b8435acf9274968bedbb6e8fd54c531d999fd30"
+      },
+      {
+        "path": "website-tests.log",
+        "sha256": "34ada88b6f517d9c376d94db4b9d2e50bf1e12f8226d4f1d6f55a5b2b7445aa3"
+      }
+    ]
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "contentManifest": "1822347320104142370",
+    "updated": 1794642690,
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "changeNoteId": "1794642690",
+    "changeNote": "烈焰基础费用由 1 费降为 0 费，升级后保持 0 费并获得固有。\n从容新增虚无，升级效果由获得固有改为移除虚无。\n模组的“瞄准”更名为“标靶”，以区别原版同名效果。\n破势一击给予的标靶由 2→3 层提高至 3→4 层。",
+    "localizedTitlesDescriptionsUnchanged": true,
+    "tagSetUnchangedCaseInsensitive": true,
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "downloadBytes": 218945642
+  },
+  "limitations": [
+    "Stable validated against exact 0.107.1 host binaries with 0.113.0 presentation resources; no full stable graphical client run",
+    "No graphical client smoke rerun for this card-only balance release; both exact host binaries ran full gameplay and metadata contracts",
+    "Expected fault-injection exceptions and shutdown resource warnings remain in contract logs",
+    "Physical controller, fresh Steam multiplayer, macOS and Linux gameplay not run"
+  ]
+}

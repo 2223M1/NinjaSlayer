@@ -18,7 +18,7 @@ public sealed class FocusedBlows : NinjaSlayerCommonCard
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<ShurikenAimPower>()];
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
-        new DamageVar(6, ValueProp.Move), new PowerVar<ShurikenAimPower>(2)
+        new DamageVar(6, ValueProp.Move), new PowerVar<ShurikenAimPower>(3)
     ];
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)

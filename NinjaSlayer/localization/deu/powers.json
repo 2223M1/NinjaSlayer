@@ -94,7 +94,7 @@
   "NINJA_SLAYER_POWER_STRETCH_POWER.title": "Dehnung",
   "NINJA_SLAYER_POWER_STRETCH_POWER.description": "Wenn du zum nächsten Mal [gold]Block[/gold] von einer Karte bekommst, erhalte zusätzlichen [gold]Block[/gold].",
   "NINJA_SLAYER_POWER_STRETCH_POWER.smartDescription": "Wenn du zum nächsten Mal [gold]Block[/gold] von einer Karte bekommst, erhalte [blue]{Amount}[/blue] [gold]Block[/gold] mehr.",
-  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Anvisiert",
+  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Shuriken-Ziel",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.description": "Erleidet [blue]50%[/blue] mehr Schaden durch [gold]Shuriken[/gold] und wird von [gold]Shuriken[/gold] bevorzugt angegriffen.",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.smartDescription": "Erleidet [blue]50%[/blue] mehr Schaden durch [gold]Shuriken[/gold] und wird von [gold]Shuriken[/gold] bevorzugt angegriffen.\nHält [blue]{Amount}[/blue] Runden lang an."
 }

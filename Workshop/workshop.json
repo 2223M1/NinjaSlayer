@@ -2,7 +2,7 @@
   "title": "忍者杀手 Ninja Slayer",
   "description": "[h1]Domo. Ninja Slayer desu.[/h1]\r\n\r\n[h2]Something wrong?[/h2]\r\nPress [b]F2[/b] in game to report bugs or send suggestions.\r\nWant to see what cards everyone is picking and where their runs end? [url=https://2223m1.github.io/NinjaSlayer/?lang=eng]Ninja Slayer Intel[/url]\r\n\r\nDiscord Community：https://discord.gg/eHuQqjrAyf\r\nPatreon：https://www.patreon.com/cw/bobbizerri\r\n\r\n[i]Unofficial fan-made Mod.[/i]",
   "visibility": "public",
-  "changeNote": "适配游戏 0.113.0，保留正式版 0.107.1 兼容，停止支持 0.111.0。\nRitsuLib 最低版本由 0.5.12 更新为 0.6.11。\n移除固定随机数机制，不再提供东尼算法支持。\n寿司附魔“滋养”更名为“小啖”。\n空手道描述删除“群攻只失去 1 层”的补充说明。\n一心同体的奈落生命由 5→8 提高至 7→10，转化效果描述简化为“你的奈落生命视作空手道”。\n审势由获得 4→6 点格挡改为获得 5→7 点拉伸，预见由 4→6 调整为 4→5。\n拉伸计入对空砰砰拳的正面效果数量。\n奈落事件“令其闭嘴”新增移除一张牌。\n巴投格挡由 9→12 提高至 11→14。\n破势一击由造成 6 点伤害、每层手里剑增加 3→4 点伤害，改为造成 6→9 点伤害并给予 2→3 层瞄准。\n瞄准使敌人受到的手里剑伤害增加 50%，并被手里剑优先攻击；每个敌方回合结束时失去 1 层。\n强手里剑同样获得瞄准增伤，瞄准与易伤的增伤相乘。",
+  "changeNote": "烈焰基础费用由 1 费降为 0 费，升级后保持 0 费并获得固有。\n从容新增虚无，升级效果由获得固有改为移除虚无。\n模组的“瞄准”更名为“标靶”，以区别原版同名效果。\n破势一击给予的标靶由 2→3 层提高至 3→4 层。",
   "tags": [
     "Characters",
     "English",

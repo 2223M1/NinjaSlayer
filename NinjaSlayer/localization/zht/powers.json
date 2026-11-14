@@ -94,7 +94,7 @@
   "NINJA_SLAYER_POWER_STRETCH_POWER.title": "伸展",
   "NINJA_SLAYER_POWER_STRETCH_POWER.description": "下次你透過卡牌獲得[gold]格擋[/gold]時，獲得額外[gold]格擋[/gold]。",
   "NINJA_SLAYER_POWER_STRETCH_POWER.smartDescription": "下次你透過卡牌獲得[gold]格擋[/gold]時，額外獲得 [blue]{Amount}[/blue] 點[gold]格擋[/gold]。",
-  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "瞄準",
+  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "標靶",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.description": "受到的[gold]手裡劍[/gold]傷害增加[blue]50%[/blue]，且會被[gold]手裡劍[/gold]優先攻擊。",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.smartDescription": "受到的[gold]手裡劍[/gold]傷害增加[blue]50%[/blue]，且會被[gold]手裡劍[/gold]優先攻擊。\n持續[blue]{Amount}[/blue]回合。"
 }

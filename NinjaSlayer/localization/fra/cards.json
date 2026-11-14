@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "Uppercut bas",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "Infligez {Damage:diff()} dégâts.\nSi votre dernière carte jouée était une Attaque, appliquez {WeakPower:diff()} [gold]Affaibli[/gold] et [gold]Vulnérable[/gold].",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "Frappe de rupture",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Infligez {Damage:diff()} dégâts.\nAppliquez {ShurikenAimPower:diff()} [gold]Ciblé[/gold]."
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Infligez {Damage:diff()} dégâts.\nAppliquez {ShurikenAimPower:diff()} [gold]Cible de shuriken[/gold]."
 }

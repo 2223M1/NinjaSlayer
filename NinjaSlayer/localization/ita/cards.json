@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "Montante basso",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "Infliggi {Damage:diff()} di danno.\nSe l'ultima carta che hai giocato era un Attacco, applica {WeakPower:diff()} di [gold]Debolezza[/gold] e [gold]Vulnerabilità[/gold].",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "Colpo di sfondamento",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Infliggi {Damage:diff()} di danno.\nApplica {ShurikenAimPower:diff()} di [gold]Mirato[/gold]."
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Infliggi {Damage:diff()} di danno.\nApplica {ShurikenAimPower:diff()} di [gold]Bersaglio degli shuriken[/gold]."
 }

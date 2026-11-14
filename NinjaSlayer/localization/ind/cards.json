@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "Uppercut Rendah",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "Lakukan {Damage:diff()} kerusakan.\nJika kartu yang sebelumnya kamu mainkan adalah Serangan, terapkan {WeakPower:diff()} [gold]Lemah[/gold] dan [gold]Rentan[/gold].",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "Pukulan Penerobos",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Lakukan {Damage:diff()} kerusakan.\nTerapkan {ShurikenAimPower:diff()} [gold]Bidikan[/gold]."
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Lakukan {Damage:diff()} kerusakan.\nTerapkan {ShurikenAimPower:diff()} [gold]Sasaran Shuriken[/gold]."
 }

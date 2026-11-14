@@ -94,7 +94,7 @@
   "NINJA_SLAYER_POWER_STRETCH_POWER.title": "ยืดเหยียด",
   "NINJA_SLAYER_POWER_STRETCH_POWER.description": "ครั้งถัดไปที่คุณได้รับ[gold]บล็อก[/gold] จะได้รับ[gold]บล็อก[/gold]เพิ่ม",
   "NINJA_SLAYER_POWER_STRETCH_POWER.smartDescription": "ครั้งถัดไปที่คุณได้รับ[gold]บล็อก[/gold] จะได้รับ[gold]บล็อก[/gold]เพิ่ม [blue]{Amount}[/blue]",
-  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "เล็งเป้า",
+  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "เป้าชุริเค็น",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.description": "ได้รับความเสียหายจาก[gold]ชุริเค็น[/gold]เพิ่มขึ้น [blue]50%[/blue] และเป็นเป้าหมายแรกของ[gold]ชุริเค็น[/gold]",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.smartDescription": "ได้รับความเสียหายจาก[gold]ชุริเค็น[/gold]เพิ่มขึ้น [blue]50%[/blue] และเป็นเป้าหมายแรกของ[gold]ชุริเค็น[/gold]\nคงอยู่ [blue]{Amount}[/blue] เทิร์น"
 }

@@ -94,7 +94,7 @@
   "NINJA_SLAYER_POWER_STRETCH_POWER.title": "스트레칭",
   "NINJA_SLAYER_POWER_STRETCH_POWER.description": "다음에 카드를 사용해 [gold]방어도[/gold]를 얻을 때, 추가 [gold]방어도[/gold]를 얻습니다.",
   "NINJA_SLAYER_POWER_STRETCH_POWER.smartDescription": "다음에 카드를 사용해 [gold]방어도[/gold]를 얻을 때, [gold]방어도[/gold]를 [blue]{Amount}[/blue] 추가로 얻습니다.",
-  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "조준",
+  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "수리검 표적",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.description": "[gold]수리검[/gold]으로 받는 피해가 [blue]50%[/blue] 증가하고 [gold]수리검[/gold]의 우선 공격 대상이 됩니다.",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.smartDescription": "[gold]수리검[/gold]으로 받는 피해가 [blue]50%[/blue] 증가하고 [gold]수리검[/gold]의 우선 공격 대상이 됩니다.\n[blue]{Amount}[/blue]턴 동안 지속됩니다."
 }

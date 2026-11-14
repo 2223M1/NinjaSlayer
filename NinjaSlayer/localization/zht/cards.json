@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "低空上勾拳",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "造成{Damage:diff()}點傷害。\n如果你上一張打出的牌是攻擊牌，給予該敵人{WeakPower:diff()}層[gold]虛弱[/gold]和[gold]易傷[/gold]。",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "破勢一擊",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "造成{Damage:diff()}點傷害。\n給予{ShurikenAimPower:diff()}層[gold]瞄準[/gold]。"
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "造成{Damage:diff()}點傷害。\n給予{ShurikenAimPower:diff()}層[gold]標靶[/gold]。"
 }

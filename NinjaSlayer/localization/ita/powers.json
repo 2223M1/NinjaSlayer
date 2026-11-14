@@ -94,7 +94,7 @@
   "NINJA_SLAYER_POWER_STRETCH_POWER.title": "Flessibilità",
   "NINJA_SLAYER_POWER_STRETCH_POWER.description": "La prossima volta che ottieni [gold]Blocco[/gold] da una carta, ottieni [gold]Blocco[/gold] extra.",
   "NINJA_SLAYER_POWER_STRETCH_POWER.smartDescription": "La prossima volta che ottieni [gold]Blocco[/gold] da una carta, ottieni [blue]{Amount}[/blue] di [gold]Blocco[/gold] extra.",
-  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Mirato",
+  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Bersaglio degli shuriken",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.description": "Subisce il [blue]50%[/blue] di danni in più dagli [gold]Shuriken[/gold] ed è il loro bersaglio prioritario.",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.smartDescription": "Subisce il [blue]50%[/blue] di danni in più dagli [gold]Shuriken[/gold] ed è il loro bersaglio prioritario.\nDura [blue]{Amount}[/blue] turni."
 }
