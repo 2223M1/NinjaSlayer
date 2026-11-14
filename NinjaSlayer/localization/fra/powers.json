@@ -94,7 +94,7 @@
   "NINJA_SLAYER_POWER_STRETCH_POWER.title": "Souplesse",
   "NINJA_SLAYER_POWER_STRETCH_POWER.description": "La prochaine fois qu'une carte vous confère de l'[gold]Armure[/gold], gagnez de l'[gold]Armure[/gold] supplémentaire.",
   "NINJA_SLAYER_POWER_STRETCH_POWER.smartDescription": "La prochaine fois qu'une carte vous confère de l'[gold]Armure[/gold], gagnez [blue]{Amount}[/blue] d'[gold]Armure[/gold] supplémentaire.",
-  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Ciblé",
+  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Cible de shuriken",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.description": "Subit [blue]50%[/blue] de dégâts supplémentaires des [gold]Shuriken[/gold] et est ciblé en priorité par les [gold]Shuriken[/gold].",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.smartDescription": "Subit [blue]50%[/blue] de dégâts supplémentaires des [gold]Shuriken[/gold] et est ciblé en priorité par les [gold]Shuriken[/gold].\nDure [blue]{Amount}[/blue] tours."
 }

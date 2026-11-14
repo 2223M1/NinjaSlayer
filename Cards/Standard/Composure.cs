@@ -12,6 +12,7 @@ namespace NinjaSlayer.Cards.Standard;
 
 public sealed class Composure : NinjaSlayerUncommonCard
 {
+    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Ethereal];
     protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(2, ValueProp.Unpowered)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<ComposurePower>()];
 
@@ -26,5 +27,5 @@ public sealed class Composure : NinjaSlayerUncommonCard
             Owner.Creature,
             this);
 
-    protected override void OnUpgrade() => AddKeyword(CardKeyword.Innate);
+    protected override void OnUpgrade() => RemoveKeyword(CardKeyword.Ethereal);
 }

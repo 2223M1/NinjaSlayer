@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "Gancho bajo",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "Inflige {Damage:diff()} de daño.\nSi tu última carta jugada fue un ataque, aplica {WeakPower:diff()} de [gold]Debilidad[/gold] y [gold]Vulnerabilidad[/gold].",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "Golpe de ruptura",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Inflige {Damage:diff()} de daño.\nAplica {ShurikenAimPower:diff()} de [gold]Marcado[/gold]."
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Inflige {Damage:diff()} de daño.\nAplica {ShurikenAimPower:diff()} de [gold]Blanco de shuriken[/gold]."
 }

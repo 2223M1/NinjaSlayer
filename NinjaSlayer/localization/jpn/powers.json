@@ -94,7 +94,7 @@
   "NINJA_SLAYER_POWER_STRETCH_POWER.title": "ストレッチ",
   "NINJA_SLAYER_POWER_STRETCH_POWER.description": "次にカードから[gold]ブロック[/gold]を得るとき、追加の[gold]ブロック[/gold]を得る。",
   "NINJA_SLAYER_POWER_STRETCH_POWER.smartDescription": "次にカードから[gold]ブロック[/gold]を得るとき、追加で[blue]{Amount}[/blue][gold]ブロック[/gold]を得る。",
-  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "照準",
+  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "スリケンの的",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.description": "[gold]スリケン[/gold]から受けるダメージが[blue]50%[/blue]増加し、[gold]スリケン[/gold]の優先対象になる。",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.smartDescription": "[gold]スリケン[/gold]から受けるダメージが[blue]50%[/blue]増加し、[gold]スリケン[/gold]の優先対象になる。\n[blue]{Amount}[/blue]ターン持続。"
 }

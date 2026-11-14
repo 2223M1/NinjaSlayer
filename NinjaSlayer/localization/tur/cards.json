@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "Alçak Aparkat",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "{Damage:diff()} hasar ver.\nÖnceki oynadığın kart Saldırıysa {WeakPower:diff()} [gold]Zayıf[/gold] ve [gold]Savunmasız[/gold] uygula.",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "Savunma Kıran Darbe",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "{Damage:diff()} hasar ver.\n{ShurikenAimPower:diff()} [gold]Hedef[/gold] uygula."
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "{Damage:diff()} hasar ver.\n{ShurikenAimPower:diff()} [gold]Shuriken Hedefi[/gold] uygula."
 }

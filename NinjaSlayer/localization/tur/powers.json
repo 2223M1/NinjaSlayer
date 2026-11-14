@@ -94,7 +94,7 @@
   "NINJA_SLAYER_POWER_STRETCH_POWER.title": "Gerinme",
   "NINJA_SLAYER_POWER_STRETCH_POWER.description": "Bir karttan sonraki [gold]Blok[/gold] elde edişinde fazladan [gold]Blok[/gold] elde et.",
   "NINJA_SLAYER_POWER_STRETCH_POWER.smartDescription": "Bir karttan sonraki [gold]Blok[/gold] elde edişinde fazladan [blue]{Amount}[/blue] [gold]Blok[/gold] elde et.",
-  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Hedef",
+  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Shuriken Hedefi",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.description": "[gold]Shuriken[/gold] hasarını [blue]%50[/blue] daha fazla alır ve [gold]Shuriken[/gold] tarafından öncelikli hedef alınır.",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.smartDescription": "[gold]Shuriken[/gold] hasarını [blue]%50[/blue] daha fazla alır ve [gold]Shuriken[/gold] tarafından öncelikli hedef alınır.\n[blue]{Amount}[/blue] tur sürer."
 }

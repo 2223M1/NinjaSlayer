@@ -408,7 +408,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_BLACK_FLAME_INFERNO",
     "Upgraded": false,
-    "Cost": 1,
+    "Cost": 0,
     "X": false,
     "Type": "Power",
     "Rarity": "Uncommon",
@@ -432,7 +432,9 @@
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Innate"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BlackFlameInferno.png",
     "Vars": {
@@ -1081,7 +1083,9 @@
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Ethereal"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Composure.png",
     "Vars": {
@@ -1098,9 +1102,7 @@
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [
-      "Innate"
-    ],
+    "Keywords": [],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Composure.png",
     "Vars": {
@@ -2305,7 +2307,7 @@
     "Portrait": "res://NinjaSlayer/images/cards/RightUppercut.png",
     "Vars": {
       "Damage": 6,
-      "ShurikenAimPower": 2
+      "ShurikenAimPower": 3
     }
   },
   {
@@ -2323,7 +2325,7 @@
     "Portrait": "res://NinjaSlayer/images/cards/RightUppercut.png",
     "Vars": {
       "Damage": 9,
-      "ShurikenAimPower": 3
+      "ShurikenAimPower": 4
     }
   },
   {

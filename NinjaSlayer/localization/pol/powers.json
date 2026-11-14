@@ -94,7 +94,7 @@
   "NINJA_SLAYER_POWER_STRETCH_POWER.title": "Rozciągnięcie",
   "NINJA_SLAYER_POWER_STRETCH_POWER.description": "Następnym razem, gdy zyskasz [gold]Blok[/gold], zyskaj dodatkowy [gold]Blok[/gold].",
   "NINJA_SLAYER_POWER_STRETCH_POWER.smartDescription": "Następnym razem, gdy zyskasz [gold]Blok[/gold], zyskaj dodatkowe [blue]{Amount}[/blue] pkt. [gold]Bloku[/gold].",
-  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Namierzenie",
+  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Cel shurikenów",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.description": "Otrzymuje o [blue]50%[/blue] więcej obrażeń od [gold]Shuriken[/gold] i staje się ich priorytetowym celem.",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.smartDescription": "Otrzymuje o [blue]50%[/blue] więcej obrażeń od [gold]Shuriken[/gold] i staje się ich priorytetowym celem.\nTrwa [blue]{Amount}[/blue] tury."
 }

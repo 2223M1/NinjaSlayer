@@ -94,7 +94,7 @@
   "NINJA_SLAYER_POWER_STRETCH_POWER.title": "Peregangan",
   "NINJA_SLAYER_POWER_STRETCH_POWER.description": "Kali selanjutnya kamu mendapat [gold]Blok[/gold] dari sebuah kartu, dapatkan lebih banyak [gold]Blok[/gold].",
   "NINJA_SLAYER_POWER_STRETCH_POWER.smartDescription": "Kali selanjutnya kamu mendapat [gold]Blok[/gold] dari sebuah kartu, dapatkan [blue]{Amount}[/blue] lebih banyak [gold]Blok[/gold].",
-  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Bidikan",
+  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Sasaran Shuriken",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.description": "Menerima [blue]50%[/blue] lebih banyak kerusakan dari [gold]Shuriken[/gold] dan menjadi target prioritasnya.",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.smartDescription": "Menerima [blue]50%[/blue] lebih banyak kerusakan dari [gold]Shuriken[/gold] dan menjadi target prioritasnya.\nBertahan [blue]{Amount}[/blue] giliran."
 }

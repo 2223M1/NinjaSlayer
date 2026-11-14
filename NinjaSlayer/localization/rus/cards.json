@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "Низкий апперкот",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "Наносит {Damage:diff()} урона.\nЕсли предыдущая разыгранная карта — Атака, накладывает {WeakPower:diff()} [gold]слабости[/gold] и [gold]уязвимости[/gold].",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "Пробивающий удар",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Наносит {Damage:diff()} урона.\nНакладывает {ShurikenAimPower:diff()} [gold]Прицел[/gold]."
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Наносит {Damage:diff()} урона.\nНакладывает {ShurikenAimPower:diff()} [gold]Мишень для сюрикенов[/gold]."
 }

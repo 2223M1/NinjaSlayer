@@ -94,7 +94,7 @@
   "NINJA_SLAYER_POWER_STRETCH_POWER.title": "Stretch",
   "NINJA_SLAYER_POWER_STRETCH_POWER.description": "The next time you gain [gold]Block[/gold] from a card, gain additional [gold]Block[/gold].",
   "NINJA_SLAYER_POWER_STRETCH_POWER.smartDescription": "The next time you gain [gold]Block[/gold] from a card, gain an additional [blue]{Amount}[/blue] [gold]Block[/gold].",
-  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Aim",
+  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Shuriken Target",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.description": "Takes [blue]50%[/blue] more damage from [gold]Shuriken[/gold] and is prioritized by [gold]Shuriken[/gold].",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.smartDescription": "Takes [blue]50%[/blue] more damage from [gold]Shuriken[/gold] and is prioritized by [gold]Shuriken[/gold].\nLasts [blue]{Amount}[/blue] turns."
 }

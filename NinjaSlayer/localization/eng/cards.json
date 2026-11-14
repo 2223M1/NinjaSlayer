@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "Low Uppercut",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "Deal {Damage:diff()} damage.\nIf your previously played card was an Attack, apply {WeakPower:diff()} [gold]Weak[/gold] and [gold]Vulnerable[/gold].",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "Breakthrough Blow",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Deal {Damage:diff()} damage.\nApply {ShurikenAimPower:diff()} [gold]Aim[/gold]."
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Deal {Damage:diff()} damage.\nApply {ShurikenAimPower:diff()} [gold]Shuriken Target[/gold]."
 }

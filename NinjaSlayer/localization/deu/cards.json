@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "Tiefer Aufwärtshaken",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "Füge {Damage:diff()} Schaden zu.\nWenn deine zuletzt ausgespielte Karte ein Angriff war, wende {WeakPower:diff()} [gold]Schwach[/gold] und [gold]Verwundbar[/gold] an.",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "Durchbruchsschlag",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Füge {Damage:diff()} Schaden zu.\nWende {ShurikenAimPower:diff()} [gold]Anvisiert[/gold] an."
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Füge {Damage:diff()} Schaden zu.\nWende {ShurikenAimPower:diff()} [gold]Shuriken-Ziel[/gold] an."
 }

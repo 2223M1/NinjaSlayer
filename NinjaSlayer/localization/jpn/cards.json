@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "低空アッパーカット",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "{Damage:diff()}ダメージを与える。\n直前にプレイしたカードがアタックの場合、敵に{WeakPower:diff()}[gold]脱力[/gold]と[gold]弱体[/gold]を与える。",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "崩しの一撃",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "{Damage:diff()}ダメージを与える。\n{ShurikenAimPower:diff()}[gold]照準[/gold]を与える。"
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "{Damage:diff()}ダメージを与える。\n{ShurikenAimPower:diff()}[gold]スリケンの的[/gold]を与える。"
 }

@@ -94,7 +94,7 @@
   "NINJA_SLAYER_POWER_STRETCH_POWER.title": "Растяжка",
   "NINJA_SLAYER_POWER_STRETCH_POWER.description": "При следующем получении [gold]защиты[/gold] от карты вы получите дополнительную [gold]защиту[/gold].",
   "NINJA_SLAYER_POWER_STRETCH_POWER.smartDescription": "При следующем получении [gold]защиты[/gold] от карты вы получите на [blue]{Amount}[/blue] [gold]защиты[/gold] больше.",
-  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Прицел",
+  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Мишень для сюрикенов",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.description": "Получает на [blue]50%[/blue] больше урона от [gold]сюрикенов[/gold] и становится их приоритетной целью.",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.smartDescription": "Получает на [blue]50%[/blue] больше урона от [gold]сюрикенов[/gold] и становится их приоритетной целью.\nДлится [blue]{Amount}[/blue] хода."
 }

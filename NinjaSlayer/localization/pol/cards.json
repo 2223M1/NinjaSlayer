@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "Niski podbródkowy",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "Zadaj {Damage:diff()} pkt. obrażeń.\nJeśli poprzednio zagrana karta była Atakiem, nałóż {WeakPower:diff()} pkt. [gold]Słabości[/gold] i [gold]Wrażliwości[/gold].",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "Przełamujący cios",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Zadaj {Damage:diff()} pkt. obrażeń.\nNałóż {ShurikenAimPower:diff()} pkt. [gold]Namierzenie[/gold]."
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "Zadaj {Damage:diff()} pkt. obrażeń.\nNałóż {ShurikenAimPower:diff()} pkt. [gold]Cel shurikenów[/gold]."
 }

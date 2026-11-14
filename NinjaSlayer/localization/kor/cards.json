@@ -187,5 +187,5 @@
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.title": "저공 어퍼컷",
   "NINJA_SLAYER_CARD_LOW_UPPERCUT.description": "피해를 {Damage:diff()} 줍니다.\n직전에 사용한 카드가 공격이라면, 적에게 [gold]약화[/gold]와 [gold]취약[/gold]을 {WeakPower:diff()} 부여합니다.",
   "NINJA_SLAYER_CARD_FOCUSED_BLOWS.title": "돌파의 일격",
-  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "피해를 {Damage:diff()} 줍니다.\n[gold]조준[/gold]를 {ShurikenAimPower:diff()} 부여합니다."
+  "NINJA_SLAYER_CARD_FOCUSED_BLOWS.description": "피해를 {Damage:diff()} 줍니다.\n[gold]수리검 표적[/gold]을 {ShurikenAimPower:diff()} 부여합니다."
 }

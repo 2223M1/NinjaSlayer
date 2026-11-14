@@ -94,7 +94,7 @@
   "NINJA_SLAYER_POWER_STRETCH_POWER.title": "Flexibilidad",
   "NINJA_SLAYER_POWER_STRETCH_POWER.description": "La próxima vez que ganes [gold]Bloqueo[/gold] mediante una carta, gana [gold]Bloqueo[/gold] adicional.",
   "NINJA_SLAYER_POWER_STRETCH_POWER.smartDescription": "La próxima vez que ganes [gold]Bloqueo[/gold] mediante una carta, gana [blue]{Amount}[/blue] de [gold]Bloqueo[/gold] más.",
-  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Marcado",
+  "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.title": "Blanco de shuriken",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.description": "Recibe un [blue]50%[/blue] más de daño de los [gold]Shuriken[/gold] y es su objetivo prioritario.",
   "NINJA_SLAYER_POWER_SHURIKEN_AIM_POWER.smartDescription": "Recibe un [blue]50%[/blue] más de daño de los [gold]Shuriken[/gold] y es su objetivo prioritario.\nDura [blue]{Amount}[/blue] turnos."
 }

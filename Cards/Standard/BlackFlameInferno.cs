@@ -15,7 +15,7 @@ public sealed class BlackFlameInferno : NinjaSlayerUncommonCard
         [HoverTipFactory.FromCard<BlackFlame>()];
 
     public BlackFlameInferno()
-        : base(nameof(BlackFlameInferno), 1, CardType.Power, TargetType.Self) { }
+        : base(nameof(BlackFlameInferno), 0, CardType.Power, TargetType.Self) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
@@ -27,5 +27,5 @@ public sealed class BlackFlameInferno : NinjaSlayerUncommonCard
             this);
     }
 
-    protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
+    protected override void OnUpgrade() => AddKeyword(CardKeyword.Innate);
 }
