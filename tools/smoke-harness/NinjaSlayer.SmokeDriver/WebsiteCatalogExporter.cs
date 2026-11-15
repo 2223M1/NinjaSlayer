@@ -169,6 +169,8 @@ internal static class WebsiteCatalogExporter
                 text.Add("Amount", amount);
                 text.Add("AttackAmount", amount);
                 text.Add("Damage", 7);
+                text.Add("Cards", amount);
+                text.Add("UpgradedCards", amount);
                 string result = text.GetFormattedText();
                 if (System.Text.RegularExpressions.Regex.IsMatch(result, @"\{[A-Za-z_]"))
                     throw new InvalidOperationException($"Unresolved power text: {language}/{entry.Name}/{amount}");
