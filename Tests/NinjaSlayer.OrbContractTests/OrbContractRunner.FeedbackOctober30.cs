@@ -127,6 +127,8 @@ public partial class OrbContractRunner
     {
         var select = AccessTools.Method(typeof(ArchitectExecutionCinematic), "SelectMeleeExecution");
         using var combat = new OrbCombat(ninjaSlayer: true);
+        foreach (CardModel initial in combat.Player.Deck.Cards.ToArray())
+            combat.Player.Deck.RemoveInternal(initial);
         var normal = AddCard<StrikeNinjaSlayer>(combat, PileType.Deck);
         var heavy = AddCard<StraightPunch>(combat, PileType.Deck);
         var lightKick = AddCard<DragonFlyingKick>(combat, PileType.Deck);
