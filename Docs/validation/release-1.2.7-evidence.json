@@ -1,0 +1,214 @@
+{
+  "version": "1.2.7",
+  "sourceRevision": "fe36915748fdd05129d66fccedd35c494ed8bee8",
+  "verifiedAtUtc": "2026-11-15T03:57:09.385Z",
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "bytes": 2215424,
+      "sha256": "8af24b53cc4af9b0c0d45f8f726ca319baed6bb23111b1636f47635afc528321"
+    },
+    {
+      "path": "lib/0.113.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "a718eb7d7d44ea1a3d6e6021e353968cdd132da5609500e07513de626b656e22"
+    },
+    {
+      "path": "lib/0.113.1/NinjaSlayer.dll",
+      "bytes": 2218496,
+      "sha256": "89fd2ea560f8186c472c5098d6228345ae2bd2f69944c01b0bbb5ef1ffe8fba7"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "bytes": 522,
+      "sha256": "e36dbc2a9277628d6c36bdeee98c74375e68294c9e6e7285af52ccd140c0d4f3"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "bytes": 24576,
+      "sha256": "6d9d9209407306819ed0a26f93bfaa769663bb3f7428a5254a9d80b629ef8243"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "bytes": 362,
+      "sha256": "b3d664aeef4303a62bb14c6b47473b1d0c718edb9e32f03aba120db7080479c9"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "bytes": 232922396,
+      "sha256": "c417be58a5d879ae0c9b089e404db9e205f1a850acb38f0e6564b0de84667845"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 901,
+      "sha256": "7400fc7da651e2936d428c43fcf03478fd401e30dc0ce17156b2470e98e0e0c9"
+    }
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "8af24b53cc4af9b0c0d45f8f726ca319baed6bb23111b1636f47635afc528321",
+    "a718eb7d7d44ea1a3d6e6021e353968cdd132da5609500e07513de626b656e22",
+    "89fd2ea560f8186c472c5098d6228345ae2bd2f69944c01b0bbb5ef1ffe8fba7",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "e36dbc2a9277628d6c36bdeee98c74375e68294c9e6e7285af52ccd140c0d4f3",
+    "6d9d9209407306819ed0a26f93bfaa769663bb3f7428a5254a9d80b629ef8243",
+    "b3d664aeef4303a62bb14c6b47473b1d0c718edb9e32f03aba120db7080479c9",
+    "c417be58a5d879ae0c9b089e404db9e205f1a850acb38f0e6564b0de84667845",
+    "7400fc7da651e2936d428c43fcf03478fd401e30dc0ce17156b2470e98e0e0c9"
+  ],
+  "validation": {
+    "supportedGameVersions": [
+      "0.107.1",
+      "0.113.1"
+    ],
+    "ritsuLibVersion": "0.6.13",
+    "dualHostGameplay": true,
+    "dualHostPatchInstallRollback": true,
+    "previewClientRun": false,
+    "packagedLanguages": 16,
+    "modCards": 93,
+    "logicTests": 367,
+    "catalogFingerprint": "d0d7ab29b98ca88a33d2c487081ef2f02a63889c6b1a38145d67f051c70c0948",
+    "logs": [
+      {
+        "path": "all-stable.log",
+        "sha256": "348d37ea8aa0be1d49efbd6857004d2026854b5c107e791ce3f5dd6bfa5eecb7"
+      },
+      {
+        "path": "patch-stable.log",
+        "sha256": "dc1d2c44a7d560e0215f670c870a5cc457fcf25a316bbc18ebb7bf4d49d47046"
+      },
+      {
+        "path": "all-preview.log",
+        "sha256": "c49816e6fb2831a82c14772a7853ced24d07650de6962b2229a36924a9152cab"
+      },
+      {
+        "path": "patch-preview.log",
+        "sha256": "c95fbc3249897149fa1d822675364e812d9964159b7b799de5f43388ad8fcfe1"
+      },
+      {
+        "path": "catalog-export.log",
+        "sha256": "6ba791599bf16f563266562666cde5561bd932a3cd3026c32610b9445fae3e3f"
+      },
+      {
+        "path": "upload.log",
+        "sha256": "79799c2a06a24e2e9a07558b93ec0a3d5684a48332d2fa00892c5e71c891f77e"
+      },
+      {
+        "path": "download.log",
+        "sha256": "4b2530eaf7643e853b545c9789fda4b646b42bd85d3b262b49a83d50069cc07a"
+      },
+      {
+        "path": "artifact-contract.log",
+        "sha256": "e23fb627b419c08d919eabd131e653fefaa39166936d657b3fe46e580fe9c1cb"
+      },
+      {
+        "path": "logic-tests.log",
+        "sha256": "c5d49980584650ae3b694343b80eb966c854ff14f8f9552b958c48a41234fac5"
+      },
+      {
+        "path": "website-tests.log",
+        "sha256": "4560070b547c6e33e35bfbd11abd4a5f41355f2b7f9ef77e97d5bbbde89e98a3"
+      },
+      {
+        "path": "website-localization.log",
+        "sha256": "2433e39687db980799827ff871423d959d55be7bce36e26111651a6a0ae77790"
+      },
+      {
+        "path": "website-import-tests.log",
+        "sha256": "76be358ccb0f329726c53463e2c4ac561bd06fa081ee5294aa9f4d86cde02fb5"
+      },
+      {
+        "path": "repository-website.log",
+        "sha256": "63d1be6098b19cb2b489bbb34a0d3ba2b5dc9897fb96c8229ac0e09a647a8550"
+      }
+    ],
+    "contractGroups": [
+      {
+        "Channel": "stable",
+        "Checks": 170,
+        "Passed": true,
+        "PatchPassed": true
+      },
+      {
+        "Channel": "preview",
+        "Checks": 171,
+        "Passed": true,
+        "PatchPassed": true
+      }
+    ],
+    "websiteTests": {
+      "passed": 82,
+      "skipped": 1,
+      "failed": 0
+    }
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "contentManifest": "7214006047024192187",
+    "updated": 1794714918,
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "changeNoteId": "1794714918",
+    "changeNote": "残心改为每当获得当前未拥有的正面效果时，抽 1→2 张牌；效果耗尽后重新获得可再次触发。\n正面效果新增瞄准和翱翔，残心、对空砰砰拳及破瓦正拳的侧栏列出完整范围。\n嘶哈由回复 8→12 点生命改为获得 4→5 层再生。\n飞刃席卷由本回合手里剑攻击所有敌人改为获得 4→6 层瞄准，仍获得 2→3 层手里剑。\n瞄准可增强手里剑及强手里剑；同次预见或激发的整批手里剑共享增伤，结算后消耗本次使用的瞄准。\n海军战锤不再强制消耗打出的牌；攻击牌打出次数由 2→3 次改为固定 2 次，升级改为移除海军战锤自身的消耗。\n海军战锤重放攻击牌的间隔与原版一致。\n聚气+不再由 1 费降为 0 费，获得空手道的倍率由 2 倍提高至 3 倍。\n取舍更名为舍念，并使用舍念卡图。\n原舍念重做为破瓦正拳：3 费攻击，造成 30→38 点伤害，使已有的所有正面效果增加 2→3 层；使用新卡图及崩拳攻击动画。\n柔术获得的空手道由 4→5 层改为 3→4 层，新增下回合获得 1 点能量。\n杀气·直气更名为杀气，格挡由 9→12 点改为 10→12 点；防住敌方攻击后的直接反击改为下回合获得直气，杀气+获得直气+，多次打出可叠加。\n直气及直气+费用由 2 费降为 1 费。\n适配游戏预览版 0.113.1，保留正式版 0.107.1 支持；更新 RitsuLib 依赖至 0.6.13。\n同步建筑师的新版本原版动画，保留斩杀演出。\n建筑师处决由随机选招改为依次优先阿拉巴马落、特殊重击、踢击重击、踢击轻击、普通重击、普通攻击；仅从牌组现有卡牌选招，同档按牌组顺序，没有可用卡时使用普通攻击。",
+    "localizedTitlesDescriptionsUnchanged": true,
+    "tagSetUnchangedCaseInsensitive": true,
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "downloadBytes": 237701230
+  },
+  "limitations": [
+    "Stable validated against exact 0.107.1 host binaries with 0.113.1 presentation resources; no full stable graphical client run",
+    "No graphical client smoke rerun; both exact host binaries ran full gameplay, asset, localization and metadata contracts",
+    "Expected fault-injection exceptions and shutdown resource warnings remain in contract logs",
+    "Physical controller, fresh Steam multiplayer, macOS and Linux gameplay not run"
+  ],
+  "sourceRecovery": {
+    "version": "0.113.1",
+    "hostMvid": "9d417b39-1d40-4fc7-b993-28acdc29e151",
+    "tool": "GDRE Tools 2.7.4 / GodotMonoDecompNativeAOT",
+    "files": 31507,
+    "csharpFiles": 3867,
+    "recovery": "17,369 packed files extracted with no checksum error; 3,941 scripts decompiled; 8 packed script references had no recovered source",
+    "unrecovered": [
+      "addons/sentry/dotnet/Sentry.Godot.GlobalUsings.cs",
+      "RiderTestRunner/CiTestEventListener.cs",
+      "src/Core/DevConsole/ConsoleCommands/AchievementConsoleCommand.cs",
+      "src/Core/DevConsole/ConsoleCommands/GetLogsConsoleCommand.cs",
+      "src/Core/DevConsole/ConsoleCommands/UnlockConsoleCommand.cs",
+      "src/Core/Models/Potions/BottleSong.cs",
+      "src/Core/Nodes/Screens/Settings/NSaveAndQuitButton.cs",
+      "src/Core/Saves/ProfileScopeUserDataMigrator.cs"
+    ]
+  },
+  "cleanup": {
+    "completedAt": "2026-11-15T03:59:20.7857470Z",
+    "removedDirectories": 16,
+    "removedFileBytes": 5610698935,
+    "freeBytesBefore": 410719641600,
+    "freeBytesAfter": 416353005568,
+    "sourceVersions": [
+      "0.107.1",
+      "0.113.1"
+    ],
+    "allTargetsRemoved": true
+  }
+}
