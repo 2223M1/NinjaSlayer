@@ -3,6 +3,7 @@ using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Powers;
@@ -11,6 +12,8 @@ using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.ExternalAnimations;
+using NinjaSlayer.Cards;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Orbs;
 using NinjaSlayer.Powers;
 
@@ -64,6 +67,7 @@ public partial class OrbContractRunner
 
     private async Task VerifyArchitectExitBounds()
     {
+        VerifyArchitectExecutionPriority();
         using var combat = new OrbCombat(ninjaSlayer: true);
         var harmony = new Harmony("NinjaSlayer.ArchitectExitContract");
         harmony.Patch(AccessTools.PropertyGetter(typeof(NCombatRoom), nameof(NCombatRoom.Instance)),
@@ -117,5 +121,37 @@ public partial class OrbContractRunner
             }
         }
         finally { harmony.UnpatchAll(harmony.Id); }
+    }
+
+    private static void VerifyArchitectExecutionPriority()
+    {
+        var select = AccessTools.Method(typeof(ArchitectExecutionCinematic), "SelectMeleeExecution");
+        using var combat = new OrbCombat(ninjaSlayer: true);
+        var normal = AddCard<StrikeNinjaSlayer>(combat, PileType.Deck);
+        var heavy = AddCard<StraightPunch>(combat, PileType.Deck);
+        var lightKick = AddCard<DragonFlyingKick>(combat, PileType.Deck);
+        var heavyKick = AddCard<SomersaultKick>(combat, PileType.Deck);
+        var special = AddCard<CollapseFist>(combat, PileType.Deck);
+        var alabama = AddCard<AlabamaDrop>(combat, PileType.Deck);
+        var nonMelee = AddCard<DefendNinjaSlayer>(combat, PileType.Deck);
+        foreach (CardModel expected in new CardModel[] { alabama, special, heavyKick, lightKick, heavy, normal })
+        {
+            var before = combat.Player.Deck.Cards.ToArray();
+            for (int i = 0; i < 3; i++)
+                Require(ReferenceEquals(select.Invoke(null, [combat.Player]), expected),
+                    $"Architect execution must consistently prefer {expected.Id} over lower-priority owned cards.");
+            Require(combat.Player.Deck.Cards.SequenceEqual(before), "Execution selection must not alter the deck.");
+            combat.Player.Deck.RemoveInternal(expected);
+        }
+        var fallback = (CardModel)select.Invoke(null, [combat.Player])!;
+        Require(fallback is StrikeNinjaSlayer && fallback.Owner == combat.Player
+            && combat.Player.Deck.Cards.SequenceEqual([nonMelee]),
+            "A deck without eligible melee must use a visual Strike without adding it to the deck.");
+        var tile = AddCard<TileBreakingPunch>(combat, PileType.Deck);
+        AddCard<CollapseFist>(combat, PileType.Deck);
+        AddCard<AlabamaDrop>(combat, PileType.Hand);
+        Require(ReferenceEquals(select.Invoke(null, [combat.Player]), tile),
+            "Tile-Breaking Punch must use Collapse Fist's special-heavy tier, preserve deck order on ties, and ignore temporary hand cards.");
+        GD.Print("PASS Architect execution priority: Alabama, special heavy, heavy kick, light kick, heavy, normal; stable ties, owned deck only, visual fallback.");
     }
 }

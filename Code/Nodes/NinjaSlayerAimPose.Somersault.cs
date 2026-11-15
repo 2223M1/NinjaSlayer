@@ -16,7 +16,7 @@ public partial class NinjaSlayerAimPose
     private double _somersaultClock;
 
     internal static bool IsSomersaultHeavy(CardModel? card) =>
-        card is CollapseFist or PressTheAttack or StraightKi;
+        card is CollapseFist or TileBreakingPunch or PressTheAttack or StraightKi;
 
     internal void ApplySomersault(float progress)
     {
