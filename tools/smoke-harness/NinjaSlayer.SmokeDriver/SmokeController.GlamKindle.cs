@@ -87,7 +87,7 @@ internal sealed partial class SmokeController
                 RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(nativeAction);
                 await nativeAction.CompletionTask.WaitAsync(TimeSpan.FromSeconds(15));
                 if (nativeAction.Exception != null) throw nativeAction.Exception;
-                var matePower = combat.CreateCard<Resilience>(teammate);
+                var matePower = combat.CreateCard<TurningPoint>(teammate);
                 await CardPileCmd.Add(matePower, PileType.Hand);
                 var mateAction = new PlayCardAction(matePower, null);
                 RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(mateAction);

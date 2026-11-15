@@ -1,20 +1,20 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
-using MegaCrit.Sts2.Core.Entities.Powers;
-using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.Models.Powers;
-using NinjaSlayer.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Content;
 using NinjaSlayer.Code.Commands;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.ExternalAnimations;
 
 namespace NinjaSlayer.Cards.Standard;
 
 public sealed class AntiAirBangBangFist : NinjaSlayerRareCard
 {
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips => [NinjaSlayerHoverTips.PositiveEffects];
+
     public AntiAirBangBangFist()
         : base(nameof(AntiAirBangBangFist), 2, CardType.Attack, TargetType.RandomEnemy) { }
 
@@ -23,14 +23,8 @@ public sealed class AntiAirBangBangFist : NinjaSlayerRareCard
         new DamageVar(8, ValueProp.Move), new RepeatVar(1),
         new CalculationBaseVar(0), new CalculationExtraVar(1),
         new CalculatedVar("CalculatedHits").WithMultiplier((card, _) =>
-            1 + card.Owner.Creature.Powers.Where(CountsAsBuff).Select(power => power.Id).Distinct().Count())
+            1 + card.Owner.Creature.Powers.Where(NinjaSlayerBuffs.Includes).Select(power => power.Id).Distinct().Count())
     ];
-
-    private static bool CountsAsBuff(PowerModel power) =>
-        power.Amount > 0 && power.TypeForCurrentAmount == PowerType.Buff
-        && power is StrengthPower or DexterityPower or VigorPower or KaratePower or FocusPower
-            or ArtifactPower or BufferPower or IntangiblePower or ThornsPower or PlatingPower
-            or RegenPower or EvasionPower or NarakuLifePower or StretchPower;
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

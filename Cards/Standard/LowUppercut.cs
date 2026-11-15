@@ -6,14 +6,12 @@ using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Content;
-using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards.Standard;
 
 public sealed class LowUppercut : NinjaSlayerCommonCard
 {
     public LowUppercut() : base(nameof(LowUppercut), 1, CardType.Attack, TargetType.AnyEnemy) { }
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("LeftUppercut");
     private bool MeetsBonusCondition => NinjaSlayerCombatMetrics.PreviousFinishedCardWasAttack(Owner);
     protected override bool ShouldGlowGoldInternal => CombatState != null && MeetsBonusCondition;
     protected override IEnumerable<DynamicVar> CanonicalVars =>

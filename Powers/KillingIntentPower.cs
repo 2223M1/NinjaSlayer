@@ -1,12 +1,15 @@
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
-using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using MegaCrit.Sts2.Core.HoverTips;
+using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Scaffolding.Content;
 
@@ -17,10 +20,29 @@ public sealed class KillingIntentPower : NinjaSlayerPowerTemplate
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("KillingIntentPower");
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(47, ValueProp.Move)];
+    private bool[] _rewardUpgrades = [];
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        _rewardUpgrades.Distinct().SelectMany(upgraded => HoverTipFactory.FromCardWithCardHoverTips<StraightKi>(upgraded));
+    public override LocString Description
+    {
+        get
+        {
+            LocString description = base.Description;
+            int upgraded = _rewardUpgrades.Count(value => value);
+            description.Add("Cards", _rewardUpgrades.Length - upgraded);
+            description.Add("UpgradedCards", upgraded);
+            return description;
+        }
+    }
 
     private bool _receivedDamage;
-    private Creature[] _attackers = [];
+    private bool _attackIntentAtTurnEnd;
+
+    public void QueueReward(bool upgraded)
+    {
+        AssertMutable();
+        _rewardUpgrades = [.. _rewardUpgrades, upgraded];
+    }
 
     public override Task AfterDamageReceived(
         PlayerChoiceContext choiceContext, Creature target, DamageResult result,
@@ -32,28 +54,26 @@ public sealed class KillingIntentPower : NinjaSlayerPowerTemplate
         return Task.CompletedTask;
     }
 
-    public override async Task AfterSideTurnEndLate(
+    public override Task AfterSideTurnEndLate(
         PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)
     {
-        if (side == Owner.Side)
-        {
-            if (participants.Contains(Owner))
-                _attackers = CombatState.HittableEnemies
-                    .Where(enemy => enemy.Monster?.IntendsToAttack == true).ToArray();
-            return;
-        }
+        if (side == Owner.Side && participants.Contains(Owner))
+            _attackIntentAtTurnEnd = CombatState.HittableEnemies.Any(enemy => enemy.Monster?.IntendsToAttack == true);
+        return Task.CompletedTask;
+    }
 
-        // Consume this turn's stacks before resolving them, including lethal retaliation.
-        int responses = Amount;
-        decimal damage = DynamicVars.Damage.BaseValue;
+    public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
+    {
+        if (player != Owner.Player) return;
         await PowerCmd.Remove(this);
-        if (_receivedDamage || !Owner.IsAlive || CombatManager.Instance.IsOverOrEnding) return;
-        for (int i = 0; i < responses && Owner.IsAlive && !CombatManager.Instance.IsOverOrEnding; i++)
+        if (_attackIntentAtTurnEnd && !_receivedDamage)
         {
-            Creature[] targets = _attackers.Where(enemy => enemy.IsAlive && enemy.IsHittable
-                && ReferenceEquals(enemy.CombatState, Owner.CombatState)).ToArray();
-            if (targets.Length == 0) break;
-            await KillingIntentCounter.Execute(choiceContext, Owner, targets, damage);
+            foreach (bool upgraded in _rewardUpgrades)
+            {
+                StraightKi card = player.Creature.CombatState!.CreateCard<StraightKi>(player);
+                if (upgraded) CardCmd.Upgrade(card);
+                await CardPileCmd.AddGeneratedCardToCombat(card, PileType.Hand, player);
+            }
         }
     }
 }

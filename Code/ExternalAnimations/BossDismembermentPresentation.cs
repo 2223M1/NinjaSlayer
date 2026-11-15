@@ -68,7 +68,11 @@ public sealed partial class BossDismembermentPresentation : Node2D
     private readonly List<SoftBodyLaunchActuator> _launchActuators = [];
     private readonly BossSoftBodySolver _solver = new();
     private BossVisualCapture? _capture;
+#if NINJASLAYER_CHANNEL_STABLE
+    internal const string ArchitectSkeletonPath = "res://NinjaSlayer/animations/architect/architect-stable.spskel";
+#else
     internal const string ArchitectSkeletonPath = "res://NinjaSlayer/animations/architect/architect.spskel";
+#endif
     internal const string ArchitectDeathAnimation = "ninjaslayer_soft_death";
     private MegaSprite? _architectSprite;
     private int _architectUpdateMode;

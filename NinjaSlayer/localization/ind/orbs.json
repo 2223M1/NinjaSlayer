@@ -1,5 +1,5 @@
 {
   "NINJA_SLAYER_ORB_SHURIKEN_ORB.title": "Shuriken",
-  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "Setiap kali kamu menyingkirkan kartu, Shuriken menyerang musuh acak dan kamu kehilangan 1 Shuriken.\nSaat dipicu, setiap tumpukan menyerang sekali.",
-  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue] tumpukan\nSetiap kali kamu menyingkirkan kartu, lakukan {Evoke} kerusakan ke musuh acak dan kehilangan 1 Shuriken.\nSaat dipicu, setiap tumpukan melakukan {Evoke} kerusakan ke musuh acak."
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "Setiap kali kamu menyingkirkan kartu, Shuriken menyerang musuh acak dan kamu kehilangan 1 Shuriken.\nSaat dipicu, setiap tumpukan menyerang sekali.\nSetiap [gold]Bidik[/gold] menambah 1 damage untuk semua [gold]Shuriken[/gold] dalam rentetan berikutnya. [gold]Bidik[/gold] dikonsumsi setelah rentetan.",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue] tumpukan\nSetiap kali kamu menyingkirkan kartu, lakukan {Evoke} kerusakan ke musuh acak dan kehilangan 1 Shuriken.\nSaat dipicu, setiap tumpukan melakukan {Evoke} kerusakan ke musuh acak.\nSetiap [gold]Bidik[/gold] menambah 1 damage untuk semua [gold]Shuriken[/gold] dalam rentetan berikutnya. [gold]Bidik[/gold] dikonsumsi setelah rentetan."
 }

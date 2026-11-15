@@ -1,5 +1,5 @@
 {
   "NINJA_SLAYER_ORB_SHURIKEN_ORB.title": "Shuriken",
-  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "Za każdym razem, gdy odrzucisz kartę, Shuriken atakuje losowego wroga i tracisz 1 Shuriken.\nPrzy Wyładowaniu każdy ładunek atakuje raz.",
-  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue] {Passive:plural:ładunek|ładunki|ładunków}\nZa każdym razem, gdy odrzucisz kartę, zadaj losowemu wrogowi {Evoke} pkt. obrażeń i utrać 1 Shuriken.\nPrzy Wyładowaniu każdy ładunek zadaje losowemu wrogowi {Evoke} pkt. obrażeń."
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "Za każdym razem, gdy odrzucisz kartę, Shuriken atakuje losowego wroga i tracisz 1 Shuriken.\nPrzy Wyładowaniu każdy ładunek atakuje raz.\nKażdy punkt [gold]Celność[/gold] zwiększa o 1 obrażenia wszystkich [gold]Shuriken[/gold] w następnej salwie. Po salwie [gold]Celność[/gold] zostaje zużyte.",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue] {Passive:plural:ładunek|ładunki|ładunków}\nZa każdym razem, gdy odrzucisz kartę, zadaj losowemu wrogowi {Evoke} pkt. obrażeń i utrać 1 Shuriken.\nPrzy Wyładowaniu każdy ładunek zadaje losowemu wrogowi {Evoke} pkt. obrażeń.\nKażdy punkt [gold]Celność[/gold] zwiększa o 1 obrażenia wszystkich [gold]Shuriken[/gold] w następnej salwie. Po salwie [gold]Celność[/gold] zostaje zużyte."
 }

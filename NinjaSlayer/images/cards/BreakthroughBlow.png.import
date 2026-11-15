@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bvf14ymv67u8m"
-path="res://.godot/imported/Endurance.png-47184a226535c29799306e21cdf61749.ctex"
+uid="uid://vidsfd7qkxhn"
+path="res://.godot/imported/BreakthroughBlow.png-9426305d83901164eeff3272e64a7123.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://NinjaSlayer/images/cards/Endurance.png"
-dest_files=["res://.godot/imported/Endurance.png-47184a226535c29799306e21cdf61749.ctex"]
+source_file="res://NinjaSlayer/images/cards/BreakthroughBlow.png"
+dest_files=["res://.godot/imported/BreakthroughBlow.png-9426305d83901164eeff3272e64a7123.ctex"]
 
 [params]
 

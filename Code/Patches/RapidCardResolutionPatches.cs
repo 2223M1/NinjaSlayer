@@ -102,7 +102,7 @@ internal sealed class RapidMultiCardPlayPatch : IPatchMethod
 
     public static void Postfix(ref Task __result)
     {
-        if (!RapidCardPresentationContext.IsActive)
+        if (!RapidCardPresentationContext.IsActive || RapidCardPresentationContext.IsNavyHammerReplay)
         {
             return;
         }

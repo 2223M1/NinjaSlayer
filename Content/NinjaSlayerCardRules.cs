@@ -26,7 +26,7 @@ public static class NinjaSlayerCardRules
         "NinjaTaunt",
         "BladePrep",
         "SpiralJump",
-        "ReadyShuriken",
+        "OnGuard",
         "BS1260Kick",
         "FlameGuard",
         "ReadTheEnemy",
@@ -34,20 +34,20 @@ public static class NinjaSlayerCardRules
         "CrossGuard",
         "LowUppercut",
         "PalmThrust",
-        "FocusedBlows"
+        "BreakthroughBlow"
     ];
 
     public static IReadOnlyList<string> UncommonRewardCardIds { get; } =
     [
         "HissAndHuff",
         "GatherMomentum",
-        "LetGo",
+        "TileBreakingPunch",
         "MotionAndStillness",
         "HalfMoonCompassKick",
         "Sip",
         "TomoeThrow",
-        "Discern",
-        "Endurance",
+        "LetGo",
+        "Flurry",
         "GatherKi",
         "Training",
         "BackBridge",
@@ -68,7 +68,7 @@ public static class NinjaSlayerCardRules
         "Composure",
         "Assess",
         "NavyHammer",
-        "Resilience",
+        "TurningPoint",
         "TornadoFist",
         "DragonRoundhouseKick",
         "PressTheAttack",

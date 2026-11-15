@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.Interop;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Code.Commands;
@@ -77,6 +78,7 @@ public static class ScryCmd
             // pile notifications: skipVisuals also suppresses draw-pile counter updates.
             await CardPileCmd.Add(cardsToDiscard, PileType.Play);
             int historyStart = CombatManager.Instance.History.Entries.Count();
+            await using (ShurikenAimVolley.Begin(choiceContext, player.Creature))
             await CardCmd.Discard(choiceContext, cardsToDiscard);
 #if NINJASLAYER_CHANNEL_PREVIEW
             foreach (CardModel card in slyCards)

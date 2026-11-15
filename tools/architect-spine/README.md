@@ -26,6 +26,13 @@ The optional positional argument is the original game's PCK. The default is
 the local Steam installation. `SOURCE.json` records source/output hashes,
 mapping, sample times and source/target trajectory measurements.
 
+As of 2026-11-15, the default output targets preview 0.113.1, whose Architect
+removed the two secondary reading tracks. Stable 0.107.1 retains
+`architect-stable.spskel` and `SOURCE-stable.json`; the owning presentation
+selects the resource at compile time. Do not overwrite the stable resource
+with the preview skeleton. Native product contracts compare each variant
+against its exact host skeleton and exercise the added death track.
+
 ## Playback
 
 The source animation remains 3.666666746 seconds at 1x in Normal and Fast.

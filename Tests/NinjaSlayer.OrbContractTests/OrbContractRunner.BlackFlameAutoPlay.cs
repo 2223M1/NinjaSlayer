@@ -75,7 +75,7 @@ public partial class OrbContractRunner
                     AddCard<TwinStrike>(combat, PileType.Draw);
                     await CardCmd.AutoPlay(Choice, AddCard<NavyHammer>(combat, upgraded: upgraded), null);
                 }
-                int expectedPlays = beatDown ? (upgraded ? 4 : 3) : (upgraded ? 3 : 2);
+                int expectedPlays = beatDown ? (upgraded ? 4 : 3) : 2;
                 foreach (var enemy in new[] { combat.Enemy, second })
                 {
                     var burns = CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>()

@@ -58,7 +58,7 @@ public sealed class CardPoolRulesTests
         Assert.DoesNotContain("ObserveBattleRedesignV1", all);
         Assert.DoesNotContain("ReadAndStrikeRedesignV1", all);
         Assert.Contains("ReadTheEnemy", NinjaSlayerCardRules.CommonRewardCardIds);
-        Assert.Contains("Endurance", NinjaSlayerCardRules.UncommonRewardCardIds);
+        Assert.Contains("Flurry", NinjaSlayerCardRules.UncommonRewardCardIds);
         Assert.Contains("BladeCycle", NinjaSlayerCardRules.RareRewardCardIds);
         Assert.Contains("PressTheAttack", NinjaSlayerCardRules.UncommonRewardCardIds);
         Assert.DoesNotContain("NinjaGreetingRedesignV1", all);
@@ -88,6 +88,7 @@ public sealed class CardPoolRulesTests
 
         Assert.Contains("StormFist", NinjaSlayerCardRules.RareRewardCardIds);
         Assert.Contains("HiddenEdge", NinjaSlayerCardRules.UncommonRewardCardIds);
+        Assert.Contains("TileBreakingPunch", NinjaSlayerCardRules.UncommonRewardCardIds);
         Assert.Contains("LetGo", NinjaSlayerCardRules.UncommonRewardCardIds);
         Assert.Contains("AlabamaDrop", NinjaSlayerCardRules.RareRewardCardIds);
 
@@ -95,9 +96,9 @@ public sealed class CardPoolRulesTests
                  {
                      "CatapultThrow",
                      "SomersaultKick",
-                     "ReadyShuriken",
+                     "OnGuard",
                      "CrossGuard",
-                     "FocusedBlows",
+                     "BreakthroughBlow",
                      "Rekindle",
                      "Poise"
                  })

@@ -3,6 +3,7 @@ using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Audio.Debug;
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Localization;
 using NinjaSlayer.Cards;
@@ -192,9 +193,9 @@ public sealed partial class ArchitectExecutionCinematic : Node
 
     internal static string? MeleeTrigger(CardModel card) => card switch
     {
-        CollapseFist or PressTheAttack or StraightKi
+        CollapseFist or TileBreakingPunch or PressTheAttack or StraightKi
             or StraightPunch or ChopStrike or LowUppercut
-            or FocusedBlows or SomersaultKick
+            or BreakthroughBlow or SomersaultKick
             or BS1260Kick or DragonRoundhouseKick or HalfMoonCompassKick
             or StormFist => "SlowAttack",
         StrikeNinjaSlayer or HellChop or Chop
@@ -206,18 +207,30 @@ public sealed partial class ArchitectExecutionCinematic : Node
         _ => null
     };
 
-    private async Task PlayOwnedMeleeExecution(CancellationToken cancelToken)
+    private static CardModel SelectMeleeExecution(Player owner)
     {
-        var cards = _owner.Player!.Deck.Cards.Where(card => MeleeTrigger(card) != null).ToList();
-        CardModel card;
-        if (cards.Count > 0) card = cards[_eventModel.Rng.NextInt(cards.Count)];
-        else
+        CardModel? card = owner.Deck.Cards.Where(card => MeleeTrigger(card) != null)
+            .OrderBy(card => card switch
+            {
+                AlabamaDrop => 0,
+                _ when NinjaSlayerAimPose.IsSomersaultHeavy(card) => 1,
+                _ when NinjaSlayerAimPose.IsKick(card) => MeleeTrigger(card) == "SlowAttack" ? 2 : 3,
+                _ when MeleeTrigger(card) == "SlowAttack" => 4,
+                _ => 5
+            }).FirstOrDefault();
+        if (card is null)
         {
             card = ModelDb.Card<StrikeNinjaSlayer>().ToMutable();
-            card.Owner = _owner.Player;
+            card.Owner = owner;
         }
+        return card;
+    }
+
+    private async Task PlayOwnedMeleeExecution(CancellationToken cancelToken)
+    {
+        CardModel card = SelectMeleeExecution(_owner.Player!);
         string trigger = MeleeTrigger(card)!;
-        Entry.Logger.Info($"Architect execution selected owned melee: {card.Id.Entry}, trigger={trigger}, fallback={cards.Count == 0}.");
+        Entry.Logger.Info($"Architect execution selected owned melee: {card.Id.Entry}, trigger={trigger}, fallback={!_owner.Player!.Deck.Cards.Contains(card)}.");
         var play = new CardPlay
         {
             Card = card,

@@ -69,21 +69,21 @@ public partial class OrbContractRunner
             }
             if (scenario == "stacked")
                 await CardCmd.AutoPlay(Choice, AddCard<KillingIntent>(combat), null);
-            Require(player.GetPowerAmount<KillingIntentPower>() == (scenario == "upgraded" ? 3 : scenario is "stacked" or "reapply" ? 2 : 1),
-                "Killing Intent Amount must count this turn's card applications.");
-            var counterTip = player.GetPower<KillingIntentPower>()!.HoverTips
+            int applications = scenario == "upgraded" ? 3 : scenario is "stacked" or "reapply" ? 2 : 1;
+            Require(player.GetPowerAmount<KillingIntentPower>() == applications,
+                "Repeated Killing Intent applications must stack rewards without resetting damage history.");
+            var guardTip = player.GetPower<KillingIntentPower>()!.HoverTips
                 .OfType<MegaCrit.Sts2.Core.HoverTips.HoverTip>().First();
-            Require(counterTip.IsSmart && counterTip.Description.Contains(scenario is "upgraded" or "reapply" ? "56" : "47")
-                && !counterTip.Description.Contains('{'), "Live power tooltip must render counter damage independently of stack count.");
+            Require(!guardTip.Description.Contains('{'), "Restored power tooltip must contain no obsolete counter damage variable.");
             await EndGuardSide(combat.State, CombatSide.Player, player);
-            // Next intent does not replace the targets captured before the enemy actions.
+            // Next intent does not replace the condition captured before enemy actions.
             GuardIntent(combat.Enemy, false);
             if (scenario is "damage" or "self" or "dot" or "shield" or "overflow" or "buffer" or "heal" or "blocked" or "stacked")
                 await CreatureCmd.Damage(Choice, player, 2,
                     scenario is "self" or "dot" ? ValueProp.Unpowered : ValueProp.Move,
                     scenario == "self" ? player : scenario == "dot" ? null! : combat.Enemy);
             if (scenario == "partial multihit")
-                for (int i = 0; i < 2; i++) await CreatureCmd.Damage(Choice, player, 5, ValueProp.Move, combat.Enemy);
+                for (int i = 0; i < 2; i++) await CreatureCmd.Damage(Choice, player, 6, ValueProp.Move, combat.Enemy);
             if (scenario == "heal") await CreatureCmd.Heal(player, 2);
             if (scenario == "full hand") while (PileType.Hand.GetPile(combat.Player).Cards.Count < 10) combat.Card();
             if (scenario == "dead target")
@@ -92,18 +92,28 @@ public partial class OrbContractRunner
                 combat.Enemy.SetCurrentHpInternal(0);
             }
             int hp = combat.Enemy.CurrentHp;
-            Require(player.HasPower<KillingIntentPower>(), "Counter must wait until the enemy turn ends.");
+            Require(player.HasPower<KillingIntentPower>(), "Killing Intent must remain pending during the enemy turn.");
             await EndGuardSide(combat.State, CombatSide.Enemy, combat.Enemy);
+            Require(combat.Enemy.CurrentHp == hp && player.HasPower<KillingIntentPower>()
+                && !combat.Player.Piles.SelectMany(p => p.Cards).OfType<StraightKi>().Any(),
+                "Killing Intent must not retaliate or generate a card at enemy turn end.");
+            await Hook.AfterPlayerTurnStart(combat.State, Choice, combat.Player);
             bool eligible = scenario is "intent appears" or "blocked" or "buffer" or "upgraded"
-                or "full hand" or "before play" or "self" or "dot" or "stacked" or "shield";
-            int expected = eligible ? scenario == "upgraded" ? 168 : scenario == "stacked" ? 94 : 47 : 0;
-            Require(hp - combat.Enemy.CurrentHp == expected,
-                $"Killing Intent {scenario}: expected {expected}, got {hp - combat.Enemy.CurrentHp} damage.");
-            Require(!player.HasPower<KillingIntentPower>(), $"Counter {scenario} must expire at enemy turn end.");
-            await EndGuardSide(combat.State, CombatSide.Enemy, combat.Enemy);
-            Require(hp - combat.Enemy.CurrentHp == expected, "Counter must not repeat on later turn hooks.");
-            Require(!combat.Player.Piles.SelectMany(p => p.Cards).OfType<StraightKi>().Any(),
-                "Counter must not generate or play a Straight Ki card, including with a full hand.");
+                or "full hand" or "before play" or "self" or "dot" or "stacked" or "shield" or "dead target";
+            var rewards = combat.Player.Piles.SelectMany(p => p.Cards).OfType<StraightKi>().ToArray();
+            Require(rewards.Length == (eligible ? applications : 0) && combat.Enemy.CurrentHp == hp,
+                $"Killing Intent {scenario}: expected {(eligible ? applications : 0)} Straight Ki cards, got {rewards.Length}.");
+            Require(rewards.Count(reward => reward.IsUpgraded) == (scenario == "upgraded" ? 1 : 0)
+                && rewards.All(reward => reward.EnergyCost.GetWithModifiers(CostModifiers.Local) == 1 && reward.Pile?.Type ==
+                (scenario == "full hand" ? PileType.Discard : PileType.Hand)),
+                "Each reward must retain its source upgrade, cost 1 Energy and use native full-hand handling.");
+            if (scenario == "upgraded")
+                Require(rewards.Select(reward => reward.IsUpgraded).SequenceEqual(new[] { false, true, false }),
+                    "Mixed rewards must preserve card play order.");
+            Require(!player.HasPower<KillingIntentPower>(), $"Killing Intent {scenario} must expire at the owner's next turn start.");
+            await Hook.AfterPlayerTurnStart(combat.State, Choice, combat.Player);
+            Require(combat.Player.Piles.SelectMany(p => p.Cards).OfType<StraightKi>().Count() == rewards.Length,
+                "Killing Intent must not grant another card on subsequent turns.");
         }
 
         foreach (bool stacked in new[] { false, true })
@@ -129,13 +139,15 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<VulnerablePower>(Choice, second, 2, player, null);
             var observer = await PowerCmd.Apply<GuardAttackObserver>(Choice, player, 1, player, null);
             await EndGuardSide(combat.State, CombatSide.Enemy, combat.Enemy, second, buffing);
-            // floor((47 + 3 Strength + 4 Vigor) * .75 Weak * 1.5 Vulnerable) + 3 Karate.
-            Require(combat.Enemy.CurrentHp == (stacked ? 859 : 937) && second.CurrentHp == (stacked ? 859 : 937) && buffing.CurrentHp == 1000,
-                "Each counter must apply native modifiers to both snapshotted attackers, excluding the new attack intent.");
-            Require(player.GetPowerAmount<KaratePower>() == (stacked ? 1 : 2) && !player.HasPower<VigorPower>(),
-                "Each AoE counter consumes one Karate; Vigor only affects the first counter.");
-            Require(observer!.Attacks == (stacked ? 2 : 1) && observer.Waves == (stacked ? 2 : 1) && observer.Targets == (stacked ? 4 : 2),
-                "Every stack must publish its own native attack and two-target result wave.");
+            await Hook.AfterPlayerTurnStart(combat.State, Choice, combat.Player);
+            Require(combat.Enemy.CurrentHp == 1000 && second.CurrentHp == 1000 && buffing.CurrentHp == 1000,
+                "Multiple attackers must not receive direct counter damage.");
+            Require(player.GetPowerAmount<KaratePower>() == 3 && player.GetPowerAmount<VigorPower>() == 4,
+                "Generating Straight Ki must not consume attack resources.");
+            Require(observer!.Attacks == 0 && observer.Waves == 0 && observer.Targets == 0
+                && PileType.Hand.GetPile(combat.Player).Cards.OfType<StraightKi>().Select(card => card.IsUpgraded)
+                    .SequenceEqual(stacked ? new[] { false, true } : new[] { false }),
+                "Mixed Killing Intent cards must grant separate base/upgraded rewards without autoplaying them.");
         }
 
         foreach (bool upgraded in new[] { false, true })
@@ -155,10 +167,19 @@ public partial class OrbContractRunner
             await AddStock(combat.Player, 3);
             using var selector = UseCardSelector(new SelectCards(_ =>
                 throw new InvalidOperationException("Jujutsu must never request a discard.")));
+            int energyBefore = combat.Player.PlayerCombatState!.Energy;
             await CardCmd.AutoPlay(Choice, jujutsu, null);
             Require(held.Pile?.Type == PileType.Hand && jujutsu.Pile?.Type == PileType.Exhaust
-                && combat.Stock == 3 && combat.Player.Creature.GetPowerAmount<KaratePower>() == (upgraded ? 5 : 4),
-                "Jujutsu must retain its cost, Karate and Exhaust without discarding or firing Shuriken.");
+                && combat.Stock == 3 && combat.Player.Creature.GetPowerAmount<KaratePower>() == (upgraded ? 4 : 3)
+                && combat.Player.Creature.GetPowerAmount<EnergyNextTurnPower>() == 1
+                && combat.Player.PlayerCombatState.Energy == energyBefore,
+                "Jujutsu grants Karate3/4 and one delayed Energy, retaining Exhaust without discarding or firing Shuriken.");
+            await Hook.AfterEnergyReset(combat.State, combat.Player);
+            Require(combat.Player.PlayerCombatState.Energy == energyBefore + 1
+                && !combat.Player.Creature.HasPower<EnergyNextTurnPower>(),
+                "Jujutsu's native next-turn Energy must resolve once after Energy reset.");
+            await Hook.AfterEnergyReset(combat.State, combat.Player);
+            Require(combat.Player.PlayerCombatState.Energy == energyBefore + 1, "Jujutsu must not grant Energy on another turn.");
         }
         foreach (bool ninja in new[] { false, true })
         {
@@ -171,7 +192,7 @@ public partial class OrbContractRunner
                     "Yamoto Koki event must require NinjaSlayer and Act 2.");
             }
         }
-        GD.Print("PASS guard counter: enemy-turn timing, one native AoE wave, intent snapshot, full block, Naraku, modifiers, repeated plays, expiry; Collapse Fist, Jujutsu and Act-2 Koki");
+        GD.Print("PASS Killing Intent restored: next-turn 1-cost Straight Ki/+, intent and damage qualification, Naraku, no retaliation, stacked ordered rewards, full hand, expiry; Collapse Fist, Jujutsu and Act-2 Koki");
     }
 
     public sealed class GuardAttackObserver : PowerModel

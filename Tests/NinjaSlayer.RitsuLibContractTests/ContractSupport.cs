@@ -2,6 +2,17 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Logging;
 using STS2RitsuLib;
 
+namespace NinjaSlayer.Cards.Standard
+{
+    // Type-only stand-in for source-linked patch installation; product contracts
+    // exercise the candidate DLL's real Navy Hammer card and replay timing.
+    internal abstract class NavyHammer() : MegaCrit.Sts2.Core.Models.CardModel(
+        1,
+        MegaCrit.Sts2.Core.Entities.Cards.CardType.Skill,
+        MegaCrit.Sts2.Core.Entities.Cards.CardRarity.Uncommon,
+        MegaCrit.Sts2.Core.Entities.Cards.TargetType.Self);
+}
+
 namespace NinjaSlayer.Scripts
 {
     internal static class Entry

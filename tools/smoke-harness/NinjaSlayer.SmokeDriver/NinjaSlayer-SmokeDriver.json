@@ -10,7 +10,7 @@
   "dependencies": [
     {
       "id": "STS2-RitsuLib",
-      "min_version": "0.6.11"
+      "min_version": "0.6.13"
     },
     {
       "id": "NinjaSlayer",

@@ -6,11 +6,11 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 
 namespace NinjaSlayer.Cards.Standard;
 
-public sealed class Resilience : NinjaSlayerUncommonCard
+public sealed class TurningPoint : NinjaSlayerUncommonCard
 {
-    public Resilience() : base(nameof(Resilience), 1, CardType.Power, TargetType.Self) { }
+    public TurningPoint() : base(nameof(TurningPoint), 1, CardType.Power, TargetType.Self) { }
     protected override IEnumerable<DynamicVar> CanonicalVars => [new CardsVar(1)];
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
-        PowerCmd.Apply<ResiliencePower>(choiceContext, Owner.Creature, DynamicVars.Cards.BaseValue, Owner.Creature, this);
+        PowerCmd.Apply<TurningPointPower>(choiceContext, Owner.Creature, DynamicVars.Cards.BaseValue, Owner.Creature, this);
     protected override void OnUpgrade() => DynamicVars.Cards.UpgradeValueBy(1);
 }

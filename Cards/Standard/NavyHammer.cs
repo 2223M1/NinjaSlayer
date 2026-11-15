@@ -37,11 +37,8 @@ public sealed class NavyHammer : NinjaSlayerUncommonCard
                 this);
         }
 
-        top.ExhaustOnNextPlay = true;
         await CardCmd.AutoPlay(choiceContext, top, null);
-        if (top.Pile is { Type: not PileType.Exhaust })
-            await CardCmd.Exhaust(choiceContext, top);
     }
 
-    protected override void OnUpgrade() => DynamicVars.Repeat.UpgradeValueBy(1);
+    protected override void OnUpgrade() => RemoveKeyword(CardKeyword.Exhaust);
 }

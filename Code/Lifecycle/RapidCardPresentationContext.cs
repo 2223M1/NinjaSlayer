@@ -88,6 +88,7 @@ internal static class RapidCardPresentationContext
 
     public static bool IsActive => Current.Value?.IsActive == true;
     internal static CardModel? CurrentCard => Current.Value?.Card;
+    internal static bool IsNavyHammerReplay => Current.Value?.Previous?.Card is Cards.Standard.NavyHammer;
 
     public static void PreparePowerFly(CardModel card)
     {

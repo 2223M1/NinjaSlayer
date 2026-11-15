@@ -1,4 +1,6 @@
 {
   "NINJA_SLAYER_CHADO_BREATHING.title": "Chado Nefesi",
-  "NINJA_SLAYER_CHADO_BREATHING.description": "Elindeki her [gold]Chado[/gold]nun verdiği Enerjiyi belirtilen miktarda artır. Hiç yoksa bir Chado oluşturmak için 1 Chado Nefesi harca, ardından kalan miktar kadar Enerjisini artır."
+  "NINJA_SLAYER_CHADO_BREATHING.description": "Elindeki her [gold]Chado[/gold]nun verdiği Enerjiyi belirtilen miktarda artır. Hiç yoksa bir Chado oluşturmak için 1 Chado Nefesi harca, ardından kalan miktar kadar Enerjisini artır.",
+  "NINJA_SLAYER_POSITIVE_EFFECTS.title": "Güçlendirmeler",
+  "NINJA_SLAYER_POSITIVE_EFFECTS.description": "Aşağıdaki etkiler pozitif değerdeyken tür başına bir kez sayılır.\n[gold]Kuvvet[/gold], [gold]Beceriklilik[/gold], [gold]Dinç[/gold], [gold]Karate[/gold]\n[gold]Odak[/gold], [gold]Yapıt[/gold], [gold]Tampon[/gold], [gold]Soyutluk[/gold]\n[gold]Diken[/gold], [gold]Zırh[/gold], [gold]Yenilenme[/gold], [gold]Kaçınma[/gold]\n[gold]Naraku Canı[/gold], [gold]Gerinme[/gold], [gold]Süzül[/gold], [gold]Nişan[/gold]"
 }

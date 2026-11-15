@@ -34,9 +34,10 @@ public partial class OrbContractRunner
         await VerifyBoardV115();
         await VerifyStatusCards();
         await VerifyTeaAndChop();
+        await VerifyTileBreakingPunch();
         await VerifyTemporaryStats();
         await VerifyDamageSourceMatrix();
-        await VerifySweepDuration();
+        await VerifyNativeAimVolleys();
         await VerifyTurnAndSelectionEffects();
     }
 
@@ -352,24 +353,26 @@ public partial class OrbContractRunner
             AddCard<Chado>(combat, PileType.Draw);
             AddCard<Wound>(combat, PileType.Draw);
             AddCard<DefendIronclad>(combat, PileType.Draw);
-            await PowerCmd.Apply<ResiliencePower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+            await PowerCmd.Apply<TurningPointPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await CardPileCmd.Draw(Choice, 1, combat.Player);
-            Require(PileType.Hand.GetPile(combat.Player).Cards.Count == 1, "Resilience must not trigger when an existing Status is drawn.");
+            Require(PileType.Hand.GetPile(combat.Player).Cards.Count == 1, "TurningPoint must not trigger when an existing Status is drawn.");
         }
-        GD.Print("PASS status autoplay/exhaust, recovery transformation, turn expiry and Resilience draw isolation");
+        GD.Print("PASS status autoplay/exhaust, recovery transformation, turn expiry and TurningPoint draw isolation");
     }
 
     private static async Task VerifyTeaAndChop()
     {
-        using (var combat = new OrbCombat())
+        foreach (bool upgraded in new[] { false, true })
         {
-            var gather = AddCard<GatherKi>(combat);
+            using var combat = new OrbCombat();
+            var gather = AddCard<GatherKi>(combat, upgraded: upgraded);
             var tea = AddCard<Chado>(combat);
             tea.IncreaseEnergy(4);
             using var selector = UseCardSelector(new SelectCards(_ => [tea]));
             await CardCmd.AutoPlay(Choice, gather, null);
-            Require(combat.Player.Creature.GetPowerAmount<KaratePower>() == 10 && tea.Pile?.Type == PileType.Exhaust,
-                "Gather Ki must read the selected Chado's accumulated energy.");
+            Require(combat.Player.Creature.GetPowerAmount<KaratePower>() == (upgraded ? 15 : 10)
+                && tea.Pile?.Type == PileType.Exhaust && gather.EnergyCost.GetWithModifiers(CostModifiers.Local) == 1,
+                "Gather Ki must multiply the selected Chado's accumulated energy by two/three without reducing its cost.");
         }
         using (var combat = new OrbCombat())
         {
@@ -470,39 +473,18 @@ public partial class OrbContractRunner
         using var combat = new OrbCombat();
         combat.AddEnemy();
         await CardCmd.AutoPlay(Choice, AddCard<Onslaught>(combat), null);
-        await PowerCmd.Apply<BladeSweepPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
         await AddStock(combat.Player, 3);
         await CardCmd.AutoPlay(Choice, AddCard<Dualcast>(combat), null);
-        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 24
+        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 12
             && combat.Player.Creature.GetPowerAmount<FocusPower>() == 0,
-            "Three stock evoked twice against two targets must grant twenty-four temporary Strength.");
+            "Three stock evoked twice must grant twelve temporary Strength, regardless of the random target.");
         await PowerCmd.Apply<KaratePower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
         AddCard<BlackFlame>(combat);
         await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
-        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 24
+        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 12
             && combat.Player.Creature.GetPowerAmount<FocusPower>() == 0,
             "An attack with Karate and Black Flame must not grant orb-only Strength.");
         GD.Print("PASS multi-target multi-evoke stat counts and actual Karate/Black Flame source exclusion");
-    }
-
-    private static async Task VerifySweepDuration()
-    {
-        using var combat = new OrbCombat();
-        var second = combat.AddEnemy();
-        await AddStock(combat.Player, 3);
-        await PowerCmd.Apply<BladeSweepPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
-        await CardCmd.Discard(Choice, new[] { combat.Card(), combat.Card() });
-        Require(combat.Enemy.CurrentHp == 988 && second.CurrentHp == 988 && combat.Player.Creature.HasPower<BladeSweepPower>(),
-            "Blade Sweep must affect every shot this turn.");
-#if NINJASLAYER_CHANNEL_STABLE
-        await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
-#else
-        await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
-#endif
-        await CardCmd.Discard(Choice, combat.Card());
-        Require(combat.Enemy.CurrentHp + second.CurrentHp == 1970 && !combat.Player.Creature.HasPower<BladeSweepPower>(),
-            "Blade Sweep must expire at turn end and restore single-target shots.");
-        GD.Print("PASS Blade Sweep repeated shots and turn-end expiry");
     }
 
     private static async Task VerifyTurnAndSelectionEffects()
@@ -514,17 +496,17 @@ public partial class OrbContractRunner
             var owner = combat.Player.Creature;
             await PowerCmd.Apply<StrengthPower>(Choice, owner, 3, owner, null);
             await PowerCmd.Apply<VigorPower>(Choice, owner, 7, owner, null);
-            var card = AddCard<Endurance>(combat, upgraded: upgraded);
+            var card = AddCard<Flurry>(combat, upgraded: upgraded);
             await CardCmd.AutoPlay(Choice, card, combat.Enemy);
             Require(combat.Enemy.CurrentHp == 1000 - 3 * (upgraded ? 15 : 14) && untouched.CurrentHp == 1000
                 && owner.GetPowerAmount<KaratePower>() == (upgraded ? 6 : 5) && !owner.HasPower<VigorPower>()
-                && !owner.HasPower<EndurancePower>(), "Endurance must resolve three selected-target hits before granting Karate, with native Strength/Vigor and no delayed power.");
+                && !owner.HasPower<EndurancePower>(), "Flurry must resolve three selected-target hits before granting Karate, with native Strength/Vigor and no delayed power.");
 #if NINJASLAYER_CHANNEL_STABLE
             await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [owner]);
 #else
             await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [owner]);
 #endif
-            Require(owner.GetPowerAmount<KaratePower>() == (upgraded ? 6 : 5), "Endurance must not grant a second turn-end reward.");
+            Require(owner.GetPowerAmount<KaratePower>() == (upgraded ? 6 : 5), "Flurry must not grant a second turn-end reward.");
         }
         using (var combat = new OrbCombat())
         {
@@ -568,7 +550,7 @@ public partial class OrbContractRunner
                 && combat.Player.Creature.Block == 14 && tea.Pile?.Type == PileType.Exhaust,
                 "Tomoe Throw must consume tea, grant fourteen Block and weaken only its selected target.");
         }
-        GD.Print("PASS Endurance three hits, post-attack Karate and no delayed reward, two-card copying, retention, Shuriken Storm and selected-target Weak");
+        GD.Print("PASS Flurry three hits, post-attack Karate and no delayed reward, two-card copying, retention, Shuriken Storm and selected-target Weak");
     }
 
     private sealed class SelectCards(Func<CardModel[], IEnumerable<CardModel>> select) : ICardSelector

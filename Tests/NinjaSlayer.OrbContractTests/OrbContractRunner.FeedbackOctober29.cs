@@ -57,8 +57,8 @@ public partial class OrbContractRunner
                 await CardPileCmd.Add(wound, PileType.Hand);
                 Require(!owner.HasPower<NarakuLifePower>(), "Generation, discard and pile movement must not trigger Devour Flame.");
                 await CardCmd.Exhaust(Choice, wound);
-                var endurance = AddCard<Endurance>(combat, upgraded: upgraded);
-                Require(endurance.Keywords.Contains(CardKeyword.Ethereal), "Endurance must have Ethereal in both versions.");
+                var endurance = AddCard<Flurry>(combat, upgraded: upgraded);
+                Require(endurance.Keywords.Contains(CardKeyword.Ethereal), "Flurry must have Ethereal in both versions.");
                 await CardCmd.Exhaust(Choice, endurance, causedByEthereal: true);
                 Require(owner.GetPowerAmount<NarakuLifePower>() == gain * 2,
                     "Devour Flame must trigger once for ordinary and Ethereal exhaust, regardless of card type.");

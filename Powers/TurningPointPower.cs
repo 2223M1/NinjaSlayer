@@ -10,9 +10,9 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
 
-public sealed class ResiliencePower : NinjaSlayerCounterPower
+public sealed class TurningPointPower : NinjaSlayerCounterPower
 {
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(ResiliencePower));
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(TurningPointPower));
     public override async Task AfterCardGeneratedForCombat(CardModel card, Player? creator)
     {
         if (creator?.Creature != Owner || card.Type != CardType.Status) return;

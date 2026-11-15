@@ -15,7 +15,7 @@ public partial class OrbContractRunner
         foreach (int stock in new[] { 0, 1, 4 })
         {
             using var combat = new OrbCombat();
-            var card = AddCard<FocusedBlows>(combat, upgraded: upgraded);
+            var card = AddCard<BreakthroughBlow>(combat, upgraded: upgraded);
             var owner = combat.Player.Creature;
             if (stock > 0) await AddStock(combat.Player, stock);
             card.UpdateDynamicVarPreview(CardPreviewMode.Normal, combat.Enemy, card.DynamicVars);

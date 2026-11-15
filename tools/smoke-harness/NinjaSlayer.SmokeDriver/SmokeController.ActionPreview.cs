@@ -31,6 +31,9 @@ using NinjaSlayer.Monsters;
 using NinjaSlayer.Orbs;
 using NinjaSlayer.Powers;
 using NinjaSlayer.Relics;
+#if NINJASLAYER_CHANNEL_STABLE
+using AimPower = NinjaSlayer.Powers.BladeSweepPower;
+#endif
 
 namespace NinjaSlayer.SmokeDriver;
 
@@ -423,12 +426,12 @@ internal sealed partial class SmokeController
                     Section("continuous-discards-and-hand-follow");
                     for (int shot = 0; shot < 6; shot++) await DiscardOne();
                     await WaitFrames(45);
-                    Section("sweep-one-release-two-targets");
+                    Section("aimed-release");
                     Creature second = combat.CreateCreature(ModelDb.Monster<MegaCrit.Sts2.Core.Models.Monsters.TwigSlimeS>().ToMutable(), CombatSide.Enemy, null);
                     await CreatureCmd.Add(second);
                     second.SetMaxHpInternal(1000);
                     await CreatureCmd.SetCurrentHp(second, 1000);
-                    await PowerCmd.Apply<BladeSweepPower>(choice, player.Creature, 1, player.Creature, null);
+                    await PowerCmd.Apply<AimPower>(choice, player.Creature, 4, player.Creature, null);
                     await (Task)AccessTools.Method(typeof(ShurikenOrb), "AddStock").Invoke(null, [choice, player, 3])!;
                     await WaitFrames(60);
                     await DiscardOne();

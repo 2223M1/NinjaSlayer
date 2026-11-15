@@ -5,10 +5,10 @@
 <!-- compatibility:start -->
 | Channel | Game API | RitsuLib compile package | Distribution |
 |---|---|---|---|
-| `stable` | `0.107.1` | `STS2.RitsuLib.Compat.0.107.1 0.6.11` | `public` |
-| `preview` | `0.113.0` | `STS2.RitsuLib 0.6.11` | `beta` |
+| `stable` | `0.107.1` | `STS2.RitsuLib.Compat.0.107.1 0.6.13` | `public` |
+| `preview` | `0.113.1` | `STS2.RitsuLib 0.6.13` | `beta` |
 
-Only the official stable release and the latest preview are active, not the two highest version numbers. Retired intermediate previews are unsupported. Keep only these channels' source exports under `../Slay the Spire 2/Slay the Spire 2 v<gameApiVersion>/`. Runtime players receive the current RitsuLib Workshop build; `0.6.11` is the pinned, reproducible compile baseline and minimum manifest dependency. Protected builds use each channel's real game assemblies. No intermediate game host or RefLib approximation is a release target.
+Only the official stable release and the latest preview are active, not the two highest version numbers. Retired intermediate previews are unsupported. Keep only these channels' source exports under `../Slay the Spire 2/Slay the Spire 2 v<gameApiVersion>/`. Runtime players receive the current RitsuLib Workshop build; `0.6.13` is the pinned, reproducible compile baseline and minimum manifest dependency. Protected builds use each channel's real game assemblies. No intermediate game host or RefLib approximation is a release target.
 <!-- compatibility:end -->
 
 All repository automation targets PowerShell 7 Core and must be invoked through `pwsh`. Windows PowerShell 5.1 is not supported.

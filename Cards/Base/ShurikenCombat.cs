@@ -18,6 +18,7 @@ using MegaCrit.Sts2.Core.Nodes.Orbs;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
 using NinjaSlayer.Code.ExternalAnimations;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using NinjaSlayer.Orbs;
@@ -90,6 +91,7 @@ internal static class ShurikenCombat
         ShurikenOrb originOrb,
         Action beforeThrow)
     {
+        await using var aim = ShurikenAimVolley.Begin(choiceContext, owner);
         using var ranged = FinisherRangedAction.Begin(owner, source);
         await using FinisherSession? finisher = FinisherEligibilityService.CreateActionSession(owner,
             new FinisherActionForecastDescriptor(target => originOrb.EvokeVal * ShurikenAimPower.Multiplier(target),
@@ -112,6 +114,7 @@ internal static class ShurikenCombat
             , null
 #endif
         ));
+        if (results.Count > 0) aim.MarkFired();
         Code.Telemetry.NinjaSlayerCombatTelemetry.AttributeDamage(results, "shuriken");
         if (owner.GetPower<OnslaughtPower>() is { } wasshoi)
         {

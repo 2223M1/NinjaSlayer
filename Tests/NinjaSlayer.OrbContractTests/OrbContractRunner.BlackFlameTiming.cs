@@ -72,8 +72,8 @@ public partial class OrbContractRunner
             await CardCmd.AutoPlay(Choice, AddCard<NavyHammer>(combat, upgraded: true), null);
             var burns = CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>()
                 .Where(e => e.CardSource is BlackFlame).Select(e => e.Result.TotalDamage).ToArray();
-            Require(burns.SequenceEqual(new[] { 4, 4, 4 }) && BurnSounds.Count == 3,
-                "Repeated BS1260 plays must capture a new hand each time: no burn, then one flame, then two separate flames.");
+            Require(burns.SequenceEqual(new[] { 4 }) && BurnSounds.Count == 1,
+                "Hammer's two BS1260 plays must capture a new hand each time: no burn, then one flame.");
         }
         using (var combat = new OrbCombat())
         {

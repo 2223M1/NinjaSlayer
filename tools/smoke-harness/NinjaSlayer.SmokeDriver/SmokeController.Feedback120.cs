@@ -62,7 +62,7 @@ internal sealed partial class SmokeController
             await CardPileCmd.Add(combat.CreateCard<Machete>(player), PileType.Hand);
             for (int i = 0; i < 3; i++)
             {
-                var ready = combat.CreateCard<ReadyShuriken>(player);
+                var ready = combat.CreateCard<OnGuard>(player);
                 await CardPileCmd.Add(ready, PileType.Hand);
                 await CardCmd.AutoPlay(choice, ready, player.Creature);
             }
