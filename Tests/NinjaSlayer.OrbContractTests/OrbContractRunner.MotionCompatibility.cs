@@ -113,7 +113,8 @@ public partial class OrbContractRunner
         if (exactSkeleton is not null)
             original.Set("skeleton_file_res",GD.Load<Resource>(exactSkeleton));
         Resource augmented=original.Duplicate();
-        augmented.Set("skeleton_file_res",GD.Load<Resource>(BossDismembermentPresentation.ArchitectSkeletonPath));
+        string candidateSkeleton=(string)AccessTools.Field(typeof(BossDismembermentPresentation),"ArchitectSkeletonPath").GetRawConstantValue()!;
+        augmented.Set("skeleton_file_res",GD.Load<Resource>(candidateSkeleton));
         Node2D Make(Resource data)
         {
             var node=(Node2D)ClassDB.Instantiate("SpineSprite").AsGodotObject();
