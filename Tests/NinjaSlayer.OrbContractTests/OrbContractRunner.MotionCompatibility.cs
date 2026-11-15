@@ -108,9 +108,12 @@ public partial class OrbContractRunner
     {
         string extension=System.IO.Path.GetFullPath(ProjectSettings.GlobalizePath("res://../../addons/spine/spine_godot_extension.gdextension"));
         GDExtensionManager.LoadExtension(extension);
-        Resource original=GD.Load<Resource>("res://animations/monsters/architect/architect_skel_data.tres");
+        Resource original=GD.Load<Resource>("res://animations/monsters/architect/architect_skel_data.tres").Duplicate();
+        string? exactSkeleton=System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_HOST_ARCHITECT_SKELETON");
+        if (exactSkeleton is not null)
+            original.Set("skeleton_file_res",GD.Load<Resource>(exactSkeleton));
         Resource augmented=original.Duplicate();
-        augmented.Set("skeleton_file_res",GD.Load<Resource>("res://NinjaSlayer/animations/architect/architect.spskel"));
+        augmented.Set("skeleton_file_res",GD.Load<Resource>(BossDismembermentPresentation.ArchitectSkeletonPath));
         Node2D Make(Resource data)
         {
             var node=(Node2D)ClassDB.Instantiate("SpineSprite").AsGodotObject();
@@ -121,7 +124,11 @@ public partial class OrbContractRunner
         try
         {
             using Variant ns=native.Call("get_animation_state"), cs=candidate.Call("get_animation_state");
-            foreach(string animation in new[]{"idle_loop","attack","hurt","_tracks/head_normal","_tracks/head_reading","_tracks/head_reading2","_tracks/head_stop_reading","_tracks/head_stop_reading2"})
+            foreach(string animation in new[]{"idle_loop","attack","hurt","_tracks/head_normal","_tracks/head_reading","_tracks/head_stop_reading"
+#if NINJASLAYER_CHANNEL_STABLE
+                ,"_tracks/head_reading2","_tracks/head_stop_reading2"
+#endif
+            })
             {
                 using Variant nt=ns.AsGodotObject().Call("set_animation",animation,false,0),ct=cs.AsGodotObject().Call("set_animation",animation,false,0);
                 for(int f=0;f<20;f++)
@@ -155,6 +162,6 @@ public partial class OrbContractRunner
             Require(Math.Abs(finalShadow.Origin.Y-shadow.Origin.Y)<10f,$"Architect native shadow left the ground plane: {shadow.Origin} -> {finalShadow.Origin}.");
             GD.Print("PASS native Architect Spine: original tracks unchanged, native 3.667s death with head arc at the 0.9s burst cue, settled limbs and grounded shadow.");
         }
-        finally {native.Free();candidate.Free();augmented.Dispose();}
+        finally {native.Free();candidate.Free();augmented.Dispose();original.Dispose();}
     }
 }

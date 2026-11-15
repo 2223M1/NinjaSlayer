@@ -5,8 +5,8 @@
   <p><strong>简体中文</strong> | <a href="README_EN.md">English</a> | <a href="README_JA.md">日本語</a></p>
   <!-- compatibility-badges:start -->
   <p>
-    <img src="https://img.shields.io/badge/Slay%20the%20Spire%202-0.107.1%20%7C%200.113.0-B51F24" alt="Slay the Spire 2 0.107.1 and 0.113.0">
-    <img src="https://img.shields.io/badge/RitsuLib-0.6.11-2D7D9A" alt="RitsuLib 0.6.11">
+    <img src="https://img.shields.io/badge/Slay%20the%20Spire%202-0.107.1%20%7C%200.113.1-B51F24" alt="Slay the Spire 2 0.107.1 and 0.113.1">
+    <img src="https://img.shields.io/badge/RitsuLib-0.6.13-2D7D9A" alt="RitsuLib 0.6.13">
     <a href="https://github.com/2223M1/NinjaSlayer/releases/latest"><img src="https://img.shields.io/github/v/release/2223M1/NinjaSlayer?display_name=tag&amp;sort=semver" alt="GitHub Release"></a>
   </p>
   <!-- compatibility-badges:end -->

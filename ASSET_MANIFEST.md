@@ -247,3 +247,7 @@ The user also requested alignment of the remaining renamed cards. Existing image
 ## Naraku temporary HP
 
 `NinjaSlayer/images/ui/naraku_temp_hp.png` is the original 64×64 StSLib Temp HP heart (`tempHP.png`), SHA-256 `0555B89F458E8FF74C3877D1E78C97C8A583B61FAC822FFA1A82EEFF1C0F7DBC`. Source: `https://github.com/kiooeht/StSLib/blob/master/src/main/resources/stslibResources/images/tempHP.png`. The Downfall/崩坠 Temp HP presentation uses this StSLib asset with a gold tint; NinjaSlayer uses white modulation and a white native health-bar outline. The independent number does not extend the native HP bar. The MIT notice is stored beside the image in `naraku_temp_hp.LICENSE.txt` and included in the exported pack.
+
+## Architect resources for 0.113.1 (2026-11-15)
+
+The preview skeleton is rebuilt from the installed 0.113.1 pack with `tools/architect-spine/author.mjs`, preserving its six original animation tracks and appending the existing death retarget. Stable retains the prior private skeleton as `architect-stable.spskel`; `SOURCE-stable.json` and `SOURCE.json` record their separate source/output hashes. The owning presentation selects the matching resource at compile time.
