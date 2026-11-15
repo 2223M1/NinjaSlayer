@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://duj0kns1dwvul"
-path="res://.godot/imported/Resilience.png-0d99f05026ef07a7a145a7054e019ea3.ctex"
+uid="uid://da46n743552wf"
+path="res://.godot/imported/TileBreakingPunch.png-8f6369513d70d301642631bdd42144b5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://NinjaSlayer/images/cards/Resilience.png"
-dest_files=["res://.godot/imported/Resilience.png-0d99f05026ef07a7a145a7054e019ea3.ctex"]
+source_file="res://NinjaSlayer/images/cards/TileBreakingPunch.png"
+dest_files=["res://.godot/imported/TileBreakingPunch.png-8f6369513d70d301642631bdd42144b5.ctex"]
 
 [params]
 

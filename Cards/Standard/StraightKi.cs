@@ -28,7 +28,7 @@ public sealed class StraightKi : NinjaSlayerStandaloneCardTemplate
 {
     private static readonly NinjaSlayerCardSpec Spec = new(
         nameof(StraightKi),
-        2,
+        1,
         CardType.Attack,
         CardRarity.Token,
         TargetType.AnyEnemy,

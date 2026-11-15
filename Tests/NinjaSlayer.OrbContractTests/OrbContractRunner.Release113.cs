@@ -56,8 +56,8 @@ public partial class OrbContractRunner
         foreach (PileType destination in new[] { PileType.Hand, PileType.Draw, PileType.Discard })
         {
             using var combat = new OrbCombat();
-            await CardCmd.AutoPlay(Choice, AddCard<Resilience>(combat, upgraded: upgraded), null);
-            await CardCmd.AutoPlay(Choice, AddCard<Resilience>(combat), null);
+            await CardCmd.AutoPlay(Choice, AddCard<TurningPoint>(combat, upgraded: upgraded), null);
+            await CardCmd.AutoPlay(Choice, AddCard<TurningPoint>(combat), null);
             await PowerCmd.Apply<DevourFlamePower>(Choice, combat.Player.Creature, 2, combat.Player.Creature, null);
             int draw = upgraded ? 3 : 2;
             for (int i = 0; i < draw * 3 + 2; i++) AddCard<StrikeIronclad>(combat, PileType.Draw);
@@ -66,16 +66,16 @@ public partial class OrbContractRunner
             {
                 await CardPileCmd.AddGeneratedCardToCombat(status, destination, combat.Player);
                 Require(PileType.Hand.GetPile(combat.Player).Cards.OfType<StrikeIronclad>().Count() == draw,
-                    $"Resilience must draw {draw} for one generated Status in {destination} (upgraded={upgraded}).");
+                    $"TurningPoint must draw {draw} for one generated Status in {destination} (upgraded={upgraded}).");
                 foreach (var old in PileType.Hand.GetPile(combat.Player).Cards.ToArray())
                     await CardPileCmd.RemoveFromCombat(old);
             }
             Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 0,
-                "Devour Flame must not trigger from Resilience's generated-status draw.");
+                "Devour Flame must not trigger from TurningPoint's generated-status draw.");
         }
         using (var combat = new OrbCombat())
         {
-            await PowerCmd.Apply<ResiliencePower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+            await PowerCmd.Apply<TurningPointPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             for (int i = 0; i < 5; i++) AddCard<StrikeIronclad>(combat, PileType.Draw);
             var other = Player.CreateForNewRun<Ironclad>(UnlockState.all, 2);
             other.InitializeSeed("resilience-other");

@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.Entities.Multiplayer;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Models.Enchantments;
@@ -120,8 +121,8 @@ public partial class OrbContractRunner
         RunManager.Instance.ActionExecutor.AfterActionExecuted += _ => completed++;
         var plays = new (CardModel Card, Creature? Target)[]
         {
-            (combat.State.CreateCard<ReadyShuriken>(first), null),
-            (combat.State.CreateCard<ReadyShuriken>(second), null),
+            (combat.State.CreateCard<OnGuard>(first), null),
+            (combat.State.CreateCard<OnGuard>(second), null),
             (combat.State.CreateCard<Zap>(first), null),
             (combat.State.CreateCard<Dualcast>(first), null),
             (combat.State.CreateCard<Dualcast>(second), null),
@@ -244,7 +245,7 @@ public partial class OrbContractRunner
             foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
             await PowerCmd.Apply<StrengthPower>(Choice, player.Creature, 3, player.Creature, null);
             await PowerCmd.Apply<VigorPower>(Choice, player.Creature, 7, player.Creature, null);
-            var endurance = combat.State.CreateCard<Endurance>(player);
+            var endurance = combat.State.CreateCard<Flurry>(player);
             if (upgraded) endurance.UpgradeInternal();
             await CardPileCmd.Add(endurance, PileType.Hand);
             await PlayerCmd.SetEnergy(10, player);
@@ -255,16 +256,16 @@ public partial class OrbContractRunner
             string fixture = $"endurance-{player.NetId}-{upgraded}";
             File.WriteAllText(Path.Combine(directory, $"{role}.{fixture}"), "ready");
             await WaitNetwork(() => File.Exists(Path.Combine(directory, $"host.{fixture}"))
-                && File.Exists(Path.Combine(directory, $"client.{fixture}")), "both Endurance fixtures");
+                && File.Exists(Path.Combine(directory, $"client.{fixture}")), "both Flurry fixtures");
             if (player.NetId == _network.NetId)
                 RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(endurance, combat.Enemy));
-            await WaitNetwork(() => completed > before, "native Endurance action");
+            await WaitNetwork(() => completed > before, "native Flurry action");
             Require(combat.Enemy.CurrentHp == enemyHp - 3 * (upgraded ? 15 : 14)
                 && player.Creature.GetPowerAmount<KaratePower>() == (upgraded ? 6 : 5)
                 && teammate.Creature.GetPowerAmount<KaratePower>() == teammateKarate
                 && !player.Creature.HasPower<VigorPower>() && !player.Creature.HasPower<EndurancePower>()
                 && endurance.Pile?.Type == PileType.Discard && player.PlayerCombatState!.Energy == 8,
-                "Endurance damage, two-energy cost or post-hit Karate diverged between owners.");
+                "Flurry damage, two-energy cost or post-hit Karate diverged between owners.");
             await FinishFixture(fixture);
         }
         foreach (Player injured in run.Players)
@@ -273,6 +274,8 @@ public partial class OrbContractRunner
             foreach (Player player in run.Players)
             {
                 foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
+                foreach (var reward in player.PlayerCombatState!.AllCards.OfType<StraightKi>().ToArray())
+                    await CardPileCmd.RemoveFromCombat(reward);
                 player.Creature.LoseBlockInternal(player.Creature.Block);
                 await PlayerCmd.SetEnergy(10, player);
                 for (int cast = 0; cast < 2; cast++)
@@ -288,9 +291,9 @@ public partial class OrbContractRunner
                     if (player.NetId == _network.NetId)
                         RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(guard, null));
                     await WaitNetwork(() => completed > before, "native guard action");
-                    Require(player.Creature.Block == (cast + 1) * (player == second ? 12 : 9)
+                    Require(player.Creature.Block == (cast + 1) * (player == second ? 12 : 10)
                         && player.Creature.GetPowerAmount<KillingIntentPower>() == cast + 1,
-                        "Guard Block or current-turn counter stacks differ between peers.");
+                        "Guard Block or stacked pending rewards differ between peers.");
                     await FinishFixture(fixture);
                 }
             }
@@ -300,16 +303,22 @@ public partial class OrbContractRunner
             GuardIntent(combat.Enemy, false);
             int hp = combat.Enemy.CurrentHp;
             await EndGuardSide(combat.State, CombatSide.Enemy, combat.Enemy);
-            Require(hp - combat.Enemy.CurrentHp == (injured == first ? 112 : 94)
-                && run.Players.All(p => !p.Creature.HasPower<KillingIntentPower>()
-                    && !p.PlayerCombatState!.AllCards.OfType<StraightKi>().Any()),
-                "Counter must respect each owner's damage qualification and avoid generated combat cards on both peers.");
+            Require(combat.Enemy.CurrentHp == hp && run.Players.All(p => p.Creature.HasPower<KillingIntentPower>()),
+                "Killing Intent must stay pending until each owner's next turn without counter damage.");
+            foreach (Player player in run.Players)
+            {
+                await Hook.AfterPlayerTurnStart(combat.State, Choice, player);
+                Require(!player.Creature.HasPower<KillingIntentPower>()
+                    && player.PlayerCombatState!.AllCards.OfType<StraightKi>().Count() == (player == injured ? 0 : 2)
+                    && player.PlayerCombatState!.AllCards.OfType<StraightKi>().All(card => card.IsUpgraded == (player == second)),
+                    "Killing Intent must grant both Straight Ki rewards only to the qualified owner on both peers.");
+            }
             await FinishFixture($"guard-counter-{injured.NetId}");
         }
-        GD.Print("PASS native ENet guard card actions and stacked enemy-turn counters: independent owners, base/upgrade, current-turn expiry, no generated cards.");
+        GD.Print("PASS native ENet Killing Intent: independent owners, base/upgrade, stacked next-turn Straight Ki and damage qualification.");
         foreach (Player player in run.Players)
             foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
-        GD.Print("PASS native ENet Endurance: both owners, base/upgrade, three Vigor hits, two energy and owned post-hit Karate.");
+        GD.Print("PASS native ENet Flurry: both owners, base/upgrade, three Vigor hits, two energy and owned post-hit Karate.");
         openingSelector.Dispose();
 #if !NINJASLAYER_CHANNEL_STABLE
         int localSelections = 0;
@@ -386,7 +395,7 @@ public partial class OrbContractRunner
         {
             foreach (var old in player.Piles.Where(p => p.Type != PileType.Deck).SelectMany(p => p.Cards).ToArray())
                 await CardPileCmd.RemoveFromCombat(old);
-            await PowerCmd.Apply<ResiliencePower>(Choice, player.Creature, 1, player.Creature, null);
+            await PowerCmd.Apply<TurningPointPower>(Choice, player.Creature, 1, player.Creature, null);
             await PowerCmd.Apply<StratagemPower>(Choice, player.Creature, 1, player.Creature, null);
             for (int i = 0; i < 3; i++) await CardPileCmd.Add(combat.State.CreateCard<DefendIronclad>(player), PileType.Discard);
             var card = combat.State.CreateCard<NarakusMight>(player);
@@ -396,18 +405,18 @@ public partial class OrbContractRunner
             string fixture = $"resilience-{player.NetId}";
             File.WriteAllText(Path.Combine(directory, role + "." + fixture), "ready");
             await WaitNetwork(() => File.Exists(Path.Combine(directory, "host." + fixture))
-                && File.Exists(Path.Combine(directory, "client." + fixture)), "both Resilience fixtures");
+                && File.Exists(Path.Combine(directory, "client." + fixture)), "both TurningPoint fixtures");
             if (player.NetId == _network.NetId)
                 RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(card, combat.Enemy));
-            await WaitNetwork(() => completed >= before + 2, "Resilience draw and native Stratagem hook action");
+            await WaitNetwork(() => completed >= before + 2, "TurningPoint draw and native Stratagem hook action");
             Require(PileType.Hand.GetPile(player).Cards.Count == 3 && PileType.Hand.GetPile(player).Cards.OfType<BlackFlame>().Count() == 1,
-                "Resilience shuffle/selection lost a draw, duplicated status generation or left the action paused.");
-            await PowerCmd.Remove(player.Creature.GetPower<ResiliencePower>()!);
+                "TurningPoint shuffle/selection lost a draw, duplicated status generation or left the action paused.");
+            await PowerCmd.Remove(player.Creature.GetPower<TurningPointPower>()!);
             await PowerCmd.Remove(player.Creature.GetPower<StratagemPower>()!);
             await FinishFixture(fixture);
         }
-        Require(localSelections == 5, "Resilience's native selection must be made only by the owning peer.");
-        GD.Print("PASS synchronized Resilience status generation, empty-deck shuffle, Stratagem choice and both action queues.");
+        Require(localSelections == 5, "TurningPoint's native selection must be made only by the owning peer.");
+        GD.Print("PASS synchronized TurningPoint status generation, empty-deck shuffle, Stratagem choice and both action queues.");
 #endif
         foreach (Player player in run.Players)
         {

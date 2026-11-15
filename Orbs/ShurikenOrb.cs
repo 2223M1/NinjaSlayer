@@ -10,6 +10,7 @@ using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Cards;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using STS2RitsuLib;
@@ -43,6 +44,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
     public override decimal PassiveVal => StackCount;
     public override decimal EvokeVal => IsMutable
         ? ModifyOrbValue(NinjaSlayerCardRules.ShurikenBaseDamage)
+            + ShurikenAimVolley.DamageBonus(Owner.Creature)
         : NinjaSlayerCardRules.ShurikenBaseDamage;
     public override ModOrbValueDisplayMode ValueDisplayMode => ModOrbValueDisplayMode.Both;
     public override Color DarkenedColor => new("805900");
@@ -121,7 +123,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
         GainTurn turn = LastGain.GetOrCreateValue(Owner.PlayerCombatState!);
         turn.Round = CombatState.RoundNumber;
         turn.Side = CombatState.CurrentSide;
-        int damage = (int)EvokeVal;
+        int damage = (int)ModifyOrbValue(NinjaSlayerCardRules.ShurikenBaseDamage);
         foreach (PowerModel power in Owner.Creature.Powers.ToArray())
         {
             if (power is StarlessNightPower starless)
@@ -154,6 +156,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
 
     public override async Task<IEnumerable<Creature>> Evoke(PlayerChoiceContext playerChoiceContext)
     {
+        await using var aim = ShurikenAimVolley.Begin(playerChoiceContext, Owner.Creature);
         int shots = StackCount;
         HashSet<Creature> targets = [];
         for (int index = 0; index < shots; index++)
@@ -189,6 +192,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
             return;
         }
 
+        await using var aim = ShurikenAimVolley.Begin(choiceContext, Owner.Creature);
         StackCount = 0;
         Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_stock", Owner.Creature, -stock);
         RefreshVisuals();
@@ -225,6 +229,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
             return;
         }
 
+        await using var aim = ShurikenAimVolley.Begin(choiceContext, Owner.Creature);
         bool fired = false;
         for (int index = 0; index < resolution.Shots; index++)
         {
@@ -268,21 +273,9 @@ public sealed class ShurikenOrb : ModOrbTemplate
             return [];
         }
 
-        IReadOnlyList<Creature> targets;
-        if (Owner.Creature.HasPower<BladeSweepPower>())
-        {
-            targets = candidates.ToArray();
-        }
-        else
-        {
-            Creature[] aimed = candidates.Where(target => target.GetPowerAmount<ShurikenAimPower>() > 0).ToArray();
-            Creature? target = Owner.RunState.Rng.CombatTargets.NextItem(aimed.Length > 0 ? aimed : candidates);
-            if (target is null)
-            {
-                return [];
-            }
-            targets = [target];
-        }
+        Creature[] aimed = candidates.Where(target => target.GetPowerAmount<ShurikenAimPower>() > 0).ToArray();
+        Creature target = Owner.RunState.Rng.CombatTargets.NextItem(aimed.Length > 0 ? aimed : candidates)!;
+        IReadOnlyList<Creature> targets = [target];
 
         await ShurikenCombat.TriggerStockWave(
             choiceContext,

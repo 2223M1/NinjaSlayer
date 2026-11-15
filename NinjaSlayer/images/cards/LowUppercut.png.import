@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://clcibkvql585q"
-path="res://.godot/imported/LeftUppercut.png-eb44cb6289783e923a04df01e31920f9.ctex"
+path="res://.godot/imported/LowUppercut.png-973e254c731cdf659e6be4e67e73555a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://NinjaSlayer/images/cards/LeftUppercut.png"
-dest_files=["res://.godot/imported/LeftUppercut.png-eb44cb6289783e923a04df01e31920f9.ctex"]
+source_file="res://NinjaSlayer/images/cards/LowUppercut.png"
+dest_files=["res://.godot/imported/LowUppercut.png-973e254c731cdf659e6be4e67e73555a.ctex"]
 
 [params]
 

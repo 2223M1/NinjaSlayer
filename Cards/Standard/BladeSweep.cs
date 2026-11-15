@@ -4,14 +4,19 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using NinjaSlayer.Orbs;
-using NinjaSlayer.Powers;
+#if NINJASLAYER_CHANNEL_STABLE
+using AimPower = NinjaSlayer.Powers.BladeSweepPower;
+#else
+using MegaCrit.Sts2.Core.Models.Powers;
+#endif
 
 namespace NinjaSlayer.Cards.Standard;
 
 public sealed class BladeSweep : NinjaSlayerUncommonCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("Stock", 2)];
-    protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromOrb<ShurikenOrb>()];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("Stock", 2), new DynamicVar("Aim", 4)];
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        [HoverTipFactory.FromOrb<ShurikenOrb>(), HoverTipFactory.FromPower<AimPower>()];
 
     public BladeSweep()
         : base(nameof(BladeSweep), 1, CardType.Skill, TargetType.Self) { }
@@ -19,8 +24,12 @@ public sealed class BladeSweep : NinjaSlayerUncommonCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await ShurikenOrb.AddStock(choiceContext, Owner, DynamicVars["Stock"].IntValue);
-        await PowerCmd.Apply<BladeSweepPower>(choiceContext, Owner.Creature, 1, Owner.Creature, this);
+        await PowerCmd.Apply<AimPower>(choiceContext, Owner.Creature, DynamicVars["Aim"].BaseValue, Owner.Creature, this);
     }
 
-    protected override void OnUpgrade() => DynamicVars["Stock"].UpgradeValueBy(1);
+    protected override void OnUpgrade()
+    {
+        DynamicVars["Stock"].UpgradeValueBy(1);
+        DynamicVars["Aim"].UpgradeValueBy(2);
+    }
 }

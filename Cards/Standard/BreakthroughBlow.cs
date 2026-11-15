@@ -7,14 +7,12 @@ using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
-using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards.Standard;
 
-public sealed class FocusedBlows : NinjaSlayerCommonCard
+public sealed class BreakthroughBlow : NinjaSlayerCommonCard
 {
-    public FocusedBlows() : base(nameof(FocusedBlows), 1, CardType.Attack, TargetType.AnyEnemy) { }
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("RightUppercut");
+    public BreakthroughBlow() : base(nameof(BreakthroughBlow), 1, CardType.Attack, TargetType.AnyEnemy) { }
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<ShurikenAimPower>()];
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [

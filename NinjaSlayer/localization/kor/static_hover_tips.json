@@ -1,4 +1,6 @@
 {
   "NINJA_SLAYER_CHADO_BREATHING.title": "차도 호흡",
-  "NINJA_SLAYER_CHADO_BREATHING.description": "손에 있는 각 [gold]차도[/gold]가 주는 에너지를 지정된 수만큼 늘립니다. 없다면 차도 호흡 1을 사용해 차도를 생성한 뒤, 남은 수만큼 에너지를 늘립니다."
+  "NINJA_SLAYER_CHADO_BREATHING.description": "손에 있는 각 [gold]차도[/gold]가 주는 에너지를 지정된 수만큼 늘립니다. 없다면 차도 호흡 1을 사용해 차도를 생성한 뒤, 남은 수만큼 에너지를 늘립니다.",
+  "NINJA_SLAYER_POSITIVE_EFFECTS.title": "버프",
+  "NINJA_SLAYER_POSITIVE_EFFECTS.description": "다음 효과는 수치가 양수일 때 종류별로 한 번씩 계산합니다.\n[gold]힘[/gold], [gold]민첩[/gold], [gold]활력[/gold], [gold]카라테[/gold]\n[gold]밀집[/gold], [gold]인공물[/gold], [gold]버퍼[/gold], [gold]불가침[/gold]\n[gold]가시[/gold], [gold]판금[/gold], [gold]재생[/gold], [gold]회피[/gold]\n[gold]나라쿠 생명[/gold], [gold]스트레칭[/gold], [gold]날아오르기[/gold], [gold]조준[/gold]"
 }

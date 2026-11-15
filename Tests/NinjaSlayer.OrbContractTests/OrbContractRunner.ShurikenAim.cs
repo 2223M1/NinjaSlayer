@@ -39,17 +39,6 @@ public partial class OrbContractRunner
             await aim.AfterSideTurnEnd(Choice, CombatSide.Enemy, [combat.Enemy, other]);
             Require(!other.HasPower<ShurikenAimPower>(), "Aim must expire after its second enemy turn.");
         }
-        using (var combat = new OrbCombat())
-        {
-            var marked = combat.AddEnemy();
-            var owner = combat.Player.Creature;
-            await PowerCmd.Apply<ShurikenAimPower>(Choice, marked, 3, owner, null);
-            await PowerCmd.Apply<BladeSweepPower>(Choice, owner, 1, owner, null);
-            await AddStock(combat.Player, 2);
-            await OrbCmd.EvokeNext(Choice, combat.Player);
-            Require(combat.Enemy.CurrentHp == 988 && marked.CurrentHp == 982,
-                "Blade Sweep must still hit every enemy; only marked targets take 50% extra damage.");
-        }
         foreach (bool upgraded in new[] { false, true })
         foreach (int snapshot in new[] { -1, 7 })
         {
@@ -90,10 +79,10 @@ public partial class OrbContractRunner
         using (var combat = new OrbCombat())
         {
             await PowerCmd.Apply<ArtifactPower>(Choice, combat.Enemy, 1, combat.Enemy, null);
-            await CardCmd.AutoPlay(Choice, AddCard<FocusedBlows>(combat), combat.Enemy);
+            await CardCmd.AutoPlay(Choice, AddCard<BreakthroughBlow>(combat), combat.Enemy);
             Require(combat.Enemy.CurrentHp == 994 && !combat.Enemy.HasPower<ShurikenAimPower>()
                 && !combat.Enemy.HasPower<ArtifactPower>(), "Artifact must block Aim without preventing the initial attack.");
         }
-        GD.Print("PASS Aim: stock/Strong Shuriken +50%, multiplicative Vulnerable/Focus/snapshots/upgrades and preview, priority/multiple/dead targets, Blade Sweep, duration and Artifact.");
+        GD.Print("PASS Marked: stock/Strong Shuriken +50%, multiplicative Vulnerable/Focus/snapshots/upgrades and preview, priority/multiple/dead targets, duration and Artifact.");
     }
 }

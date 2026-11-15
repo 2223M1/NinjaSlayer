@@ -4,9 +4,11 @@ using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Models.Potions;
+using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Nodes.HoverTips;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using NinjaSlayer.Cards.Standard;
@@ -42,6 +44,18 @@ public partial class OrbContractRunner
                 "Hand discard moved an unselected card.");
         }
 
+        await VerifyHissAndHuff();
+        GD.Print("PASS native hand-discard cards, Sly, empty hands and Hiss and Huff hand-only tea, Regen4/5 and native turn-end healing");
+
+        VerifyNativeCompanionLayout();
+        VerifyFriendlyIntentMaterials();
+        VerifyCompanionModelIdentity();
+        VerifyHoverTipLeaseRestoration();
+        VerifyCompanionIntentGenerations();
+    }
+
+    private static async Task VerifyHissAndHuff()
+    {
         foreach (bool upgraded in new[] { false, true })
         foreach (int teaCount in new[] { 0, 1, 2 })
         {
@@ -56,23 +70,27 @@ public partial class OrbContractRunner
             var other = AddCard<DefendIronclad>(combat);
             using var selector = UseCardSelector(new SelectCards(options =>
             {
-                Require(options.All(card => teas.Contains(card)), "Healing offered a non-hand tea or another card.");
+                Require(options.All(card => teas.Contains(card)), "Hiss and Huff offered a non-hand tea or another card.");
                 return [teas.Last()];
             }));
             await CardCmd.AutoPlay(Choice, source, null);
-            Require(combat.Player.Creature.CurrentHp == 30 + (teaCount > 0 ? upgraded ? 12 : 8 : 0),
-                "Healing must require one successfully selected hand tea, including autoplay without tea.");
+            int regen = teaCount > 0 ? upgraded ? 5 : 4 : 0;
+            Require(combat.Player.Creature.CurrentHp == 30
+                && combat.Player.Creature.GetPowerAmount<RegenPower>() == regen,
+                "Hiss and Huff must grant four/five Regen only after selecting hand tea, without immediate healing.");
             Require(teas.Count(card => card.Pile?.Type == PileType.Exhaust) == Math.Min(teaCount, 1)
                 && drawTea.Pile?.Type == PileType.Draw && discardTea.Pile?.Type == PileType.Discard
-                && other.Pile?.Type == PileType.Hand, "Healing exhausted the wrong cards.");
+                && other.Pile?.Type == PileType.Hand, "Hiss and Huff exhausted the wrong cards.");
+#if NINJASLAYER_CHANNEL_STABLE
+            await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
+#else
+            await Hook.BeforeSideTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
+#endif
+            Require(combat.Player.Creature.CurrentHp == 30 + regen
+                && combat.Player.Creature.GetPowerAmount<RegenPower>() == Math.Max(0, regen - 1),
+                "Hiss and Huff must use native turn-end Regen healing and decrement.");
         }
-        GD.Print("PASS native hand-discard cards, Sly, empty hands and hand-only tea healing");
-
-        VerifyNativeCompanionLayout();
-        VerifyFriendlyIntentMaterials();
-        VerifyCompanionModelIdentity();
-        VerifyHoverTipLeaseRestoration();
-        VerifyCompanionIntentGenerations();
+        GD.Print("PASS Hiss and Huff: hand-only tea, Regen4/5, no immediate healing and native turn-end healing/decrement.");
     }
 
     private static void VerifyCompanionModelIdentity()

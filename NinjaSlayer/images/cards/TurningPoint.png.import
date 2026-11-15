@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cvt7a8x2rcjor"
-path="res://.godot/imported/ResiliencePower.png-936697427bc60ee6b39551dc1cccb08e.ctex"
+uid="uid://duj0kns1dwvul"
+path="res://.godot/imported/TurningPoint.png-d1fc621cc2e4ae8c1ba8a4ed4f758b1f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://NinjaSlayer/images/powers/ResiliencePower.png"
-dest_files=["res://.godot/imported/ResiliencePower.png-936697427bc60ee6b39551dc1cccb08e.ctex"]
+source_file="res://NinjaSlayer/images/cards/TurningPoint.png"
+dest_files=["res://.godot/imported/TurningPoint.png-d1fc621cc2e4ae8c1ba8a4ed4f758b1f.ctex"]
 
 [params]
 

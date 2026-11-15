@@ -105,15 +105,15 @@ public partial class OrbContractRunner
         {
             using var combat = new OrbCombat();
             var selected = Enumerable.Range(0, selectedCount).Select(_ => AddCard<DefendIronclad>(combat, PileType.Draw)).ToArray();
-            var discern = AddCard<Discern>(combat, upgraded: upgraded);
+            var letGo = AddCard<LetGo>(combat, upgraded: upgraded);
             using var selector = UseCardSelector(new SelectCards(_ => selected));
-            await CardCmd.AutoPlay(Choice, discern, null);
-            Require(discern.Pile?.Type == PileType.Exhaust && selected.All(card => card.Pile?.Type == PileType.Exhaust),
-                "Discern and its selections must exhaust through native commands.");
+            await CardCmd.AutoPlay(Choice, letGo, null);
+            Require(letGo.Pile?.Type == PileType.Exhaust && selected.All(card => card.Pile?.Type == PileType.Exhaust),
+                "LetGo and its selections must exhaust through native commands.");
             int energy = PileType.Hand.GetPile(combat.Player).Cards.OfType<Chado>()
                 .Sum(card => card.DynamicVars.Energy.IntValue);
-            Require(energy == selectedCount, "Discern's own exhaust must not add to its breathing count.");
+            Require(energy == selectedCount, "LetGo's own exhaust must not add to its breathing count.");
         }
-        GD.Print("PASS v0.2.4: Alabama powered damage/upgrades/lethals, group Karate consumption, individual multi-hit hand flames, repeated plays and Discern native exhaust.");
+        GD.Print("PASS v0.2.4: Alabama powered damage/upgrades/lethals, group Karate consumption, individual multi-hit hand flames, repeated plays and LetGo native exhaust.");
     }
 }

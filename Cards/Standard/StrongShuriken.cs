@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models.CardPools;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Content;
+using NinjaSlayer.Code.Combat;
 using STS2RitsuLib.Interop.AutoRegistration;
 
 namespace NinjaSlayer.Cards.Standard;
@@ -66,11 +67,20 @@ public sealed class StrongShuriken : NinjaSlayerStandaloneCardTemplate
 #if !NINJASLAYER_LEGACY_DAMAGE_API
         , CardPlay? cardPlay
 #endif
-    ) => SnapshotDamage < 0 && cardSource == this && props.IsPoweredAttack() ? Owner.Creature.GetPowerAmount<FocusPower>() : 0;
+    )
+    {
+        if (cardSource != this || !props.IsPoweredAttack()) return 0;
+        decimal bonus = SnapshotDamage < 0 ? Owner.Creature.GetPowerAmount<FocusPower>() : 0;
+        bonus += ShurikenAimVolley.DamageBonus(Owner.Creature);
+        return bonus;
+    }
 
-    protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
-        ShurikenCombat.BuildAttackCommand(this, cardPlay, DynamicVars.Damage)
-            .Execute(choiceContext);
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        await using var aim = ShurikenAimVolley.Begin(choiceContext, Owner.Creature);
+        var attack = await ShurikenCombat.BuildAttackCommand(this, cardPlay, DynamicVars.Damage).Execute(choiceContext);
+        if (attack.Results.Any(results => results.Count > 0)) aim.MarkFired();
+    }
 
     protected override void AfterDowngraded()
     {

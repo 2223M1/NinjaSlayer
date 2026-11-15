@@ -1,5 +1,5 @@
 {
   "NINJA_SLAYER_ORB_SHURIKEN_ORB.title": "手里剑",
-  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "每当你弃掉一张牌，手里剑攻击随机敌人，失去1层手里剑。\n激发时，每层手里剑攻击一次。",
-  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue]层\n每当你弃掉一张牌，对随机敌人造成{Evoke}点伤害，失去1层手里剑。\n激发时，每层手里剑各对随机敌人造成{Evoke}点伤害。"
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "每当你弃掉一张牌，手里剑攻击随机敌人，失去1层手里剑。\n激发时，每层手里剑攻击一次。\n每点[gold]瞄准[/gold]使你下一次触发的全部[gold]手里剑[/gold]额外造成1点伤害。触发后消耗[gold]瞄准[/gold]。",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue]层\n每当你弃掉一张牌，对随机敌人造成{Evoke}点伤害，失去1层手里剑。\n激发时，每层手里剑各对随机敌人造成{Evoke}点伤害。\n每点[gold]瞄准[/gold]使你下一次触发的全部[gold]手里剑[/gold]额外造成1点伤害。触发后消耗[gold]瞄准[/gold]。"
 }

@@ -149,20 +149,7 @@ public partial class OrbContractRunner
                 && created.Count(c => c.Pile?.Type == PileType.Discard) == 1,
                 "Repeated Strike Strike generation uses native hand overflow, without losing the extra card.");
         }
-        using (var combat = new OrbCombat())
-        {
-            for (int i = 0; i < 3; i++) await CardCmd.AutoPlay(Choice, combat.Card(), combat.Enemy);
-            await CardCmd.AutoPlay(Choice, AddCard<Zanshin>(combat), null);
-            await CardCmd.AutoPlay(Choice, AddCard<Zanshin>(combat, upgraded: true), null);
-            combat.State.RoundNumber++;
-            combat.Player.PlayerCombatState!.IncrementTurnNumber();
-            Require(combat.Player.Creature.GetPower<ZanshinPower>()!.ModifyHandDraw(combat.Player, 5) == 10,
-                "Stacked Zanshin counts attacks played before the powers and adds five to the next normal draw.");
-            combat.State.RoundNumber++;
-            combat.Player.PlayerCombatState.IncrementTurnNumber();
-            Require(combat.Player.Creature.GetPower<ZanshinPower>()!.ModifyHandDraw(combat.Player, 5) == 5,
-                "Zanshin must not reward an earlier turn twice.");
-        }
-        GD.Print("PASS v0.2.17 Palm Vigor, unpowered guards, stock gain and nested Scry, Scry draw isolation, Burning Blood, Recover, Strike generation and Zanshin");
+        await VerifyZanshin();
+        GD.Print("PASS v0.2.17 Palm Vigor, unpowered guards, stock gain and nested Scry, Scry draw isolation, Burning Blood, Recover and Strike generation");
     }
 }

@@ -1,6 +1,8 @@
-using MegaCrit.Sts2.Core.Combat;
-using MegaCrit.Sts2.Core.Entities.Cards;
-using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Models;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Scaffolding.Content;
 
@@ -10,15 +12,15 @@ public sealed class ZanshinPower : NinjaSlayerCounterPower
 {
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(ZanshinPower));
 
-    public override decimal ModifyHandDraw(Player player, decimal count) =>
-        player == Owner.Player && CombatManager.Instance.History.CardPlaysFinished.Count(entry =>
-            entry.HappenedLastPlayerTurn(player) && entry.CardPlay.Card.Owner == player
-            && entry.CardPlay.Card.Type == CardType.Attack) >= 3
-            ? count + Amount : count;
-
-    public override Task AfterModifyingHandDraw()
+    public override async Task AfterPowerAmountChanged(
+        PlayerChoiceContext choiceContext, PowerModel power, decimal amount,
+        Creature? applier, CardModel? cardSource)
     {
+        if (power.Owner != Owner || amount <= 0 || !NinjaSlayerBuffs.Includes(power)
+            || power.Amount - (int)amount > 0)
+            return;
+
         Flash();
-        return Task.CompletedTask;
+        await CardPileCmd.Draw(choiceContext, Amount, Owner.Player!);
     }
 }

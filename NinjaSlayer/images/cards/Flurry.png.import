@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://vidsfd7qkxhn"
-path="res://.godot/imported/RightUppercut.png-0640ef580e8235339bfaad89b899c146.ctex"
+uid="uid://bvf14ymv67u8m"
+path="res://.godot/imported/Flurry.png-13dc7b1813e75870164329e8066c3d66.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://NinjaSlayer/images/cards/RightUppercut.png"
-dest_files=["res://.godot/imported/RightUppercut.png-0640ef580e8235339bfaad89b899c146.ctex"]
+source_file="res://NinjaSlayer/images/cards/Flurry.png"
+dest_files=["res://.godot/imported/Flurry.png-13dc7b1813e75870164329e8066c3d66.ctex"]
 
 [params]
 

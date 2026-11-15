@@ -76,7 +76,22 @@ public partial class OrbContractRunner
     {
         foreach (bool upgraded in new[] { false, true })
         {
+            foreach (CardModel card in new CardModel[]
+                     { AddCard<Zanshin>(combat, upgraded: upgraded), AddCard<AntiAirBangBangFist>(combat, upgraded: upgraded), AddCard<TileBreakingPunch>(combat, upgraded: upgraded) })
+            {
+                var tip = card.HoverTips.OfType<HoverTip>().Single(t => t.Id == NinjaSlayerHoverTips.PositiveEffects.Id);
+                Require(System.Text.RegularExpressions.Regex.Matches(tip.Description, "\\[gold\\]").Count == 16
+                    && tip.Description.Contains(new LocString("powers", "SOAR_POWER.title").GetFormattedText())
+                    && tip.Description.Contains(new LocString("powers", "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.title").GetFormattedText()),
+                    "Zanshin, Anti-Air and Tile-Breaking Punch must display the 16-buff side list including Soar and Aim.");
+            }
             var karate = AddCard<StraightPunch>(combat, upgraded: upgraded);
+            var jujutsu = AddCard<Jujutsu>(combat, upgraded: upgraded);
+            var outmaneuver = AddCard<MegaCrit.Sts2.Core.Models.Cards.Outmaneuver>(combat);
+            outmaneuver.DynamicVars.Energy.BaseValue = 1;
+            Require(jujutsu.GetDescriptionForPile(PileType.None).Contains(outmaneuver.GetDescriptionForPile(PileType.None))
+                && jujutsu.HoverTips.Any(tip => tip.Id == HoverTipFactory.ForEnergy(jujutsu).Id),
+                "Jujutsu must use the host's exact next-turn Energy text, inline icon and energy tooltip.");
             Require(karate.HoverTips.Any(tip => tip.Id == HoverTipFactory.FromPower<KaratePower>().Id),
                 "Karate must expose its native side tooltip on mutable base/upgraded cards.");
             var flame = AddCard<DevourFlame>(combat, upgraded: upgraded);
@@ -86,8 +101,9 @@ public partial class OrbContractRunner
             Require(!starless.HoverTips.OfType<CardHoverTip>().Single().Card.IsUpgraded,
                 "Starless Night must preview an unupgraded token even when the power card is upgraded.");
             var guard = AddCard<KillingIntent>(combat, upgraded: upgraded);
-            Require(!guard.HoverTips.OfType<CardHoverTip>().Any(),
-                "Killing Intent counters directly and must not advertise a generated card.");
+            var guardPreview = guard.HoverTips.OfType<CardHoverTip>().Single().Card;
+            Require(guardPreview is StraightKi && guardPreview.IsUpgraded == upgraded,
+                "Killing Intent must preview Straight Ki, upgraded with the source card.");
         }
         Require(ModelDb.Relic<IrcTerminalRelic>().HoverTips.OfType<CardHoverTip>().Any(tip => tip.Card is BusyLine),
             "IRC Terminal must expose its Busy Line card preview.");

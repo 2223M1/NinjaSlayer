@@ -192,9 +192,9 @@ public sealed partial class ArchitectExecutionCinematic : Node
 
     internal static string? MeleeTrigger(CardModel card) => card switch
     {
-        CollapseFist or PressTheAttack or StraightKi
+        CollapseFist or TileBreakingPunch or PressTheAttack or StraightKi
             or StraightPunch or ChopStrike or LowUppercut
-            or FocusedBlows or SomersaultKick
+            or BreakthroughBlow or SomersaultKick
             or BS1260Kick or DragonRoundhouseKick or HalfMoonCompassKick
             or StormFist => "SlowAttack",
         StrikeNinjaSlayer or HellChop or Chop

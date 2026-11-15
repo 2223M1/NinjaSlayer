@@ -1,35 +1,32 @@
-using MegaCrit.Sts2.Core.HoverTips;
-using NinjaSlayer.Content;
-using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
-using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.Commands;
+using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Cards.Standard;
 
 public sealed class LetGo : NinjaSlayerUncommonCard
 {
-    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
-        [NinjaSlayerHoverTips.ChadoBreathing, .. HoverTipFactory.FromCardWithCardHoverTips<Chado>()];
-
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("Breath", 2)];
+
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new CardsVar(2)];
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        [HoverTipFactory.FromKeyword(NinjaSlayerKeywords.Scry), NinjaSlayerHoverTips.ChadoBreathing, .. HoverTipFactory.FromCardWithCardHoverTips<Chado>()];
 
     public LetGo()
-        : base(nameof(LetGo), 0, CardType.Skill, TargetType.Self) { }
+        : base(nameof(LetGo), 1, CardType.Skill, TargetType.Self) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        IReadOnlyList<CardModel> cards = PileType.Draw.GetPile(Owner).Cards;
-        if (cards.Count > 0)
-        {
-            await CardCmd.Exhaust(choiceContext, cards[0]);
-        }
-
-        await ChadoBreathCmd.Apply(choiceContext, Owner, DynamicVars["Breath"].IntValue);
+        ScryResult result = await ScryCmd.Execute(
+            choiceContext,
+            Owner,
+            DynamicVars.Cards.IntValue,
+            exhaustDiscarded: true);
+        await ChadoBreathCmd.Apply(choiceContext, Owner, result.ExhaustedCards);
     }
 
-    protected override void OnUpgrade() => RemoveKeyword(CardKeyword.Exhaust);
+    protected override void OnUpgrade() => DynamicVars.Cards.UpgradeValueBy(1);
 }

@@ -433,14 +433,14 @@ public partial class OrbContractRunner
             AddCard<StrikeIronclad>(combat, PileType.Draw);
             Require(!(await CardPileCmd.Draw(Choice, 1, combat.Player)).Any() && _drawFlipCalls == 0, "Full-hand draw played a flip.");
             ResetBatch();
-            await PowerCmd.Apply<ResiliencePower>(Choice, combat.Player.Creature, 2, combat.Player.Creature, null);
+            await PowerCmd.Apply<TurningPointPower>(Choice, combat.Player.Creature, 2, combat.Player.Creature, null);
             AddCard<Wound>(combat, PileType.Draw);
             AddCard<StrikeIronclad>(combat, PileType.Draw);
             AddCard<StrikeIronclad>(combat, PileType.Draw);
             await CardPileCmd.Draw(Choice, 1, combat.Player);
             Require(PileType.Hand.GetPile(combat.Player).Cards.Count == 1 && _drawFlipCalls == 1,
-                "Drawing an existing Status must not add Resilience draws or duplicate the native flip.");
-            await PowerCmd.Remove(combat.Player.Creature.GetPower<ResiliencePower>()!);
+                "Drawing an existing Status must not add TurningPoint draws or duplicate the native flip.");
+            await PowerCmd.Remove(combat.Player.Creature.GetPower<TurningPointPower>()!);
             ResetBatch();
             Type batches = product.GetType("NinjaSlayer.Code.Lifecycle.NinjaSlayerDrawAnimationBatch", true)!;
             using ((IDisposable)AccessTools.Method(batches, "Enter").Invoke(null, [combat.Player, false])!)

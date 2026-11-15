@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Cards.Standard;
@@ -16,6 +17,7 @@ public sealed class GatherKi : NinjaSlayerUncommonCard
         [HoverTipFactory.FromPower<NinjaSlayer.Powers.KaratePower>(), .. HoverTipFactory.FromCardWithCardHoverTips<Chado>()];
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Retain];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("Multiplier", 2)];
     public GatherKi() : base(nameof(GatherKi), 1, CardType.Skill, TargetType.Self) { }
     protected override bool IsPlayable => PileType.Hand.GetPile(Owner).Cards.OfType<Chado>().Any();
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
@@ -24,10 +26,10 @@ public sealed class GatherKi : NinjaSlayerUncommonCard
             new CardSelectorPrefs(CardSelectorPrefs.ExhaustSelectionPrompt, 1),
             card => card is Chado, this)).FirstOrDefault();
         if (selected is null) return;
-        decimal karate = selected.DynamicVars.Energy.BaseValue * 2;
+        decimal karate = selected.DynamicVars.Energy.BaseValue * DynamicVars["Multiplier"].BaseValue;
         await CardCmd.Exhaust(choiceContext, selected);
         if (selected.Pile?.Type == PileType.Exhaust)
             await PowerCmd.Apply<KaratePower>(choiceContext, Owner.Creature, karate, Owner.Creature, this);
     }
-    protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
+    protected override void OnUpgrade() => DynamicVars["Multiplier"].UpgradeValueBy(1);
 }

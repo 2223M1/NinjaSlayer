@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bptgn8cg3t6qi"
-path="res://.godot/imported/ReadyShuriken.png-e9af1c28fc21bdd153feb41569141c1a.ctex"
+uid="uid://cvt7a8x2rcjor"
+path="res://.godot/imported/TurningPointPower.png-b17689742de38f2fec3bb53b670d45b9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://NinjaSlayer/images/cards/ReadyShuriken.png"
-dest_files=["res://.godot/imported/ReadyShuriken.png-e9af1c28fc21bdd153feb41569141c1a.ctex"]
+source_file="res://NinjaSlayer/images/powers/TurningPointPower.png"
+dest_files=["res://.godot/imported/TurningPointPower.png-b17689742de38f2fec3bb53b670d45b9.ctex"]
 
 [params]
 

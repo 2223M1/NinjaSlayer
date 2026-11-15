@@ -234,6 +234,16 @@ The user completed the 93-card gallery and explicitly requested installation. Th
 
 Selection provenance, per-card source/destination hashes, backups and installation verification are stored in `../art-production/output/krea2-handpainted-revision-20261103/integration-20261109/`. The source manifest is `plan.json`, frozen user choices are `user-choices.snapshot.json`, and the installed-art receipt is `deployment-receipt.json`. The installed resource pack is patched only for these card imports/textures; its other resources and the installed DLLs are preserved.
 
+## Tile-Breaking Punch selected art (2026-11-15)
+
+`NinjaSlayer/images/cards/TileBreakingPunch.png` is the exact 1000×760 RGB PNG selected by the user as green variant B, SHA-256 `b8121f27f7fa3cf5850c0a92295b01cbf1a18f5bb6ee9a6c45a161ab499cad41`. Source: `../art-production/output/krea2-tile-breaking-punch-green-20261115/results/TileBreakingPunch/b/attempt-1.png`; selection and integration evidence remain in that run. The Krea 2 image uses emerald ceramic fragments, an orange-red impact crescent and ivory highlights, with no visible body or fist. The serialized card `TileBreakingPunch` uses this texture. `LetGo` (舍念, formerly `Discern`) uses the unchanged original `LetGo.png`.
+
+The user also requested alignment of the remaining renamed cards. Existing image bytes and Godot import UIDs are preserved: `ReadyShuriken.png` → `OnGuard.png`, `Resilience.png` → `TurningPoint.png`, `Endurance.png` → `Flurry.png`, `RightUppercut.png` → `BreakthroughBlow.png`, `LeftUppercut.png` → `LowUppercut.png`, and the power icon `ResiliencePower.png` → `TurningPointPower.png`. These supersede the earlier gallery mappings above. The explicit portrait overrides are removed; every active card now uses its class name for its portrait. `KillingIntent` and its power and resources retain their original names at the user's request. Hashes and original files are recorded under `integration/id-alignment.json` and `integration/backup/id-alignment/` in the selected art run.
+
+## Stable Aim compatibility (2026-11-15)
+
+`NinjaSlayer/images/powers/BladeSweepPower.png` is the unmodified 256×256 native `res://images/powers/aim_power.png` from the 0.113.0 host pack, SHA-256 `92DF551AD4438A60548363D0C21632B98FBE2FBC8A0B743ED84E8BFA8AF8F38A`. Stable retains Blade Sweep's serialized power ID for its Aim equivalent; preview uses the native Aim model and icon.
+
 ## Naraku temporary HP
 
 `NinjaSlayer/images/ui/naraku_temp_hp.png` is the original 64×64 StSLib Temp HP heart (`tempHP.png`), SHA-256 `0555B89F458E8FF74C3877D1E78C97C8A583B61FAC822FFA1A82EEFF1C0F7DBC`. Source: `https://github.com/kiooeht/StSLib/blob/master/src/main/resources/stslibResources/images/tempHP.png`. The Downfall/崩坠 Temp HP presentation uses this StSLib asset with a gold tint; NinjaSlayer uses white modulation and a white native health-bar outline. The independent number does not extend the native HP bar. The MIT notice is stored beside the image in `naraku_temp_hp.LICENSE.txt` and included in the exported pack.

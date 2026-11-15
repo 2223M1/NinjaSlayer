@@ -400,6 +400,8 @@ public partial class OrbContractRunner : Node
                 await VerifyV17();
                 await VerifyV023();
                 await VerifyV024();
+                await VerifyHissAndHuff();
+                await VerifyHammerReplayPacing();
                 GD.Print("NinjaSlayer orb product contracts passed.");
                 GetTree().Quit(0);
                 return;
@@ -473,6 +475,7 @@ public partial class OrbContractRunner : Node
             await VerifyV023();
             await VerifyV024();
             await VerifyMaintenanceRefactor();
+            await VerifyHammerReplayPacing();
             VerifyTelemetryConsent();
             await VerifyBalanceTelemetry();
             await VerifyReplayJournal();
@@ -655,14 +658,12 @@ public partial class OrbContractRunner : Node
             await AddStock(combat.Player, 3);
             await PowerCmd.Apply<BladeCyclePower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await PowerCmd.Apply<StarlessNightPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
-            await PowerCmd.Apply<BladeSweepPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             Creature second = combat.AddEnemy();
             int hp = combat.Enemy.CurrentHp;
             int before = _evoked;
             await Hook.AfterShuffle(combat.State, Choice, combat.Player);
-            Require(2 * hp - combat.Enemy.CurrentHp - second.CurrentHp == 36 && combat.Stock == 2 && combat.Tokens == 0,
+            Require(2 * hp - combat.Enemy.CurrentHp - second.CurrentHp == 18 && combat.Stock == 2 && combat.Tokens == 0,
                 "Upgraded shuffle fires all stock and consumes one without generating tokens.");
-            Require(second.CurrentHp == hp - 18 && combat.Enemy.CurrentHp == hp - 18, "Starless AOE must damage both targets.");
             Require(_evoked == before + 3, "Shuffle shots must dispatch the host evoke hook.");
         }
         using (var combat = new OrbCombat())
@@ -801,8 +802,14 @@ public partial class OrbContractRunner : Node
         public override Task AfterOrbEvoked(PlayerChoiceContext choiceContext, OrbModel orb, IEnumerable<Creature> targets)
         {
             _evoked++;
+            if (orb is ShurikenOrb && AfterStockShot is { } callback)
+            {
+                AfterStockShot = null;
+                return callback();
+            }
             return Task.CompletedTask;
         }
+        public Func<Task>? AfterStockShot { get; set; }
         public override Task AfterCurrentHpChanged(Creature creature, decimal delta)
         {
             if (creature == Owner && delta > 0) Healing += delta;

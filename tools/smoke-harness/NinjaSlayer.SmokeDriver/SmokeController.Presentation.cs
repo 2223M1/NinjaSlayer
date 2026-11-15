@@ -47,7 +47,7 @@ internal sealed partial class SmokeController
             "Removing Hell Tornado left the body airborne.");
 
         await PlayerCmd.SetEnergy(10, player);
-        var stockCard = combat.CreateCard<ReadyShuriken>(player);
+        var stockCard = combat.CreateCard<OnGuard>(player);
         await CardPileCmd.Add(stockCard, PileType.Hand);
         await CardCmd.AutoPlay(choice, stockCard, player.Creature);
         var tornado = combat.CreateCard<HellTornado>(player);

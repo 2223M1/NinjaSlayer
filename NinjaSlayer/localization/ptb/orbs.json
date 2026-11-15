@@ -1,5 +1,5 @@
 {
   "NINJA_SLAYER_ORB_SHURIKEN_ORB.title": "Shuriken",
-  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "Sempre que descartar uma carta, Shuriken ataca um inimigo aleatório e você perde 1 Shuriken.\nAo ser evocado, cada acúmulo ataca uma vez.",
-  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue] {Passive:plural:acúmulo|acúmulos}\nSempre que descartar uma carta, cause {Evoke} de dano a um inimigo aleatório e perca 1 Shuriken.\nAo ser evocado, cada acúmulo causa {Evoke} de dano a um inimigo aleatório."
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "Sempre que descartar uma carta, Shuriken ataca um inimigo aleatório e você perde 1 Shuriken.\nAo ser evocado, cada acúmulo ataca uma vez.\nCada ponto de [gold]Mira[/gold] adiciona 1 de dano a todos os [gold]Shuriken[/gold] da próxima rajada. A [gold]Mira[/gold] é consumida após a rajada.",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue] {Passive:plural:acúmulo|acúmulos}\nSempre que descartar uma carta, cause {Evoke} de dano a um inimigo aleatório e perca 1 Shuriken.\nAo ser evocado, cada acúmulo causa {Evoke} de dano a um inimigo aleatório.\nCada ponto de [gold]Mira[/gold] adiciona 1 de dano a todos os [gold]Shuriken[/gold] da próxima rajada. A [gold]Mira[/gold] é consumida após a rajada."
 }

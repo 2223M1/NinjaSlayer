@@ -61,14 +61,14 @@ public partial class OrbContractRunner
         }
         using (var combat = new OrbCombat())
         {
-            await PowerCmd.Apply<ResiliencePower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+            await PowerCmd.Apply<TurningPointPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             var directStatus = AddCard<Wound>(combat, PileType.Draw);
             var bonus = AddCard<DefendIronclad>(combat, PileType.Draw);
             var directSecond = AddCard<StrikeIronclad>(combat, PileType.Draw);
             await CardCmd.AutoPlay(Choice, AddCard<Adapt>(combat), null);
             Require(new CardModel[] { directStatus, directSecond, bonus }.All(card =>
                     card.Pile?.Type == PileType.Hand && !card.Keywords.Contains(CardKeyword.Sly)),
-                "Drawing an existing Status does not trigger Resilience or grant Sly through Adapt.");
+                "Drawing an existing Status does not trigger TurningPoint or grant Sly through Adapt.");
         }
         {
             using var combat = new OrbCombat();
@@ -88,10 +88,11 @@ public partial class OrbContractRunner
             CardModel top = attack ? AddCard<Chop>(combat, PileType.Draw) : AddCard<DefendIronclad>(combat, PileType.Draw);
             var hammer = AddCard<NavyHammer>(combat, upgraded: upgraded);
             await CardCmd.AutoPlay(Choice, hammer, null);
-            int count = upgraded ? 3 : 2;
-            Require(top.Pile?.Type == PileType.Exhaust && hammer.Pile?.Type == PileType.Exhaust,
-                "Hammer exhausts both itself and its fully resolved target, including a returning Chop.");
-            if (attack) Require(combat.Enemy.CurrentHp == 1000 - 4 * count - (count - 1), "Hammer completes every repeat before exhaust.");
+            const int count = 2;
+            Require(top.Pile?.Type == (attack ? PileType.Draw : PileType.Discard)
+                && hammer.Pile?.Type == (upgraded ? PileType.Discard : PileType.Exhaust),
+                "Hammer preserves the target's native destination; upgrading removes only Hammer's own Exhaust.");
+            if (attack) Require(combat.Enemy.CurrentHp == 1000 - 4 * count - (count - 1), "Both Hammer versions play attacks twice.");
             else Require(combat.Player.Creature.Block == 5, "A non-attack is played only once.");
         }
         foreach (bool upgraded in new[] { false, true })
@@ -134,6 +135,6 @@ public partial class OrbContractRunner
             await blanket.AfterPlayerTurnStart(Choice, combat.Player);
             Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 2, "Blanket grants two Naraku Life.");
         }
-        GD.Print("PASS board v1.15 stock-gain powers/glow, native Sly, Hammer exhaust, random Vigor, full-form separation and relic turns");
+        GD.Print("PASS board v1.15 stock-gain powers/glow, native Sly, Hammer native destinations/repeats, random Vigor, full-form separation and relic turns");
     }
 }

@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Powers;
 
 namespace NinjaSlayer.Cards.Standard;
 
@@ -13,8 +14,9 @@ public sealed class HissAndHuff : NinjaSlayerUncommonCard
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
     protected override bool IsPlayable => PileType.Hand.GetPile(Owner).Cards.OfType<Chado>().Any();
     protected override bool ShouldGlowGoldInternal => CombatState != null && IsPlayable;
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("Heal", 8)];
-    protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromCard<Chado>()];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new PowerVar<RegenPower>(4)];
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        [HoverTipFactory.FromCard<Chado>(), HoverTipFactory.FromPower<RegenPower>()];
 
     public HissAndHuff()
         : base(nameof(HissAndHuff), 1, CardType.Skill, TargetType.Self) { }
@@ -31,8 +33,9 @@ public sealed class HissAndHuff : NinjaSlayerUncommonCard
         }
 
         await CardCmd.Exhaust(choiceContext, tea);
-        await CreatureCmd.Heal(Owner.Creature, DynamicVars["Heal"].BaseValue);
+        await PowerCmd.Apply<RegenPower>(
+            choiceContext, Owner.Creature, DynamicVars[nameof(RegenPower)].BaseValue, Owner.Creature, this);
     }
 
-    protected override void OnUpgrade() => DynamicVars["Heal"].UpgradeValueBy(4);
+    protected override void OnUpgrade() => DynamicVars[nameof(RegenPower)].UpgradeValueBy(1);
 }

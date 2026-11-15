@@ -412,7 +412,7 @@ internal sealed partial class SmokeController
         }
         await CreatureCmd.SetCurrentHp(player.Creature, originalHp);
         _checkpoints.Write("naraku.lethal-hit-absorption");
-        ReadyShuriken readyBlade = combatState.CreateCard<ReadyShuriken>(player);
+        OnGuard readyBlade = combatState.CreateCard<OnGuard>(player);
         await CardPileCmd.Add(readyBlade, PileType.Hand);
         await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), readyBlade, player.Creature);
         const int preparedStock = 1;

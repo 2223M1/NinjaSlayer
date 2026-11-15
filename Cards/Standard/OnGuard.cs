@@ -8,7 +8,7 @@ using NinjaSlayer.Orbs;
 
 namespace NinjaSlayer.Cards.Standard;
 
-public sealed class ReadyShuriken : NinjaSlayerCommonCard
+public sealed class OnGuard : NinjaSlayerCommonCard
 {
     public override bool GainsBlock => true;
     protected override IEnumerable<DynamicVar> CanonicalVars =>
@@ -16,8 +16,8 @@ public sealed class ReadyShuriken : NinjaSlayerCommonCard
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromOrb<ShurikenOrb>()];
 
-    public ReadyShuriken()
-        : base(nameof(ReadyShuriken), 1, CardType.Skill, TargetType.Self) { }
+    public OnGuard()
+        : base(nameof(OnGuard), 1, CardType.Skill, TargetType.Self) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

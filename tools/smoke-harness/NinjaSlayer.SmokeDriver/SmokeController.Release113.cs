@@ -140,7 +140,7 @@ internal sealed partial class SmokeController
                 await Play(next);
                 Require(PileType.Draw.GetPile(player).Cards[0] == next && !player.Creature.HasPower<ReboundPower>(),
                     "Rendered Adapt did not rebound exactly the next card.");
-                var resilience = Card<Resilience>(upgraded);
+                var resilience = Card<TurningPoint>(upgraded);
                 await CardPileCmd.Add(resilience, PileType.Hand);
                 await Play(resilience);
                 int before = PileType.Hand.GetPile(player).Cards.Count;

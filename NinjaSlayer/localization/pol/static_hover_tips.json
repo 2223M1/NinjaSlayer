@@ -1,4 +1,6 @@
 {
   "NINJA_SLAYER_CHADO_BREATHING.title": "Oddech Chado",
-  "NINJA_SLAYER_CHADO_BREATHING.description": "Zwiększ Energię zapewnianą przez każde [gold]Chado[/gold] w ręce o wskazaną wartość. Jeśli nie masz żadnego, zużyj 1 Oddech Chado, aby utworzyć Chado, następnie zwiększ jego Energię o pozostałą wartość."
+  "NINJA_SLAYER_CHADO_BREATHING.description": "Zwiększ Energię zapewnianą przez każde [gold]Chado[/gold] w ręce o wskazaną wartość. Jeśli nie masz żadnego, zużyj 1 Oddech Chado, aby utworzyć Chado, następnie zwiększ jego Energię o pozostałą wartość.",
+  "NINJA_SLAYER_POSITIVE_EFFECTS.title": "Pozytywne efekty",
+  "NINJA_SLAYER_POSITIVE_EFFECTS.description": "Poniższe efekty liczą się przy dodatniej wartości, raz na każdy rodzaj.\n[gold]Siła[/gold], [gold]Zręczność[/gold], [gold]Wigor[/gold], [gold]Karate[/gold]\n[gold]Skupienie[/gold], [gold]Ochrona[/gold], [gold]Bufor[/gold], [gold]Nieuchwytność[/gold]\n[gold]Ciernie[/gold], [gold]Opancerzenie[/gold], [gold]Regeneracja[/gold], [gold]Unik[/gold]\n[gold]Życie Naraku[/gold], [gold]Rozciągnięcie[/gold], [gold]Lot[/gold], [gold]Celność[/gold]"
 }
