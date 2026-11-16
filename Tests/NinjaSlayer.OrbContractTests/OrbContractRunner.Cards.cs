@@ -380,7 +380,9 @@ public partial class OrbContractRunner
         }
         var other = MegaCrit.Sts2.Core.Entities.Players.Player.CreateForNewRun<MegaCrit.Sts2.Core.Models.Characters.Ironclad>(UnlockState.all, 2);
         Require(!model.IsAllowed(RunState.CreateForTest([other])), "Naraku remains limited to Ninja Slayer.");
-        Require(!model.IsAllowed(RunState.CreateForTest([player, other])), "Naraku remains limited to singleplayer.");
+        var duoNinja = MegaCrit.Sts2.Core.Entities.Players.Player.CreateForNewRun<NinjaSlayerCharacter>(UnlockState.all, 1);
+        var duoOther = MegaCrit.Sts2.Core.Entities.Players.Player.CreateForNewRun<MegaCrit.Sts2.Core.Models.Characters.Ironclad>(UnlockState.all, 2);
+        Require(!model.IsAllowed(RunState.CreateForTest([duoNinja, duoOther])), "Naraku remains limited to singleplayer.");
         GD.Print("PASS Naraku event: starter and all card pools qualify, singleplayer Ninja Slayer scope preserved");
     }
 }

@@ -1,0 +1,42 @@
+name: Naraku event choices
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Completed runs in the last N days; 0 means all time'
+        default: '0'
+        type: string
+      version:
+        description: 'Exact mod version; empty means all versions'
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+      - name: Verify final-choice aggregation
+        run: node --test tools/analytics/naraku-choices.test.mjs
+      - name: Query existing consented run histories
+        env:
+          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
+          POSTHOG_PROJECT_ID: ${{ secrets.POSTHOG_PROJECT_ID }}
+          POSTHOG_QUERY_HOST: ${{ secrets.POSTHOG_QUERY_HOST }}
+          REPORT_DAYS: ${{ inputs.days }}
+          REPORT_VERSION: ${{ inputs.version }}
+        run: node tools/analytics/naraku-choices.mjs --days "$REPORT_DAYS" --version "$REPORT_VERSION"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: naraku-event-choices
+          path: build/analytics/naraku-choices.json
+          if-no-files-found: error
+          retention-days: 30

@@ -64,6 +64,9 @@ jobs:
       - name: Pure logic tests
         run: dotnet test Tests/NinjaSlayer.LogicTests/NinjaSlayer.LogicTests.csproj -c Release -v:minimal
 
+      - name: Event choice analysis
+        run: node --test tools/analytics/naraku-choices.test.mjs
+
       - name: Build delivery boundaries
         run: node tools/test-build-boundaries.mjs
 
