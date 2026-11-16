@@ -12,7 +12,7 @@
     "sourceChangeCount": 203
   },
   "archive": "Workshop/changelog-translations.json",
-  "archiveSha256": "dd27f8128462f27910187c2b7c7bcea393bd8715c54c507d154f51538af059c6",
+  "archiveSha256": "e1bd6b13b70b748a87f495cea42f8681b95ef45a5bf9e847cd12aed3fca3590c",
   "publication": {
     "method": "Existing Steam language selector and save form; every field reloaded and compared exactly, selected language checked, fallback warning absent.",
     "packageUploaded": false,
@@ -3952,5 +3952,6 @@
       }
     }
   ],
-  "discordEvidence": "Docs/validation/discord-1.2.8-evidence.json"
+  "discordEvidence": "Docs/validation/discord-1.2.8-evidence.json",
+  "archiveHashEncoding": "UTF-8 with LF line endings"
 }
