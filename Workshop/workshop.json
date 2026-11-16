@@ -2,7 +2,7 @@
   "title": "忍者杀手 Ninja Slayer",
   "description": "[h1]Domo. Ninja Slayer desu.[/h1]\r\n\r\n[h2]Something wrong?[/h2]\r\nPress [b]F2[/b] in game to report bugs or send suggestions.\r\nWant to see what cards everyone is picking and where their runs end? [url=https://2223m1.github.io/NinjaSlayer/?lang=eng]Ninja Slayer Intel[/url]\r\n\r\nDiscord Community：https://discord.gg/eHuQqjrAyf\r\nPatreon：https://www.patreon.com/cw/bobbizerri\r\n\r\n[i]Unofficial fan-made Mod.[/i]",
   "visibility": "public",
-  "changeNote": "从容由每弃一张牌获得 2 点格挡改为获得 2 点拉伸。\n奈落解放新增战斗开始时获得 20 点奈落生命，保留每回合加入一张黑炎；第一次洗牌前（开局洗牌不计），手牌中有攻击牌时必须优先打出攻击牌。\n柔术获得的空手道由 3→4 层提高至 3→5 层。\nChop打击伤害由 11→13 点调整为 9→12 点，下回合获得的空手道由 2→3 层提高至 3→4 层。\n连打获得的空手道由 5→6 层调整为 4→5 层。\n转机由生成状态牌时触发抽牌改为生成任意牌时触发。\n交叉防御描述去除“非能力牌”，效果仍跳过能力牌；Chop受其影响后回到手牌。\n浴火移除消耗。\n飞刃席卷获得的瞄准由 4→6 点提高至 6→8 点。\n手里剑风暴移除消耗。\n攻势不息升级由回合末打出两张攻击牌改为获得保留，回合末仍打出一张攻击牌。\n删除手里剑的激发及瞄准说明，精简茶道呼吸和残心描述，茶道呼吸使用能量图标。\n卡面中的正面效果显示为黄色，侧栏只保留 16 种效果列表。\n更换谋定卡图。",
+  "changeNote": "从容由每弃一张牌获得 2 点格挡改为获得 2 点拉伸。\n奈落解放新增战斗开始时获得 20 点奈落生命，保留每回合加入一张黑炎；第一次洗牌前（开局洗牌不计），手牌中有攻击牌时必须优先打出攻击牌。\n奈落事件移除指定牌组要求，单人忍者杀手按普通第三层事件概率遇到。\n柔术获得的空手道由 3→4 层提高至 3→5 层。\nChop打击伤害由 11→13 点调整为 9→12 点，下回合获得的空手道由 2→3 层提高至 3→4 层。\n连打获得的空手道由 5→6 层调整为 4→5 层。\n转机由生成状态牌时触发抽牌改为生成任意牌时触发。\n交叉防御描述去除“非能力牌”，效果仍跳过能力牌；Chop受其影响后回到手牌。\n浴火移除消耗。\n飞刃席卷获得的瞄准由 4→6 点提高至 6→8 点。\n手里剑风暴移除消耗。\n攻势不息升级由回合末打出两张攻击牌改为获得保留，回合末仍打出一张攻击牌。\n删除手里剑的激发及瞄准说明，精简茶道呼吸和残心描述，茶道呼吸使用能量图标。\n卡面中的正面效果显示为黄色，侧栏只保留 16 种效果列表。\n更换谋定卡图。",
   "tags": [
     "Characters",
     "English",

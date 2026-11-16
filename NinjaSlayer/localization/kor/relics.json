@@ -36,7 +36,7 @@
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.description": "매 전투 시작 시, [gold]손[/gold]에 [gold]차도[/gold]를 2장 추가합니다.\n[gold]차도 호흡[/gold] 2.\n첫 턴에 [gold]차도[/gold]를 [gold]보존[/gold]합니다.",
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.flavor": "마비가 가신다. 손가락, 손바닥, 팔이 차례로 자유를 되찾는다.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.title": "나라쿠 해방",
-  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "전투 시작 시, [gold]나라쿠 생명[/gold]을 {NarakuLife:diff()} 얻습니다.\n내 턴 시작 시, [gold]손[/gold]에 [gold]검은 불꽃[/gold]을 1장 추가합니다.\n처음으로 다시 섞기 전까지, 손에 공격 카드가 있으면 공격 카드를 먼저 사용해야 합니다.",
+  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "전투 시작 시, [gold]나라쿠 생명[/gold]을 {NarakuLife:diff()} 얻습니다.\n내 턴 시작 시, [gold]손[/gold]에 [gold]검은 불꽃[/gold]을 1장 추가합니다.\n다시 섞기 전까지, 손에 공격 카드가 있으면 공격 카드를 먼저 사용해야 합니다.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.flavor": "증오의 용광로는 식은 적이 없다. 뉴런 깊은 곳에서 노인이 눈을 뜬다.",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.title": "오리가미 맹약",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.description": "다음 [blue]{Combats}[/blue]번의 전투 동안 야모토 코키가 함께 싸웁니다.",

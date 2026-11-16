@@ -1,7 +1,5 @@
 using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Commands;
-using MegaCrit.Sts2.Core.Entities.Cards;
-using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Events;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
@@ -9,8 +7,6 @@ using MegaCrit.Sts2.Core.Models.Acts;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Cards;
-using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Content;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Relics;
@@ -49,20 +45,12 @@ public sealed class NarakuEvent : ModEventTemplate
 
     public override bool IsAllowed(IRunState runState) =>
         runState.Players.Count == 1
-        && runState.Players.Any(player =>
-            player.Character is INinjaSlayerCharacter
-            && HasNarakuThemedDeckCard(player));
+        && NinjaSlayerContentAccess.HasNinjaSlayer(runState);
 
     protected override IReadOnlyList<EventOption> GenerateInitialOptions() =>
         Owner?.Creature.CurrentHp < 19
             ? GenerateAcceptanceOptions("INITIAL")
             : GenerateNarakuOptions("INITIAL");
-
-    private static bool HasNarakuThemedDeckCard(Player player) =>
-        PileType.Deck.GetPile(player).Cards.Any(card => card is
-            FlameGuard or BS1260Kick or NarakusMight
-            or Macaco or Kindle or BlackFlameInferno
-            or NarakuForm or DevourFlame or Rekindle or OneMindOneBody);
 
     private IReadOnlyList<EventOption> GenerateNarakuOptions(string page) =>
         [

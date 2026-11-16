@@ -36,7 +36,7 @@
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.description": "Au début de chaque combat, ajoutez 2 [gold]Chado[/gold] à votre [gold]Main[/gold].\n[gold]Respiration Chado[/gold] 2.\nVos [gold]Chado[/gold] gagnent [gold]Retenue[/gold] au premier tour.",
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.flavor": "L’engourdissement recule. Les doigts, les paumes et les bras retrouvent tour à tour leur liberté.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.title": "Naraku déchaîné",
-  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "Au début du combat, gagnez {NarakuLife:diff()} de [gold]Vie de Naraku[/gold].\nAu début de votre tour, ajoutez une [gold]Flamme noire[/gold] à votre [gold]Main[/gold].\nJusqu’au premier remélange, vous devez jouer les Attaques en premier tant que vous en avez en main.",
+  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "Au début du combat, gagnez {NarakuLife:diff()} de [gold]Vie de Naraku[/gold].\nAu début de votre tour, ajoutez une [gold]Flamme noire[/gold] à votre [gold]Main[/gold].\nJusqu’au remélange, vous devez jouer les Attaques en premier tant que vous en avez en main.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.flavor": "La fournaise de la haine ne s’est jamais refroidie. Au fond de ses neurones, le vieillard ouvre les yeux.",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.title": "Pacte d’origami",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.description": "Yamoto Koki combattra à vos côtés pendant les [blue]{Combats}[/blue] prochains combats.",

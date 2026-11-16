@@ -369,18 +369,18 @@ public partial class OrbContractRunner
         var player = MegaCrit.Sts2.Core.Entities.Players.Player.CreateForNewRun<NinjaSlayerCharacter>(UnlockState.all, 1);
         var run = RunState.CreateForTest([player]);
         var model = ModelDb.Event<NarakuEvent>();
-        Require(!model.IsAllowed(run), "The starter deck must not qualify for the Naraku event.");
-        Type[] qualifying = [typeof(FlameGuard), typeof(BS1260Kick), typeof(NarakusMight),
-            typeof(Macaco), typeof(Kindle), typeof(BlackFlameInferno),
-            typeof(NarakuForm), typeof(DevourFlame), typeof(Rekindle), typeof(OneMindOneBody)];
+        Require(model.IsAllowed(run), "The starter deck qualifies for Naraku without any themed cards.");
         foreach (CardModel canonical in ModelDb.CardPool<NinjaSlayerCardPool>().AllCards)
         {
             CardModel card = canonical.ToMutable();
             card.Owner = player;
             player.Deck.AddInternal(card, -1, silent: true);
-            Require(model.IsAllowed(run) == qualifying.Contains(card.GetType()), $"Incorrect Naraku event eligibility for {card.Id}.");
+            Require(model.IsAllowed(run), $"Naraku eligibility must not depend on owning {card.Id}.");
             player.Deck.RemoveInternal(card, silent: true);
         }
-        GD.Print("PASS Naraku event eligibility across the current card pool");
+        var other = MegaCrit.Sts2.Core.Entities.Players.Player.CreateForNewRun<MegaCrit.Sts2.Core.Models.Characters.Ironclad>(UnlockState.all, 2);
+        Require(!model.IsAllowed(RunState.CreateForTest([other])), "Naraku remains limited to Ninja Slayer.");
+        Require(!model.IsAllowed(RunState.CreateForTest([player, other])), "Naraku remains limited to singleplayer.");
+        GD.Print("PASS Naraku event: starter and all card pools qualify, singleplayer Ninja Slayer scope preserved");
     }
 }

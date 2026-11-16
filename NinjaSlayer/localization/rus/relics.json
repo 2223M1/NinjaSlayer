@@ -36,7 +36,7 @@
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.description": "В начале каждого боя добавляет 2 [gold]Тядо[/gold] в [gold]руку[/gold].\n[gold]Дыхание Тядо[/gold] 2.\n[gold]Оставьте[/gold] свои карты [gold]Тядо[/gold] на первом ходу.",
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.flavor": "Онемение отступает. Пальцы, ладони и руки по очереди обретают свободу.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.title": "Нараку на воле",
-  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "В начале боя получаете {NarakuLife:diff()} [gold]жизни Нараку[/gold].\nВ начале вашего хода добавляет [gold]Чёрное пламя[/gold] в [gold]руку[/gold].\nДо первого перемешивания вы должны сначала разыгрывать Атаки, если они есть у вас в руке.",
+  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "В начале боя получаете {NarakuLife:diff()} [gold]жизни Нараку[/gold].\nВ начале вашего хода добавляет [gold]Чёрное пламя[/gold] в [gold]руку[/gold].\nДо перемешивания вы должны сначала разыгрывать Атаки, если они есть у вас в руке.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.flavor": "Горнило ненависти не остывало. В глубине нейронов старик открывает глаза.",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.title": "Обет оригами",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.description": "В следующих боях — [blue]{Combats}[/blue] — Ямото Коки будет сражаться рядом с вами.",
