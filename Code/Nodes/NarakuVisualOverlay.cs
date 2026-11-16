@@ -6,6 +6,8 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Content;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Combat;
+using MegaCrit.Sts2.Core.Models;
+using STS2RitsuLib.Scaffolding.Visuals.StateMachine;
 
 namespace NinjaSlayer.Code.Nodes;
 
@@ -30,6 +32,21 @@ public partial class NarakuVisualOverlay : Sprite2D
     private bool mirroredFlipV;
     private bool hasMirroredState;
     private NinjaSlayerFormKind? shownForm;
+    private ModAnimStateMachine? transformedPlayerAnimations;
+
+    internal void PlayTransformedPlayerAnimation(NCreatureVisuals visuals, string trigger)
+    {
+        // Keep the original gameplay character. Only the replacement rig uses Ninja Slayer's cues.
+        transformedPlayerAnimations ??= NinjaSlayerAnimations.BuildCombatAnimationStateMachine(
+            visuals, ModelDb.Character<NinjaSlayerCharacter>());
+        transformedPlayerAnimations.SetTrigger(trigger == "Revive" ? "Idle" : trigger);
+    }
+
+    public override void _ExitTree()
+    {
+        transformedPlayerAnimations?.Dispose();
+        transformedPlayerAnimations = null;
+    }
 
     public static void Sync(Creature creature)
         => SyncCore(creature);

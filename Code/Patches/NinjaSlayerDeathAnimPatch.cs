@@ -32,7 +32,7 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
         out bool __state)
     {
         GrappledTargetPose.Release(__instance.Entity);
-        if (__instance.Entity.Player?.Character is INinjaSlayerCharacter)
+        if (NinjaSlayerFormState.UsesNinjaSlayerVisuals(__instance.Entity))
         {
             NinjaSlayer.Code.Nodes.NinjaSlayerFreeControl.Get(__instance.Entity)?.Stop();
             NinjaSlayerRapidAnimationCoordinator.CancelAndRestore(__instance.Entity);
@@ -144,7 +144,7 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
 
     private static bool IsNinjaSlayerNonSpine(NCreature creatureNode)
     {
-        return creatureNode.Entity.Player?.Character is INinjaSlayerCharacter
+        return NinjaSlayerFormState.UsesNinjaSlayerVisuals(creatureNode.Entity)
             && !creatureNode.HasSpineAnimation;
     }
 }

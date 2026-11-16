@@ -52,6 +52,8 @@ public class Entry
         try
         {
             requiredPatcher.RegisterPatch<NinjaSlayerAnimationPatch>();
+            requiredPatcher.RegisterPatch<NarakuPlayerVisualsPatch>();
+            requiredPatcher.RegisterPatch<NarakuPlayerAnimationPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerModelInitializationPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerAttackExecutionPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerAttackHitCountPatch>();

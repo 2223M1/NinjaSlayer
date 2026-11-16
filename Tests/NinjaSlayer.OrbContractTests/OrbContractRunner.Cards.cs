@@ -401,8 +401,13 @@ public partial class OrbContractRunner
         other.Creature.SetCurrentHpInternal(10);
         var ninjaEvent = ModelDb.Event<NarakuEvent>().ToMutable();
         var otherEvent = ModelDb.Event<NarakuEvent>().ToMutable();
+#if NINJASLAYER_CHANNEL_STABLE
+        await ninjaEvent.BeginEvent(combat.Player, false);
+        await otherEvent.BeginEvent(other, false);
+#else
         await ninjaEvent.BeginEvent(combat.Player, null, false);
         await otherEvent.BeginEvent(other, null, false);
+#endif
         await otherEvent.CurrentOptions.Single(option => option.TextKey.EndsWith(".ACCEPT_NARAKU")).Chosen();
         Require(otherEvent.IsFinished && !ninjaEvent.IsFinished
             && other.GetRelic<NarakuUnleashedRelic>() is not null
@@ -423,8 +428,9 @@ public partial class OrbContractRunner
             && other.Creature.GetPowerAmount<NarakuLifePower>() == 20
             && PileType.Hand.GetPile(other).Cards.OfType<BlackFlame>().Count() == 1
             && NinjaSlayerFormState.GetPresentation(combat.Player.Creature).Kind == NinjaSlayerFormKind.FullyReleasedNaraku
-            && NinjaSlayerFormState.GetPresentation(other.Creature) == NinjaSlayerFormPresentationCatalog.Normal,
-            "Both owners receive life; a non-Ninja gets Black Flame and retains normal presentation and audio.");
+            && NinjaSlayerFormState.GetPresentation(other.Creature).Kind == NinjaSlayerFormKind.FullyReleasedNaraku
+            && NinjaSlayerCombatAudioSet.For(other.Creature).FastAttack == NinjaSlayerCombatAudioSet.Naraku.FastAttack,
+            "Both owners receive life, Black Flame, Naraku presentation and audio.");
         AddCard<StrikeIronclad>(combat);
         var ninjaSkill = AddCard<DefendIronclad>(combat);
         var otherAttack = combat.State.CreateCard<StrikeIronclad>(other);
@@ -438,6 +444,6 @@ public partial class OrbContractRunner
         Require(!Hook.ShouldPlay(combat.State, ninjaSkill, out _, AutoPlayType.None)
             && Hook.ShouldPlay(combat.State, otherSkill, out _, AutoPlayType.None),
             "Only the shuffling owner's attack-priority restriction ends.");
-        GD.Print("PASS Naraku mixed multiplayer: independent native event choices, call damage, rewards, full effects and character-specific appearance");
+        GD.Print("PASS Naraku mixed multiplayer: independent native event choices, call damage, rewards, full effects and Naraku appearance");
     }
 }

@@ -262,6 +262,8 @@ public partial class OrbContractRunner : Node
             patcher.RegisterPatch<ShurikenOrbLayoutPatch>();
             patcher.RegisterPatch<ShurikenMultiCastPreviewPatch>();
             patcher.RegisterPatch<NarakuLifeDamagePatch>();
+            patcher.RegisterPatch<NarakuPlayerVisualsPatch>();
+            patcher.RegisterPatch<NarakuPlayerAnimationPatch>();
             patcher.RegisterPatch<SawatariDuelRewardsPatch>();
             patcher.RegisterPatch<SawatariTurnEndPatch>();
             patcher.RegisterPatch<SawatariWinCheckPatch>();
@@ -323,6 +325,7 @@ public partial class OrbContractRunner : Node
             await VerifyFriendlyHive();
             await VerifyRelease113Cards();
             await VerifyNarakuPanels();
+            await VerifyNarakuOtherCharacterVisuals();
             await VerifyArchitectExitBounds();
             if (minion is not null)
             {
