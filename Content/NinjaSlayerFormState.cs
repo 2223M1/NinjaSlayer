@@ -13,7 +13,8 @@ public static class NinjaSlayerFormState
         creature.Player?.GetRelic<NarakuUnleashedRelic>() != null;
 
     public static NinjaSlayerFormPresentation GetPresentation(Creature creature) =>
-        NinjaSlayerFormPresentationCatalog.Resolve(
+        creature.Player?.Character is not INinjaSlayerCharacter ? NinjaSlayerFormPresentationCatalog.Normal
+        : NinjaSlayerFormPresentationCatalog.Resolve(
             IsNaraku(creature),
             creature.Player?.GetRelic<NarakuUnleashedRelic>() != null,
             creature.HasPower<OneMindOneBodyPower>());

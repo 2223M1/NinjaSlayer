@@ -44,8 +44,7 @@ public sealed class NarakuEvent : ModEventTemplate
     }
 
     public override bool IsAllowed(IRunState runState) =>
-        runState.Players.Count == 1
-        && NinjaSlayerContentAccess.HasNinjaSlayer(runState);
+        NinjaSlayerContentAccess.HasNinjaSlayer(runState);
 
     protected override IReadOnlyList<EventOption> GenerateInitialOptions() =>
         Owner?.Creature.CurrentHp < 19

@@ -32,7 +32,7 @@ public sealed class NarakuUnleashedRelic : NinjaSlayerRelicTemplate
     {
         _attackPriorityEnded = false;
         Flash();
-        NarakuVisualOverlay.Sync(Owner.Creature);
+        if (Owner.Character is INinjaSlayerCharacter) NarakuVisualOverlay.Sync(Owner.Creature);
         NinjaSlayerCombatVfx.PlayBurnStatusFeedback([Owner.Creature]);
         await PowerCmd.Apply<NarakuLifePower>(new ThrowingPlayerChoiceContext(),
             Owner.Creature, DynamicVars.NarakuLife().BaseValue, Owner.Creature, null);

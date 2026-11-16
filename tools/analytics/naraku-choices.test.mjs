@@ -44,3 +44,15 @@ test('filters apply to completed runs and no data has no inferred probability', 
   assert.equal(summarizeNarakuChoices(data, { version: '1.2.7' }, now).choices[0].count, 1);
   assert.deepEqual(summarizeNarakuChoices(data, { version: '1.2.6' }, now).choices.map(x => x.rate), [null, null]);
 });
+
+test('mixed multiplayer counts each participant final choice without multiplying a duplicate report', () => {
+  const mixed = row('mixed', [['ACCEPT', 'ACCEPT_NARAKU']]);
+  const history = mixed.properties.payload.applicant_payload.run_history;
+  history.players.push({ character_id: 'CHARACTER.IRONCLAD', net_id: '2', deck: [] });
+  history.map_point_history[0][0].player_stats.push({ player_id: '2', event_choices: [
+    { title: { table: 'events', key: `${prefix}.pages.INITIAL.options.SILENCE_NARAKU.title` } },
+  ] });
+  const result = summarizeNarakuChoices(normalizeEvents([mixed, structuredClone(mixed)]), {}, now);
+  assert.equal(result.sampledRuns, 1); assert.equal(result.completed, 2);
+  assert.deepEqual(result.choices.map(x => x.rate), [0.5, 0.5]);
+});

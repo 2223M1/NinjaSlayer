@@ -14,7 +14,7 @@ export function summarizeNarakuChoices(telemetry, { days = 0, version = '' } = {
     && matchesVersion(run.version, version));
   let encounters = 0, accepted = 0, silenced = 0, unfinished = 0, missing = 0, unknown = 0;
   const pages = {};
-  for (const run of runs) for (const room of run.rooms) for (const player of run.players) {
+  for (const run of runs) for (const room of run.rooms) for (const player of run.participants) {
     const stats = room.player_stats.find(row => String(row.player_id) === String(player.net_id));
     const choices = Array.isArray(stats?.event_choices) ? stats.event_choices : [];
     const keys = choices.filter(choice => choice?.title?.table === 'events')
@@ -40,7 +40,7 @@ export function summarizeNarakuChoices(telemetry, { days = 0, version = '' } = {
     unfinished, missing, unknown, pages,
     excluded: { rejected: telemetry.rejected, duplicates: telemetry.duplicates, conflicts: telemetry.conflicts },
     truncated: telemetry.truncated ?? false,
-    scope: 'Consenting Ninja Slayer players in non-abandoned completed runs; one final choice per player and event visit. Higher-reload outcomes replace older attempts. Intermediate calls are excluded from the completed-choice denominator. Rates are observed choice shares, not event spawn chances.',
+    scope: 'All participants recorded in consented, non-abandoned completed Ninja Slayer runs; one final choice per player and event visit. Higher-reload outcomes replace older attempts. Intermediate calls are excluded from the completed-choice denominator. Rates are observed choice shares, not event spawn chances.',
   };
 }
 
