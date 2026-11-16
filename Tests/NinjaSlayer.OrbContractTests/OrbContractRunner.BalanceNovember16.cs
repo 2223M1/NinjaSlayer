@@ -80,8 +80,10 @@ public partial class OrbContractRunner
             Require(draws.Count(card => card.Pile?.Type == PileType.Hand) == (upgraded ? 2 : 1),
                 "Moving an existing card and generation without an owner do not trigger Turning Point.");
         }
+        RelicModel restoredNaraku;
         using (var combat = new OrbCombat())
         {
+            combat.CreateRun("naraku-first-reshuffle");
             var attack = AddCard<StrikeIronclad>(combat);
             string attackDescription = attack.GetDescriptionForPile(PileType.Hand, combat.Enemy);
             await CardPileCmd.Add(attack, PileType.Draw);
@@ -100,6 +102,8 @@ public partial class OrbContractRunner
                 "Naraku Unleashed grants its owner exactly 20 life at combat start.");
             var skill = AddCard<DefendIronclad>(combat);
             var power = AddCard<Inflame>(combat);
+            PileType.Draw.GetPile(combat.Player).RandomizeOrderInternal(combat.Player,
+                combat.Player.RunState.Rng.Shuffle, combat.State);
             Require(Hook.ShouldPlay(combat.State, skill, out _, AutoPlayType.None), "Without hand attacks, Skills remain playable.");
             await CardPileCmd.Add(attack, PileType.Hand);
             var generated = combat.State.CreateCard<Chop>(combat.Player);
@@ -114,7 +118,7 @@ public partial class OrbContractRunner
                 && !Hook.ShouldPlay(combat.State, power, out _, AutoPlayType.None)
                 && Hook.ShouldPlay(combat.State, skill, out _, AutoPlayType.Default)
                 && Hook.ShouldPlay(combat.State, otherSkill, out _, AutoPlayType.None),
-                "Hand attacks block manual Skills/Powers only; autoplay and teammates remain unaffected.");
+                "Initial shuffle preserves attack priority; manual Skills/Powers are blocked, autoplay and teammates are unaffected.");
             var curse = AddCard<Enthralled>(combat);
             Require(Hook.ShouldPlay(combat.State, curse, out _, AutoPlayType.None)
                 && !Hook.ShouldPlay(combat.State, attack, out _, AutoPlayType.None),
@@ -131,7 +135,48 @@ public partial class OrbContractRunner
             Require(owner.GetPowerAmount<NarakuLifePower>() == 20
                 && PileType.Hand.GetPile(combat.Player).Cards.OfType<BlackFlame>().Count() == 2,
                 "Each owner turn adds one Black Flame without granting the starting life again.");
+            await CardPileCmd.Add(attack, PileType.Hand);
+            await CardPileCmd.Add(curse, PileType.Exhaust);
+            await Hook.AfterShuffle(combat.State, Choice, teammate);
+            Require(!Hook.ShouldPlay(combat.State, skill, out _, AutoPlayType.None),
+                "A teammate shuffle cannot end the owner's attack priority.");
+            AddCard<DefendIronclad>(combat, PileType.Draw);
+            var draw = PileType.Draw.GetPile(combat.Player);
+            await CardPileCmd.Draw(Choice, 1, combat.Player);
+            Require(draw.Cards.Count == 0 && !Hook.ShouldPlay(combat.State, skill, out _, AutoPlayType.None),
+                "Drawing the final card alone does not end attack priority before the actual reshuffle.");
+            await CardPileCmd.Draw(Choice, 1, combat.Player);
+            Require(PileType.Discard.GetPile(combat.Player).Cards.Count == 0
+                && attack.Pile?.Type == PileType.Hand
+                && Hook.ShouldPlay(combat.State, skill, out _, AutoPlayType.None)
+                && Hook.ShouldPlay(combat.State, power, out _, AutoPlayType.None),
+                "The first native draw that refills an empty draw pile ends attack priority for Skills and Powers.");
+            await relic.AfterPlayerTurnStart(Choice, combat.Player);
+            AddCard<DefendIronclad>(combat, PileType.Discard);
+            await CardPileCmd.Shuffle(Choice, combat.Player);
+            Require(Hook.ShouldPlay(combat.State, skill, out _, AutoPlayType.None)
+                && owner.GetPowerAmount<NarakuLifePower>() == 20
+                && PileType.Hand.GetPile(combat.Player).Cards.OfType<BlackFlame>().Count() == 3,
+                "Later turns and shuffles keep priority ended while Black Flame generation continues.");
+            restoredNaraku = RelicModel.FromSerializable(relic.ToSerializable());
+            await relic.BeforeCombatStart();
+            Require(!Hook.ShouldPlay(combat.State, skill, out _, AutoPlayType.None),
+                "Starting another combat resets attack priority on the existing relic instance.");
+            AddCard<DefendIronclad>(combat, PileType.Draw);
+            AddCard<DefendIronclad>(combat, PileType.Discard);
+            await CardPileCmd.Shuffle(Choice, combat.Player);
+            Require(Hook.ShouldPlay(combat.State, skill, out _, AutoPlayType.None),
+                "Like native Stratagem, an explicit shuffle also counts without adding an empty-pile condition.");
         }
-        GD.Print("PASS November 16 balance: Cross Guard/Chop, delayed Chop Strike, Relentless, all generated card types and Naraku Unleashed life/attack priority/unchanged keywords/turns/ownership.");
+        using (var combat = new OrbCombat())
+        {
+            combat.Player.AddRelicInternal(restoredNaraku);
+            await restoredNaraku.BeforeCombatStart();
+            AddCard<StrikeIronclad>(combat);
+            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 20
+                && !Hook.ShouldPlay(combat.State, AddCard<DefendIronclad>(combat), out _, AutoPlayType.None),
+                "Reloading the run recreates attack priority and starting life without persisting the previous combat's shuffle state.");
+        }
+        GD.Print("PASS November 16 balance: Cross Guard/Chop, delayed Chop Strike, Relentless, all generated card types and Naraku Unleashed life/attack priority/Stratagem shuffle semantics/initial shuffle excluded/first reshuffle/next combat/reload/turns/ownership.");
     }
 }

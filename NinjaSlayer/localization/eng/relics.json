@@ -36,7 +36,7 @@
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.description": "At the start of each combat, add 2 [gold]Chado[/gold] into your [gold]Hand[/gold].\n[gold]Chado Breathing[/gold] 2.\n[gold]Retain[/gold] your [gold]Chado[/gold] on the first turn.",
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.flavor": "The numbness recedes. Fingers, palms, and arms regain their freedom in turn.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.title": "Naraku Unleashed",
-  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "At the start of combat, gain {NarakuLife:diff()} [gold]Naraku Life[/gold].\nAt the start of your turn, add a [gold]Black Flame[/gold] into your [gold]Hand[/gold].\nWhile you have Attacks in your hand, you must play Attacks first.",
+  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "At the start of combat, gain {NarakuLife:diff()} [gold]Naraku Life[/gold].\nAt the start of your turn, add a [gold]Black Flame[/gold] into your [gold]Hand[/gold].\nUntil your first reshuffle, you must play Attacks first while you have Attacks in your hand.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.flavor": "The furnace of hatred never went cold. In the depths of his neurons, the old man opens his eyes.",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.title": "Origami Pact",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.description": "For the next [blue]{Combats}[/blue] combats, Yamoto Koki will fight beside you.",

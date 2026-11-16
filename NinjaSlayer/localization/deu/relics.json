@@ -36,7 +36,7 @@
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.description": "Füge zu Beginn jedes Kampfes 2 [gold]Chado[/gold] deiner [gold]Hand[/gold] hinzu.\n[gold]Chado-Atmung[/gold] 2.\nDein [gold]Chado[/gold] erhält im ersten Zug [gold]Behalten[/gold].",
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.flavor": "Die Taubheit lässt nach. Finger, Handflächen und Arme gewinnen nach und nach ihre Bewegungsfreiheit zurück.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.title": "Naraku entfesselt",
-  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "Erhalte zu Beginn jedes Kampfes {NarakuLife:diff()} [gold]Naraku-Leben[/gold].\nFüge zu Beginn deines Zuges eine [gold]Schwarze Flamme[/gold] deiner [gold]Hand[/gold] hinzu.\nSolange du Angriffe auf der Hand hast, musst du zuerst Angriffe ausspielen.",
+  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "Erhalte zu Beginn jedes Kampfes {NarakuLife:diff()} [gold]Naraku-Leben[/gold].\nFüge zu Beginn deines Zuges eine [gold]Schwarze Flamme[/gold] deiner [gold]Hand[/gold] hinzu.\nBis zum ersten Neumischen musst du zuerst Angriffe ausspielen, solange du Angriffe auf der Hand hast.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.flavor": "Der Schmelzofen des Hasses ist nie erkaltet. Tief in seinen Neuronen öffnet der alte Mann die Augen.",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.title": "Origami-Pakt",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.description": "In den nächsten [blue]{Combats}[/blue] Kämpfen steht dir Yamoto Koki zur Seite.",
