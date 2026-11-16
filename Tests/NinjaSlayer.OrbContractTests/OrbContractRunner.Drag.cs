@@ -158,18 +158,32 @@ public partial class OrbContractRunner
 
             var allyCard = combat.State.CreateCard<BelieveInYou>(combat.Player);
             Face(false);
-            Require(allyCard.CanPlayTargeting(ally.Creature) && !allyCard.CanPlayTargeting(combat.Enemy),
-                "The friendly targeting fixture is not using native target legality.");
-            Call("Drag", drag, allyCard, allyCenter.GlobalPosition, ally.Creature);
-            Settle();
-            float allyAngle = Angle();
-            Call("Drag", drag, allyCard, new Vector2(700f, -3000f), null);
-            Settle();
-            Require(Math.Abs(Angle() - allyAngle) < .001f, "Friendly aiming used enemy cores to expand its range.");
-            Require(allyCard.CanPlayTargeting(combat.Player.Creature), "The self-target fixture must allow the owner.");
-            Call("Drag", drag, allyCard, rig.VfxSpawnPosition.GlobalPosition, combat.Player.Creature);
-            Settle();
-            Require(Math.Abs(Angle()) < .001f, "A self-targeted card tilted its owner.");
+            var handPile = PileType.Hand.GetPile(combat.Player);
+            var heldAttacks = handPile.Cards.Select((held, index) => (Card: held, Index: index))
+                .Where(held => held.Card.Type == CardType.Attack).ToArray();
+            if (form == 2)
+                Require(heldAttacks.Length > 0 && !allyCard.CanPlayTargeting(ally.Creature),
+                    "Full Naraku must block a friendly skill while an attack remains in hand.");
+            foreach (var held in heldAttacks) handPile.RemoveInternal(held.Card, silent: true);
+            try
+            {
+                Require(allyCard.CanPlayTargeting(ally.Creature) && !allyCard.CanPlayTargeting(combat.Enemy),
+                    "The friendly targeting fixture is not using native target legality.");
+                Call("Drag", drag, allyCard, allyCenter.GlobalPosition, ally.Creature);
+                Settle();
+                float allyAngle = Angle();
+                Call("Drag", drag, allyCard, new Vector2(700f, -3000f), null);
+                Settle();
+                Require(Math.Abs(Angle() - allyAngle) < .001f, "Friendly aiming used enemy cores to expand its range.");
+                Require(allyCard.CanPlayTargeting(combat.Player.Creature), "The self-target fixture must allow the owner.");
+                Call("Drag", drag, allyCard, rig.VfxSpawnPosition.GlobalPosition, combat.Player.Creature);
+                Settle();
+                Require(Math.Abs(Angle()) < .001f, "A self-targeted card tilted its owner.");
+            }
+            finally
+            {
+                foreach (var held in heldAttacks) handPile.AddInternal(held.Card, held.Index, silent: true);
+            }
             Call("Reset");
 
             Face(false);
