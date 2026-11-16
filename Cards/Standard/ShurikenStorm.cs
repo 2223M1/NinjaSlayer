@@ -14,7 +14,6 @@ public sealed class ShurikenStorm : NinjaSlayerRareCard
         [HoverTipFactory.FromOrb<NinjaSlayer.Orbs.ShurikenOrb>()];
 
     public ShurikenStorm() : base(nameof(ShurikenStorm), 1, CardType.Skill, TargetType.Self) { }
-    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         var cards = PileType.Hand.GetPile(Owner).Cards.ToArray();

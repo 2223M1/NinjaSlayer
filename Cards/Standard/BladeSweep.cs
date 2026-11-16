@@ -14,7 +14,7 @@ namespace NinjaSlayer.Cards.Standard;
 
 public sealed class BladeSweep : NinjaSlayerUncommonCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("Stock", 2), new DynamicVar("Aim", 4)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("Stock", 2), new DynamicVar("Aim", 6)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromOrb<ShurikenOrb>(), HoverTipFactory.FromPower<AimPower>()];
 

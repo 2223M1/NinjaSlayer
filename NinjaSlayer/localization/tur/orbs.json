@@ -1,5 +1,5 @@
 {
   "NINJA_SLAYER_ORB_SHURIKEN_ORB.title": "Shuriken",
-  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "Her kart attığında Shuriken rastgele bir düşmana saldırır ve 1 Shuriken kaybedersin.\nTetiklendiğinde her yük bir kez saldırır.\nHer [gold]Nişan[/gold], sonraki yaylımındaki tüm [gold]Shuriken[/gold]lere 1 hasar ekler. Yaylımdan sonra [gold]Nişan[/gold] tüketilir.",
-  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue] {Passive:plural:yük|yük}\nHer kart attığında rastgele bir düşmana {Evoke} hasar ver ve 1 Shuriken kaybet.\nTetiklendiğinde her yük rastgele bir düşmana {Evoke} hasar verir.\nHer [gold]Nişan[/gold], sonraki yaylımındaki tüm [gold]Shuriken[/gold]lere 1 hasar ekler. Yaylımdan sonra [gold]Nişan[/gold] tüketilir."
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "Her kart attığında Shuriken rastgele bir düşmana saldırır ve 1 Shuriken kaybedersin.",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue] {Passive:plural:yük|yük}\nHer kart attığında rastgele bir düşmana {Evoke} hasar ver ve 1 Shuriken kaybet."
 }

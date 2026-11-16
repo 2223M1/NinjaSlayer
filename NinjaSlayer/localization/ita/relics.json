@@ -36,7 +36,7 @@
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.description": "All'inizio di ogni combattimento, aggiungi 2 [gold]Chado[/gold] alla tua [gold]mano[/gold].\n[gold]Respirazione Chado[/gold] 2.\nIl tuo [gold]Chado[/gold] ottiene [gold]Conservazione[/gold] nel primo turno.",
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.flavor": "Il torpore si ritira. Dita, palmi e braccia ritrovano a turno la libertà di movimento.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.title": "Naraku scatenato",
-  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "All'inizio del tuo turno, aggiungi una [gold]Fiamma nera[/gold] alla tua [gold]mano[/gold].",
+  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "All'inizio del combattimento, ottieni {NarakuLife:diff()} di [gold]Vita di Naraku[/gold].\nAll'inizio del tuo turno, aggiungi una [gold]Fiamma nera[/gold] alla tua [gold]mano[/gold].\nFinché hai Attacchi in mano, devi giocare prima gli Attacchi.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.flavor": "La fornace dell’odio non si è mai raffreddata. Nelle profondità dei suoi neuroni, il vecchio apre gli occhi.",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.title": "Patto origami",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.description": "Yamoto Koki combatterà al tuo fianco per i prossimi [blue]{Combats}[/blue] combattimenti.",

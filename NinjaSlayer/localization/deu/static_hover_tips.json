@@ -1,6 +1,6 @@
 {
   "NINJA_SLAYER_CHADO_BREATHING.title": "Chado-Atmung",
-  "NINJA_SLAYER_CHADO_BREATHING.description": "Erhöhe die Energie jedes [gold]Chado[/gold] auf deiner Hand um den angegebenen Wert. Hast du keines, verbrauche 1 Chado-Atmung, um ein Chado zu erzeugen, und erhöhe seine Energie um den verbleibenden Wert.",
+  "NINJA_SLAYER_CHADO_BREATHING.description": "Füge deiner Hand [gold]Chado[/gold] hinzu. Jedes [gold]Chado[/gold] auf deiner Hand gewährt zusätzlich {Energy:energyIcons()}.",
   "NINJA_SLAYER_POSITIVE_EFFECTS.title": "Positive Effekte",
-  "NINJA_SLAYER_POSITIVE_EFFECTS.description": "Die folgenden Effekte zählen bei positivem Wert, einmal pro Art.\n[gold]Stärke[/gold], [gold]Geschicklichkeit[/gold], [gold]Elan[/gold], [gold]Karate[/gold]\n[gold]Fokus[/gold], [gold]Artefakt[/gold], [gold]Puffer[/gold], [gold]Immateriell[/gold]\n[gold]Stacheln[/gold], [gold]Panzerung[/gold], [gold]Erholen[/gold], [gold]Ausweichen[/gold]\n[gold]Naraku-Leben[/gold], [gold]Dehnung[/gold], [gold]Aufschwingen[/gold], [gold]Zielen[/gold]"
+  "NINJA_SLAYER_POSITIVE_EFFECTS.description": "[gold]Stärke[/gold], [gold]Geschicklichkeit[/gold], [gold]Elan[/gold], [gold]Karate[/gold]\n[gold]Fokus[/gold], [gold]Artefakt[/gold], [gold]Puffer[/gold], [gold]Immateriell[/gold]\n[gold]Stacheln[/gold], [gold]Panzerung[/gold], [gold]Erholen[/gold], [gold]Ausweichen[/gold]\n[gold]Naraku-Leben[/gold], [gold]Dehnung[/gold], [gold]Aufschwingen[/gold], [gold]Zielen[/gold]"
 }

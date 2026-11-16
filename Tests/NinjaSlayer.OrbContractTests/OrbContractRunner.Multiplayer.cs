@@ -261,7 +261,7 @@ public partial class OrbContractRunner
                 RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(endurance, combat.Enemy));
             await WaitNetwork(() => completed > before, "native Flurry action");
             Require(combat.Enemy.CurrentHp == enemyHp - 3 * (upgraded ? 15 : 14)
-                && player.Creature.GetPowerAmount<KaratePower>() == (upgraded ? 6 : 5)
+                && player.Creature.GetPowerAmount<KaratePower>() == (upgraded ? 5 : 4)
                 && teammate.Creature.GetPowerAmount<KaratePower>() == teammateKarate
                 && !player.Creature.HasPower<VigorPower>() && !player.Creature.HasPower<EndurancePower>()
                 && endurance.Pile?.Type == PileType.Discard && player.PlayerCombatState!.Energy == 8,

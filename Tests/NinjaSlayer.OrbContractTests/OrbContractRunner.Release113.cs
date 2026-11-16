@@ -85,9 +85,11 @@ public partial class OrbContractRunner
                 await CardPileCmd.AddGeneratedCardToCombat(combat.State.CreateCard<Wound>(combat.Player), PileType.Discard, creator);
             var oldStatus = AddCard<Wound>(combat, PileType.Discard);
             await CardPileCmd.Add(oldStatus, PileType.Hand);
-            await NinjaSlayerCardCmd.AddGeneratedCard<DefendIronclad>(combat.Player, PileType.Discard);
             Require(PileType.Hand.GetPile(combat.Player).Cards.Count == 1,
-                "Other/null creators, existing Status movement and non-Status generation must not draw.");
+                "Other/null creators and existing Status movement must not draw.");
+            await NinjaSlayerCardCmd.AddGeneratedCard<DefendIronclad>(combat.Player, PileType.Discard);
+            Require(PileType.Hand.GetPile(combat.Player).Cards.Count == 2,
+                "Generating an owned non-Status card must also draw.");
             while (PileType.Hand.GetPile(combat.Player).Cards.Count < CardPile.MaxCardsInHand) AddCard<DefendIronclad>(combat);
             int drawCount = PileType.Draw.GetPile(combat.Player).Cards.Count;
             await NinjaSlayerCardCmd.AddGeneratedCard<Wound>(combat.Player, PileType.Hand);

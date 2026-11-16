@@ -36,7 +36,7 @@
   "NINJA_SLAYER_RELIC_ZAZEN_DRINK_BANDOLIER_RELIC.description": "拾起時，將1張[gold]坐禪飲料[/gold]和2張[gold]睡眠不佳[/gold]加入你的牌組。",
   "NINJA_SLAYER_RELIC_ZAZEN_DRINK_BANDOLIER_RELIC.flavor": "五瓶像槍帶般掛在腰間。最後的大活開始了。",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.title": "奈落解放",
-  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "在你的回合開始時，將1張[gold]黑炎[/gold]加入你的[gold]手牌[/gold]。",
+  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "戰鬥開始時，獲得{NarakuLife:diff()}點[gold]奈落生命[/gold]。\n在你的回合開始時，將1張[gold]黑炎[/gold]加入你的[gold]手牌[/gold]。\n手牌中有攻擊牌時，你必須優先打出攻擊牌。",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.flavor": "赤黑之火漫過全身。另一道呼吸從神經元深處響起。",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.title": "摺紙之約",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.description": "接下來的[blue]{Combats}[/blue]場戰鬥中，小季會與你並肩作戰。",

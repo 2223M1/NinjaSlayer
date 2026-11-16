@@ -1,9 +1,11 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Scaffolding.Content;
+#if !NINJASLAYER_CHANNEL_STABLE
+using StretchPower = MegaCrit.Sts2.Core.Models.Powers.StretchPower;
+#endif
 
 namespace NinjaSlayer.Powers;
 
@@ -14,6 +16,6 @@ public sealed class ComposurePower : NinjaSlayerCounterPower
     {
         if (card.Owner != Owner.Player) return;
         Flash();
-        await CreatureCmd.GainBlock(Owner, Amount, ValueProp.Unpowered, null);
+        await PowerCmd.Apply<StretchPower>(choiceContext, Owner, Amount, Owner, null);
     }
 }

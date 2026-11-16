@@ -14,7 +14,7 @@ public sealed class Flurry : NinjaSlayerUncommonCard
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Ethereal];
     public Flurry() : base(nameof(Flurry), 2, CardType.Attack, TargetType.AnyEnemy) { }
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(4, ValueProp.Move), new RepeatVar(3), new KarateVar(5)];
+        [new DamageVar(4, ValueProp.Move), new RepeatVar(3), new KarateVar(4)];
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

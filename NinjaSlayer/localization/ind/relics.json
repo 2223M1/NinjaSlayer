@@ -36,7 +36,7 @@
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.description": "Pada awal setiap perlawanan, tambahkan 2 [gold]Chado[/gold] ke [gold]Tangan[/gold] kamu.\n[gold]Pernapasan Chado[/gold] 2.\n[gold]Pertahankan[/gold] [gold]Chado[/gold] kamu pada giliran pertama.",
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.flavor": "Mati rasa surut. Jari, telapak tangan, lalu lengan kembali bebas bergerak.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.title": "Naraku Terlepas",
-  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "Pada awal giliranmu, tambahkan 1 [gold]Api Hitam[/gold] ke [gold]Tangan[/gold] kamu.",
+  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "Pada awal pertempuran, dapatkan {NarakuLife:diff()} [gold]Nyawa Naraku[/gold].\nPada awal giliranmu, tambahkan 1 [gold]Api Hitam[/gold] ke [gold]Tangan[/gold] kamu.\nSelama ada kartu Serangan di tanganmu, kamu harus memainkan Serangan terlebih dahulu.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.flavor": "Tungku kebencian tak pernah dingin. Di kedalaman neuronnya, si tua membuka mata.",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.title": "Perjanjian Origami",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.description": "Selama [blue]{Combats}[/blue] perlawanan berikutnya, Yamoto Koki bertarung di sisimu.",

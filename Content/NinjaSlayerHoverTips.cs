@@ -9,8 +9,14 @@ public static class NinjaSlayerHoverTips
         new LocString("static_hover_tips", "NINJA_SLAYER_POSITIVE_EFFECTS.title"),
         new LocString("static_hover_tips", "NINJA_SLAYER_POSITIVE_EFFECTS.description"));
 
-    public static IHoverTip ChadoBreathing => new HoverTip(
-        new LocString("static_hover_tips", "NINJA_SLAYER_CHADO_BREATHING.title"),
-        new LocString("static_hover_tips", "NINJA_SLAYER_CHADO_BREATHING.description"));
-
+    public static IHoverTip ChadoBreathing
+    {
+        get
+        {
+            var description = new LocString("static_hover_tips", "NINJA_SLAYER_CHADO_BREATHING.description");
+            description.Add("Energy", 1);
+            return new HoverTip(
+                new LocString("static_hover_tips", "NINJA_SLAYER_CHADO_BREATHING.title"), description);
+        }
+    }
 }

@@ -1,6 +1,6 @@
 {
   "NINJA_SLAYER_CHADO_BREATHING.title": "茶道呼吸",
-  "NINJA_SLAYER_CHADO_BREATHING.description": "使你手牌中的所有[gold]茶道[/gold]提供的能量增加相應數值。若沒有茶道，先用1點茶道呼吸凝聚1張茶道，再以剩餘數值強化它。",
+  "NINJA_SLAYER_CHADO_BREATHING.description": "將[gold]茶道[/gold]加入你的[gold]手牌[/gold]。為你手牌中的[gold]茶道[/gold]增加額外{Energy:energyIcons()}。",
   "NINJA_SLAYER_POSITIVE_EFFECTS.title": "正面效果",
-  "NINJA_SLAYER_POSITIVE_EFFECTS.description": "以下效果數值為正時計入，每種只計一次。\n[gold]力量[/gold]、[gold]敏捷[/gold]、[gold]活力[/gold]、[gold]空手道[/gold]\n[gold]集中[/gold]、[gold]人工製品[/gold]、[gold]緩衝[/gold]、[gold]無形[/gold]\n[gold]荊棘[/gold]、[gold]鍍甲[/gold]、[gold]再生[/gold]、[gold]迴避[/gold]\n[gold]奈落生命[/gold]、[gold]伸展[/gold]、[gold]翱翔[/gold]、[gold]瞄準[/gold]"
+  "NINJA_SLAYER_POSITIVE_EFFECTS.description": "[gold]力量[/gold]、[gold]敏捷[/gold]、[gold]活力[/gold]、[gold]空手道[/gold]\n[gold]集中[/gold]、[gold]人工製品[/gold]、[gold]緩衝[/gold]、[gold]無形[/gold]\n[gold]荊棘[/gold]、[gold]鍍甲[/gold]、[gold]再生[/gold]、[gold]迴避[/gold]\n[gold]奈落生命[/gold]、[gold]伸展[/gold]、[gold]翱翔[/gold]、[gold]瞄準[/gold]"
 }

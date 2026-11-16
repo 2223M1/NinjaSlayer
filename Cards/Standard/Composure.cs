@@ -3,18 +3,22 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
-using MegaCrit.Sts2.Core.Models.Cards;
-using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
+#if NINJASLAYER_CHANNEL_STABLE
+using StretchPower = NinjaSlayer.Powers.StretchPower;
+#else
+using StretchPower = MegaCrit.Sts2.Core.Models.Powers.StretchPower;
+#endif
 
 namespace NinjaSlayer.Cards.Standard;
 
 public sealed class Composure : NinjaSlayerUncommonCard
 {
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Ethereal];
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(2, ValueProp.Unpowered)];
-    protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<ComposurePower>()];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new PowerVar<StretchPower>(2)];
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        [HoverTipFactory.FromPower<ComposurePower>(), HoverTipFactory.FromPower<StretchPower>()];
 
     public Composure()
         : base(nameof(Composure), 1, CardType.Power, TargetType.Self) { }
@@ -23,7 +27,7 @@ public sealed class Composure : NinjaSlayerUncommonCard
         PowerCmd.Apply<ComposurePower>(
             choiceContext,
             Owner.Creature,
-            DynamicVars.Block.BaseValue,
+            DynamicVars["StretchPower"].BaseValue,
             Owner.Creature,
             this);
 

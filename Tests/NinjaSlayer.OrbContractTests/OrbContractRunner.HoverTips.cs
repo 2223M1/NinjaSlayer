@@ -80,15 +80,24 @@ public partial class OrbContractRunner
                      { AddCard<Zanshin>(combat, upgraded: upgraded), AddCard<AntiAirBangBangFist>(combat, upgraded: upgraded), AddCard<TileBreakingPunch>(combat, upgraded: upgraded) })
             {
                 var tip = card.HoverTips.OfType<HoverTip>().Single(t => t.Id == NinjaSlayerHoverTips.PositiveEffects.Id);
-                Require(System.Text.RegularExpressions.Regex.Matches(tip.Description, "\\[gold\\]").Count == 16
+                Require(tip.Description.StartsWith("[gold]")
+                    && System.Text.RegularExpressions.Regex.Matches(tip.Description, "\\[gold\\]").Count == 16
                     && tip.Description.Contains(new LocString("powers", "SOAR_POWER.title").GetFormattedText())
                     && tip.Description.Contains(new LocString("powers", "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.title").GetFormattedText()),
-                    "Zanshin, Anti-Air and Tile-Breaking Punch must display the 16-buff side list including Soar and Aim.");
+                    "Zanshin, Anti-Air and Tile-Breaking Punch must display only the 16-buff gold side list including Soar and Aim.");
             }
             var karate = AddCard<StraightPunch>(combat, upgraded: upgraded);
             var jujutsu = AddCard<Jujutsu>(combat, upgraded: upgraded);
             var outmaneuver = AddCard<MegaCrit.Sts2.Core.Models.Cards.Outmaneuver>(combat);
             outmaneuver.DynamicVars.Energy.BaseValue = 1;
+            var nativeEnergy = new LocString("static_hover_tips", "ENERGY_COUNT.description");
+            nativeEnergy.Add("energyPrefix", "colorless");
+            string energyIcon = System.Text.RegularExpressions.Regex.Match(
+                nativeEnergy.GetFormattedText(), @"\[img\].*?_energy_icon\.png\[/img\]").Value;
+            var breathing = (HoverTip)NinjaSlayerHoverTips.ChadoBreathing;
+            Require(energyIcon.Length > 0 && breathing.Description.Contains(energyIcon)
+                && !breathing.Description.Contains("{Energy"),
+                "Chado Breathing must format the same native energy icon as the default energy tooltip.");
             Require(jujutsu.GetDescriptionForPile(PileType.None).Contains(outmaneuver.GetDescriptionForPile(PileType.None))
                 && jujutsu.HoverTips.Any(tip => tip.Id == HoverTipFactory.ForEnergy(jujutsu).Id),
                 "Jujutsu must use the host's exact next-turn Energy text, inline icon and energy tooltip.");

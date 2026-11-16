@@ -330,16 +330,17 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<DevourFlamePower>(Choice, combat.Player.Creature, 4, combat.Player.Creature, null);
             using var selector = UseCardSelector(new SelectCards(_ => [first]));
             await CardCmd.AutoPlay(Choice, recovery, null);
-            Require(combat.Player.Creature.CurrentHp == 30 && combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 4,
-                "Rekindle must grant Devour Flame life by exhausting itself, without healing or a Rekindle self-reward.");
+            Require(combat.Player.Creature.CurrentHp == 30 && combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 0
+                && recovery.Pile?.Type == PileType.Discard,
+                "Rekindle must discard without triggering Devour Flame or granting life itself.");
             Require(wound.Pile?.Type == PileType.Hand && second.Pile?.Type == PileType.Hand
                 && PileType.Hand.GetPile(combat.Player).Cards.OfType<BlackFlame>().Count() == 1,
                 "Recovery must transform exactly one selected card.");
             await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
-            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 6,
+            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 2,
                 "Rekindle must grant two Naraku Life when the transformed Black Flame triggers.");
             await CardCmd.AutoPlay(Choice, second, null);
-            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 6,
+            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 2,
                 "Rekindle must not grant Naraku Life for a subsequent Skill.");
 #if NINJASLAYER_CHANNEL_STABLE
             await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
@@ -499,14 +500,14 @@ public partial class OrbContractRunner
             var card = AddCard<Flurry>(combat, upgraded: upgraded);
             await CardCmd.AutoPlay(Choice, card, combat.Enemy);
             Require(combat.Enemy.CurrentHp == 1000 - 3 * (upgraded ? 15 : 14) && untouched.CurrentHp == 1000
-                && owner.GetPowerAmount<KaratePower>() == (upgraded ? 6 : 5) && !owner.HasPower<VigorPower>()
+                && owner.GetPowerAmount<KaratePower>() == (upgraded ? 5 : 4) && !owner.HasPower<VigorPower>()
                 && !owner.HasPower<EndurancePower>(), "Flurry must resolve three selected-target hits before granting Karate, with native Strength/Vigor and no delayed power.");
 #if NINJASLAYER_CHANNEL_STABLE
             await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [owner]);
 #else
             await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [owner]);
 #endif
-            Require(owner.GetPowerAmount<KaratePower>() == (upgraded ? 6 : 5), "Flurry must not grant a second turn-end reward.");
+            Require(owner.GetPowerAmount<KaratePower>() == (upgraded ? 5 : 4), "Flurry must not grant a second turn-end reward.");
         }
         using (var combat = new OrbCombat())
         {
@@ -537,7 +538,7 @@ public partial class OrbContractRunner
             AddCard<DefendIronclad>(combat);
             AddCard<DefendIronclad>(combat);
             await CardCmd.AutoPlay(Choice, storm, null);
-            Require(combat.Stock == 2 && combat.Enemy.CurrentHp == 1000 && storm.Pile?.Type == PileType.Exhaust,
+            Require(combat.Stock == 2 && combat.Enemy.CurrentHp == 1000 && storm.Pile?.Type == PileType.Discard,
                 "Shuriken Storm must discard before granting stock; zero initial stock must not fire.");
         }
         using (var combat = new OrbCombat())

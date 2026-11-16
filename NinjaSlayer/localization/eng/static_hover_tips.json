@@ -1,6 +1,6 @@
 {
   "NINJA_SLAYER_CHADO_BREATHING.title": "Chado Breathing",
-  "NINJA_SLAYER_CHADO_BREATHING.description": "Increase the Energy provided by each [gold]Chado[/gold] in your hand by the given amount. If you have none, spend 1 Chado Breathing to create a Chado, then increase its Energy by the remaining amount.",
+  "NINJA_SLAYER_CHADO_BREATHING.description": "Add [gold]Chado[/gold] to your hand. [gold]Chado[/gold] in your hand grants an extra {Energy:energyIcons()}.",
   "NINJA_SLAYER_POSITIVE_EFFECTS.title": "Buffs",
-  "NINJA_SLAYER_POSITIVE_EFFECTS.description": "The following effects count while positive, once per type.\n[gold]Strength[/gold], [gold]Dexterity[/gold], [gold]Vigor[/gold], [gold]Karate[/gold]\n[gold]Focus[/gold], [gold]Artifact[/gold], [gold]Buffer[/gold], [gold]Intangible[/gold]\n[gold]Thorns[/gold], [gold]Plating[/gold], [gold]Regen[/gold], [gold]Evasion[/gold]\n[gold]Naraku Life[/gold], [gold]Stretch[/gold], [gold]Soar[/gold], [gold]Aim[/gold]"
+  "NINJA_SLAYER_POSITIVE_EFFECTS.description": "[gold]Strength[/gold], [gold]Dexterity[/gold], [gold]Vigor[/gold], [gold]Karate[/gold]\n[gold]Focus[/gold], [gold]Artifact[/gold], [gold]Buffer[/gold], [gold]Intangible[/gold]\n[gold]Thorns[/gold], [gold]Plating[/gold], [gold]Regen[/gold], [gold]Evasion[/gold]\n[gold]Naraku Life[/gold], [gold]Stretch[/gold], [gold]Soar[/gold], [gold]Aim[/gold]"
 }

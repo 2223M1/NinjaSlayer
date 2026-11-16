@@ -1,6 +1,6 @@
 {
   "NINJA_SLAYER_CHADO_BREATHING.title": "Дыхание Тядо",
-  "NINJA_SLAYER_CHADO_BREATHING.description": "Повышает энергию, которую дает каждое [gold]Тядо[/gold] в руке, на указанное значение. Если Тядо нет, тратит 1 дыхание Тядо на создание карты Тядо, затем повышает ее энергию на оставшееся значение.",
+  "NINJA_SLAYER_CHADO_BREATHING.description": "Добавляет [gold]Тядо[/gold] в вашу руку. Каждое [gold]Тядо[/gold] в вашей руке даёт дополнительно {Energy:energyIcons()}.",
   "NINJA_SLAYER_POSITIVE_EFFECTS.title": "Положительные эффекты",
-  "NINJA_SLAYER_POSITIVE_EFFECTS.description": "Следующие эффекты учитываются при положительном значении, по одному разу за каждый тип.\n[gold]Сила[/gold], [gold]Ловкость[/gold], [gold]Бодрость[/gold], [gold]Карате[/gold]\n[gold]Фокус[/gold], [gold]Артефакт[/gold], [gold]Буфер[/gold], [gold]Неосязаемость[/gold]\n[gold]Шипы[/gold], [gold]Панцирь[/gold], [gold]Регенерация[/gold], [gold]Уклонение[/gold]\n[gold]Жизнь Нараку[/gold], [gold]Растяжка[/gold], [gold]Крылья[/gold], [gold]Тяга[/gold]"
+  "NINJA_SLAYER_POSITIVE_EFFECTS.description": "[gold]Сила[/gold], [gold]Ловкость[/gold], [gold]Бодрость[/gold], [gold]Карате[/gold]\n[gold]Фокус[/gold], [gold]Артефакт[/gold], [gold]Буфер[/gold], [gold]Неосязаемость[/gold]\n[gold]Шипы[/gold], [gold]Панцирь[/gold], [gold]Регенерация[/gold], [gold]Уклонение[/gold]\n[gold]Жизнь Нараку[/gold], [gold]Растяжка[/gold], [gold]Крылья[/gold], [gold]Тяга[/gold]"
 }

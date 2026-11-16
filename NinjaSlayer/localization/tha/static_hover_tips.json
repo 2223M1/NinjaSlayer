@@ -1,6 +1,6 @@
 {
   "NINJA_SLAYER_CHADO_BREATHING.title": "การหายใจชาโด",
-  "NINJA_SLAYER_CHADO_BREATHING.description": "เพิ่มพลังงานที่[gold]ชาโด[/gold]แต่ละใบในมือมอบให้ตามจำนวนที่ระบุ ถ้าไม่มี ใช้การหายใจชาโด 1 เพื่อสร้างชาโดหนึ่งใบ แล้วเพิ่มพลังงานตามจำนวนที่เหลือ",
+  "NINJA_SLAYER_CHADO_BREATHING.description": "เพิ่ม[gold]ชาโด[/gold]ขึ้นมือ [gold]ชาโด[/gold]ในมือแต่ละใบให้ {Energy:energyIcons()} เพิ่มเติม",
   "NINJA_SLAYER_POSITIVE_EFFECTS.title": "บัฟ",
-  "NINJA_SLAYER_POSITIVE_EFFECTS.description": "นับเอฟเฟกต์ต่อไปนี้เมื่อมีค่าเป็นบวก โดยนับชนิดละหนึ่งครั้ง\n[gold]ความแข็งแรง[/gold], [gold]ความชำนาญ[/gold], [gold]ความกำยำ[/gold], [gold]คาราเต้[/gold]\n[gold]โฟกัส[/gold], [gold]อาคม[/gold], [gold]ม่านกันชน[/gold], [gold]ไร้ตัวตน[/gold]\n[gold]หนาม[/gold], [gold]เกราะโลหะ[/gold], [gold]การฟื้นพลัง[/gold], [gold]หลบหลีก[/gold]\n[gold]พลังชีวิตนาราคุ[/gold], [gold]ยืดเหยียด[/gold], [gold]ทะยาน[/gold], [gold]เล็ง[/gold]"
+  "NINJA_SLAYER_POSITIVE_EFFECTS.description": "[gold]ความแข็งแรง[/gold], [gold]ความชำนาญ[/gold], [gold]ความกำยำ[/gold], [gold]คาราเต้[/gold]\n[gold]โฟกัส[/gold], [gold]อาคม[/gold], [gold]ม่านกันชน[/gold], [gold]ไร้ตัวตน[/gold]\n[gold]หนาม[/gold], [gold]เกราะโลหะ[/gold], [gold]การฟื้นพลัง[/gold], [gold]หลบหลีก[/gold]\n[gold]พลังชีวิตนาราคุ[/gold], [gold]ยืดเหยียด[/gold], [gold]ทะยาน[/gold], [gold]เล็ง[/gold]"
 }

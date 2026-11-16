@@ -46,7 +46,7 @@ public sealed class Chop : NinjaSlayerCommonCard
             DynamicVars.Karate().BaseValue,
             Owner.Creature,
             this);
-        if (!Keywords.Contains(CardKeyword.Exhaust) && !ExhaustOnNextPlay)
+        if (cardPlay.ResultPile != PileType.Hand && !Keywords.Contains(CardKeyword.Exhaust) && !ExhaustOnNextPlay)
         {
             await CardPileCmd.Add(this, PileType.Draw, CardPilePosition.Top);
         }

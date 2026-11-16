@@ -60,6 +60,7 @@ public partial class OrbContractRunner
         await VerifyOpeningChadoRetention();
         await VerifyStrongShurikenRetention();
         await VerifyGuardStanceAndCrossGuard();
+        await VerifyNovember16Balance();
         await VerifyBlackFlameTurnEnd();
         await VerifyNarakuForms();
         VerifyNarakuEventEligibility();
