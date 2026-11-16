@@ -13,7 +13,7 @@ The local quick-release script accepts `-ValidationChannel stable|preview` for i
 
 ## Language-specific descriptions
 
-`workshop.json` keeps English in `description` (Steam's default language), and separate `schinese` and `japanese` entries in `localizedDescriptions`. Do not concatenate them. The title remains `忍者杀手 Ninja Slayer` in all languages. Tags remain `characters`, `Simplified Chinese`, `English`, and `Japanese`.
+`workshop.json` keeps English in `description` (Steam's default language), with the other 15 languages in `localizedDescriptions`. Do not concatenate them. The title remains `忍者杀手 Ninja Slayer` in all languages. Tags include `characters` and every language mapped in `languages.json`.
 
 The official ModUploader has no localization fields; it uploads `description` to English. Both local release scripts therefore apply the localized fields after the content upload, using Steam's `SetItemUpdateLanguage` and `SetItemDescription`, and query each language again to verify. The SteamCMD workflow omits title/description and preserves the existing translations; it does not publish text edits. For a text-only change, run the metadata tool with Steam signed in to the item owner's account:
 
@@ -35,11 +35,17 @@ Historical edits cover 1.0.0 onward. Match each original Workshop entry to its p
 
 References: [Steam UGC language fields](https://partner.steamgames.com/doc/api/ISteamUGC#SetItemUpdateLanguage), [change-note submission](https://partner.steamgames.com/doc/api/ISteamUGC#SubmitItemUpdate), [official uploader configuration](https://github.com/megacrit/sts2-mod-uploader/blob/main/src/ModConfig.cs).
 
-The Steam website separately offers language-specific historical note editing. This cleanup edits the existing default (English-field) text in Chinese; Simplified Chinese viewers use Steam's documented-on-page fallback. No translated note variants are created. Original/replacement text, published source revisions and read-back results are in `changelog-history.json`.
+The Steam website separately offers language-specific historical note editing. Publish distinct notes for all 16 languages in `languages.json`; do not concatenate translations into one field. `changelog-translations.json` archives each version's approved Chinese source, translations, original entry ID, source revision and evidence. Keep one translated line per source change and preserve values, base/upgraded meanings, conditions and card-type restrictions. Use the names shipped in that version; for a rename affecting Chinese only, say so rather than inventing a rename in other languages. Earlier Chinese cleanup records remain in `changelog-history.json`.
+
+After a single verified package upload, identify its existing announcement and open `https://steamcommunity.com/sharedfiles/editchangelogentry/3776911445/{entryId}/`. Save Simplified Chinese explicitly before replacing the English default, then use the language selector for every remaining supported language. Steam's numeric language values are English 0, German 1, French 2, Italian 3, Korean 4, Spanish 5, Simplified Chinese 6, Traditional Chinese 7, Russian 8, Thai 9, Japanese 10, Polish 12, Turkish 21, Brazilian Portuguese 22, Latin American Spanish 27, Indonesian 30. Read the current selector before using these values. Wait for saving to finish, reload, and verify both the selected language and exact text; a fallback warning is not a saved translation.
+
+For historical maintenance, capture the existing IDs, order, dates and original text before editing. Record progress after each batch so resumed work skips verified fields. Preserve unmapped and earlier entries. Archive read-back hashes and the final entry-count/order check with the operation's validation evidence. This process edits the same announcements; never submit a package once per language or add replacement announcement entries.
+
+The 1.0.0–1.2.8 backfill is complete: 39 announcements, 16 languages each, 624 saved and reloaded fields. `../Docs/validation/workshop-notes-16-languages-20261117.json` records the verification. All 96 existing entries retained their IDs, order, displayed publication dates and Chinese text; the 57 pre-1.0.0 entries were untouched.
 
 ## Discord release announcements
 
-The user requested on 2026-11-17 that the next Mod update after 1.2.8 also announce its changes in Simplified Chinese, Japanese, Korean, and English. Publish after the Workshop release has succeeded and been verified, alongside the website sync. The request authorizes these four release announcements without another posting-permission question.
+The user requested four-language Discord release announcements on 2026-11-17 and then requested immediate publication of 1.2.8. That release is already posted and verified in `Docs/validation/discord-1.2.8-evidence.json`. Continue with subsequent releases after the Workshop upload succeeds and is verified, alongside the website sync. The request authorizes these four release announcements without another posting-permission question.
 
 - Translate the frozen `Workshop/change-note.md` for that version. Use card, relic, power and keyword names from the same release's `zhs`, `jpn`, `kor` and `eng` localization. Keep all changes and exact old/new values; `→` means base/upgraded values. Check conditions and card-type restrictions against the actual released behavior before publishing.
 - Include the version and Workshop link. Send four clearly labeled language sections in the announcement channel. Split long messages at change boundaries when necessary, preserving language and version labels. Do not mention everyone or roles unless the user requests it.

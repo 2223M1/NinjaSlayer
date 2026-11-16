@@ -1,0 +1,44 @@
+{
+  "version": "1.2.8",
+  "channelUrl": "https://discord.com/channels/1555073106480070658/1555076253793525760",
+  "verifiedAtUtc": "2026-11-16T16:44:05.598Z",
+  "sourceRevision": "a9870699529ecb02635fddbda8d058bf01e2f7cc",
+  "messages": [
+    {
+      "language": "zhs",
+      "messageId": "1571928693763350568",
+      "url": "https://discord.com/channels/1555073106480070658/1555076253793525760/1571928693763350568",
+      "text": "## Ninja Slayer 1.2.8 — 中文\nhttps://steamcommunity.com/sharedfiles/filedetails/?id=3776911445\n• 从容由每弃一张牌获得 2 点格挡改为获得 2 点拉伸。\n• 奈落解放新增战斗开始时获得 20 点奈落生命，保留每回合加入一张黑炎；第一次洗牌前（开局洗牌不计），手牌中有攻击牌时必须优先打出攻击牌。\n• 奈落事件移除指定牌组要求，含忍者杀手的队伍按普通第三层事件概率遇到；支持多人独立选择，其他角色也切换为奈落外观和音效。\n• 柔术获得的空手道由 3→4 层提高至 3→5 层。\n• Chop打击伤害由 11→13 点调整为 9→12 点，下回合获得的空手道由 2→3 层提高至 3→4 层。\n• 连打获得的空手道由 5→6 层调整为 4→5 层。\n• 转机由生成状态牌时触发抽牌改为生成任意牌时触发。\n• 交叉防御描述去除“非能力牌”，效果仍跳过能力牌；Chop受其影响后回到手牌。\n• 浴火移除消耗。\n• 飞刃席卷获得的瞄准由 4→6 点提高至 6→8 点。\n• 手里剑风暴移除消耗。\n• 攻势不息升级由回合末打出抽牌堆顶部的2张牌改为获得保留，回合末仍打出抽牌堆顶部的1张牌。\n• 删除手里剑的激发及瞄准说明，精简茶道呼吸和残心描述，茶道呼吸使用能量图标。\n• 卡面中的正面效果显示为黄色，侧栏只保留 16 种效果列表。\n• 更换谋定卡图。",
+      "sha256": "02b5f737bc3f51bb455ecf9965cf4d6237ecd7e36793771b92917565e53bf249",
+      "verifiedLineCount": 15,
+      "duplicateCount": 0
+    },
+    {
+      "language": "jpn",
+      "messageId": "1571928788315414650",
+      "url": "https://discord.com/channels/1555073106480070658/1555076253793525760/1571928788315414650",
+      "text": "## Ninja Slayer 1.2.8 — 日本語\nhttps://steamcommunity.com/sharedfiles/filedetails/?id=3776911445\n• 平静：カードを1枚捨てるたびに得る効果を、2ブロックからストレッチ2に変更。\n• ナラク解放：戦闘開始時にナラク生命20を得る効果を追加。毎ターン黒い炎を1枚手札に加える効果は維持。最初のシャッフルまで（戦闘開始時のシャッフルを除く）、手札にアタックがある場合はアタックを優先してプレイする必要があります。\n• ナラクイベント：指定カードをデッキに入れる条件を撤廃。ニンジャスレイヤーがいるパーティーでは、第3章の通常イベントとして出現します。マルチプレイでは各自が独立して選択でき、他のキャラクターもナラクの外見と効果音に変化します。\n• ジュー・ジツ：得られるカラテを3→4から3→5に増加。\n• チョップ打撃：ダメージを11→13から9→12に変更。次のターンに得るカラテを2→3から3→4に増加。\n• 連打：得られるカラテを5→6から4→5に減少。\n• 転機：状態異常カードの生成時だけでなく、あらゆるカードの生成時にドローするよう変更。\n• クロスガード：説明から「パワー以外」を削除。実際の効果は引き続きパワーを飛ばします。この効果を受けたチョップは手札に戻ります。\n• 火に浴す：廃棄を削除。\n• 飛刃一掃：得られる弓力を4→6から6→8に増加。\n• スリケンの嵐：廃棄を削除。\n• 絶えぬ攻勢：アップグレード効果を「ターン終了時に山札の上から2枚プレイ」から保留の追加に変更。ターン終了時にプレイするのは引き続き山札の一番上の1枚で、カードの種類は問いません。\n• スリケンの解放と弓力に関する補足説明を削除。チャドー呼吸とザンシンの説明を簡潔にし、チャドー呼吸にエナジーアイコンを使用。\n• カード内のバフ表記を黄色に変更。サイドの説明は対象となる16種の効果一覧のみを表示。\n• 先を見据えるのカードイラストを変更。",
+      "sha256": "8ee2dfd3eb0334e375482b5c1aca1fcc4db422493fde4aeac94412a2deba4870",
+      "verifiedLineCount": 15,
+      "duplicateCount": 0
+    },
+    {
+      "language": "kor",
+      "messageId": "1571928794086907964",
+      "url": "https://discord.com/channels/1555073106480070658/1555076253793525760/1571928794086907964",
+      "text": "## Ninja Slayer 1.2.8 — 한국어\nhttps://steamcommunity.com/sharedfiles/filedetails/?id=3776911445\n• 침착: 카드를 버릴 때마다 방어도 2 대신 스트레칭 2를 얻습니다.\n• 나라쿠 해방: 전투 시작 시 나라쿠 생명 20을 얻는 효과를 추가했습니다. 매 턴 검은 불꽃 1장을 손에 넣는 효과는 유지됩니다. 첫 번째 덱 섞기 전까지(전투 시작 시 섞기 제외), 손에 공격 카드가 있으면 공격 카드를 먼저 사용해야 합니다.\n• 나라쿠 이벤트: 덱에 특정 카드가 있어야 한다는 조건을 제거했습니다. 닌자 슬레이어가 포함된 파티는 일반적인 3막 이벤트 확률로 만날 수 있습니다. 멀티플레이에서는 각자 독립적으로 선택하며, 다른 캐릭터도 나라쿠의 외형과 효과음으로 바뀝니다.\n• 주・짓수: 얻는 카라테가 3→4에서 3→5로 증가했습니다.\n• 촙 타격: 피해량이 11→13에서 9→12로 변경되고, 다음 턴에 얻는 카라테가 2→3에서 3→4로 증가했습니다.\n• 연타: 얻는 카라테가 5→6에서 4→5로 감소했습니다.\n• 전환점: 상태 카드뿐 아니라 어떤 카드든 생성하면 카드를 뽑습니다.\n• 교차 방어: 설명에서 ‘파워가 아닌’을 삭제했습니다. 실제 효과는 여전히 파워 카드를 건너뜁니다. 이 효과를 받은 촙은 손으로 돌아옵니다.\n• 재점화: 소멸을 제거했습니다.\n• 칼날 휩쓸기: 얻는 조준이 4→6에서 6→8로 증가했습니다.\n• 슈리켄 폭풍: 소멸을 제거했습니다.\n• 끈질김: 강화 효과를 ‘턴 종료 시 뽑을 카드 더미 맨 위의 카드 2장 사용’에서 보존 추가로 변경했습니다. 턴 종료 시에는 여전히 맨 위의 카드 1장을 사용하며, 카드 종류는 제한하지 않습니다.\n• 슈리켄의 발현 및 조준 설명을 삭제했습니다. 차도 호흡과 잔심의 설명을 간결하게 다듬고, 차도 호흡에 에너지 아이콘을 사용했습니다.\n• 카드의 버프 표기를 노란색으로 변경했습니다. 툴팁에는 해당하는 16가지 효과 목록만 표시합니다.\n• 대비의 카드 그림을 교체했습니다.",
+      "sha256": "9c763d6392632c14d4d448e7115cb3511536afc48e50d1872da1db4b19ac7e26",
+      "verifiedLineCount": 15,
+      "duplicateCount": 0
+    },
+    {
+      "language": "eng",
+      "messageId": "1571928797727428728",
+      "url": "https://discord.com/channels/1555073106480070658/1555076253793525760/1571928797727428728",
+      "text": "## Ninja Slayer 1.2.8 — English\nhttps://steamcommunity.com/sharedfiles/filedetails/?id=3776911445\n• Composure now grants 2 Stretch instead of 2 Block whenever you discard a card.\n• Naraku Unleashed now grants 20 Naraku Life at the start of combat and still adds a Black Flame each turn. Before your first reshuffle (excluding the initial shuffle), you must play Attacks first while any are in your hand.\n• The Naraku event no longer requires specific cards in your deck. Parties containing Ninja Slayer can encounter it through the normal Act 3 event pool. Multiplayer choices are independent, and other characters also gain Naraku's appearance and sounds.\n• Jujutsu: Karate increased from 3→4 to 3→5.\n• Chop Strike: damage changed from 11→13 to 9→12; Karate gained next turn increased from 2→3 to 3→4.\n• Flurry: Karate reduced from 5→6 to 4→5.\n• Turning Point now draws cards when you generate any card, rather than only Status cards.\n• Cross Guard's description no longer says ‘non-Power’; its effect still skips Powers. Chop now returns to your hand when affected by it.\n• Rekindle no longer has Exhaust.\n• Blade Sweep: Aim increased from 4→6 to 6→8.\n• Shuriken Storm no longer has Exhaust.\n• Relentless's upgrade now grants Retain instead of playing the top 2 cards of your Draw Pile at the end of your turn. It still plays the top 1 card, regardless of card type.\n• Removed Shuriken's Evoke and Aim explanations. Simplified Chado Breathing and Zanshin descriptions; Chado Breathing now uses the Energy icon.\n• Buff references on cards are now yellow; the tooltip only lists the 16 included effects.\n• Replaced Forethought's card art.",
+      "sha256": "d713fa790306606ea070024aaaa044892569542ff48d227e1f25d57c21917722",
+      "verifiedLineCount": 15,
+      "duplicateCount": 0
+    }
+  ]
+}

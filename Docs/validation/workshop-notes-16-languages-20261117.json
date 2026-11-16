@@ -1,0 +1,3956 @@
+{
+  "schemaVersion": 1,
+  "workshopItemId": "3776911445",
+  "changelogUrl": "https://steamcommunity.com/sharedfiles/filedetails/changelog/3776911445",
+  "verifiedAtUtc": "2026-11-16T17:38:47.442Z",
+  "scope": {
+    "firstVersion": "1.0.0",
+    "lastVersion": "1.2.8",
+    "releaseCount": 39,
+    "languageCount": 16,
+    "fieldCount": 624,
+    "sourceChangeCount": 203
+  },
+  "archive": "Workshop/changelog-translations.json",
+  "archiveSha256": "dd27f8128462f27910187c2b7c7bcea393bd8715c54c507d154f51538af059c6",
+  "publication": {
+    "method": "Existing Steam language selector and save form; every field reloaded and compared exactly, selected language checked, fallback warning absent.",
+    "packageUploaded": false,
+    "versionBumped": false,
+    "newAnnouncementsCreated": false
+  },
+  "review": {
+    "drafting": "Reviewed English pivot; machine-assisted translation drafts; release-localized glossary restoration; manual terminology and condition corrections.",
+    "checks": [
+      "39 Chinese sources matched the pre-edit live announcements.",
+      "All 16 languages contain one line for each source change.",
+      "Numeric differences caused by spelled-out numbers, articles, and explicit double/per-hit wording were inspected.",
+      "Corrected translated card-type restrictions, upgrade conditions, sentence boundaries, discarded-card trigger wording and Korean name particles.",
+      "No translation placeholders or replacement characters remain.",
+      "Repository consistency validation and git diff --check passed."
+    ]
+  },
+  "listVerification": {
+    "beforeCount": 96,
+    "afterCount": 96,
+    "originalIdsOrderDatesAndChineseTextPreserved": true,
+    "untouchedEarlierCount": 57
+  },
+  "originalEntries": [
+    {
+      "entryId": "1794834987",
+      "displayedPublicationDate": "更新于：11 月 16 日 下午 9:16",
+      "chineseTextSha256": "920105e5c4126dd2f71c68838d63a74192f042c116c193f583ebf2e3eae63c95"
+    },
+    {
+      "entryId": "1794714918",
+      "displayedPublicationDate": "更新于：11 月 15 日 上午 11:55",
+      "chineseTextSha256": "9a631a225b8a364c1ab9c1f07e2dd587133cb0581ba2725d4c5dd509121b922c"
+    },
+    {
+      "entryId": "1794642690",
+      "displayedPublicationDate": "更新于：11 月 14 日 下午 3:51",
+      "chineseTextSha256": "b76b56a5931c1ae7ae4701641442b8ae0590c4d08a71b83716c65459f5e8e0d3"
+    },
+    {
+      "entryId": "1794541134",
+      "displayedPublicationDate": "更新于：11 月 13 日 上午 11:38",
+      "chineseTextSha256": "407e15e0f1ed702aef01e7d981f367763f355f0da36a7c622511ce0932f4572f"
+    },
+    {
+      "entryId": "1794371823",
+      "displayedPublicationDate": "更新于：11 月 11 日 下午 12:37",
+      "chineseTextSha256": "c01446503a87b9c3d05ab0b32bedc17802b311de2ebaba535a8100d5fd41d41a"
+    },
+    {
+      "entryId": "1794363012",
+      "displayedPublicationDate": "更新于：11 月 11 日 上午 10:10",
+      "chineseTextSha256": "a5d129440997893770f9937e34acde4b62b25593220d7704bf93ea55864404d3"
+    },
+    {
+      "entryId": "1794248389",
+      "displayedPublicationDate": "更新于：11 月 10 日 上午 2:19",
+      "chineseTextSha256": "ce019abb29be17771550b86fc83a75f5022d836a87efccb99415e2555b4fa513"
+    },
+    {
+      "entryId": "1794237282",
+      "displayedPublicationDate": "更新于：11 月 9 日 下午 11:14",
+      "chineseTextSha256": "805b7a38b41fd69b1e125ef8c9f128ae7f67bcfc61deb3124ea84e27f65cac17"
+    },
+    {
+      "entryId": "1794228897",
+      "displayedPublicationDate": "更新于：11 月 9 日 下午 8:54",
+      "chineseTextSha256": "2f2a1811496dc1f7cda182e28645d1a3ca1137ae39ebe2d9612fd46b46c6a214"
+    },
+    {
+      "entryId": "1792028863",
+      "displayedPublicationDate": "更新于：10 月 15 日 上午 9:47",
+      "chineseTextSha256": "b661db59be1cdb16816aa3505d744bf664f232e16ac4bbd19c9921887b2696de"
+    },
+    {
+      "entryId": "1791951720",
+      "displayedPublicationDate": "更新于：10 月 14 日 下午 12:22",
+      "chineseTextSha256": "a402cb39b07e5aeb386a363e07ccce4bb9d05394941ce0b170745370b03f2c91"
+    },
+    {
+      "entryId": "1791950776",
+      "displayedPublicationDate": "更新于：10 月 14 日 下午 12:06",
+      "chineseTextSha256": "eb917427846677fadb08597b1aade1e5c1597eefaf74797694b0769b7bbaddfb"
+    },
+    {
+      "entryId": "1791947508",
+      "displayedPublicationDate": "更新于：10 月 14 日 上午 11:11",
+      "chineseTextSha256": "2ec6ce2525d859493ae10525090871899bbc295c473b4d230ce9df24262a5f1f"
+    },
+    {
+      "entryId": "1791732863",
+      "displayedPublicationDate": "更新于：10 月 11 日 下午 11:34",
+      "chineseTextSha256": "2e942ca1a6f0dcbd861bb38e32c92181f8ae50744bb194ee9f6a9651c7468632"
+    },
+    {
+      "entryId": "1791727924",
+      "displayedPublicationDate": "更新于：10 月 11 日 下午 10:12",
+      "chineseTextSha256": "b81a9c80d269dccddf6e08137d422a97f6314e6a166945ff9890ab03792ac176"
+    },
+    {
+      "entryId": "1791705379",
+      "displayedPublicationDate": "更新于：10 月 11 日 下午 3:56",
+      "chineseTextSha256": "63a14c6b9c111dd1bcfc427ca610aa0902306c84315ef512086024f5dfcaa5c0"
+    },
+    {
+      "entryId": "1791701047",
+      "displayedPublicationDate": "更新于：10 月 11 日 下午 2:44",
+      "chineseTextSha256": "da220c521fc7c0e8804b04ac10b17908f1d0dc0d88942112435cfd51eab71182"
+    },
+    {
+      "entryId": "1791627570",
+      "displayedPublicationDate": "更新于：10 月 10 日 下午 6:19",
+      "chineseTextSha256": "14f2249a4cba6200e9b199f3b274c84678fd72727c4acd5ab8fab222f9dbda3e"
+    },
+    {
+      "entryId": "1791566645",
+      "displayedPublicationDate": "更新于：10 月 10 日 上午 1:24",
+      "chineseTextSha256": "112e3c38cb27bc56f373212fab9b60a55b8d884955fee8b1f3438d0f8ee456bd"
+    },
+    {
+      "entryId": "1791522247",
+      "displayedPublicationDate": "更新于：10 月 9 日 下午 1:04",
+      "chineseTextSha256": "217c6f3037821d9c40971a7242730a487384b132d18c36bf1e3b8e31dcd6acaa"
+    },
+    {
+      "entryId": "1791377294",
+      "displayedPublicationDate": "更新于：10 月 7 日 下午 8:48",
+      "chineseTextSha256": "a627e23785fbc0e3392272db821587b8685cc8800880b73c0aaa84e14d241274"
+    },
+    {
+      "entryId": "1791301288",
+      "displayedPublicationDate": "更新于：10 月 6 日 下午 11:41",
+      "chineseTextSha256": "363c6fb039762c954dc8f467eccdda839cfc5424c437450f5d803607f3c297cd"
+    },
+    {
+      "entryId": "1791265312",
+      "displayedPublicationDate": "更新于：10 月 6 日 下午 1:41",
+      "chineseTextSha256": "cb02b7f382ef2b925ddaa8519860ad70c5529e430d2401fa0ec82cf4a8c5bb39"
+    },
+    {
+      "entryId": "1791218709",
+      "displayedPublicationDate": "更新于：10 月 6 日 上午 12:45",
+      "chineseTextSha256": "108ea758c5cea35c0db0026530aefb0288ef57d3bdaa4f43032a69e47e4abdac"
+    },
+    {
+      "entryId": "1791211888",
+      "displayedPublicationDate": "更新于：10 月 5 日 下午 10:51",
+      "chineseTextSha256": "c29ba9ca86d9b9c4a999a8458f238d1e975ef5952246cec2c03fa6e63046233c"
+    },
+    {
+      "entryId": "1791203296",
+      "displayedPublicationDate": "更新于：10 月 5 日 下午 8:28",
+      "chineseTextSha256": "cda5816f9fc3f92cdbf1b5257d9f9c4714b0038aa5c54fe1ffd9489ff83f3199"
+    },
+    {
+      "entryId": "1791117772",
+      "displayedPublicationDate": "更新于：10 月 4 日 下午 8:42",
+      "chineseTextSha256": "aaca101f849f24cc99c1357cd63ebc012fad4f231e29c3b55df3f12f859db928"
+    },
+    {
+      "entryId": "1791113563",
+      "displayedPublicationDate": "更新于：10 月 4 日 下午 7:32",
+      "chineseTextSha256": "cee48f83e17b2e686726ca62cd4287ace2770aeafbc21d4be8d9f9bf2acec965"
+    },
+    {
+      "entryId": "1791094362",
+      "displayedPublicationDate": "更新于：10 月 4 日 下午 2:12",
+      "chineseTextSha256": "6dde35f6ea47a1d34d6429c9b6bdfd1209ca787bc94453940844851e25b1b210"
+    },
+    {
+      "entryId": "1791092930",
+      "displayedPublicationDate": "更新于：10 月 4 日 下午 1:48",
+      "chineseTextSha256": "442694dfddef762fef345bae0187a9e79fdf730032b43bb368ac04ccf60b9354"
+    },
+    {
+      "entryId": "1791087832",
+      "displayedPublicationDate": "更新于：10 月 4 日 下午 12:23",
+      "chineseTextSha256": "34c9d8db52d0b6bd9d1164fcd38c82c190361efb9bba3b4b51edee17d41c08f5"
+    },
+    {
+      "entryId": "1791050853",
+      "displayedPublicationDate": "更新于：10 月 4 日 上午 2:07",
+      "chineseTextSha256": "ab34cd9e61634c48cd72174ce1fec7ec2a03b641d9ab10461d92495962d8c9c4"
+    },
+    {
+      "entryId": "1791027166",
+      "displayedPublicationDate": "更新于：10 月 3 日 下午 7:32",
+      "chineseTextSha256": "42a68399e546da1eacc500d51a42aef2a0e8b22093db04912c2d7f479a3dba82"
+    },
+    {
+      "entryId": "1791023512",
+      "displayedPublicationDate": "更新于：10 月 3 日 下午 6:31",
+      "chineseTextSha256": "452d5a994162898057a02a26bea7c67ff02f448909564e671822a419577431c9"
+    },
+    {
+      "entryId": "1790935434",
+      "displayedPublicationDate": "更新于：10 月 2 日 下午 6:03",
+      "chineseTextSha256": "45fa50b01658705d7ee577fb8db1dec7fe82e09b08176f66e9d8761656764329"
+    },
+    {
+      "entryId": "1790931655",
+      "displayedPublicationDate": "更新于：10 月 2 日 下午 5:00",
+      "chineseTextSha256": "d40c5d60496c90924f0bb89a79ebcf0474bed14113c432cddfa9c7765446e28c"
+    },
+    {
+      "entryId": "1790900014",
+      "displayedPublicationDate": "更新于：10 月 2 日 上午 8:13",
+      "chineseTextSha256": "af83f179d96655a4afd6558537951ba71473cabccec427243c565d47ed75cdef"
+    },
+    {
+      "entryId": "1790860507",
+      "displayedPublicationDate": "更新于：10 月 1 日 下午 9:15",
+      "chineseTextSha256": "ff606fb73751a18bd08d92bbec53c46d783a238fd3fb870cec65240c12776c16"
+    },
+    {
+      "entryId": "1790831602",
+      "displayedPublicationDate": "更新于：10 月 1 日 下午 1:13",
+      "chineseTextSha256": "1d4a3bb19748590168be879208aee91f232eae708b390f303f73423b99883db3"
+    },
+    {
+      "entryId": "1790823842",
+      "displayedPublicationDate": "更新于：10 月 1 日 上午 11:04",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1790756543",
+      "displayedPublicationDate": "更新于：9 月 30 日 下午 4:22",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1790670118",
+      "displayedPublicationDate": "更新于：9 月 29 日 下午 4:21",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1790653732",
+      "displayedPublicationDate": "更新于：9 月 29 日 上午 11:48",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1790650226",
+      "displayedPublicationDate": "更新于：9 月 29 日 上午 10:50",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1790603480",
+      "displayedPublicationDate": "更新于：9 月 28 日 下午 9:51",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1790432061",
+      "displayedPublicationDate": "更新于：9 月 26 日 下午 10:14",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1790342422",
+      "displayedPublicationDate": "更新于：9 月 25 日 下午 9:20",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1790097976",
+      "displayedPublicationDate": "更新于：9 月 23 日 上午 1:26",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1790085394",
+      "displayedPublicationDate": "更新于：9 月 22 日 下午 9:56",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1790071393",
+      "displayedPublicationDate": "更新于：9 月 22 日 下午 6:03",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1789718631",
+      "displayedPublicationDate": "更新于：9 月 18 日 下午 4:03",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1789630614",
+      "displayedPublicationDate": "更新于：9 月 17 日 下午 3:36",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1789570344",
+      "displayedPublicationDate": "更新于：9 月 16 日 下午 10:52",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1789552307",
+      "displayedPublicationDate": "更新于：9 月 16 日 下午 5:51",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1789473164",
+      "displayedPublicationDate": "更新于：9 月 15 日 下午 7:52",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1789453822",
+      "displayedPublicationDate": "更新于：9 月 15 日 下午 2:30",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1789389419",
+      "displayedPublicationDate": "更新于：9 月 14 日 下午 8:36",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1789384134",
+      "displayedPublicationDate": "更新于：9 月 14 日 下午 7:08",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1789286977",
+      "displayedPublicationDate": "更新于：9 月 13 日 下午 4:09",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1789248338",
+      "displayedPublicationDate": "更新于：9 月 13 日 上午 5:25",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1789228345",
+      "displayedPublicationDate": "更新于：9 月 12 日 下午 11:52",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1789210259",
+      "displayedPublicationDate": "更新于：9 月 12 日 下午 6:50",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1789189960",
+      "displayedPublicationDate": "更新于：9 月 12 日 下午 1:12",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1789134143",
+      "displayedPublicationDate": "更新于：9 月 11 日 下午 9:42",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1789033414",
+      "displayedPublicationDate": "更新于：9 月 10 日 下午 5:43",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1789021554",
+      "displayedPublicationDate": "更新于：9 月 10 日 下午 2:25",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1788954194",
+      "displayedPublicationDate": "更新于：9 月 9 日 下午 7:43",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1788924511",
+      "displayedPublicationDate": "更新于：9 月 9 日 上午 11:28",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1788755219",
+      "displayedPublicationDate": "更新于：9 月 7 日 下午 12:26",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1788608998",
+      "displayedPublicationDate": "更新于：9 月 5 日 下午 7:49",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1788494845",
+      "displayedPublicationDate": "更新于：9 月 4 日 下午 12:07",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1788492848",
+      "displayedPublicationDate": "更新于：9 月 4 日 上午 11:34",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1788355301",
+      "displayedPublicationDate": "更新于：9 月 2 日 下午 9:21",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1788270057",
+      "displayedPublicationDate": "更新于：9 月 1 日 下午 9:40",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1787924347",
+      "displayedPublicationDate": "更新于：8 月 28 日 下午 9:39",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1787921281",
+      "displayedPublicationDate": "更新于：8 月 28 日 下午 8:48",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1787887426",
+      "displayedPublicationDate": "更新于：8 月 28 日 上午 11:23",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1787859191",
+      "displayedPublicationDate": "更新于：8 月 28 日 上午 3:33",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1787852641",
+      "displayedPublicationDate": "更新于：8 月 28 日 上午 1:44",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1787852145",
+      "displayedPublicationDate": "更新于：8 月 28 日 上午 1:35",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1787540159",
+      "displayedPublicationDate": "更新于：8 月 24 日 上午 10:55",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1787393727",
+      "displayedPublicationDate": "更新于：8 月 22 日 下午 6:15",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1787393205",
+      "displayedPublicationDate": "更新于：8 月 22 日 下午 6:06",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1787391957",
+      "displayedPublicationDate": "更新于：8 月 22 日 下午 5:45",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1786956074",
+      "displayedPublicationDate": "更新于：8 月 17 日 下午 4:41",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1786945141",
+      "displayedPublicationDate": "更新于：8 月 17 日 下午 1:39",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1786937367",
+      "displayedPublicationDate": "更新于：8 月 17 日 上午 11:29",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1786936304",
+      "displayedPublicationDate": "更新于：8 月 17 日 上午 11:11",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1786906124",
+      "displayedPublicationDate": "更新于：8 月 17 日 上午 2:48",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1786902574",
+      "displayedPublicationDate": "更新于：8 月 17 日 上午 1:49",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1786887434",
+      "displayedPublicationDate": "更新于：8 月 16 日 下午 9:37",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1786215850",
+      "displayedPublicationDate": "更新于：8 月 9 日 上午 3:04",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1786207764",
+      "displayedPublicationDate": "更新于：8 月 9 日 上午 12:49",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1785852704",
+      "displayedPublicationDate": "更新于：8 月 4 日 下午 10:11",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1785765222",
+      "displayedPublicationDate": "更新于：8 月 3 日 下午 9:53",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "entryId": "1785762051",
+      "displayedPublicationDate": "更新于：8 月 3 日 下午 9:00",
+      "chineseTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "releases": [
+    {
+      "version": "1.0.0",
+      "entryId": "1790831602",
+      "sourceRevision": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+      "originalChineseSha256": "1d4a3bb19748590168be879208aee91f232eae708b390f303f73423b99883db3",
+      "languages": {
+        "eng": {
+          "sha256": "4f5413f4e06f57b7c076f196ed6bddce283d8af5b1c4fc2cfc345560d46d96ec",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:10:02.229Z"
+        },
+        "zhs": {
+          "sha256": "1d4a3bb19748590168be879208aee91f232eae708b390f303f73423b99883db3",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:02:51.177Z"
+        },
+        "zht": {
+          "sha256": "1390c5deefe7afeb01558bf2bef11337647d6af8313df8f57e13bff26e2bcca6",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:38:02.434Z"
+        },
+        "deu": {
+          "sha256": "e13e1ad07e2ef1cee0e99aa42b938d69a2e451b7030dc4bd0d02c17fc0369a9b",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:38:04.160Z"
+        },
+        "esp": {
+          "sha256": "270a88701a932ce6ee60bdb33e12948c7f92cc7e738857c4cf6b1271313ea298",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:38:05.828Z"
+        },
+        "fra": {
+          "sha256": "271e087d2dd97129bfe915bb61782583134575474c22f8ee3bfd3e291e867306",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:38:07.485Z"
+        },
+        "ind": {
+          "sha256": "bc069de434fb58e0c09b3e97bbe81cc5714a037c847c95f3a8e641b9cbcb5f44",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:38:09.107Z"
+        },
+        "ita": {
+          "sha256": "fbebb77849979bb05f8ecac1bb56e455b8f8db9c1ee641c09598c13f841dbe06",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:38:10.763Z"
+        },
+        "jpn": {
+          "sha256": "ca7c9e7f349a3abed3c9375956e3972b3eaf5f7d6c8595530fd46eabfd4bdf06",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:38:12.562Z"
+        },
+        "kor": {
+          "sha256": "b94ad16631baa3568aa37a659e43db77cd4f06909318f7a3801b9fc7925dcade",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:38:14.937Z"
+        },
+        "pol": {
+          "sha256": "c7fae58ef26f63d8381777a4c8cdfa2bdd24c381ef7e372457818302614bfb37",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:38:16.595Z"
+        },
+        "ptb": {
+          "sha256": "48f6b1368a1a86891624d342580f11a50d978427021f58d38a4c9bc79bd1dda4",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:38:18.381Z"
+        },
+        "rus": {
+          "sha256": "ef742d6a0e3b94ed5cc6c76ebe79e1839e5e5ae2df7cf3f483872d4794883720",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:38:20.530Z"
+        },
+        "spa": {
+          "sha256": "270a88701a932ce6ee60bdb33e12948c7f92cc7e738857c4cf6b1271313ea298",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:38:22.337Z"
+        },
+        "tha": {
+          "sha256": "015823e3e20b3e145ef35ee602eb5aedddbc97e6f6335b9e68fa8fd0c0d65e68",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:38:24.141Z"
+        },
+        "tur": {
+          "sha256": "456a02f053eddda52a1ce0f3e8f01618b65e5e2ab7d4244acb6583746a27452e",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:38:25.830Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.1",
+      "entryId": "1790860507",
+      "sourceRevision": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+      "originalChineseSha256": "ff606fb73751a18bd08d92bbec53c46d783a238fd3fb870cec65240c12776c16",
+      "languages": {
+        "eng": {
+          "sha256": "296c4882da0dd8018c4800808b02cee3f8ee4537de67c6e69187380248bcd0ed",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:10:05.518Z"
+        },
+        "zhs": {
+          "sha256": "ff606fb73751a18bd08d92bbec53c46d783a238fd3fb870cec65240c12776c16",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:02:53.207Z"
+        },
+        "zht": {
+          "sha256": "b45e3d3b1404f172e26ab79cadfa6fb43f7a37568aae8ee7891cc27031b60c47",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:37:24.368Z"
+        },
+        "deu": {
+          "sha256": "1df93f2cc7c844ce23bdbfe9ca6e8bf710ce3f7938fbacc75d50ca459a160876",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:37:39.590Z"
+        },
+        "esp": {
+          "sha256": "3b8159c6f27fc40d3e70c08fb4532c1e4201f858aced5a043a7fc6e405535fe4",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:37:41.203Z"
+        },
+        "fra": {
+          "sha256": "c91cdd5f75a7fb5382a82605682054aab4312eb037a3bd7d34da3a1f7352016d",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:37:42.818Z"
+        },
+        "ind": {
+          "sha256": "ce049882e0bdac7fbafedc63eb5acebb00bb64760474d19a6c9f3b881e36dede",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:37:44.447Z"
+        },
+        "ita": {
+          "sha256": "40275dfbaa9350a5aba48dc501969e0f381ba22748071d1034eb720f14a82063",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:37:46.077Z"
+        },
+        "jpn": {
+          "sha256": "cf2a12ba2dd86e8bcbabbc38bdbe5b1b58cdf8418e2e9f7709d8e9332d7932c9",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:37:47.741Z"
+        },
+        "kor": {
+          "sha256": "e708f578449011f440225eb818421e5811488d535ab6d6e84831ebb91d13296c",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:37:49.514Z"
+        },
+        "pol": {
+          "sha256": "5a2e08a6cf0d82c9a4ed80c533326d20dabeeaf5eb089603b1a2d485d50b328f",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:37:51.286Z"
+        },
+        "ptb": {
+          "sha256": "64f01f7d1f5c1d3f47e6b457ee68013f5a380e7089b68a21a247b40dcb760d23",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:37:52.870Z"
+        },
+        "rus": {
+          "sha256": "652013508f4a7f2fe2ce2d8c4a4d3c282766b9636c67928e81d1f4caa37f31e9",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:37:54.884Z"
+        },
+        "spa": {
+          "sha256": "3b8159c6f27fc40d3e70c08fb4532c1e4201f858aced5a043a7fc6e405535fe4",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:37:56.793Z"
+        },
+        "tha": {
+          "sha256": "51ad866c1e4445d1c814a2e372cf6d63361ff6062e5f67ce38a4c1ebc4918ee9",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:37:58.946Z"
+        },
+        "tur": {
+          "sha256": "a64ef62855e87e5fa82e0f699500f3d062d468480aefa89cc32f975d3dae39b6",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:38:00.688Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.2",
+      "entryId": "1790900014",
+      "sourceRevision": "36cfde86520291e133935d575dd4e03ef53ee788",
+      "originalChineseSha256": "af83f179d96655a4afd6558537951ba71473cabccec427243c565d47ed75cdef",
+      "languages": {
+        "eng": {
+          "sha256": "3369603f6ba660d9c9135ede610e4041d4c09eac97ccadae7a383fcd3d8d23a1",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:10:07.829Z"
+        },
+        "zhs": {
+          "sha256": "af83f179d96655a4afd6558537951ba71473cabccec427243c565d47ed75cdef",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:02:55.428Z"
+        },
+        "zht": {
+          "sha256": "6e9927b4d85115b16ff9a844e6c59389232f5960c20777dab1bbed315f16e5b3",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:36:57.501Z"
+        },
+        "deu": {
+          "sha256": "be80142fe208d64b911fdfaf141d9662366435c687f0b5451d180b4197fc563e",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:36:59.460Z"
+        },
+        "esp": {
+          "sha256": "e534df1521f634134e71fbdc38222ac6962173ef3e5bf31395fdc25c05540851",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:37:01.353Z"
+        },
+        "fra": {
+          "sha256": "8f0663305e54b56854fb7fa45d07870e962c04d8daa827672a8d1f856d2e5f0e",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:37:03.259Z"
+        },
+        "ind": {
+          "sha256": "de3a4e42c20279cb479c5ce5b590c4b17b5d3bbd40e08483b3340c19ab97b020",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:37:05.097Z"
+        },
+        "ita": {
+          "sha256": "c29c59d60081deb81d9d600deea5a28e739886b56077cd30f6f73e67dd9fa104",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:37:06.969Z"
+        },
+        "jpn": {
+          "sha256": "ce94352ebc228bbc8b1fa8f47ce5274f10e428f58095c9944e180f331d97fac6",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:37:09.113Z"
+        },
+        "kor": {
+          "sha256": "93b7c5d433b9830ce7df235b5dd2094f50617ab36dc66bc1b2aa0040d0d22038",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:37:10.912Z"
+        },
+        "pol": {
+          "sha256": "1c138132a7dd1f65193afd590416df59a5cbf27d21ed59e1a2208b4c302007f2",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:37:12.782Z"
+        },
+        "ptb": {
+          "sha256": "f9b32359100e370abe6a6bb97e071282ffaba2d909e7101f6773e4ce8061170e",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:37:14.627Z"
+        },
+        "rus": {
+          "sha256": "39a96acca8cdba4c5bc22da4b3c0df04e76b12e4128e56648c72fe32fe9e66ce",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:37:16.783Z"
+        },
+        "spa": {
+          "sha256": "e534df1521f634134e71fbdc38222ac6962173ef3e5bf31395fdc25c05540851",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:37:18.911Z"
+        },
+        "tha": {
+          "sha256": "85829a3378215c9dfa267d8fb635e0901cefe171789338854cae8ecc14e80299",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:37:20.585Z"
+        },
+        "tur": {
+          "sha256": "ef3dddc3b25d240deaeed52f147804c78968043a2f22552fa85cf2b0ba8af61c",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:37:22.370Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.3",
+      "entryId": "1790931655",
+      "sourceRevision": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+      "originalChineseSha256": "d40c5d60496c90924f0bb89a79ebcf0474bed14113c432cddfa9c7765446e28c",
+      "languages": {
+        "eng": {
+          "sha256": "72483d3a3b10b0bbfba638967d5468b6ccbe8373058d8f4804d7bea0da0176a2",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:10:10.101Z"
+        },
+        "zhs": {
+          "sha256": "d40c5d60496c90924f0bb89a79ebcf0474bed14113c432cddfa9c7765446e28c",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:02:57.426Z"
+        },
+        "zht": {
+          "sha256": "86bc423a4ff29a9fb74c6872951463b4045aca4d8d57c2e0b7fa2845271dcdd3",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:35:55.190Z"
+        },
+        "deu": {
+          "sha256": "0e0472d67c54b4d00c75f052954b933d3d309a13116f17d5f0150d187b2c8122",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:36:33.166Z"
+        },
+        "esp": {
+          "sha256": "287aa203a16bd8edf8c637dbdac04429fa2351e4d0379f1e98ac86a2a2cac6ff",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:36:35.129Z"
+        },
+        "fra": {
+          "sha256": "d0e334396f3182b52112b4874a1697b688fc09609f1195e96afb0114e87ca6f3",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:36:36.913Z"
+        },
+        "ind": {
+          "sha256": "ccdc5ef731893e9b97e8592de362fb55fde64b5da2b70b8257f060c358be2e9f",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:36:38.859Z"
+        },
+        "ita": {
+          "sha256": "f347c69afad1010aa39c956ca3750003664121abb3b9ca834cf1b1309e2ddb2c",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:36:40.549Z"
+        },
+        "jpn": {
+          "sha256": "da32103382394a9ef209461acb2400d9908fb0cfb92854f8febd4c7b3704230e",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:36:42.531Z"
+        },
+        "kor": {
+          "sha256": "8c6884ad4764ed60a74dd5c2c29414032b4446c19dd9a613f5bde6e879d27be4",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:36:44.359Z"
+        },
+        "pol": {
+          "sha256": "064ff0b9ee83d47da3d384eef04a547b24fb741075b04efbc6882c62541f29d3",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:36:46.551Z"
+        },
+        "ptb": {
+          "sha256": "bf996e7764251aee6e588a6c1f120e0ef7b09e8d783e9fcb5b9bcf615230b5a2",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:36:48.262Z"
+        },
+        "rus": {
+          "sha256": "83c0647bbd6902f5713357a1a30b291f16bccbe3d600c751b52a775913b61b6c",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:36:50.123Z"
+        },
+        "spa": {
+          "sha256": "287aa203a16bd8edf8c637dbdac04429fa2351e4d0379f1e98ac86a2a2cac6ff",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:36:51.911Z"
+        },
+        "tha": {
+          "sha256": "9c2dc48e50ad5a792bd03480810ad6c72adf63e2780dba9acdc09307e76db10a",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:36:53.753Z"
+        },
+        "tur": {
+          "sha256": "e11abf6c0352e1cd8512443be00989efa902b7907ab72b05dc266104386dec4e",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:36:55.490Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.4",
+      "entryId": "1790935434",
+      "sourceRevision": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+      "originalChineseSha256": "45fa50b01658705d7ee577fb8db1dec7fe82e09b08176f66e9d8761656764329",
+      "languages": {
+        "eng": {
+          "sha256": "30ef1ccb58e6a21a086767f5b439be9dc4a5863e133f5c1c2eb96c35eaa03c5a",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:10:12.514Z"
+        },
+        "zhs": {
+          "sha256": "45fa50b01658705d7ee577fb8db1dec7fe82e09b08176f66e9d8761656764329",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:02:59.431Z"
+        },
+        "zht": {
+          "sha256": "e442f7ef97aa987d416725233780ea1a80ad0ceaf3fee22e8a7edd334d9d7c17",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:30.937Z"
+        },
+        "deu": {
+          "sha256": "322883f4faaadb8453138f6f60fe84de8f7460d6fbdaeb31e1178becf86b43f1",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:32.691Z"
+        },
+        "esp": {
+          "sha256": "4dd95c4a871bf7a8acfda1c7234b216d24d5a7da272b92ee8ceac91d9fba0b7d",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:34.633Z"
+        },
+        "fra": {
+          "sha256": "2994b73e872c4c5c8c4969fdf0b19252eef0440d8840a9181eda211b242c0fa6",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:36.565Z"
+        },
+        "ind": {
+          "sha256": "90515cba53deb9ebc339dff8f95e84693852cedaf551200df95b167e9ebe5de6",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:38.510Z"
+        },
+        "ita": {
+          "sha256": "bbd08bb4114c917232e30aa79472a133c8ebf84732a1fdfa19449fddb122a8da",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:40.157Z"
+        },
+        "jpn": {
+          "sha256": "8a15192d85e8d89d3906dd7649b9caec93dc851726a8f7147343ab7ddc127eb3",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:41.906Z"
+        },
+        "kor": {
+          "sha256": "1b207d3ff24642d2df8c3cf35087e54f52fff95ed1621962ceec3e962fe258af",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:43.629Z"
+        },
+        "pol": {
+          "sha256": "f83b8a6b90c45c275935d99766fc1ecd0d09fba27854bbe56f0c7872b7581092",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:45.253Z"
+        },
+        "ptb": {
+          "sha256": "a9cf4e64860dfc06a25eb1bf49fe88baaab888477b778a62bf7a9db9245b8115",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:46.757Z"
+        },
+        "rus": {
+          "sha256": "acde20e88ff40513e2f161d1e04abf666b1454a36e3775878984e5716aaa7082",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:48.519Z"
+        },
+        "spa": {
+          "sha256": "4dd95c4a871bf7a8acfda1c7234b216d24d5a7da272b92ee8ceac91d9fba0b7d",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:50.103Z"
+        },
+        "tha": {
+          "sha256": "f4c15334e015591b87223f9e15e5e8d85246d3fa8ee2fd8203fa97b250c06da0",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:51.713Z"
+        },
+        "tur": {
+          "sha256": "9320198d5ef132d3bef22105e6ced9016f236aac30e810364d1de2bdc6dc3f91",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:53.577Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.5",
+      "entryId": "1791023512",
+      "sourceRevision": "4578f29217521602d46840986c088ef5e7a7453c",
+      "originalChineseSha256": "452d5a994162898057a02a26bea7c67ff02f448909564e671822a419577431c9",
+      "languages": {
+        "eng": {
+          "sha256": "2d8e29df09a8c19d56cd02a5e0bc191edb2f8d7812a478b9dc8e4dcfbadd2645",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:10:14.764Z"
+        },
+        "zhs": {
+          "sha256": "452d5a994162898057a02a26bea7c67ff02f448909564e671822a419577431c9",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:03:01.496Z"
+        },
+        "zht": {
+          "sha256": "1136b722620cf9803886074cd6f01e293b972be01415b2301b2566cd484d7456",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:34:47.950Z"
+        },
+        "deu": {
+          "sha256": "58508a695b2bd59d439cece8f19555f9b19bfbdae31ffea3996733235aab5f3e",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:07.928Z"
+        },
+        "esp": {
+          "sha256": "93bbea9534417b58f29f1f1e24087d369f8bc9856ba1153b98281cc57ef696f6",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:09.744Z"
+        },
+        "fra": {
+          "sha256": "5e1b4b7e3beffeb47f1b169fa2a09bc1da08a4cdf8c51f3e60fd0c1ee81ba2b3",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:11.434Z"
+        },
+        "ind": {
+          "sha256": "50c93d01966a9a68e582156b616c5aafe059328c0debb06bf8f37b6a95e5b647",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:13.182Z"
+        },
+        "ita": {
+          "sha256": "11bf4246c56bc0e58870a9633fecae80b792bdae27d402f7808542d075c02cea",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:14.717Z"
+        },
+        "jpn": {
+          "sha256": "0bf2e2ec3131f74d628ff21bc9ff6037f6576af786643e2154f3dd1665686762",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:16.531Z"
+        },
+        "kor": {
+          "sha256": "78bda791240224baf3be5b586259027aea306cde70d51784b0dc429aedad638a",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:18.171Z"
+        },
+        "pol": {
+          "sha256": "1e873cbd07301660ef974aa9522e264b818a96595fe2c0ca362555d859081ce0",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:19.938Z"
+        },
+        "ptb": {
+          "sha256": "6ac4fb22846d9ef5ea163c2d7d596f0c2bbe9202e3cc8235b3193dad6bbf52c9",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:21.658Z"
+        },
+        "rus": {
+          "sha256": "ee61f8af17872b0b868967077622dece475ec896de6780e8b09fba872c20de77",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:23.469Z"
+        },
+        "spa": {
+          "sha256": "93bbea9534417b58f29f1f1e24087d369f8bc9856ba1153b98281cc57ef696f6",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:25.394Z"
+        },
+        "tha": {
+          "sha256": "973f3416728bcb4126b656cc36a777e405a1794cefb21573f14475ca0698c32b",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:27.207Z"
+        },
+        "tur": {
+          "sha256": "a4dbed41488eca9ef1b578c4124658d20ed91076306c4dd000e74d73bd07fd72",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:35:29.186Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.6",
+      "entryId": "1791027166",
+      "sourceRevision": "b4455b891116aba989fe3b0b6c9d20fff2c66240",
+      "originalChineseSha256": "42a68399e546da1eacc500d51a42aef2a0e8b22093db04912c2d7f479a3dba82",
+      "languages": {
+        "eng": {
+          "sha256": "a895a543e49ce4376c5df994bb1d34a10596f32e2d3e417b4ab3b9092abe2c23",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:10:16.995Z"
+        },
+        "zhs": {
+          "sha256": "42a68399e546da1eacc500d51a42aef2a0e8b22093db04912c2d7f479a3dba82",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:03:03.542Z"
+        },
+        "zht": {
+          "sha256": "bb38932b7fe236512a66a6dbe1f7d8cc6ee39ecebec7c57d87684bd3fa19839a",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:34:21.629Z"
+        },
+        "deu": {
+          "sha256": "be95342a4d5ea679f776bbe55d33e4e7f227ff16c05dc8bedaad66fdc105ec92",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:34:23.722Z"
+        },
+        "esp": {
+          "sha256": "64225df043c5f8729a4b83dc4869cad150e5d606ef584cf8d39277bd2911ce62",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:34:25.767Z"
+        },
+        "fra": {
+          "sha256": "08c889c221195e318cab76cc758050cf22fa1a71dd70a13e8bff1b1096388fb9",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:34:27.612Z"
+        },
+        "ind": {
+          "sha256": "13b5a90be61a04fdb82961bf6027b3cbc1708e7d15a81b95b853190bcfbe77db",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:34:29.353Z"
+        },
+        "ita": {
+          "sha256": "72b431c75cfb5780e98649cfe0bb753c45d819735370b32d06caf1cb45de6ae4",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:34:31.197Z"
+        },
+        "jpn": {
+          "sha256": "d907cdffb2908a4afdcbc7077172896341b40be90450614fda1989f21f20ccd1",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:34:33.154Z"
+        },
+        "kor": {
+          "sha256": "3d5880e9f2688315c2241c507a786a171d618b089d601a418bf76d4d3f7ab5b7",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:34:35.048Z"
+        },
+        "pol": {
+          "sha256": "c9a9f1ef9eb7ce8e9527b0335daaf7f57fbd28f64e9ea749fd275bf2519895ed",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:34:36.893Z"
+        },
+        "ptb": {
+          "sha256": "5a2ae7776ee096b744b2c0f036c466fef99bcf3d3c88b8d870f35baaa314f8ee",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:34:38.911Z"
+        },
+        "rus": {
+          "sha256": "cd22464c1f136564a44cb630cc7074f6ef00f10e4bf55b1ce4f3c34b6f910a52",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:34:40.666Z"
+        },
+        "spa": {
+          "sha256": "6ca704a05765da83c93379344f79a44f89768e6eddd3771521f0a4cee5f58bc0",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:34:42.505Z"
+        },
+        "tha": {
+          "sha256": "e41be31982bd63706dc3a630976e7971ce9bf7be9b9d7351bb0afbe62895f4b1",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:34:44.271Z"
+        },
+        "tur": {
+          "sha256": "7058e197f7da56b811dfee3b21b5c2a99a16756da6350760b702aa1b240afee2",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:34:46.225Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.7",
+      "entryId": "1791050853",
+      "sourceRevision": "7e04386fd7e2fd3e698d2117a150a0a2f0a92c7e",
+      "originalChineseSha256": "ab34cd9e61634c48cd72174ce1fec7ec2a03b641d9ab10461d92495962d8c9c4",
+      "languages": {
+        "eng": {
+          "sha256": "775a94086b306c41e86f0faf4ae079f8cb5f8459e13fac58b7f398d3e31111cc",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:10:19.795Z"
+        },
+        "zhs": {
+          "sha256": "ab34cd9e61634c48cd72174ce1fec7ec2a03b641d9ab10461d92495962d8c9c4",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:03:05.545Z"
+        },
+        "zht": {
+          "sha256": "3c71f186e5fa66b07597472583922e4b64f076258f33197072f01039ffa89cda",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:33:45.429Z"
+        },
+        "deu": {
+          "sha256": "fb5b0171e5b1e550fe8b375704e0b2b213af6c35c8788c3fd21beb584a333e69",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:33:57.571Z"
+        },
+        "esp": {
+          "sha256": "6c0d623bc3a14c639b1b428226a865598e70783f3b2c514f1daad48abed1a297",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:33:59.364Z"
+        },
+        "fra": {
+          "sha256": "71b8c1561ba9f9069aec065ee6f755fb90028c49ef9bdef4786de8cd37844689",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:34:00.986Z"
+        },
+        "ind": {
+          "sha256": "f613fd22a2e7561d38c97a013970966e9f3bfee4f270c158063bd5e0eb2b6215",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:34:02.926Z"
+        },
+        "ita": {
+          "sha256": "87a84f5b087b6aa8757434546d7a6bd34b4e2e6e16e573bcef91545654e8b344",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:34:04.631Z"
+        },
+        "jpn": {
+          "sha256": "38d2d8ff79d6dd2bf620daeafc21670fd17fa3ca5779ac21507318f00291f59c",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:34:06.582Z"
+        },
+        "kor": {
+          "sha256": "30498dfe6b1cae199e039ae24f9579fce67ef56afcb408505fb84526a0a27ad8",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:34:08.237Z"
+        },
+        "pol": {
+          "sha256": "6a584dd3a456a75f8d9bf1c45de40f04d30de245f9a745329592cbf99cf93da9",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:34:10.192Z"
+        },
+        "ptb": {
+          "sha256": "7895965359ae74528a489e87d5c0ec47f1324c8dda9fca08209570605f22bd19",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:34:12.069Z"
+        },
+        "rus": {
+          "sha256": "8b06e5e935e42814b837abdf3d9a2d33b2cf688e2e47c3805a38dbaf2af1ec42",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:34:13.964Z"
+        },
+        "spa": {
+          "sha256": "6c0d623bc3a14c639b1b428226a865598e70783f3b2c514f1daad48abed1a297",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:34:15.575Z"
+        },
+        "tha": {
+          "sha256": "6262995c4b7b8af434d6e2be34e772ee19068ca94711e83363a4cfef5ffce488",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:34:17.328Z"
+        },
+        "tur": {
+          "sha256": "aa1f7b8df69be8027234d37f3a853b9c7ceeff2574aad0c675c183ed390ffae8",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:34:19.240Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.8",
+      "entryId": "1791087832",
+      "sourceRevision": "dc9f651ebba7be43365cb50816257387b0ce62b6",
+      "originalChineseSha256": "34c9d8db52d0b6bd9d1164fcd38c82c190361efb9bba3b4b51edee17d41c08f5",
+      "languages": {
+        "eng": {
+          "sha256": "78a76ff768348bca2633a4875faf376978e14ec5c2045e04008b8030c375cdb2",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:10:21.953Z"
+        },
+        "zhs": {
+          "sha256": "34c9d8db52d0b6bd9d1164fcd38c82c190361efb9bba3b4b51edee17d41c08f5",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:03:07.749Z"
+        },
+        "zht": {
+          "sha256": "d0b2a22e3ed8bcf1a856a62cdea662120387176571ee871e0b3eaed5083e85f4",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:33:19.538Z"
+        },
+        "deu": {
+          "sha256": "3db16662ecab34bedede0a69e9147c286ccb20fffc8ff417e2c929bbd0718ab9",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:33:21.305Z"
+        },
+        "esp": {
+          "sha256": "547d5b49ae79f098a55a0bc9a712c168d8bbe35114324c90108a0f3ccf496395",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:33:22.997Z"
+        },
+        "fra": {
+          "sha256": "f92d203e6f014765ad7eb850bfd37c1b1fe3b0f7a597babeae22e942d0be46a8",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:33:24.812Z"
+        },
+        "ind": {
+          "sha256": "ca470bc9f9e336c017314283ea3844aa657cb9cba9857647c8176a11a9902eec",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:33:26.568Z"
+        },
+        "ita": {
+          "sha256": "3499ece3fc15ff0bfade784a577b5214ead8baa6508e1ba732968cdc0ca75338",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:33:29.188Z"
+        },
+        "jpn": {
+          "sha256": "971dfecb6b6de15c0db77e407e8e1a24aa451eb92d1930fb163aaed6662817b1",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:33:31.545Z"
+        },
+        "kor": {
+          "sha256": "9a865c71abb5b345a82f31261a22ec2d515bc59c14e631127544505ea14702b0",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:33:33.464Z"
+        },
+        "pol": {
+          "sha256": "fe9e8c6ea9615160b026c21984cad39087aa523ebca188d07f8e924948b11e61",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:33:35.390Z"
+        },
+        "ptb": {
+          "sha256": "634afa192d2b28c70a47c22df312f8445bf40494f986b02856f25d30c52b8ba5",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:33:36.878Z"
+        },
+        "rus": {
+          "sha256": "d796c0be389ee5f45b334cff0823f4a2a0a0e3825356322f1c2aa90f6c8b63c0",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:33:38.520Z"
+        },
+        "spa": {
+          "sha256": "547d5b49ae79f098a55a0bc9a712c168d8bbe35114324c90108a0f3ccf496395",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:33:40.177Z"
+        },
+        "tha": {
+          "sha256": "222e9242f10ea3767b5db8c08ce3b3d94f39595b53f0bdcdcd47ed6cda2ec26e",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:33:42.127Z"
+        },
+        "tur": {
+          "sha256": "53d1e71dbaf824f796d846f468eb6a384437e5632afccb1a86c17d53b5529d87",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:33:43.736Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.9",
+      "entryId": "1791092930",
+      "sourceRevision": "a9f479ba621155ba4ae25cca08635f25d98de757",
+      "originalChineseSha256": "442694dfddef762fef345bae0187a9e79fdf730032b43bb368ac04ccf60b9354",
+      "languages": {
+        "eng": {
+          "sha256": "c8a05a8707ea39a44697460bf6c9ec2b97890d44c351185c20d89aa7bd399920",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:10:24.290Z"
+        },
+        "zhs": {
+          "sha256": "442694dfddef762fef345bae0187a9e79fdf730032b43bb368ac04ccf60b9354",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:03:09.780Z"
+        },
+        "zht": {
+          "sha256": "5a08a8d3bae923c66ee27a80680ec12a890a1a3ad09d0a645b1fd6bdf20bbb0a",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:32:20.090Z"
+        },
+        "deu": {
+          "sha256": "32227d1307ac1f0ac13b6f4db7ddf41555e825a950b06a3f3956157296f75a6d",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:32:55.907Z"
+        },
+        "esp": {
+          "sha256": "94e279c9f7fe23dfbf526b294ad9c6c8c53bf8a9312c6e8559e4c2fca407796e",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:32:57.907Z"
+        },
+        "fra": {
+          "sha256": "57b12b09903f2240c84d2a76681db01df0a18a055d5b6f99f3793c41ad3e2abc",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:32:59.649Z"
+        },
+        "ind": {
+          "sha256": "4c00ef9f83946cade381edd841dc9d49e6d762bc3871ae470f7c188c5d10f8ad",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:33:01.277Z"
+        },
+        "ita": {
+          "sha256": "8c5776f990e5c1aea25de7fae797b9c39a3e26609e6483cdae5ac23c30341f8b",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:33:02.949Z"
+        },
+        "jpn": {
+          "sha256": "3451bad02f713cc7f68cac5657a4479683780df27ac9e1ce8ad05d69a2b1896a",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:33:04.656Z"
+        },
+        "kor": {
+          "sha256": "7f87f2d30f166513e30cbe042e5c9ab5f971d9cca72194d9949443f9e73491c1",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:33:06.467Z"
+        },
+        "pol": {
+          "sha256": "344af71eca407c5cad378651db46f0981eb480ee1598bf395ced78a22386141b",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:33:08.330Z"
+        },
+        "ptb": {
+          "sha256": "653801b84558a6986f867477924e5e9f39ffa11c160daa6def64b4560cbc2fd4",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:33:10.098Z"
+        },
+        "rus": {
+          "sha256": "b001873630d991258d70e476e9c274fe956f0f4ae2129f93a36105deabe4de56",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:33:11.833Z"
+        },
+        "spa": {
+          "sha256": "94e279c9f7fe23dfbf526b294ad9c6c8c53bf8a9312c6e8559e4c2fca407796e",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:33:13.743Z"
+        },
+        "tha": {
+          "sha256": "16119338d6d7341e05893be8ec06f072b8a93d9b79622c8f14d0805f897bf91d",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:33:15.480Z"
+        },
+        "tur": {
+          "sha256": "cdc74a370b99bd8e6659535aadfc881261a501691639b889da3394a18bdbf756",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:33:17.663Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.10",
+      "entryId": "1791094362",
+      "sourceRevision": "898a306c149502a453304e6d963cbfe2ddeb72cc",
+      "originalChineseSha256": "6dde35f6ea47a1d34d6429c9b6bdfd1209ca787bc94453940844851e25b1b210",
+      "languages": {
+        "eng": {
+          "sha256": "342fbd3311f95417cae7508a4c95ebf67dd343ba34da6f6c348f45445c45a9f5",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:10:26.553Z"
+        },
+        "zhs": {
+          "sha256": "6dde35f6ea47a1d34d6429c9b6bdfd1209ca787bc94453940844851e25b1b210",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:03:11.855Z"
+        },
+        "zht": {
+          "sha256": "eed0d8c899f6bd813cfa7cafe8fd35f19ae822043bbe348ffa7de7ca494f64ef",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:31:55.221Z"
+        },
+        "deu": {
+          "sha256": "f80f65422079922d27d634464c11a7e91de7110bd3134832eed75afa51d8a100",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:31:57.050Z"
+        },
+        "esp": {
+          "sha256": "33b30a1dc8987b528769feb3a90dc1b4144b0e2f15660ac834b94d8111082878",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:31:58.883Z"
+        },
+        "fra": {
+          "sha256": "a8b12bbd9605b1d00b17e085263c6cf5f21f61eb32b0bfe27f9cd3431d973c8f",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:32:00.526Z"
+        },
+        "ind": {
+          "sha256": "ccb3f45c54d134d18e7b40cab0fefa390a223b273763f7c0719c6f625182f156",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:32:02.591Z"
+        },
+        "ita": {
+          "sha256": "a1e488d56efaca15bca7483695698eea549bc12b50ef60c17585498fb0762ef2",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:32:04.485Z"
+        },
+        "jpn": {
+          "sha256": "bad78c6e0f23a5beaf65b7e22471a2c0b82edd7d4c00f81d2cc189eb79e816b5",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:32:06.162Z"
+        },
+        "kor": {
+          "sha256": "0329836063470d38bf9fd0a4f26a46b73ffd0e9a830773f1692649cd6a210a0b",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:32:07.814Z"
+        },
+        "pol": {
+          "sha256": "8cb5f5491eb8599417cbec8927c4507035a514dc6c692d2e8d8c9841757a2989",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:32:09.396Z"
+        },
+        "ptb": {
+          "sha256": "5bbfbd02229e42085573a91cd6e8fa02befdef04acd528c9a45ad0a42038fd4c",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:32:11.291Z"
+        },
+        "rus": {
+          "sha256": "c86155cee410340b8b52ca79ca255a86a9f0f2542ca0cc36679e6fa9eab1faac",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:32:13.159Z"
+        },
+        "spa": {
+          "sha256": "33b30a1dc8987b528769feb3a90dc1b4144b0e2f15660ac834b94d8111082878",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:32:14.748Z"
+        },
+        "tha": {
+          "sha256": "3738f26d8e2b5efb926e554ca6e4347b2a5797486386e3f0ee6ea34888f9dd70",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:32:16.500Z"
+        },
+        "tur": {
+          "sha256": "049ea969ff0ea1e361d7fca8e61938c53f5fc47b548f501c5d618dd92dff83b5",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:32:18.171Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.11",
+      "entryId": "1791113563",
+      "sourceRevision": "029d4df22d393ca4cb56e6ba28deef1aee621822",
+      "originalChineseSha256": "cee48f83e17b2e686726ca62cd4287ace2770aeafbc21d4be8d9f9bf2acec965",
+      "languages": {
+        "eng": {
+          "sha256": "e19aac3b266db84dfc78f8293058a6a5930c473b9bf3be89dd2a9a761a306005",
+          "lineCount": 12,
+          "verifiedAtUtc": "2026-11-16T17:10:29.492Z"
+        },
+        "zhs": {
+          "sha256": "cee48f83e17b2e686726ca62cd4287ace2770aeafbc21d4be8d9f9bf2acec965",
+          "lineCount": 12,
+          "verifiedAtUtc": "2026-11-16T17:03:13.931Z"
+        },
+        "zht": {
+          "sha256": "72af04c1d95ab614b0ee302450c280c41c140bb01206523d778b6cca43629068",
+          "lineCount": 12,
+          "verifiedAtUtc": "2026-11-16T17:31:21.023Z"
+        },
+        "deu": {
+          "sha256": "7007d95d1787e513d76f8f8485a7444ce8d7ca3bc6038128601bddc692f6981a",
+          "lineCount": 12,
+          "verifiedAtUtc": "2026-11-16T17:31:32.947Z"
+        },
+        "esp": {
+          "sha256": "0e567b8e45032f6d4c7f9ccc66918c0b9f1cd66280e1174b67bcb3b99c5ffbed",
+          "lineCount": 12,
+          "verifiedAtUtc": "2026-11-16T17:31:34.915Z"
+        },
+        "fra": {
+          "sha256": "506a22504e4f64d9daf6c325d6c0f9fe23dbcbc0ce0fd2046a6e35848fb2977a",
+          "lineCount": 12,
+          "verifiedAtUtc": "2026-11-16T17:31:36.418Z"
+        },
+        "ind": {
+          "sha256": "99b5b9574b9b6b4a83af66bc2c275b206272fa1eadaf5ace62371131375f2d1c",
+          "lineCount": 12,
+          "verifiedAtUtc": "2026-11-16T17:31:38.030Z"
+        },
+        "ita": {
+          "sha256": "90632b0483865ae08cede553917584d622dbf95be9d0658ab535e33b93d2e7f4",
+          "lineCount": 12,
+          "verifiedAtUtc": "2026-11-16T17:31:39.720Z"
+        },
+        "jpn": {
+          "sha256": "05ba5a8f60cd47ebdaa3e13d15a8d70394162073ab6069132544ab16e6352dd6",
+          "lineCount": 12,
+          "verifiedAtUtc": "2026-11-16T17:31:41.254Z"
+        },
+        "kor": {
+          "sha256": "79a4de37178ca06d4419db4fcfa6c6f28d83ac0b978039dcaa5ff26fdccc0233",
+          "lineCount": 12,
+          "verifiedAtUtc": "2026-11-16T17:31:42.989Z"
+        },
+        "pol": {
+          "sha256": "ff0c5fe70afc23080a40de68fd85af269e9569af0a7584699520231b82090653",
+          "lineCount": 12,
+          "verifiedAtUtc": "2026-11-16T17:31:44.474Z"
+        },
+        "ptb": {
+          "sha256": "523e2c67b05ac25b210373c10f2352fbf2d528c052e9550d904c0dec0764db62",
+          "lineCount": 12,
+          "verifiedAtUtc": "2026-11-16T17:31:46.149Z"
+        },
+        "rus": {
+          "sha256": "2e0170ec20a262164ef270b216c7d1f8166c3efab476c55f83980f8aaea59cc0",
+          "lineCount": 12,
+          "verifiedAtUtc": "2026-11-16T17:31:48.131Z"
+        },
+        "spa": {
+          "sha256": "bf1a4fb6ed4d32411c00b11093b8e6a226b196e09a454d6d2be25d9431b07892",
+          "lineCount": 12,
+          "verifiedAtUtc": "2026-11-16T17:31:49.818Z"
+        },
+        "tha": {
+          "sha256": "56050834f8289c4d346fd28ef28fbd3a540fc09df48fa624434d34d06ba59bd8",
+          "lineCount": 12,
+          "verifiedAtUtc": "2026-11-16T17:31:51.601Z"
+        },
+        "tur": {
+          "sha256": "720cfdcc7f18cfd9c61037b7571a1c8a2ad9f710cc5b1da12c5ddee528b43a1c",
+          "lineCount": 12,
+          "verifiedAtUtc": "2026-11-16T17:31:53.368Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.12",
+      "entryId": "1791117772",
+      "sourceRevision": "2e7705cd6bd202d0bcee35bd2a33fb297181fd78",
+      "originalChineseSha256": "aaca101f849f24cc99c1357cd63ebc012fad4f231e29c3b55df3f12f859db928",
+      "languages": {
+        "eng": {
+          "sha256": "15e06d8070858de2206a6afb0aef3bab1b3c994208b2234410cddaf13155cfdd",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:10:31.629Z"
+        },
+        "zhs": {
+          "sha256": "aaca101f849f24cc99c1357cd63ebc012fad4f231e29c3b55df3f12f859db928",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:04:59.894Z"
+        },
+        "zht": {
+          "sha256": "8863111b1eb85790dc699a5545b6c9fd3ab7615044fba1fd934d14a939dea5b9",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:30:55.117Z"
+        },
+        "deu": {
+          "sha256": "3ce1eb1d0c422a0edee7c3ddd543e163c91a583092bce080cabe87e4a9cb8121",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:30:56.790Z"
+        },
+        "esp": {
+          "sha256": "dfb5f558b773af0e676789e105bd195822bb80e72a6afb390ad1166d7add4fb9",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:30:58.493Z"
+        },
+        "fra": {
+          "sha256": "50a15b90ebf9da5363f9bf674c89ea107ca44e85715ea89b37fc49e99f334a07",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:31:00.241Z"
+        },
+        "ind": {
+          "sha256": "959c3015610bd99c41f2f2dd9ebdc15d83a299830da233d565255dbf56d17583",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:31:01.976Z"
+        },
+        "ita": {
+          "sha256": "4f8460ad19376635668311a026ac254db8e4ddf6e6f5590616e1b3aed02a0633",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:31:03.567Z"
+        },
+        "jpn": {
+          "sha256": "b18f1483a232e369b8f7cb82c8286098c2040f2da5d0b05ba86a92cac925169f",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:31:05.244Z"
+        },
+        "kor": {
+          "sha256": "34d146481719e51b182ef3240880953f86865b03ba1f2c1f317402025d59d20e",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:31:07.045Z"
+        },
+        "pol": {
+          "sha256": "ea413b98bec743c5b02e39db365bb58d1a7fd80c3af406b610d1c6f889101f10",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:31:08.771Z"
+        },
+        "ptb": {
+          "sha256": "82a06821b15d3d13fed9e0759482c653493757e2b31aed81316df4961277ddd7",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:31:10.739Z"
+        },
+        "rus": {
+          "sha256": "c2b33e51910a2743a78684901048f5c06971d3b465adc96ec20054fc499e1f6c",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:31:13.054Z"
+        },
+        "spa": {
+          "sha256": "dfb5f558b773af0e676789e105bd195822bb80e72a6afb390ad1166d7add4fb9",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:31:15.011Z"
+        },
+        "tha": {
+          "sha256": "305e83b5e48d9cae4f15d426e334582fc218908c6e4de8be4b59a2c18b22fdc0",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:31:17.244Z"
+        },
+        "tur": {
+          "sha256": "a8c98561028922c7afcc8a2eec8f8a58aa507bfb57810b87a48bbd9e4b463047",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:31:19.110Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.13",
+      "entryId": "1791203296",
+      "sourceRevision": "0762d6ee02282be8c9437e01af58be99b0b0da72",
+      "originalChineseSha256": "cda5816f9fc3f92cdbf1b5257d9f9c4714b0038aa5c54fe1ffd9489ff83f3199",
+      "languages": {
+        "eng": {
+          "sha256": "b8314c5bb8ee03cdd4ab05089361674e594bd5fe9fd6b940ad5f4254f8e1aa40",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:10:33.908Z"
+        },
+        "zhs": {
+          "sha256": "cda5816f9fc3f92cdbf1b5257d9f9c4714b0038aa5c54fe1ffd9489ff83f3199",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:05:02.442Z"
+        },
+        "zht": {
+          "sha256": "bac4ce3bcaad648b3ad7466efb05de9b28bbc1f65076e101b46a168b9360e1ee",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:30:12.438Z"
+        },
+        "deu": {
+          "sha256": "7e6f03f95c179fb07f47b757a93ddf3403ab072717f748d59371fd57820e8924",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:30:33.810Z"
+        },
+        "esp": {
+          "sha256": "98b61a5de2e9d7cddfb9c2eb85df5137b08596ddf584dd860a8a5eee764d91a7",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:30:35.275Z"
+        },
+        "fra": {
+          "sha256": "4c202632fa1b7bea62fd4ecb8a50872bf4ecb0fcfba4f72d4c3956faf00cd0f2",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:30:36.946Z"
+        },
+        "ind": {
+          "sha256": "a5a97705c87edf0d93b2173a11ece8134eeb06059c8fd8ad279317b2e21c6990",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:30:38.540Z"
+        },
+        "ita": {
+          "sha256": "f1eae59caa36920369bbc9cefc27a4a2ad188b85b6a94e03a31b244add22c04a",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:30:40.095Z"
+        },
+        "jpn": {
+          "sha256": "c307423b920321acb0a8ac22b7ff535b3dc1c8881579e107829282d25b71e594",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:30:41.691Z"
+        },
+        "kor": {
+          "sha256": "b8b3d9bfe182a7dffd7efc790149715909601cdc3d30337b4aba079825667957",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:30:43.209Z"
+        },
+        "pol": {
+          "sha256": "17218fa75eb6f0107c15b6b134b9ee738fc5802660fcfe48591be5d2ae1a557c",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:30:45.071Z"
+        },
+        "ptb": {
+          "sha256": "619d416d838962e3b1c6eda0806c05af38cce5bf60b45aeb2f23b080196b757e",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:30:46.626Z"
+        },
+        "rus": {
+          "sha256": "0e47833badd9836c5f4b29196e8a952db21975ffd09fd2464dc0f572a1f18c41",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:30:48.157Z"
+        },
+        "spa": {
+          "sha256": "98b61a5de2e9d7cddfb9c2eb85df5137b08596ddf584dd860a8a5eee764d91a7",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:30:49.863Z"
+        },
+        "tha": {
+          "sha256": "f8161c96d7430eacb2f1ea337222d0307aa0575f033b1adc5d6bc56d8db1a002",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:30:51.627Z"
+        },
+        "tur": {
+          "sha256": "98e896e6ca443462f356987af231488f27c0ed15727bf5be997d25cf07d7391f",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:30:53.461Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.14",
+      "entryId": "1791211888",
+      "sourceRevision": "f4ad7482fe5f164b5781da222fd9e6460e4bacd5",
+      "originalChineseSha256": "c29ba9ca86d9b9c4a999a8458f238d1e975ef5952246cec2c03fa6e63046233c",
+      "languages": {
+        "eng": {
+          "sha256": "cf8cec91e5d2d58ff9ebfaa33052b665a9db5cabac9cf21ee67f54126211ae90",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:10:36.345Z"
+        },
+        "zhs": {
+          "sha256": "c29ba9ca86d9b9c4a999a8458f238d1e975ef5952246cec2c03fa6e63046233c",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:05:04.793Z"
+        },
+        "zht": {
+          "sha256": "76c1910d0dad0ec449906c0f7167f5d5e5940583fa3d624ce7faec4882edb6ef",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:29:47.039Z"
+        },
+        "deu": {
+          "sha256": "bb3cbe60727fd367ef29cfbd8cf372ae2838ad207f1c59f6cceca6b6df449152",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:29:48.824Z"
+        },
+        "esp": {
+          "sha256": "f67d8166ae7fc84be69729685002758d6136305a61678b5d9678648688d0ad6d",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:29:50.437Z"
+        },
+        "fra": {
+          "sha256": "4b5cb0a505bbe87456a6e213e1e03638eae2eaad0c7630235cdc216118133199",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:29:52.082Z"
+        },
+        "ind": {
+          "sha256": "848c314c5ae795c0d7fcb774d0296df089db62f270080b10ae24143bfed1f8b0",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:29:53.830Z"
+        },
+        "ita": {
+          "sha256": "06d328512f9fd1ae7d519ae870389f3591d85779906a78d49ccfe34249229629",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:29:55.629Z"
+        },
+        "jpn": {
+          "sha256": "83ab901e11148f86dda9dec68ba4a0c10b95ea5fe8864d066ffa6f9e14cf9929",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:29:57.419Z"
+        },
+        "kor": {
+          "sha256": "2d89c8a9d5a1e20b54d1eb2c45c711d060eacdbeb96acc63c1aa19b5b5af8bef",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:29:59.772Z"
+        },
+        "pol": {
+          "sha256": "740f48ee29251ea65c5c52b2ea01c3f655dc7dddf282e2f484028cf3eac5cfa5",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:30:02.131Z"
+        },
+        "ptb": {
+          "sha256": "b3bd092e02552b0957d43112c1ed9476c03b34a3b9f20e1d3f674bb27e31ee3c",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:30:03.943Z"
+        },
+        "rus": {
+          "sha256": "ac0f570c599e52b38c4ea9d1ef191f521b7842856c394ffbda2d7434fc65329a",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:30:05.740Z"
+        },
+        "spa": {
+          "sha256": "f67d8166ae7fc84be69729685002758d6136305a61678b5d9678648688d0ad6d",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:30:07.384Z"
+        },
+        "tha": {
+          "sha256": "4a3064b67305c81f4e74338617ed57f9e046a1cf9b16f8043fb44f82edaa4e22",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:30:09.121Z"
+        },
+        "tur": {
+          "sha256": "a3a03c3eb0fdf7d6fb4eeab237ef9ad651d7ea63ef3da24ff0b986da7c371c16",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:30:10.748Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.15",
+      "entryId": "1791218709",
+      "sourceRevision": "6355a1a09a6bd69a33eb74a15dbea791865f372f",
+      "originalChineseSha256": "108ea758c5cea35c0db0026530aefb0288ef57d3bdaa4f43032a69e47e4abdac",
+      "languages": {
+        "eng": {
+          "sha256": "3ed572e48dd0ea28dc0aa066d9668f2033a1d7471e05b56ab216e734d8e1dd4a",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:10:38.760Z"
+        },
+        "zhs": {
+          "sha256": "108ea758c5cea35c0db0026530aefb0288ef57d3bdaa4f43032a69e47e4abdac",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:05:07.050Z"
+        },
+        "zht": {
+          "sha256": "75a8b9484c0c7edd2a4ac92aef37072c05b331c0b9eb354d82bfeaa3d4682d68",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:29:05.967Z"
+        },
+        "deu": {
+          "sha256": "e2cb0117113af6c6f5115e8e1b0351e4934423a95ef0c8527a976e279190002a",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:29:23.257Z"
+        },
+        "esp": {
+          "sha256": "483473cc976d1e3f1517da60916d450ef216e0a25164ddd9832665e03e565715",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:29:25.226Z"
+        },
+        "fra": {
+          "sha256": "a38969fa36d4f2129d2454b124488f39567f5287275fc2c7c09d6aa9f0e0879b",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:29:26.946Z"
+        },
+        "ind": {
+          "sha256": "0f9f8943a4c9d9af4f1a4204d78174a9c2dfc4bd87e18882809a6910833d030d",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:29:28.839Z"
+        },
+        "ita": {
+          "sha256": "50e2c567a3eaca3949345341e203822abcf30b2dc50cc3915a6c9940e8d41494",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:29:30.736Z"
+        },
+        "jpn": {
+          "sha256": "41c5fdae85b866a250c05b4a35ce88aa80a2d47bce3513b22f5c35d7e2959715",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:29:32.445Z"
+        },
+        "kor": {
+          "sha256": "3afd0a2d566e0f9546494345a15f3d85994ff5d34833f527e09e80e3075976f2",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:29:34.226Z"
+        },
+        "pol": {
+          "sha256": "3dc624bd685fa508d6efc47bcaced5d5d812fa8c51f15f626a52e9cb7ddcac01",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:29:36.361Z"
+        },
+        "ptb": {
+          "sha256": "6c4255300eeddaa19c8f9705ae70d546cc026673db6b47727c4c9a26d0b60520",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:29:38.147Z"
+        },
+        "rus": {
+          "sha256": "70ecab3bfe26b48b7b27019a2cbde0c9026ce969df48699fb6847122db3c8fca",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:29:39.994Z"
+        },
+        "spa": {
+          "sha256": "483473cc976d1e3f1517da60916d450ef216e0a25164ddd9832665e03e565715",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:29:41.940Z"
+        },
+        "tha": {
+          "sha256": "ed164af22989aa2a03cbbc30bc3c88ba4d8319814e55470f1c6bc6d31849daab",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:29:43.650Z"
+        },
+        "tur": {
+          "sha256": "700f277afafbf7e98916b165e1a0dea6535730aeedad065bfd97686089707fec",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:29:45.247Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.16",
+      "entryId": "1791265312",
+      "sourceRevision": "d4e595997d164e96aa3f0973c3606d5922c91f3d",
+      "originalChineseSha256": "cb02b7f382ef2b925ddaa8519860ad70c5529e430d2401fa0ec82cf4a8c5bb39",
+      "languages": {
+        "eng": {
+          "sha256": "2ca498e3ba9d98ed9c3d102c9cf6b4d1a03a6ed43e3fa4c27ab3c8cacdbb741a",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:10:40.945Z"
+        },
+        "zhs": {
+          "sha256": "cb02b7f382ef2b925ddaa8519860ad70c5529e430d2401fa0ec82cf4a8c5bb39",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:05:09.360Z"
+        },
+        "zht": {
+          "sha256": "9ecbaff47b537a00f6cc4eb79cf5532a29355e355f58e5100b7d9adc703ffff1",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:28:40.242Z"
+        },
+        "deu": {
+          "sha256": "06b6fa51a8258459c3358df06e39ee1e5df1fe83c1a529c968bbcde221a2ec50",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:28:42.163Z"
+        },
+        "esp": {
+          "sha256": "02838acda0300aa68c6c77c8fa5ad28c670e141b94d13d8223a84f799c0addf6",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:28:44.022Z"
+        },
+        "fra": {
+          "sha256": "3cc65c655e58c256bc3818bad301fa76e4f5b3dc19e2800b859db99c49cef3d9",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:28:45.818Z"
+        },
+        "ind": {
+          "sha256": "84c84c97aa8f38e552d9dfd2950d55d09ab9f2263558a5c23c6f208e31456557",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:28:47.889Z"
+        },
+        "ita": {
+          "sha256": "e1b7b325551d2e3583046e1b6c6ad766116664c6cf8a9813afafc0f689769a1e",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:28:49.686Z"
+        },
+        "jpn": {
+          "sha256": "e5284c97ef161ed2441a15ef2655f4bcdcf7f444272e71d7c5f3ce5bc3f2ea2b",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:28:51.690Z"
+        },
+        "kor": {
+          "sha256": "dbb90a7ccfb2558332d6526e20780461533aaeabb158fdc98596229b63ad22bf",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:28:53.689Z"
+        },
+        "pol": {
+          "sha256": "321367fb90391cb770362008e6f5029a7cf2d2f51a9bfef599c3ab094dd6130b",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:28:55.518Z"
+        },
+        "ptb": {
+          "sha256": "d81e89903dae631a6d43de1adaeac719c65fae659150fc71d04d823002576aeb",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:28:57.273Z"
+        },
+        "rus": {
+          "sha256": "9d6344b861e58645d661c4366fb6f2942877cdc8c6cb5ae8570fd870721ffbc2",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:28:59.029Z"
+        },
+        "spa": {
+          "sha256": "02838acda0300aa68c6c77c8fa5ad28c670e141b94d13d8223a84f799c0addf6",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:29:00.686Z"
+        },
+        "tha": {
+          "sha256": "7258ca29e76c648834fbbaff2d3cd48c3018467a297cd43be7dea58913926783",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:29:02.299Z"
+        },
+        "tur": {
+          "sha256": "6ac382b0dfa8c85d0a034b88f69b7e82379391096a5c24de9d5913b84df11e62",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:29:04.124Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.17",
+      "entryId": "1791301288",
+      "sourceRevision": "ededb5561735d45589c1c2866adfa9e00511c8e4",
+      "originalChineseSha256": "363c6fb039762c954dc8f467eccdda839cfc5424c437450f5d803607f3c297cd",
+      "languages": {
+        "eng": {
+          "sha256": "9c2da131a78fba1c4321b5c96c03cd0af552c5abf30a77e10a8375185d77030a",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:10:43.195Z"
+        },
+        "zhs": {
+          "sha256": "363c6fb039762c954dc8f467eccdda839cfc5424c437450f5d803607f3c297cd",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:05:11.680Z"
+        },
+        "zht": {
+          "sha256": "df78ece6237084f5f7ccb729b46d4bb25e9346ec825240fc82fd0c29dfe1ad10",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:28:01.471Z"
+        },
+        "deu": {
+          "sha256": "d54a55b2eb5761f6c3059815fc5ae80d96cc8bffda211fe1b6048eb1db521a44",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:28:13.384Z"
+        },
+        "esp": {
+          "sha256": "4160bafe1a6e6110a304c20335cad4d809d4c38848e549ec6277b6ff5c26fbe0",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:28:15.154Z"
+        },
+        "fra": {
+          "sha256": "23e8bdc51fe51c21ae4f34a19a195385e80370adeafbecfb395bfb03e3cdd748",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:28:16.798Z"
+        },
+        "ind": {
+          "sha256": "534f26afeca2d2f7ae1932a4d2337daeb6bcf9a2485a0b358e63f03f2e2f2eee",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:28:18.475Z"
+        },
+        "ita": {
+          "sha256": "8ef5e67b54716b323777f93d8a31129ea41f10330fd79909ca0c0a514b6481fa",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:28:20.414Z"
+        },
+        "jpn": {
+          "sha256": "8db287f24be2a4dee9f99b6eb5e436b9752dc320cc3a132d60496b0a32cb0d5f",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:28:23.352Z"
+        },
+        "kor": {
+          "sha256": "57b37aaa7a1c37fa6b6f429c6bafd36ae9eb693ba81129c6d117d080a77febf4",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:28:25.585Z"
+        },
+        "pol": {
+          "sha256": "889f0274178508b2e57e418c92955d0fb046835f2e0581ccf4e1dfc4a37a10f9",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:28:28.145Z"
+        },
+        "ptb": {
+          "sha256": "9cd761ca63848cca50147b4c4c1263354b61164b58e3b027894d5b2132d00ffd",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:28:30.297Z"
+        },
+        "rus": {
+          "sha256": "15d869183617df0cf76f1402d423c6002ff34e5dbd6782e95da9c8aca6c7b72e",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:28:32.784Z"
+        },
+        "spa": {
+          "sha256": "4160bafe1a6e6110a304c20335cad4d809d4c38848e549ec6277b6ff5c26fbe0",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:28:34.749Z"
+        },
+        "tha": {
+          "sha256": "180b5a9fb3e54623a6c848cc0bf6af6f6949b60ed8df561b498b3801b7966b00",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:28:36.578Z"
+        },
+        "tur": {
+          "sha256": "42547b6f3ecad2f82074500ad7d1efd0b80284b7de46f82fdf1a469e6d25d083",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:28:38.583Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.18",
+      "entryId": "1791377294",
+      "sourceRevision": "2867321efea159f386146ccb74fd7786e66fdab8",
+      "originalChineseSha256": "a627e23785fbc0e3392272db821587b8685cc8800880b73c0aaa84e14d241274",
+      "languages": {
+        "eng": {
+          "sha256": "f3d1df7f03088d65fc5427dd1b30a863272bfb1e7469d8c9092657e4f9ecfac5",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:11:57.628Z"
+        },
+        "zhs": {
+          "sha256": "a627e23785fbc0e3392272db821587b8685cc8800880b73c0aaa84e14d241274",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:05:14.204Z"
+        },
+        "zht": {
+          "sha256": "c3ed4db32535016aad57f8f5f5aa1b9a90aa071e2c206513e20483620c92f48e",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:27:33.229Z"
+        },
+        "deu": {
+          "sha256": "7c88c2fde3d3667522a7231e3a3025e964912bd95e1a3518e88f9d23705f876b",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:27:35.242Z"
+        },
+        "esp": {
+          "sha256": "0d1a90074cd716104343dfe67f1df57570e16ad3d49472db6723643d409826da",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:27:37.526Z"
+        },
+        "fra": {
+          "sha256": "1362cf501e2b1f513ecd9bb1cb62d754aad7636d9e6699364600cdb65508f134",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:27:39.679Z"
+        },
+        "ind": {
+          "sha256": "4221a44babc91d0fc815753d2044ca81dda534545db91adb1dcefc6ddd01bc42",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:27:41.709Z"
+        },
+        "ita": {
+          "sha256": "60e372cedc33f2f54a1b848f478d3f590be76d120ed5ab596c8c1e06018757c5",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:27:43.763Z"
+        },
+        "jpn": {
+          "sha256": "f59ff28352d42623f17b22b28bb4bba9f696bfda9f2d8b63e4c3060b6f5a9273",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:27:45.846Z"
+        },
+        "kor": {
+          "sha256": "c067635820ef2dfeab459dcb87b5554834ac5d7e6e036a0a01b7911ef3a6ac9d",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:27:47.597Z"
+        },
+        "pol": {
+          "sha256": "0cb7a7dcb2a9678cbc854dcb47bbf1ddfaf05bd9ead944575d628a6d3aead490",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:27:49.426Z"
+        },
+        "ptb": {
+          "sha256": "60e83fb3e467147b43977890e82bb0fa03ce975fb01af574d94c86fb8e139a90",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:27:51.161Z"
+        },
+        "rus": {
+          "sha256": "a2ab49082558db292c500ee252f0444a16f221349e48cf56f44609e8a92775ce",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:27:53.270Z"
+        },
+        "spa": {
+          "sha256": "45443f9ded74d11cb2a8608be6b1ccaa5eeb44ba01335ab8d1a4ea39861394f9",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:27:54.994Z"
+        },
+        "tha": {
+          "sha256": "00028e1348951ae05449d784a1797340e44a747641094ca5486bb0a6d10388db",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:27:56.869Z"
+        },
+        "tur": {
+          "sha256": "a5600127219e0f6308f2bbdfba90f7278bd7f1ce54de3e90a92008dd226cb11e",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:27:59.007Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.19",
+      "entryId": "1791522247",
+      "sourceRevision": "a5b1cead30f7d7e1f96eae903285abe653f1ade3",
+      "originalChineseSha256": "217c6f3037821d9c40971a7242730a487384b132d18c36bf1e3b8e31dcd6acaa",
+      "languages": {
+        "eng": {
+          "sha256": "2e4a227932828cc49517341eee4f833fcb51d71db30042717ae08db75daa1e31",
+          "lineCount": 14,
+          "verifiedAtUtc": "2026-11-16T17:11:59.850Z"
+        },
+        "zhs": {
+          "sha256": "217c6f3037821d9c40971a7242730a487384b132d18c36bf1e3b8e31dcd6acaa",
+          "lineCount": 14,
+          "verifiedAtUtc": "2026-11-16T17:05:16.761Z"
+        },
+        "zht": {
+          "sha256": "f0b53f013fb32f92c4e1a3391910617c8e06288a24b66f3394d2863cbcd46cb8",
+          "lineCount": 14,
+          "verifiedAtUtc": "2026-11-16T17:26:27.700Z"
+        },
+        "deu": {
+          "sha256": "58cb1860fbce96c3e319b5261c60581149767a628382271c55a1def20d820708",
+          "lineCount": 14,
+          "verifiedAtUtc": "2026-11-16T17:27:08.333Z"
+        },
+        "esp": {
+          "sha256": "aab6675596e05be7b973a752716203eebbd41fcdf00a2ecad4e6f7197fe865db",
+          "lineCount": 14,
+          "verifiedAtUtc": "2026-11-16T17:27:10.115Z"
+        },
+        "fra": {
+          "sha256": "f193005feedd691989eb1af52a1b1e5786f71c8831c58a054d9beec3bdf5a89d",
+          "lineCount": 14,
+          "verifiedAtUtc": "2026-11-16T17:27:11.947Z"
+        },
+        "ind": {
+          "sha256": "d5a8dd3509c559c437d204a0567706ffbabac50d2dc0eaa3bf34dff8f6770598",
+          "lineCount": 14,
+          "verifiedAtUtc": "2026-11-16T17:27:13.826Z"
+        },
+        "ita": {
+          "sha256": "56e0a12d6e8e599b0b0095764914ba31490d700706422e01eda3225bf1a8b393",
+          "lineCount": 14,
+          "verifiedAtUtc": "2026-11-16T17:27:15.612Z"
+        },
+        "jpn": {
+          "sha256": "5789c762a2f30b345207e0e475c819de221e0a5870780c0ff0b3c4ab8c57a689",
+          "lineCount": 14,
+          "verifiedAtUtc": "2026-11-16T17:27:17.443Z"
+        },
+        "kor": {
+          "sha256": "747fff3d536f5e8709ea4c8219d1d5c6316b633c8d81c1bcc8409b16821f23bd",
+          "lineCount": 14,
+          "verifiedAtUtc": "2026-11-16T17:27:19.364Z"
+        },
+        "pol": {
+          "sha256": "cdfeefc7ab0e72226f656b259fcadd7c6525c911837389271ae845c87c7a9139",
+          "lineCount": 14,
+          "verifiedAtUtc": "2026-11-16T17:27:21.182Z"
+        },
+        "ptb": {
+          "sha256": "4295d18e162a795056b6a84d1e2ffe0b4fa042dfd24ba57ff520e4471cdf8197",
+          "lineCount": 14,
+          "verifiedAtUtc": "2026-11-16T17:27:22.952Z"
+        },
+        "rus": {
+          "sha256": "7b84e8ac3ee286f7f7620e7fc06b733ba717cbf256f85995d590956c9eeb97c6",
+          "lineCount": 14,
+          "verifiedAtUtc": "2026-11-16T17:27:25.075Z"
+        },
+        "spa": {
+          "sha256": "aab6675596e05be7b973a752716203eebbd41fcdf00a2ecad4e6f7197fe865db",
+          "lineCount": 14,
+          "verifiedAtUtc": "2026-11-16T17:27:26.905Z"
+        },
+        "tha": {
+          "sha256": "0c6a5ed34a42e5f8f4596dad3997955ea01b85173b1f660131ea31cf13315058",
+          "lineCount": 14,
+          "verifiedAtUtc": "2026-11-16T17:27:29.001Z"
+        },
+        "tur": {
+          "sha256": "f22bf3e153159b988300f43d59ab35956e04c7ed295d22b97d1cd73b8148ca0d",
+          "lineCount": 14,
+          "verifiedAtUtc": "2026-11-16T17:27:31.095Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.20",
+      "entryId": "1791566645",
+      "sourceRevision": "a05f13fb2cf07aaf85e3514b81201938533881f2",
+      "originalChineseSha256": "112e3c38cb27bc56f373212fab9b60a55b8d884955fee8b1f3438d0f8ee456bd",
+      "languages": {
+        "eng": {
+          "sha256": "28f5fcd8dfec4d2f0e14bb5b9f346561c117e51ba282e131a9fa5b02e27c7877",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:12:01.924Z"
+        },
+        "zhs": {
+          "sha256": "112e3c38cb27bc56f373212fab9b60a55b8d884955fee8b1f3438d0f8ee456bd",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:05:18.978Z"
+        },
+        "zht": {
+          "sha256": "afcf95c042200fb5d272317be59e188ffc94eaeeacf007405127da489ec7b21e",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:26:01.859Z"
+        },
+        "deu": {
+          "sha256": "4aa7c273225af6639203b52968aca2d3d9580da8dd05f20d718143a19d6f9d32",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:26:03.732Z"
+        },
+        "esp": {
+          "sha256": "c0aff086d44da02a55fb7d86983b95a7e0b1703557fe0c345183cb8dda6a1bcf",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:26:05.482Z"
+        },
+        "fra": {
+          "sha256": "e971c7fed59d1aba57ffd115a7f9ba62208ea6a880e3b5cd6b420c79f566c591",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:26:07.278Z"
+        },
+        "ind": {
+          "sha256": "db1d3a99d450adb781cfe238200188f3cf817bd10904f3931eea9e58b4323946",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:26:08.988Z"
+        },
+        "ita": {
+          "sha256": "9668389a599e685e6a091de702c0fa1a8ae1b03d0eee64f2bae4d91fe6f24da9",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:26:10.693Z"
+        },
+        "jpn": {
+          "sha256": "4da810011084638ea3eef6afff7086c6a40c1aba53b7bf610b2341c8c1f5e415",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:26:12.449Z"
+        },
+        "kor": {
+          "sha256": "bf5461dd45a4be856d7ce091c8aaab98dae348999eec2765afd312da5c9b8577",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:26:14.310Z"
+        },
+        "pol": {
+          "sha256": "af77cbb406ea8d4762c1d374b4aa5afdb4a7ac812787ebabb0c9e45f60877d89",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:26:15.972Z"
+        },
+        "ptb": {
+          "sha256": "f873c3e30ef6e41b913f9c00fb435845b74f960b15a973b5a72f7fa2f502f95d",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:26:18.427Z"
+        },
+        "rus": {
+          "sha256": "def46fd3cfa38e4ad6437cd6a00b1e2c94bf14e0bcbc507b7c82dde81b49bdb0",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:26:20.161Z"
+        },
+        "spa": {
+          "sha256": "c0aff086d44da02a55fb7d86983b95a7e0b1703557fe0c345183cb8dda6a1bcf",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:26:22.392Z"
+        },
+        "tha": {
+          "sha256": "e5de8c066d139e3f3a5237565377138830bac06a4ce96085cd4ed0f4197ddc7d",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:26:24.162Z"
+        },
+        "tur": {
+          "sha256": "8d3d7572c75a2dcdd30f0c36e2ed32bb34f3b189a747696e73c68ab7a9f7825f",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:26:25.869Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.21",
+      "entryId": "1791627570",
+      "sourceRevision": "5ded8b1bb090e8c9725ad90719e216388f6d9608",
+      "originalChineseSha256": "14f2249a4cba6200e9b199f3b274c84678fd72727c4acd5ab8fab222f9dbda3e",
+      "languages": {
+        "eng": {
+          "sha256": "37ccde2958c50fa22689a45cb7866c41ee5db8bcd6900f98d6eafc8f5d1c87ae",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:12:04.070Z"
+        },
+        "zhs": {
+          "sha256": "14f2249a4cba6200e9b199f3b274c84678fd72727c4acd5ab8fab222f9dbda3e",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:05:21.287Z"
+        },
+        "zht": {
+          "sha256": "517be5adbaec75bffd7c46f0a40d9d0c6990843ea43131342f10c1b205d39f9d",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:25:15.851Z"
+        },
+        "deu": {
+          "sha256": "9ef96cbb61d5aaf4163365fb6e269924a6ac2bbd83ca4a2779f12e25c26ba949",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:25:38.801Z"
+        },
+        "esp": {
+          "sha256": "3dd8c385a22705ead66bda9bdf5e187f5b44e0e3a972ea8875770363dae6f3fc",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:25:40.628Z"
+        },
+        "fra": {
+          "sha256": "c3f7ec1faad2d4e2dafa1660ca4950c0e194da233905b82725ac6a2868aa3203",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:25:42.464Z"
+        },
+        "ind": {
+          "sha256": "ae4002d73f33b144343dbb5cf1b9ab20147a61124a70d1227644223b7e7374d0",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:25:44.428Z"
+        },
+        "ita": {
+          "sha256": "7df09ecf63f8d3348d328135c2271a37a9adc9b09a94b4a8bdfceb6f2b64aa4c",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:25:46.163Z"
+        },
+        "jpn": {
+          "sha256": "edc9a80c976193fe2dd4450edc0fb4629289284562773b8497f51456f3c8f4b3",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:25:47.959Z"
+        },
+        "kor": {
+          "sha256": "df486cc3316f06bd7e2a0d2392fc0d935ddfe85dbd69e3be56ff501d3acefd7d",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:25:49.876Z"
+        },
+        "pol": {
+          "sha256": "2350c23278fe753eca075215a54838a84da2564c718ce2516d2f40f040995674",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:25:51.641Z"
+        },
+        "ptb": {
+          "sha256": "bcca9387ab2039da3fbd58a600c81ebf771841e330109930908de94add2a8509",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:25:53.181Z"
+        },
+        "rus": {
+          "sha256": "5bc3992a008fc893a19d03fce0375d47421f6f17dfd3874785f2842f66482d42",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:25:54.952Z"
+        },
+        "spa": {
+          "sha256": "3dd8c385a22705ead66bda9bdf5e187f5b44e0e3a972ea8875770363dae6f3fc",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:25:56.495Z"
+        },
+        "tha": {
+          "sha256": "bede7e6918fbbea82bffc48d7986e407caa8be6fd5c56cf8c2ffed712ee9a6b7",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:25:58.238Z"
+        },
+        "tur": {
+          "sha256": "c916e1826a1f4b8c04f5c8523e585c2c657ea43e1b21261f24ebd5fa3e66fff8",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:26:00.084Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.22",
+      "entryId": "1791701047",
+      "sourceRevision": "9233a89dd6884859aa9e90999ab5d217e45180d0",
+      "originalChineseSha256": "da220c521fc7c0e8804b04ac10b17908f1d0dc0d88942112435cfd51eab71182",
+      "languages": {
+        "eng": {
+          "sha256": "352c8501f7b0166d69e73089b5d83c4888945ab40ca9d43aec08047a99fcc67e",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:12:06.476Z"
+        },
+        "zhs": {
+          "sha256": "da220c521fc7c0e8804b04ac10b17908f1d0dc0d88942112435cfd51eab71182",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:05:23.398Z"
+        },
+        "zht": {
+          "sha256": "1eb33c10a700b750651e774e08cef61c43795b800f91ece5c882098b42554b3c",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:24:52.072Z"
+        },
+        "deu": {
+          "sha256": "3634e49a4e8e559c7e466fbd892df3a31316fa7263cf585adbd297996bb50830",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:24:53.719Z"
+        },
+        "esp": {
+          "sha256": "3600f7bac973a65aa5d8b56858f313fabcc935e20e7d28d5a23b5a330218eeef",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:24:55.564Z"
+        },
+        "fra": {
+          "sha256": "ea22effad394aa0524d55ef6bdf89524adfc52979193a0ca59eb290f7d6574f0",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:24:57.239Z"
+        },
+        "ind": {
+          "sha256": "420e13d7d73ede2b564aa6d7ea2fc0c5abc1e7604428cd8a2d6b451c147240c2",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:24:58.883Z"
+        },
+        "ita": {
+          "sha256": "b292c2a1bf77f5b936c8a8f808b93cb771ba33cb3bd8e2fed5d9f50f1793c7b2",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:25:00.565Z"
+        },
+        "jpn": {
+          "sha256": "2719da57484c27a93c5d1d93922b8de7ab70c9b96bd99ca74bc21b929714acba",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:25:02.367Z"
+        },
+        "kor": {
+          "sha256": "5e7c8cc78bc828b21b543721a55efe5741c87d0b437ff87915c6d0de530f46a0",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:25:04.091Z"
+        },
+        "pol": {
+          "sha256": "2ff68051e20dcef58cfdc086da3a1227722053961e061d5fa2e1ea5d850bffce",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:25:05.728Z"
+        },
+        "ptb": {
+          "sha256": "51c0c1294155507ba8353dd2fc10ab91193cf317b2ff80b2350ff4a01fb77cb9",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:25:07.328Z"
+        },
+        "rus": {
+          "sha256": "1dac8e39a63a5743041a681b124bdc2e350f3f5ac9400736635acf0cb8ace947",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:25:08.969Z"
+        },
+        "spa": {
+          "sha256": "3600f7bac973a65aa5d8b56858f313fabcc935e20e7d28d5a23b5a330218eeef",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:25:10.720Z"
+        },
+        "tha": {
+          "sha256": "9e46701fab23bce91629d12ba31fb99eb7ce216427d70eecfdf612801062b6f5",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:25:12.407Z"
+        },
+        "tur": {
+          "sha256": "e0348d4b67c03257aac1b1235a5fa62d053e55b2013a4b6e1e44b5d62aad809b",
+          "lineCount": 2,
+          "verifiedAtUtc": "2026-11-16T17:25:14.269Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.23",
+      "entryId": "1791705379",
+      "sourceRevision": "d00d17265fce21bbd198095a2a93f292f210e6ef",
+      "originalChineseSha256": "63a14c6b9c111dd1bcfc427ca610aa0902306c84315ef512086024f5dfcaa5c0",
+      "languages": {
+        "eng": {
+          "sha256": "45bc57a3adc0d155395bb913ff1d0e9087266fdeee40f371810a02cb01e63d48",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:12:08.674Z"
+        },
+        "zhs": {
+          "sha256": "63a14c6b9c111dd1bcfc427ca610aa0902306c84315ef512086024f5dfcaa5c0",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:05:25.524Z"
+        },
+        "zht": {
+          "sha256": "969bea3ef49479cfc2a6c82bf17691bc3bc6eebf68e8ede79db5430e258de202",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:24:10.811Z"
+        },
+        "deu": {
+          "sha256": "6149e2adf99c8cf551449dd4c6f1076789e0df83448fc829059e8ce1046e9a7f",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:24:26.857Z"
+        },
+        "esp": {
+          "sha256": "742c0ddbbf4d83b491290bd4d2689edb0b8b393f12c81fb502d7b39322b07549",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:24:29.065Z"
+        },
+        "fra": {
+          "sha256": "cb325da9296adbf7651a6d7869f9a28746a78a0cdc7517665cbe5ade0b1628af",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:24:31.184Z"
+        },
+        "ind": {
+          "sha256": "2063b6d0fc92d730a100f75ea4188f63644c7d2dd584cfcd28acc6ef829e9713",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:24:33.072Z"
+        },
+        "ita": {
+          "sha256": "a68917c0135f6953f20bf35213238710d4464286af12c1f03d1d7b2f1e7e4b53",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:24:34.951Z"
+        },
+        "jpn": {
+          "sha256": "7150412d7b37b05bbd9c563fcbe5bca9808c0620a7d960c6a16fc5a102eee37e",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:24:36.960Z"
+        },
+        "kor": {
+          "sha256": "25b9c9a2e8468464e2f5979ac10c91542655ea01c20e1d8e6347531a120a6e20",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:24:38.975Z"
+        },
+        "pol": {
+          "sha256": "c2c609c1a0efd4a2b19f19b0db02d8a0e4e6df7d460949e9f2bbd27c7b0fd479",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:24:41.436Z"
+        },
+        "ptb": {
+          "sha256": "ef746919ebaebb39907be05d47529cd9bedd506ef08775cfa0efbcc9accbc5c6",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:24:43.348Z"
+        },
+        "rus": {
+          "sha256": "3c28a18f6f163a9b0aa15aa05ac74e330201543f49820924b807e5f0f32499cc",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:24:45.043Z"
+        },
+        "spa": {
+          "sha256": "742c0ddbbf4d83b491290bd4d2689edb0b8b393f12c81fb502d7b39322b07549",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:24:46.729Z"
+        },
+        "tha": {
+          "sha256": "7c025b3d1645c10fb09ada374d502a23cb9a38314ba00b3873e0cbf714e0f44e",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:24:48.347Z"
+        },
+        "tur": {
+          "sha256": "478dd02f01315e53683fc6a099eb602088d3d885859bb7af6d8422b041bbc06d",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:24:50.086Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.24",
+      "entryId": "1791727924",
+      "sourceRevision": "976f03f4fe4064a001b95fb3c14eef1d348ce0d1",
+      "originalChineseSha256": "b81a9c80d269dccddf6e08137d422a97f6314e6a166945ff9890ab03792ac176",
+      "languages": {
+        "eng": {
+          "sha256": "08cb011d5429b1d39f4bc0f5b5dede38e14cfff4715043effeb1abd5f8106b4f",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:12:10.801Z"
+        },
+        "zhs": {
+          "sha256": "b81a9c80d269dccddf6e08137d422a97f6314e6a166945ff9890ab03792ac176",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:05:27.613Z"
+        },
+        "zht": {
+          "sha256": "500f724fbff59d2d7eead7fb6d45e038c173d4046258227e51e3f9b4ff9bb9e0",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:44.476Z"
+        },
+        "deu": {
+          "sha256": "5a35a9566aed1c2e06044ee23223c745905477a01f540be12a3a62aa4063075b",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:46.184Z"
+        },
+        "esp": {
+          "sha256": "911e90bc5bae4d725d76b1716bbe2ebb8046071fd63336196d2d6f01f3061f40",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:48.390Z"
+        },
+        "fra": {
+          "sha256": "c0a7a64fe3dee7c333cbe7e89d88b0a77f999fb43e00424b8299aacf58b0a6dc",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:50.300Z"
+        },
+        "ind": {
+          "sha256": "388735760a8bbbaab1c49ad48e527b816d999a24daa35c7d746bca801e52acd1",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:52.096Z"
+        },
+        "ita": {
+          "sha256": "ede0b1ba13c739211f1ec16a6487547d01dbc08446cb6088a09f9e9ee974e457",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:53.920Z"
+        },
+        "jpn": {
+          "sha256": "02f7bb46641798003db212ad4fa63ac8d57afdb13bd76a3962303008f866cd56",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:55.645Z"
+        },
+        "kor": {
+          "sha256": "a3b864007ef9e752c0e50f188be6e1d9572d1e6447f6c62a943410105fd58e5c",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:57.601Z"
+        },
+        "pol": {
+          "sha256": "d751dee1fdf38499fcc900ea5ee1d88ed5a25535c5e1e94850a6eceac168a416",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:59.358Z"
+        },
+        "ptb": {
+          "sha256": "133d301e163ca4b7b70955c07bbf8b0108c719527ad19fb86f18bbcdad33ae99",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:24:01.029Z"
+        },
+        "rus": {
+          "sha256": "7451a3416db7407d56769b79175aafef079088b9c1a7aa288853cb47a2b82e98",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:24:02.916Z"
+        },
+        "spa": {
+          "sha256": "911e90bc5bae4d725d76b1716bbe2ebb8046071fd63336196d2d6f01f3061f40",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:24:04.776Z"
+        },
+        "tha": {
+          "sha256": "a3d9d589f0f352d24555e475bb6491ba2d9f7ae9b2d917487b24e3e22c0091db",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:24:06.785Z"
+        },
+        "tur": {
+          "sha256": "8bd111c53198501abf0568ffd98e63ffc3bd094762c129aa790b39102934eda9",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:24:08.644Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.25",
+      "entryId": "1791732863",
+      "sourceRevision": "38c786e508d40c4f2a0d9368e4db49b05630d706",
+      "originalChineseSha256": "2e942ca1a6f0dcbd861bb38e32c92181f8ae50744bb194ee9f6a9651c7468632",
+      "languages": {
+        "eng": {
+          "sha256": "5557d828df940500cebda2d019510697e5248d142d84fa31b0e613b5e063757c",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:12:13.068Z"
+        },
+        "zhs": {
+          "sha256": "2e942ca1a6f0dcbd861bb38e32c92181f8ae50744bb194ee9f6a9651c7468632",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:05:29.986Z"
+        },
+        "zht": {
+          "sha256": "901f7f7634c693657e5c224e425c55a23c43889b4c6de149a332c4da774c4558",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:11.070Z"
+        },
+        "deu": {
+          "sha256": "fc0541d91e1cf75f598b58cd0b34e4355fecd66869ff645afb8d0bb1c307a2be",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:21.584Z"
+        },
+        "esp": {
+          "sha256": "178307cf8c34d86ea7dc6e3e48e8c72e2aeac892a15668012a097aea6bd023f0",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:23.364Z"
+        },
+        "fra": {
+          "sha256": "67c405ec3fadf430552d701cc66f6b8834cdc3bbb682ec3e8a8a530c9215178c",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:25.149Z"
+        },
+        "ind": {
+          "sha256": "282c0280e1e0c4db38835f69546fc5226b65aff469d9afbeb2a3bf2bc910e768",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:26.906Z"
+        },
+        "ita": {
+          "sha256": "187d6d54e4644a3698f85b94998920320cbc2ae06fd4012b15e75f96658f5235",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:28.608Z"
+        },
+        "jpn": {
+          "sha256": "c20ccee5ba16a5d9f617c971ca3eac9f3b576275ceb79a19b6c8f6bf65c76afa",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:30.377Z"
+        },
+        "kor": {
+          "sha256": "e0c7738062bae0c35962d96f2c6a4ea45002ff2150f1808cd18c0a0f103852bc",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:32.064Z"
+        },
+        "pol": {
+          "sha256": "7e6f088a0d778397546bf6b645a9fb706d648984af9ef3c6372871904bd298d5",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:34.069Z"
+        },
+        "ptb": {
+          "sha256": "60ead39515ae2ec1eb53a7545674d5234265888d8be93d520b5e61511c12212f",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:36.005Z"
+        },
+        "rus": {
+          "sha256": "934005c004d88d4a13e7281dd75d84c3fbf9a9b975c818baaf6a3bc65e5c6793",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:37.687Z"
+        },
+        "spa": {
+          "sha256": "178307cf8c34d86ea7dc6e3e48e8c72e2aeac892a15668012a097aea6bd023f0",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:39.266Z"
+        },
+        "tha": {
+          "sha256": "765ef3b44d0c636a15bec57a78edbebf58e4db3d5389bfad2e722b8931da0b3f",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:41.121Z"
+        },
+        "tur": {
+          "sha256": "c3c28ad80dfdaba99679f0cab4e6a5ec606621f7e0ea80e12244e4043aa25f07",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:23:42.809Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.26",
+      "entryId": "1791947508",
+      "sourceRevision": "d6a1386fc9289e85db0d5a6cd7b41a0b8e320ae3",
+      "originalChineseSha256": "2ec6ce2525d859493ae10525090871899bbc295c473b4d230ce9df24262a5f1f",
+      "languages": {
+        "eng": {
+          "sha256": "9e373feccc1a357590885097c1baa552e0067791959b2f35f2136a49d1d93c20",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:12:15.412Z"
+        },
+        "zhs": {
+          "sha256": "2ec6ce2525d859493ae10525090871899bbc295c473b4d230ce9df24262a5f1f",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:05:32.020Z"
+        },
+        "zht": {
+          "sha256": "99cdbd95dce917cc6d25c9b863ea6224918812fe3d14c254c0e957f582f41423",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:22:45.967Z"
+        },
+        "deu": {
+          "sha256": "10f9321556e8327918cc1e5bbd53ba249082b4947812ca5cbc2533dafba75589",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:22:47.673Z"
+        },
+        "esp": {
+          "sha256": "9ba72956ed69f3d3ae5a4c68a7bf83a1e3d7b079c1ee38b4532b56bae5351471",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:22:49.214Z"
+        },
+        "fra": {
+          "sha256": "ad52b961dcd8e90bbcd85213b082dc1f476049e1238b64957c7a26b319f926a3",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:22:50.904Z"
+        },
+        "ind": {
+          "sha256": "c2fd78a174ff3214b32d8c0a21a62dabd58747c00b6cac34b34fa4ff4d75338c",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:22:52.594Z"
+        },
+        "ita": {
+          "sha256": "57fe0845f10038905ebe5652e58b5895ba80633c3922f39b68bd739b65d75362",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:22:54.344Z"
+        },
+        "jpn": {
+          "sha256": "cfab2d11b97e78f7385ba6d943c4acd39eb3b191045e6e01efdf0fb083ffaebc",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:22:56.235Z"
+        },
+        "kor": {
+          "sha256": "66ae0da6ad5433c30f980075fa4063c7390b6fe55cf70e2dfd59962a31c9cee4",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:22:57.949Z"
+        },
+        "pol": {
+          "sha256": "e30f954f86d6661ffb92e348eb1c16858a5d8f88b8e77ea4bbd0c4c0726e42f1",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:22:59.592Z"
+        },
+        "ptb": {
+          "sha256": "96a10cf5a53600eb52027370cc7abc7fb721abac938ad4f3aea0e9345dbcabd8",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:23:01.592Z"
+        },
+        "rus": {
+          "sha256": "41432e4b0f22ce8582b882cec5ed4a439c6d13062dc7d2690a75a73090f3b341",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:23:03.624Z"
+        },
+        "spa": {
+          "sha256": "92b0f1fa9df2176daee96138ac2fda4bf484ee57138e20066634e591cc456440",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:23:05.608Z"
+        },
+        "tha": {
+          "sha256": "7ed8ec33aa02ac19c621f93e8de8e7118af2c7df25f20dc8173ac4aa82fdd6cb",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:23:07.346Z"
+        },
+        "tur": {
+          "sha256": "e3d308b452d056dc956691dba114c7cffb04548664737a36982bb6ef4e04b9ed",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:23:09.036Z"
+        }
+      }
+    },
+    {
+      "version": "1.0.27",
+      "entryId": "1791950776",
+      "sourceRevision": "3ef752b01ddd8a0581b3b8b43975a90695ee5eb6",
+      "originalChineseSha256": "eb917427846677fadb08597b1aade1e5c1597eefaf74797694b0769b7bbaddfb",
+      "languages": {
+        "eng": {
+          "sha256": "acc4a6cc13da9544fd79155bb3265c16cafaf1f3b4652d8f5f1e618f2b7fc9a2",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:12:17.712Z"
+        },
+        "zhs": {
+          "sha256": "eb917427846677fadb08597b1aade1e5c1597eefaf74797694b0769b7bbaddfb",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:06:27.167Z"
+        },
+        "zht": {
+          "sha256": "7e5cc522696a95b442225961b98bf1e10120aa4a2f2223bb9004f27ea5a480f9",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:21:38.898Z"
+        },
+        "deu": {
+          "sha256": "62ed0cb1088d813f6a91057087930cbec49638cad9d0e78b4d03f7485f1858bf",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:22:19.926Z"
+        },
+        "esp": {
+          "sha256": "e07617f8cb3f87d6e4faf88fdbcfd240d672d3ead6735fb9e62c09f42c246e2c",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:22:21.669Z"
+        },
+        "fra": {
+          "sha256": "3d83069b5a73e6d692f61379df6e7884325e4d42abf55699aab1b0f62c5ba2b9",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:22:23.744Z"
+        },
+        "ind": {
+          "sha256": "e97a9583e74d77d87bc8fc1f4f4d51e734b7bc3b45160fa514258df3313976e6",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:22:25.721Z"
+        },
+        "ita": {
+          "sha256": "3293094131afe0a5abcc3ef29139839571f534e4d1b8193672bf76e80ac3eb36",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:22:27.739Z"
+        },
+        "jpn": {
+          "sha256": "103c4c62d56c9a0af530177b0d01faf3a0f41860e5d94d6a428db9a73f8aae4a",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:22:29.693Z"
+        },
+        "kor": {
+          "sha256": "0fa1eca358027757c5f900aa0e4e9479e8e270b1e02446b365e7f531a17ef863",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:22:31.739Z"
+        },
+        "pol": {
+          "sha256": "94939a64516a7a159d969fa67a0ed0d0839689234b7d52797ed8c3d1866bb511",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:22:33.708Z"
+        },
+        "ptb": {
+          "sha256": "5b6bb747ce1eff443beefce1b8ccedd35211858a24cb255dfab93b31fc97000f",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:22:35.959Z"
+        },
+        "rus": {
+          "sha256": "3ea2fadaa6f898d2a2e6ef9b6b443511135f1e00c03cb76041dbf5ccb1770e89",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:22:38.320Z"
+        },
+        "spa": {
+          "sha256": "e07617f8cb3f87d6e4faf88fdbcfd240d672d3ead6735fb9e62c09f42c246e2c",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:22:40.059Z"
+        },
+        "tha": {
+          "sha256": "cd50db31a39778001129b33d5fa16e9dd1d439aba10e203546795ad03213ea6f",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:22:42.402Z"
+        },
+        "tur": {
+          "sha256": "5f5f22e3add1af83610a3883ae06c4a69617e61d6a9673e30e601991b3e881e1",
+          "lineCount": 3,
+          "verifiedAtUtc": "2026-11-16T17:22:44.134Z"
+        }
+      }
+    },
+    {
+      "version": "1.1.0",
+      "entryId": "1791951720",
+      "sourceRevision": "4b83de9e61e8466219c87ce036a24689b077d800",
+      "originalChineseSha256": "a402cb39b07e5aeb386a363e07ccce4bb9d05394941ce0b170745370b03f2c91",
+      "languages": {
+        "eng": {
+          "sha256": "ddd332f3b77f4949b1968d1521adb17b71c7ce63f6e51c18ec20f01d0e8b9832",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:12:19.862Z"
+        },
+        "zhs": {
+          "sha256": "a402cb39b07e5aeb386a363e07ccce4bb9d05394941ce0b170745370b03f2c91",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:06:29.575Z"
+        },
+        "zht": {
+          "sha256": "a4cc9f771439d5f8885f8321d14b0a5d935d86b2e53098ae848d00a936fc96c7",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:21:15.583Z"
+        },
+        "deu": {
+          "sha256": "ea011e5fa3d18611a293ff3f567080c8d6cfe719a7b72239c18592309719257e",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:21:17.160Z"
+        },
+        "esp": {
+          "sha256": "fedffcd69754e9a84ee0abfcde8c735811aed11d01d39750168440049ce386d8",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:21:18.952Z"
+        },
+        "fra": {
+          "sha256": "830658aa0e205e4885ea0c64d5ce60ab1d9bfc2dcfd3c65a13e45e07e8ccb214",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:21:20.551Z"
+        },
+        "ind": {
+          "sha256": "2924189b5ee7cf0dbe4e868f1230deed968114bee6bd319f11fbbc184041ad1a",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:21:22.183Z"
+        },
+        "ita": {
+          "sha256": "98dfacf0dd5d84ff7f2f24aae87e4ca0d58b7113a358d11c956b408b28a7fa6d",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:21:23.822Z"
+        },
+        "jpn": {
+          "sha256": "a8989126587f5e4befcb1d3214e04974a0def5fd11d017547c27c1cbb688a948",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:21:25.623Z"
+        },
+        "kor": {
+          "sha256": "c1a53cb43080e6651a7a15a45dc53ad627dc76d3327e0911f1f7d238a9acd483",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:21:27.408Z"
+        },
+        "pol": {
+          "sha256": "bec49d08e439de564c0e1252d846b38deaf64e000f53ea477e9c6ae09ff1dcb4",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:21:29.066Z"
+        },
+        "ptb": {
+          "sha256": "c83f4db50493c962be024e6c6c544c0166fb69b4ac1abc9fa486cb1717c74630",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:21:30.666Z"
+        },
+        "rus": {
+          "sha256": "e63179285dd62c485ae3720cd1d7cd82ff4a9ed1553d87585f2b8faa96da608e",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:21:32.462Z"
+        },
+        "spa": {
+          "sha256": "fedffcd69754e9a84ee0abfcde8c735811aed11d01d39750168440049ce386d8",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:21:34.062Z"
+        },
+        "tha": {
+          "sha256": "c802c5dd83ee8e250a5ef8799703ee5d692e74dfd8682e7e779bcf8fde94f525",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:21:35.554Z"
+        },
+        "tur": {
+          "sha256": "5a4872a1194f7192c97c23eca98ec7d2694a92bfb88a11019a2da77aca8a6379",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:21:37.229Z"
+        }
+      }
+    },
+    {
+      "version": "1.1.1",
+      "entryId": "1792028863",
+      "sourceRevision": "e62b5319c65f85aaa454dc5b4167bbdb1f687327",
+      "originalChineseSha256": "b661db59be1cdb16816aa3505d744bf664f232e16ac4bbd19c9921887b2696de",
+      "languages": {
+        "eng": {
+          "sha256": "5b456f4bd0b22dadeae500bcbcc9179711ec58195b8be1bee49fdab9f3bd4ae6",
+          "lineCount": 8,
+          "verifiedAtUtc": "2026-11-16T17:12:22.530Z"
+        },
+        "zhs": {
+          "sha256": "b661db59be1cdb16816aa3505d744bf664f232e16ac4bbd19c9921887b2696de",
+          "lineCount": 8,
+          "verifiedAtUtc": "2026-11-16T17:06:31.674Z"
+        },
+        "zht": {
+          "sha256": "6e694ea4489f817c595625eb608e5d1492439a9af00a2ec48fe79e444eed18d4",
+          "lineCount": 8,
+          "verifiedAtUtc": "2026-11-16T17:20:28.825Z"
+        },
+        "deu": {
+          "sha256": "7bdefb1c720728f2575c39135a0e0a7158e6b7513c0f684dcc0c6985c7269569",
+          "lineCount": 8,
+          "verifiedAtUtc": "2026-11-16T17:20:52.572Z"
+        },
+        "esp": {
+          "sha256": "d483e93cedf2547e93ceaa031e54419bdeb0c9d4d5ac8230812242ed7fc704cd",
+          "lineCount": 8,
+          "verifiedAtUtc": "2026-11-16T17:20:54.385Z"
+        },
+        "fra": {
+          "sha256": "346e2af2de9b9e59f585544e6caba57fcd1b3f78410c895d03457955af12b605",
+          "lineCount": 8,
+          "verifiedAtUtc": "2026-11-16T17:20:56.060Z"
+        },
+        "ind": {
+          "sha256": "5fdea161fd7a3dbb99f85911e8e5c5d6e7a4dcd3474df1e12efdf09af794e653",
+          "lineCount": 8,
+          "verifiedAtUtc": "2026-11-16T17:20:57.801Z"
+        },
+        "ita": {
+          "sha256": "998acde68bc482698f9c6de416a5ae776206f9c3634d0eb6a4e3c9eb849027af",
+          "lineCount": 8,
+          "verifiedAtUtc": "2026-11-16T17:20:59.350Z"
+        },
+        "jpn": {
+          "sha256": "e96c219b3999edb9c3b2d127af1c3804e8fb355330a9ae5e127983d5db6d9561",
+          "lineCount": 8,
+          "verifiedAtUtc": "2026-11-16T17:21:00.953Z"
+        },
+        "kor": {
+          "sha256": "d2f9493d95db764ee8add6024a836d8310fee996880681a4cd6144e0229ade67",
+          "lineCount": 8,
+          "verifiedAtUtc": "2026-11-16T17:21:02.565Z"
+        },
+        "pol": {
+          "sha256": "b818af01b4a5ed2aeb4564396cd2eee2de9ebe4cde677536888e8068c92f8681",
+          "lineCount": 8,
+          "verifiedAtUtc": "2026-11-16T17:21:04.349Z"
+        },
+        "ptb": {
+          "sha256": "afa965e3f5fc6979bee720b264653199ec44b5fe23cdba936188ddd120aef457",
+          "lineCount": 8,
+          "verifiedAtUtc": "2026-11-16T17:21:05.850Z"
+        },
+        "rus": {
+          "sha256": "fe6f5359abd6d978ce2b28bf2decdbdb7e2e25c75996768c4d45594ac5c9748b",
+          "lineCount": 8,
+          "verifiedAtUtc": "2026-11-16T17:21:07.576Z"
+        },
+        "spa": {
+          "sha256": "cbfcfe6ee2aafe077e8f330842a0d86e9da84c61381d5e58282e2b36175cde43",
+          "lineCount": 8,
+          "verifiedAtUtc": "2026-11-16T17:21:09.174Z"
+        },
+        "tha": {
+          "sha256": "e676c672ef65648215ba74b24f41da9b10716f9e9a3d39467b51cc149292f1ed",
+          "lineCount": 8,
+          "verifiedAtUtc": "2026-11-16T17:21:11.204Z"
+        },
+        "tur": {
+          "sha256": "6429bd2499dcb790f2173a8bcfeb322c627ad6dabddea8778fd6f35e41172d24",
+          "lineCount": 8,
+          "verifiedAtUtc": "2026-11-16T17:21:13.143Z"
+        }
+      }
+    },
+    {
+      "version": "1.2.0",
+      "entryId": "1794228897",
+      "sourceRevision": "3b749fa1e36aabd52fa9448a3ed73a108e86d781",
+      "originalChineseSha256": "2f2a1811496dc1f7cda182e28645d1a3ca1137ae39ebe2d9612fd46b46c6a214",
+      "languages": {
+        "eng": {
+          "sha256": "9319aaec2ab4fc00957296439e9621786a510570d215524c7701cc005a31ef73",
+          "lineCount": 25,
+          "verifiedAtUtc": "2026-11-16T17:12:24.625Z"
+        },
+        "zhs": {
+          "sha256": "2f2a1811496dc1f7cda182e28645d1a3ca1137ae39ebe2d9612fd46b46c6a214",
+          "lineCount": 25,
+          "verifiedAtUtc": "2026-11-16T17:06:33.788Z"
+        },
+        "zht": {
+          "sha256": "77453c8b1b99065f0676a1bfe21c502f2c0541cbd6dd53a4df80f7d53cad794f",
+          "lineCount": 25,
+          "verifiedAtUtc": "2026-11-16T17:20:02.430Z"
+        },
+        "deu": {
+          "sha256": "2954ab7f407df7f8db08455e1290b44a4d39735eac4fd79b3981af5e72163db7",
+          "lineCount": 25,
+          "verifiedAtUtc": "2026-11-16T17:20:04.241Z"
+        },
+        "esp": {
+          "sha256": "eb9b95e0803daeac36b901b21dd3ed8cee8b89e3b381392fb8980d6fba3a90ac",
+          "lineCount": 25,
+          "verifiedAtUtc": "2026-11-16T17:20:06.287Z"
+        },
+        "fra": {
+          "sha256": "35395f224b9700cd434033f2d994f4a6d315c9ffe922c00bf7a7ad1b3625631d",
+          "lineCount": 25,
+          "verifiedAtUtc": "2026-11-16T17:20:08.103Z"
+        },
+        "ind": {
+          "sha256": "2fa76c5d2975970c8206bdd132120a0e1c10b1c1825d5f3866402a007aed2c69",
+          "lineCount": 25,
+          "verifiedAtUtc": "2026-11-16T17:20:10.165Z"
+        },
+        "ita": {
+          "sha256": "a63469d9b41a0214a1bd86331ad2904b17407839940d3ae4357708c6646407f3",
+          "lineCount": 25,
+          "verifiedAtUtc": "2026-11-16T17:20:12.016Z"
+        },
+        "jpn": {
+          "sha256": "b5070b2c6a03ab3fdd71b83e28ee18df627f336f7bf72f9034596678abe245c9",
+          "lineCount": 25,
+          "verifiedAtUtc": "2026-11-16T17:20:13.779Z"
+        },
+        "kor": {
+          "sha256": "2c9faaabb7a4f03c47b1c1265b5f12518d9c2fb1aeac0094dc49e2ff3e00c589",
+          "lineCount": 25,
+          "verifiedAtUtc": "2026-11-16T17:20:15.699Z"
+        },
+        "pol": {
+          "sha256": "f40903ff3149f454fc6b33d76abf9713c487da938f09304a6ff92eac7188b2ec",
+          "lineCount": 25,
+          "verifiedAtUtc": "2026-11-16T17:20:17.613Z"
+        },
+        "ptb": {
+          "sha256": "b073e60b9187e1c5d3fbf75b0cda9b8b6ce9ca808dd6e25a172e21b321e83414",
+          "lineCount": 25,
+          "verifiedAtUtc": "2026-11-16T17:20:19.609Z"
+        },
+        "rus": {
+          "sha256": "fe16218b84da822ef642060bcb3bca42624664a3697633bd69c352f3ba659b56",
+          "lineCount": 25,
+          "verifiedAtUtc": "2026-11-16T17:20:21.396Z"
+        },
+        "spa": {
+          "sha256": "337613c0f959db1f14385ac6977105c8d20c1b68a2b85a002322b644ca5ba927",
+          "lineCount": 25,
+          "verifiedAtUtc": "2026-11-16T17:20:23.284Z"
+        },
+        "tha": {
+          "sha256": "494b3dd99514fcdd05c640e0f7908dab811f70ae8842b1e12f1fdf26f490b39c",
+          "lineCount": 25,
+          "verifiedAtUtc": "2026-11-16T17:20:25.139Z"
+        },
+        "tur": {
+          "sha256": "7ecb8a1d156b354fbf9329776e4b80ff75621b41d7ef757aa55f5ee41c8fbe4e",
+          "lineCount": 25,
+          "verifiedAtUtc": "2026-11-16T17:20:27.086Z"
+        }
+      }
+    },
+    {
+      "version": "1.2.1",
+      "entryId": "1794237282",
+      "sourceRevision": "73960bfd8b0e157280f1e3c28d8900a3a9de029a",
+      "originalChineseSha256": "805b7a38b41fd69b1e125ef8c9f128ae7f67bcfc61deb3124ea84e27f65cac17",
+      "languages": {
+        "eng": {
+          "sha256": "fd9c78df4b4da2c008f16eb90fc9cc2e15112dc9df2ccf5d56ed7ccdc07d86fd",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:12:27.156Z"
+        },
+        "zhs": {
+          "sha256": "805b7a38b41fd69b1e125ef8c9f128ae7f67bcfc61deb3124ea84e27f65cac17",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:06:35.911Z"
+        },
+        "zht": {
+          "sha256": "c47c1d7cc3c855181a64eee488f1190298366ff052f32b823048346f893e4b4e",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:19:00.329Z"
+        },
+        "deu": {
+          "sha256": "5926de8d7697ce0e0ecf8297cd220cc09c9e5b8b3638ec613fb5674aad5c15cd",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:19:39.352Z"
+        },
+        "esp": {
+          "sha256": "0710a61ebd1d678a520b9a4c2b527771736d0c84f0c5546fc2329defb147ed4e",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:19:40.991Z"
+        },
+        "fra": {
+          "sha256": "e0c2af02bb0bf5e6a483d59315ba657a6e7d8f2a2f6e67e5ed49dd4f5886c7e5",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:19:42.717Z"
+        },
+        "ind": {
+          "sha256": "497b40b17b289f0e4775948985ecc1239f1c4a1d6717bdec610bad903ac2d937",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:19:44.617Z"
+        },
+        "ita": {
+          "sha256": "01c073c092b41bb70d712e8c7f0d0808dcfdf699ead1609826e2b19465b7be1c",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:19:46.433Z"
+        },
+        "jpn": {
+          "sha256": "4734b9afbad8ca05501ef079847e528ec401a472a2185493535776fc8ba9d249",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:19:48.121Z"
+        },
+        "kor": {
+          "sha256": "0996d191e96397b9b34053df39544868ab2fea8f95679466235862fcee830e53",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:19:50.031Z"
+        },
+        "pol": {
+          "sha256": "fafb7202bffff3f59856d035fa4c3ebe2814983da4cd69bc156c29fa57bc8865",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:19:51.727Z"
+        },
+        "ptb": {
+          "sha256": "55355ebfa1cfd99446aeb04c2bea9d43effc2202dc5514eae1b688d448a81e8d",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:19:53.559Z"
+        },
+        "rus": {
+          "sha256": "ccb87a7399dc357775e7a62ffd7d91523da2649242599b75ed8e6b0621b35715",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:19:55.449Z"
+        },
+        "spa": {
+          "sha256": "1593d15320bbd8c3ff6f5484020bf375c0991661d6e91afa1e7105b66f35403e",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:19:57.171Z"
+        },
+        "tha": {
+          "sha256": "bbd8bbf471da61c93b74b2f41da6adc4920b069b14414dc9f2f8371233e658d1",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:19:58.839Z"
+        },
+        "tur": {
+          "sha256": "e5eed264ced2cb5b2b6f7e9917f4360799e3782f2201d6096e70963108e44bed",
+          "lineCount": 5,
+          "verifiedAtUtc": "2026-11-16T17:20:00.616Z"
+        }
+      }
+    },
+    {
+      "version": "1.2.2",
+      "entryId": "1794248389",
+      "sourceRevision": "6aedbb9dd389e5593b2a792d8fded440e78dde46",
+      "originalChineseSha256": "ce019abb29be17771550b86fc83a75f5022d836a87efccb99415e2555b4fa513",
+      "languages": {
+        "eng": {
+          "sha256": "a51ab3215c61bdee881fac74a817977eabe66daae28376d4779ae58a1d1b14f5",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:12:29.411Z"
+        },
+        "zhs": {
+          "sha256": "ce019abb29be17771550b86fc83a75f5022d836a87efccb99415e2555b4fa513",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:06:37.957Z"
+        },
+        "zht": {
+          "sha256": "328383f56784675832f7e5c66c8c1354a529729a4d4b29ca9eb957f4d8930ad9",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:18:33.919Z"
+        },
+        "deu": {
+          "sha256": "efebabad611cfc03bb9dab28acef78cc6d6ef205e233c2d422963a542db2da70",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:18:35.767Z"
+        },
+        "esp": {
+          "sha256": "b4d2a8061a2d3c8c6221ba95e6a28a5c950c0492cffb334f0f4744a64a5b1973",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:18:37.556Z"
+        },
+        "fra": {
+          "sha256": "5602460e313c2e8e4ef2bd881aed4c60960353fa823cf408833b805c558ae9bd",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:18:39.401Z"
+        },
+        "ind": {
+          "sha256": "3d98c8be22ee0da66f972566f886fe836dd741c7b433be68e864a32c33db610b",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:18:41.494Z"
+        },
+        "ita": {
+          "sha256": "6c26191eeb1fefea3cd09feddd36f14e4f624e16c93794963dc58b1800b1eb74",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:18:43.747Z"
+        },
+        "jpn": {
+          "sha256": "fbf2943a6d3612b739f264daff32c5ad9783f3904027768f19aaf7607ed6fa66",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:18:45.667Z"
+        },
+        "kor": {
+          "sha256": "fc6bd7801c9ae7ac41fb9d9f8668d9b28e3d5717d49992fb686e609024a59ba0",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:18:47.431Z"
+        },
+        "pol": {
+          "sha256": "2b5f2b7841c1a4f8a0e55786a7cb172a5e8a142e351ec6c70cf0a7f299637208",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:18:49.138Z"
+        },
+        "ptb": {
+          "sha256": "45e71c7de507d1f367b0238be768578addd2c8a98052b609863f3d34dabbb191",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:18:50.935Z"
+        },
+        "rus": {
+          "sha256": "50476f5474d84780b5aab73c449886372faa2f65a9c69c0957518f00732b0a3d",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:18:52.690Z"
+        },
+        "spa": {
+          "sha256": "b4d2a8061a2d3c8c6221ba95e6a28a5c950c0492cffb334f0f4744a64a5b1973",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:18:54.533Z"
+        },
+        "tha": {
+          "sha256": "bfd636b83b64435916bb5622c283320737588379546d7cccc5879ca4ad9fdd44",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:18:56.437Z"
+        },
+        "tur": {
+          "sha256": "293957f590d22238e759dc2c2140c1caca5f22d2fd7f65d4da0a48d62463a16d",
+          "lineCount": 6,
+          "verifiedAtUtc": "2026-11-16T17:18:58.141Z"
+        }
+      }
+    },
+    {
+      "version": "1.2.3",
+      "entryId": "1794363012",
+      "sourceRevision": "d21910fb48aa45e9a46cbb0087c636b226b69563",
+      "originalChineseSha256": "a5d129440997893770f9937e34acde4b62b25593220d7704bf93ea55864404d3",
+      "languages": {
+        "eng": {
+          "sha256": "246d2e6af2ccc1fd9a545a0c26357c20d56627ca7114b566eea1fc3d3d33d6b3",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:12:31.581Z"
+        },
+        "zhs": {
+          "sha256": "a5d129440997893770f9937e34acde4b62b25593220d7704bf93ea55864404d3",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:06:39.971Z"
+        },
+        "zht": {
+          "sha256": "ed365da853d85937bd4d6d7c3734939c815532bbc97d2f855aa51e0f3880e504",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:17:35.385Z"
+        },
+        "deu": {
+          "sha256": "33dd4bad1e4f1f7bee815da36d1d24ad2a482010cf5bfa2aa83490dd8a8aff82",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:17:37.027Z"
+        },
+        "esp": {
+          "sha256": "ce272f4bdfb91249f57c61cc6377e8660f31b24ca48c7cc96970d32c789b2abf",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:17:38.783Z"
+        },
+        "fra": {
+          "sha256": "9c6ccf1ce3b2339dfae878691204dd3aacece4b77b7b6dbcf01fadedcb67ae1d",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:17:40.709Z"
+        },
+        "ind": {
+          "sha256": "4d43dcb5a0b64472291fc72b295a368a898e26ac5b24935d0ebcd291faf970a3",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:17:42.491Z"
+        },
+        "ita": {
+          "sha256": "bda5ca4a7c34748fdbf5af47dd382f359881d621fd674b52491c669494dbe113",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:18:16.863Z"
+        },
+        "jpn": {
+          "sha256": "8719489573b6ca272fef2c00e671dd4aaa53842074c2c82f763fd5c0d84d5e33",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:18:18.492Z"
+        },
+        "kor": {
+          "sha256": "8ebb58ad4c58abe000e5abb0fd6ce88f261054bd0b08f5aaf02f39f721749685",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:18:20.507Z"
+        },
+        "pol": {
+          "sha256": "40fc16b96e660b15651ca0fb4ad17214bacc78000e14352c3238998743a009d2",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:18:22.342Z"
+        },
+        "ptb": {
+          "sha256": "febe96731238111c5ce08b09c1498883c9dcd7a3ff01bc2262914cf0730004db",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:18:23.997Z"
+        },
+        "rus": {
+          "sha256": "9b061059bc03e519b68690e761a5ba98d3205681bf254a431a31f04ae435646b",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:18:25.840Z"
+        },
+        "spa": {
+          "sha256": "ce272f4bdfb91249f57c61cc6377e8660f31b24ca48c7cc96970d32c789b2abf",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:18:27.793Z"
+        },
+        "tha": {
+          "sha256": "5436f59f0ff65ca398922a9091f3b0398a835c2b0d7e1d6548ec7cf9ad347e88",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:18:30.011Z"
+        },
+        "tur": {
+          "sha256": "4a820e4295db946bd9d3ebc3732c44e8b1f51967158b7aa18e4cea2d05f403e2",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:18:32.060Z"
+        }
+      }
+    },
+    {
+      "version": "1.2.4",
+      "entryId": "1794371823",
+      "sourceRevision": "9dec06fa56f238e4130b1eaaadc0920196857967",
+      "originalChineseSha256": "c01446503a87b9c3d05ab0b32bedc17802b311de2ebaba535a8100d5fd41d41a",
+      "languages": {
+        "eng": {
+          "sha256": "2db8f01b05b6b34df22bce39a086790a20efec3a8599c689cf422df86587e9ad",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:12:33.844Z"
+        },
+        "zhs": {
+          "sha256": "c01446503a87b9c3d05ab0b32bedc17802b311de2ebaba535a8100d5fd41d41a",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:06:42.118Z"
+        },
+        "zht": {
+          "sha256": "7d46eaa7a55b63f185038b2f03c906c3f97035d197db97b9b36f8eb3cda6c36d",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:17:10.323Z"
+        },
+        "deu": {
+          "sha256": "6a036e55b2f511330600e770ee1e94716f8e25e690fc2e02be48f033b63143a8",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:17:12.183Z"
+        },
+        "esp": {
+          "sha256": "dcf7cbc369de7ae1b66ca8132bc76bb3036b42273efd79dec7eef1559c3a6b53",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:17:13.923Z"
+        },
+        "fra": {
+          "sha256": "732a7d0228c8cbde6be6a9ef99de82e3c001858dcdd373fbd93e34c093e8f982",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:17:15.700Z"
+        },
+        "ind": {
+          "sha256": "6f9c07fb9240972a286e3e7e213a8e3c3f35be6b0df90c07583fc6d12d0ca43f",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:17:17.455Z"
+        },
+        "ita": {
+          "sha256": "177982b33b96beeb7157d289e2e2e55466ab5278b87b83707baa7f8151501321",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:17:19.416Z"
+        },
+        "jpn": {
+          "sha256": "fcdf6ffc143ef035aadc2d64206f278854ddb866fb53fce78bbfc8159ebed45c",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:17:21.090Z"
+        },
+        "kor": {
+          "sha256": "e5e537430e46ba34d57141114f41d6ec8cc5bf8775b0066194f9167385ad6185",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:17:22.761Z"
+        },
+        "pol": {
+          "sha256": "d0a90da33583e51d5e817ddf6ae0a43c41c5bf466a3d3e038ed6707b954c2a39",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:17:24.598Z"
+        },
+        "ptb": {
+          "sha256": "075174bcce75c29da809b395a42d5f40f6ad9295225f65a9e9e83ed49d2543e6",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:17:26.396Z"
+        },
+        "rus": {
+          "sha256": "e1d674540bf2db011e495ace4c727794b5abddd21a392fd75a7fb1c44d393223",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:17:28.348Z"
+        },
+        "spa": {
+          "sha256": "2f160be8dec1f7a67dc8d3516c2eba1bf15d9bf30cde690aa3859726d2549bc3",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:17:30.180Z"
+        },
+        "tha": {
+          "sha256": "aa3bfbff4f74dadc08ce504f70a44caaccb8424d7e4e71d6ca70d5feb935de36",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:17:31.954Z"
+        },
+        "tur": {
+          "sha256": "4d85180f178ae448844c8bb9a6b9dc0019ffaafe88e016482fcb9d435cad07af",
+          "lineCount": 1,
+          "verifiedAtUtc": "2026-11-16T17:17:33.707Z"
+        }
+      }
+    },
+    {
+      "version": "1.2.5",
+      "entryId": "1794541134",
+      "sourceRevision": "35a659efa8873db8d0bc4917982bb0ff87675cf6",
+      "originalChineseSha256": "407e15e0f1ed702aef01e7d981f367763f355f0da36a7c622511ce0932f4572f",
+      "languages": {
+        "eng": {
+          "sha256": "d435e45c2bd1dd70fe67eac0083a1cb4dea0911f71c768ff14848715c1f60ebf",
+          "lineCount": 13,
+          "verifiedAtUtc": "2026-11-16T17:12:36.218Z"
+        },
+        "zhs": {
+          "sha256": "407e15e0f1ed702aef01e7d981f367763f355f0da36a7c622511ce0932f4572f",
+          "lineCount": 13,
+          "verifiedAtUtc": "2026-11-16T17:06:44.312Z"
+        },
+        "zht": {
+          "sha256": "4201155a9c04ac959f123c8e7bd2ba290698ab7531b1c4b4b031d8610b84518c",
+          "lineCount": 13,
+          "verifiedAtUtc": "2026-11-16T17:15:41.371Z"
+        },
+        "deu": {
+          "sha256": "a00d76acb8feb61b19e100669fa9bc0e1390e15961c954912b1a657e6e745431",
+          "lineCount": 13,
+          "verifiedAtUtc": "2026-11-16T17:15:42.969Z"
+        },
+        "esp": {
+          "sha256": "fbb854b74a7f96e7e4f6df0267becee0e9ef88dbd36b1321b3dbc245f24b2c22",
+          "lineCount": 13,
+          "verifiedAtUtc": "2026-11-16T17:15:44.686Z"
+        },
+        "fra": {
+          "sha256": "7a37e3cb1008563a690b02c5f827bd0d739f78e0c3b72ee8f70cdc6e81ac3630",
+          "lineCount": 13,
+          "verifiedAtUtc": "2026-11-16T17:15:46.416Z"
+        },
+        "ind": {
+          "sha256": "a9c41b95b4e2c3909239c45d000635c5a7dc67e45db60a140b980bc8bce7d0e9",
+          "lineCount": 13,
+          "verifiedAtUtc": "2026-11-16T17:15:47.967Z"
+        },
+        "ita": {
+          "sha256": "75487395564e776d2e9b95b3e9fdda2f2334c101120baf1d4acced2a1f71bc39",
+          "lineCount": 13,
+          "verifiedAtUtc": "2026-11-16T17:15:49.765Z"
+        },
+        "jpn": {
+          "sha256": "f10f15c9fb29eb6bdae06b9a43f6f8ea53394e3ccfec923dcb4146b961e82c14",
+          "lineCount": 13,
+          "verifiedAtUtc": "2026-11-16T17:15:51.434Z"
+        },
+        "kor": {
+          "sha256": "3946012d309d405f6578d32cf6524b6eea322bbfe81d060e62ae2b82d5ab9280",
+          "lineCount": 13,
+          "verifiedAtUtc": "2026-11-16T17:15:53.050Z"
+        },
+        "pol": {
+          "sha256": "911b04591393ffe394a01aaa6ce218ddccd877e671190746f919b505349f0863",
+          "lineCount": 13,
+          "verifiedAtUtc": "2026-11-16T17:15:54.818Z"
+        },
+        "ptb": {
+          "sha256": "ba23cc6dea4957899a653d5e920616eb319e81d3b581a50aea34c517046d20d2",
+          "lineCount": 13,
+          "verifiedAtUtc": "2026-11-16T17:17:01.866Z"
+        },
+        "rus": {
+          "sha256": "ddf88cfbd7901c5ceb6560593c2b6d4bf1c7afd1a7164644b6331cf7f938bc6d",
+          "lineCount": 13,
+          "verifiedAtUtc": "2026-11-16T17:17:03.535Z"
+        },
+        "spa": {
+          "sha256": "361aad54102d70d9db3eb65299b0437115b5ba40822a73a2e82ed7ad0a291e2d",
+          "lineCount": 13,
+          "verifiedAtUtc": "2026-11-16T17:17:05.443Z"
+        },
+        "tha": {
+          "sha256": "4eb3916458cd2c8522831f40053b148fb9db7593da989b7bb5b7a96225107575",
+          "lineCount": 13,
+          "verifiedAtUtc": "2026-11-16T17:17:07.124Z"
+        },
+        "tur": {
+          "sha256": "479c6e3ed77e36f047e53340f785be1194c27739436dd553fcda23835a0895df",
+          "lineCount": 13,
+          "verifiedAtUtc": "2026-11-16T17:17:08.780Z"
+        }
+      }
+    },
+    {
+      "version": "1.2.6",
+      "entryId": "1794642690",
+      "sourceRevision": "9b8f0820025667c34cfd91b3f6a374c497ebf273",
+      "originalChineseSha256": "b76b56a5931c1ae7ae4701641442b8ae0590c4d08a71b83716c65459f5e8e0d3",
+      "languages": {
+        "eng": {
+          "sha256": "57aa392bbac135a50f2a5c1f96abeca5b84e1762c2dd1380d980c71430237bdb",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:12:38.417Z"
+        },
+        "zhs": {
+          "sha256": "b76b56a5931c1ae7ae4701641442b8ae0590c4d08a71b83716c65459f5e8e0d3",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:06:46.399Z"
+        },
+        "zht": {
+          "sha256": "3c4d571368290de498eda0954df2c61a456fd9e07a1425d648cc95356506a92a",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:15:17.778Z"
+        },
+        "deu": {
+          "sha256": "580a4076886fa36e1eabf609cb1257b78e7b5eb3cc09b73de1c7985eb26e7f81",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:15:19.583Z"
+        },
+        "esp": {
+          "sha256": "c7dae80beb7cdd9032db95a59574e99ec485b1cdd28602c513ff9ab184a9b8b8",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:15:21.322Z"
+        },
+        "fra": {
+          "sha256": "90e0d36a306cedfe489c5044209e73446c911aff560fd714ddf76340c823958f",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:15:23.013Z"
+        },
+        "ind": {
+          "sha256": "b93dfb4ac666a22522067da70a9c63853160c0c3d9978fec730d24736326f39e",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:15:24.626Z"
+        },
+        "ita": {
+          "sha256": "f93d0b8736d0007f323e2ccbbbd88706c97dee446b839674dd63a781e2a4328d",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:15:26.285Z"
+        },
+        "jpn": {
+          "sha256": "74effe7e78d5d2f816c616a40da9b321bb8466acbaf207c569fd9385741ad942",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:15:27.920Z"
+        },
+        "kor": {
+          "sha256": "0116af196ce0083ae8710307afb13777f18f36e6bc84e01c0696af9ba3081375",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:15:29.547Z"
+        },
+        "pol": {
+          "sha256": "f361267aeca02fda8744039f4393eb9dbadf01b846a5bdc85a678b8a7409b979",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:15:31.270Z"
+        },
+        "ptb": {
+          "sha256": "cfb9730d21be2ce24b2c64e567e1c13d8eb3bc2109592f191d0ecc5d50383699",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:15:33.028Z"
+        },
+        "rus": {
+          "sha256": "29f5e73ef30b9053adee709d1b84309b45dbfd51a96f680c38e15a33198032ea",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:15:34.706Z"
+        },
+        "spa": {
+          "sha256": "ba2c148178ad77dcc8b4e5c3a5872596c7d37d6b9828083218ffba385fbb0d83",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:15:36.360Z"
+        },
+        "tha": {
+          "sha256": "51aadc2af5a3a4272f723f47a0da6b7f06aa2f9b4d2a1d137a08e93cbd8d56f1",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:15:37.878Z"
+        },
+        "tur": {
+          "sha256": "441a0fe1703203839b53393f72d6db1a8b2ca28cd039ec2a0d2745e82a725716",
+          "lineCount": 4,
+          "verifiedAtUtc": "2026-11-16T17:15:39.673Z"
+        }
+      }
+    },
+    {
+      "version": "1.2.7",
+      "entryId": "1794714918",
+      "sourceRevision": "fe36915748fdd05129d66fccedd35c494ed8bee8",
+      "originalChineseSha256": "9a631a225b8a364c1ab9c1f07e2dd587133cb0581ba2725d4c5dd509121b922c",
+      "languages": {
+        "eng": {
+          "sha256": "364025185af23a87d22b5905cda2582c81c1e64615c528427979e09f9d6b22b7",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:12:40.674Z"
+        },
+        "zhs": {
+          "sha256": "9a631a225b8a364c1ab9c1f07e2dd587133cb0581ba2725d4c5dd509121b922c",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:06:48.621Z"
+        },
+        "zht": {
+          "sha256": "4886ffc3b941b93724ee6e909e7817201c54afeb7b07718e5c028c503bc1897c",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:13:39.373Z"
+        },
+        "deu": {
+          "sha256": "8f093374ce3660daae98cda32f801b2454578bbfc2c17f653e42c9b6f11ba2f6",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:13:41.043Z"
+        },
+        "esp": {
+          "sha256": "146d9661077e0b3575b3f4b3b303d8e5d6e058782138163e184ffadd98c8310d",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:13:42.527Z"
+        },
+        "fra": {
+          "sha256": "ad750595cc90bf6d57a1539ac745dfd143ec85993cf3ae1c01b1bb7ce1d3cebe",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:13:44.205Z"
+        },
+        "ind": {
+          "sha256": "e85ad9ddca6a8a9e8b94f840fe5737756d9b7163e95bdfcc260b8da6144f96af",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:13:45.863Z"
+        },
+        "ita": {
+          "sha256": "cb6117a9118ea6d7b5f9667072401d1aa2ec9d85e4f6ce6d25718a870abbbea4",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:13:47.446Z"
+        },
+        "jpn": {
+          "sha256": "8036fb00c17ffb5627c82fb05b00900d272822fe51749370fc9115d9a94cf8f1",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:13:49.213Z"
+        },
+        "kor": {
+          "sha256": "9f70cba7506b696ea2779cb682ae0a5dc744b239c847fe400c75f95f085f88b8",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:13:50.996Z"
+        },
+        "pol": {
+          "sha256": "c4ad03b469b73cfa576e1226e97010f4e4432cecd97694ad2d0d96a5cd856646",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:13:53.171Z"
+        },
+        "ptb": {
+          "sha256": "17a400b1af8f256214f418ea073db6aaca6ddaaf50a9ed891782e724fbdef797",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:13:55.266Z"
+        },
+        "rus": {
+          "sha256": "46ddf4901eec127987b169dd38cf5429ddc222ca5e42678ca054b2b15959a1d7",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:13:57.287Z"
+        },
+        "spa": {
+          "sha256": "92d27e0c1012dd8b986f650cca578af5f6076ccffe86634743151b68b182f425",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:13:59.766Z"
+        },
+        "tha": {
+          "sha256": "7b208e55bbaecacbe063e16875811a92c294a5ddadebdd9678121082eafa468d",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:14:01.801Z"
+        },
+        "tur": {
+          "sha256": "286d21b4ec119fcf6fe2ca0ba6a9f6771c9ab98f073fad3614f1d934e03488c8",
+          "lineCount": 16,
+          "verifiedAtUtc": "2026-11-16T17:15:16.034Z"
+        }
+      }
+    },
+    {
+      "version": "1.2.8",
+      "entryId": "1794834987",
+      "sourceRevision": "a9870699529ecb02635fddbda8d058bf01e2f7cc",
+      "originalChineseSha256": "920105e5c4126dd2f71c68838d63a74192f042c116c193f583ebf2e3eae63c95",
+      "languages": {
+        "eng": {
+          "sha256": "6859c5e2ab420a813a1c9fa9c69c52d33440af9a89de8864d3485746cc720741",
+          "lineCount": 15,
+          "verifiedAtUtc": "2026-11-16T17:06:50.790Z"
+        },
+        "zhs": {
+          "sha256": "920105e5c4126dd2f71c68838d63a74192f042c116c193f583ebf2e3eae63c95",
+          "lineCount": 15,
+          "verifiedAtUtc": "2026-11-16T17:02:48.974Z"
+        },
+        "zht": {
+          "sha256": "be63061590f6b2d36c52984ec61b3fe2ccecee4e32fd2e7d162612981085bed3",
+          "lineCount": 15,
+          "verifiedAtUtc": "2026-11-16T17:06:52.922Z"
+        },
+        "deu": {
+          "sha256": "bf617765d929dcc41a82f2cbabc2c1889874cc50690360e6630e8ec8b42c147e",
+          "lineCount": 15,
+          "verifiedAtUtc": "2026-11-16T17:13:20.897Z"
+        },
+        "esp": {
+          "sha256": "918319317d09b4024d912af288bd8d75f90e5431bef05047905b9ce6ddfed1a2",
+          "lineCount": 15,
+          "verifiedAtUtc": "2026-11-16T17:13:22.549Z"
+        },
+        "fra": {
+          "sha256": "c904573643b6bc419184ff49dfd159a9d50a60241b274d945c4b274f87fe9449",
+          "lineCount": 15,
+          "verifiedAtUtc": "2026-11-16T17:13:24.176Z"
+        },
+        "ind": {
+          "sha256": "ec4e13be877fd3bc28b979ed500e3603c1d6198f1f687c478f89b16fdf150479",
+          "lineCount": 15,
+          "verifiedAtUtc": "2026-11-16T17:13:25.661Z"
+        },
+        "ita": {
+          "sha256": "fc3ccfe8bfc3d419129d631099d4947576b7c859697ffa8c711aa951bf0115e1",
+          "lineCount": 15,
+          "verifiedAtUtc": "2026-11-16T17:13:27.474Z"
+        },
+        "jpn": {
+          "sha256": "3f7c3c53296d21362e0b3f8642be16a739262021a10b8a247ebddf5d7b27b89a",
+          "lineCount": 15,
+          "verifiedAtUtc": "2026-11-16T17:06:55.371Z"
+        },
+        "kor": {
+          "sha256": "503b47278a1dabd789e3f3a1d97b99b8575b1117275dfc2f9eb38b4692be89bd",
+          "lineCount": 15,
+          "verifiedAtUtc": "2026-11-16T17:06:57.721Z"
+        },
+        "pol": {
+          "sha256": "9e5e201a1aab9a9e297d2c61c033857356fb0723db7b28e4ac95568cf72a861a",
+          "lineCount": 15,
+          "verifiedAtUtc": "2026-11-16T17:13:29.303Z"
+        },
+        "ptb": {
+          "sha256": "2ee5176ab749df815138f6342ad532c4ff67442ccd83d3ac91ef43a74fef978c",
+          "lineCount": 15,
+          "verifiedAtUtc": "2026-11-16T17:13:30.930Z"
+        },
+        "rus": {
+          "sha256": "d6961531fa8d641611e4fe9eccb0c511f3572d2c5f9899ee98bfb554e8d5889c",
+          "lineCount": 15,
+          "verifiedAtUtc": "2026-11-16T17:13:32.607Z"
+        },
+        "spa": {
+          "sha256": "193cd22075cb2806d0c95fb6a426d7188befa055479f5b166d8894343fe3a18c",
+          "lineCount": 15,
+          "verifiedAtUtc": "2026-11-16T17:13:34.246Z"
+        },
+        "tha": {
+          "sha256": "c9415be4a7d5b6143334ef2e196ab09b35f33c1a6cd09de7a9c36958265662a5",
+          "lineCount": 15,
+          "verifiedAtUtc": "2026-11-16T17:13:36.014Z"
+        },
+        "tur": {
+          "sha256": "804a27b852747f4520d65d59e8d411ac2c053dbfac05fd89a8d5243e603ae0bb",
+          "lineCount": 15,
+          "verifiedAtUtc": "2026-11-16T17:13:37.749Z"
+        }
+      }
+    }
+  ],
+  "discordEvidence": "Docs/validation/discord-1.2.8-evidence.json"
+}
