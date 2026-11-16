@@ -1,0 +1,183 @@
+{
+  "version": "1.2.8",
+  "sourceRevision": "a9870699529ecb02635fddbda8d058bf01e2f7cc",
+  "verifiedAtUtc": "2026-11-16T13:17:23.997Z",
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "bytes": 2218496,
+      "sha256": "73500362e9d723ee1f0f633bfb6de0a2ddadb5624195bb28653ed75f0ddebe7d"
+    },
+    {
+      "path": "lib/0.113.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "a718eb7d7d44ea1a3d6e6021e353968cdd132da5609500e07513de626b656e22"
+    },
+    {
+      "path": "lib/0.113.1/NinjaSlayer.dll",
+      "bytes": 2221568,
+      "sha256": "87dec64d85cf83988ba25440a87378f59d9dd4a19c6ddbbe08d0804f88641e78"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "bytes": 522,
+      "sha256": "48f30b9c922ad4e34876477c0170e4357dcdd9e10d2d8722997efae3c5103e33"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "bytes": 24576,
+      "sha256": "c55faf8e4eadc3ddae46d3e0c3a984e3de6d18433825dbee70439d116e2aa584"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "bytes": 362,
+      "sha256": "6965ac40913e948e0adf7a0e535f006d673302c83414123b3346e6d7128a433a"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "bytes": 233284092,
+      "sha256": "df4adebe951ba6121cbcddebb69a476ef4efcee7a840cb61db01c03eecc97318"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 901,
+      "sha256": "0f86e2b4058c8d6fb4d77df691c88f5ec9fc8202e69c201d48d16f28bbd583fa"
+    }
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "73500362e9d723ee1f0f633bfb6de0a2ddadb5624195bb28653ed75f0ddebe7d",
+    "a718eb7d7d44ea1a3d6e6021e353968cdd132da5609500e07513de626b656e22",
+    "87dec64d85cf83988ba25440a87378f59d9dd4a19c6ddbbe08d0804f88641e78",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "48f30b9c922ad4e34876477c0170e4357dcdd9e10d2d8722997efae3c5103e33",
+    "c55faf8e4eadc3ddae46d3e0c3a984e3de6d18433825dbee70439d116e2aa584",
+    "6965ac40913e948e0adf7a0e535f006d673302c83414123b3346e6d7128a433a",
+    "df4adebe951ba6121cbcddebb69a476ef4efcee7a840cb61db01c03eecc97318",
+    "0f86e2b4058c8d6fb4d77df691c88f5ec9fc8202e69c201d48d16f28bbd583fa"
+  ],
+  "art": {
+    "path": "NinjaSlayer/images/cards/Forethought.png",
+    "sha256": "ab395a981daae1b4e6e2a95d17cfe43fe07efee16ddfa4f3fe85703bf2935eb7",
+    "bytes": 799981,
+    "catalogImage": "images/c106c10e8e6a1a2839fb547c9be1c29b3be55bda9ead246f5a82ce25f2da4be9.webp",
+    "catalogThumbnail": "images/ed8c27deefdc09337bdae76e0d86fa04226cc21949b6992848e01b55bb6d272e.webp"
+  },
+  "validation": {
+    "supportedGameVersions": [
+      "0.107.1",
+      "0.113.1"
+    ],
+    "ritsuLibVersion": "0.6.13",
+    "dualHostGameplay": true,
+    "dualHostPatchInstallRollback": true,
+    "previewClientRun": false,
+    "packagedLanguages": 16,
+    "modCards": 93,
+    "logicTests": 367,
+    "eventChoiceTests": 4,
+    "catalogFingerprint": "ba854d0bbdd5cf501f3ff82d037c7ee337a7598e159ef2665069156653374017",
+    "logs": [
+      {
+        "path": "all-stable.log",
+        "sha256": "8003b6f754da8ed5480ecea8ed173818e7a7e638a657170af9c62dfac632d1c6"
+      },
+      {
+        "path": "patch-stable.log",
+        "sha256": "9864f3e3f37dd74ce904cd788833bb3e2e823a2246c7836d8250dad326bc47cb"
+      },
+      {
+        "path": "all-preview.log",
+        "sha256": "be6baf577c9dd1f23adc8cd31da64e56d1bdc117bf0a7f75d86660bcf653d1a7"
+      },
+      {
+        "path": "patch-preview.log",
+        "sha256": "4815c383ce02fcc235599a42f2d84f7cd1676ebf5f899856f2dc9443d43fd9ee"
+      },
+      {
+        "path": "catalog-export.log",
+        "sha256": "8fdbefe06eb1e10865518f47d1c39adbded5dbf8bbea6bde974720b144dceeb1"
+      },
+      {
+        "path": "upload.log",
+        "sha256": "7c33c96d979d2c3042a2eee2de7712ccdee179b9bd120193aa05e73f6a5d2268"
+      },
+      {
+        "path": "download.log",
+        "sha256": "1edb25535bb7be5ca9bcb25532b2c9ca6cbf78a25af71f492f1f2ffc097dcefe"
+      },
+      {
+        "path": "artifact-contract.log",
+        "sha256": "741f602fdeab11cca4f6084eff740d0fb0537da1548c6cad4a231c899f8c8586"
+      },
+      {
+        "path": "logic-tests.log",
+        "sha256": "94251d6eb3239d1792381ed697c1482d6d45006e5873f40bd70755129bef8091"
+      },
+      {
+        "path": "website-tests.log",
+        "sha256": "e24891ee4ec13ef66b497fc20a54d407f152022ccdb4ca24de58f772f6734351"
+      },
+      {
+        "path": "website-localization.log",
+        "sha256": "2433e39687db980799827ff871423d959d55be7bce36e26111651a6a0ae77790"
+      },
+      {
+        "path": "event-choice-tests.log",
+        "sha256": "66d741ee35bce5d8cace5fd8a8939f6419467e38dbe4a0b9cd3ff3f8042d762d"
+      }
+    ],
+    "gameplayGroups": {
+      "preview": 179,
+      "stable": 177
+    },
+    "transformedVanillaCharacters": {
+      "preview": 6,
+      "stable": 5
+    }
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "contentManifest": "489619144269440199",
+    "updated": 1794834987,
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "changeNoteId": "1794834987",
+    "changeNote": "从容由每弃一张牌获得 2 点格挡改为获得 2 点拉伸。\n奈落解放新增战斗开始时获得 20 点奈落生命，保留每回合加入一张黑炎；第一次洗牌前（开局洗牌不计），手牌中有攻击牌时必须优先打出攻击牌。\n奈落事件移除指定牌组要求，含忍者杀手的队伍按普通第三层事件概率遇到；支持多人独立选择，其他角色也切换为奈落外观和音效。\n柔术获得的空手道由 3→4 层提高至 3→5 层。\nChop打击伤害由 11→13 点调整为 9→12 点，下回合获得的空手道由 2→3 层提高至 3→4 层。\n连打获得的空手道由 5→6 层调整为 4→5 层。\n转机由生成状态牌时触发抽牌改为生成任意牌时触发。\n交叉防御描述去除“非能力牌”，效果仍跳过能力牌；Chop受其影响后回到手牌。\n浴火移除消耗。\n飞刃席卷获得的瞄准由 4→6 点提高至 6→8 点。\n手里剑风暴移除消耗。\n攻势不息升级由回合末打出两张攻击牌改为获得保留，回合末仍打出一张攻击牌。\n删除手里剑的激发及瞄准说明，精简茶道呼吸和残心描述，茶道呼吸使用能量图标。\n卡面中的正面效果显示为黄色，侧栏只保留 16 种效果列表。\n更换谋定卡图。",
+    "localizedTitlesDescriptionsUnchanged": true,
+    "tagSetUnchangedCaseInsensitive": true,
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "downloadBytes": 238069070
+  },
+  "limitations": [
+    "Stable validated against exact 0.107.1 host binaries with 0.113.1 presentation resources; no full stable graphical client run",
+    "No graphical client smoke rerun; both exact host binaries ran full gameplay, asset, localization and metadata contracts",
+    "Expected fault-injection exceptions and shutdown resource warnings remain in contract logs",
+    "Physical controller, fresh Steam multiplayer, macOS and Linux gameplay not run"
+  ],
+  "cleanup": {
+    "directories": 33,
+    "allTargetsRemoved": true,
+    "logsPreserved": true,
+    "bytes": 7299629147.0
+  }
+}

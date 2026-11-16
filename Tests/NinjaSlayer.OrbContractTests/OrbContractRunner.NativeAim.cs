@@ -26,10 +26,10 @@ public partial class OrbContractRunner
             for (int i = 0; i < 4; i++) AddCard<DefendIronclad>(combat, PileType.Draw);
             await CardCmd.AutoPlay(Choice, AddCard<Zanshin>(combat), null);
             await CardCmd.AutoPlay(Choice, AddCard<BladeSweep>(combat, upgraded: upgraded), null);
-            int aim = upgraded ? 6 : 4, stock = upgraded ? 3 : 2;
+            int aim = upgraded ? 8 : 6, stock = upgraded ? 3 : 2;
             Require(combat.Stock == stock && owner.GetPowerAmount<AimPower>() == aim
                 && PileType.Hand.GetPile(combat.Player).Cards.Count == 1,
-                "Blade Sweep must grant 2/3 stock and 4/6 Aim, triggering Zanshin once.");
+                "Blade Sweep must grant 2/3 stock and 6/8 Aim, triggering Zanshin once.");
             await EndGuardSide(combat.State, CombatSide.Player, owner);
             Require(owner.GetPowerAmount<AimPower>() == aim, "Unspent Aim must survive turn end.");
             using var selector = UseCardSelector(new SelectCards(options => options));

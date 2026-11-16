@@ -36,7 +36,7 @@
   "NINJA_SLAYER_RELIC_ZAZEN_DRINK_BANDOLIER_RELIC.description": "獲得時、[gold]ザゼン・ドリンク[/gold]1枚と[gold]寝不足[/gold]2枚をデッキに加える。",
   "NINJA_SLAYER_RELIC_ZAZEN_DRINK_BANDOLIER_RELIC.flavor": "腰にはガンベルトめいて五本。最後の大仕事が始まる。",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.title": "ナラク解放",
-  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "ターン開始時、[gold]黒い炎[/gold]を1枚[gold]手札[/gold]に加える。",
+  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "戦闘開始時、{NarakuLife:diff()}[gold]ナラク生命[/gold]を得る。\nターン開始時、[gold]黒い炎[/gold]を1枚[gold]手札[/gold]に加える。\nシャッフルするまで、手札にアタックがある場合、アタックを先にプレイしなければならない。",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.flavor": "赤黒の炎が全身を覆う。ニューロンの奥から、別の呼吸が響いた。",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.title": "オリガミの約束",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.description": "次の[blue]{Combats}[/blue]回の戦闘で、ヤモトが共に戦う。",

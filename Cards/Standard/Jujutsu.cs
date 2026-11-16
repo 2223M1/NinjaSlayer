@@ -31,5 +31,5 @@ public sealed class Jujutsu : NinjaSlayerCommonCard
             DynamicVars.Energy.IntValue, Owner.Creature, this);
     }
 
-    protected override void OnUpgrade() => DynamicVars.Karate().UpgradeValueBy(1);
+    protected override void OnUpgrade() => DynamicVars.Karate().UpgradeValueBy(2);
 }

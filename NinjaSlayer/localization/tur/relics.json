@@ -36,7 +36,7 @@
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.description": "Her savaşın başında [gold]El[/gold]ine 2 [gold]Chado[/gold] ekle.\n[gold]Chado Nefesi[/gold] 2.\nİlk tur [gold]Chado[/gold] kartlarını [gold]Sakla[/gold].",
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.flavor": "Uyuşukluk çekilir. Parmaklar, avuçlar ve kollar sırayla özgürleşir.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.title": "Serbest Naraku",
-  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "Turunun başında [gold]El[/gold]ine bir [gold]Kara Alev[/gold] ekle.",
+  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "Savaşın başında {NarakuLife:diff()} [gold]Naraku Canı[/gold] elde et.\nTurunun başında [gold]El[/gold]ine bir [gold]Kara Alev[/gold] ekle.\nYeniden karıştırmaya kadar, elinde Saldırı kartları varsa önce Saldırı oynamalısın.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.flavor": "Nefret ocağı hiç soğumadı. Nöronlarının derinliklerinde ihtiyar gözlerini açar.",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.title": "Origami Andı",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.description": "Sonraki [blue]{Combats}[/blue] savaş boyunca Yamoto Koki yanında savaşır.",

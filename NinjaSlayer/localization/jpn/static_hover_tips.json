@@ -1,6 +1,6 @@
 {
   "NINJA_SLAYER_CHADO_BREATHING.title": "チャドー呼吸",
-  "NINJA_SLAYER_CHADO_BREATHING.description": "手札にあるすべての[gold]チャドー[/gold]が与えるエナジーを、指定の数だけ増加させる。チャドーがない場合、呼吸を1使ってチャドーを1枚生成し、残りでそれを強化する。",
+  "NINJA_SLAYER_CHADO_BREATHING.description": "[gold]チャドー[/gold]を手札に加える。手札の[gold]チャドー[/gold]が与えるエナジーを{Energy:energyIcons()}増やす。",
   "NINJA_SLAYER_POSITIVE_EFFECTS.title": "バフ",
-  "NINJA_SLAYER_POSITIVE_EFFECTS.description": "以下の効果は値が正の場合に、種類ごとに1回数える。\n[gold]筋力[/gold]、[gold]敏捷[/gold]、[gold]活力[/gold]、[gold]カラテ[/gold]\n[gold]集中力[/gold]、[gold]アーティファクト[/gold]、[gold]バッファー[/gold]、[gold]霊体[/gold]\n[gold]トゲ[/gold]、[gold]プレート[/gold]、[gold]再生[/gold]、[gold]回避[/gold]\n[gold]ナラク生命[/gold]、[gold]ストレッチ[/gold]、[gold]飛翔[/gold]、[gold]弓力[/gold]"
+  "NINJA_SLAYER_POSITIVE_EFFECTS.description": "[gold]筋力[/gold]、[gold]敏捷[/gold]、[gold]活力[/gold]、[gold]カラテ[/gold]\n[gold]集中力[/gold]、[gold]アーティファクト[/gold]、[gold]バッファー[/gold]、[gold]霊体[/gold]\n[gold]トゲ[/gold]、[gold]プレート[/gold]、[gold]再生[/gold]、[gold]回避[/gold]\n[gold]ナラク生命[/gold]、[gold]ストレッチ[/gold]、[gold]飛翔[/gold]、[gold]弓力[/gold]"
 }

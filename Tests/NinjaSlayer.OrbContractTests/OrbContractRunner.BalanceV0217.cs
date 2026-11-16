@@ -8,6 +8,9 @@ using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Powers;
+#if NINJASLAYER_CHANNEL_PREVIEW
+using StretchPower = MegaCrit.Sts2.Core.Models.Powers.StretchPower;
+#endif
 
 namespace NinjaSlayer.OrbContractTests;
 
@@ -55,10 +58,14 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<DexterityPower>(Choice, owner, 100, owner, null);
             await PowerCmd.Apply<FrailPower>(Choice, owner, 2, combat.Enemy, null);
             await CardCmd.Discard(Choice, new[] { combat.Card(), combat.Card() });
-            Require(owner.Block == 4, "Composure must ignore Dexterity and Frail like Feel No Pain.");
+            Require(owner.Block == 0 && owner.GetPowerAmount<StretchPower>() == 4, "Composure grants Stretch without Block, independently of Dexterity and Frail.");
             await CardCmd.AutoPlay(Choice, AddCard<Composure>(combat, upgraded: true), null);
             await CardCmd.Discard(Choice, new[] { combat.Card(), combat.Card() });
-            Require(owner.Block == 12, "Base and upgraded Composure stack the same two unpowered block per discard.");
+            Require(owner.Block == 0 && owner.GetPowerAmount<StretchPower>() == 12, "Base and upgraded Composure stack two Stretch per discard.");
+            await PowerCmd.Remove<DexterityPower>(owner);
+            await PowerCmd.Remove<FrailPower>(owner);
+            await CardCmd.AutoPlay(Choice, AddCard<DefendIronclad>(combat), null);
+            Require(owner.Block == 17 && !owner.HasPower<StretchPower>(), "Discard-granted Stretch enhances and is consumed by the next Block card.");
         }
         using (var combat = new OrbCombat())
         {

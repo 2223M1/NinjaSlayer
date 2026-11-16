@@ -170,10 +170,10 @@ public partial class OrbContractRunner
             int energyBefore = combat.Player.PlayerCombatState!.Energy;
             await CardCmd.AutoPlay(Choice, jujutsu, null);
             Require(held.Pile?.Type == PileType.Hand && jujutsu.Pile?.Type == PileType.Exhaust
-                && combat.Stock == 3 && combat.Player.Creature.GetPowerAmount<KaratePower>() == (upgraded ? 4 : 3)
+                && combat.Stock == 3 && combat.Player.Creature.GetPowerAmount<KaratePower>() == (upgraded ? 5 : 3)
                 && combat.Player.Creature.GetPowerAmount<EnergyNextTurnPower>() == 1
                 && combat.Player.PlayerCombatState.Energy == energyBefore,
-                "Jujutsu grants Karate3/4 and one delayed Energy, retaining Exhaust without discarding or firing Shuriken.");
+                "Jujutsu grants Karate3/5 and one delayed Energy, retaining Exhaust without discarding or firing Shuriken.");
             await Hook.AfterEnergyReset(combat.State, combat.Player);
             Require(combat.Player.PlayerCombatState.Energy == energyBefore + 1
                 && !combat.Player.Creature.HasPower<EnergyNextTurnPower>(),

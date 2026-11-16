@@ -1,6 +1,6 @@
 {
   "NINJA_SLAYER_CHADO_BREATHING.title": "Respirazione Chado",
-  "NINJA_SLAYER_CHADO_BREATHING.description": "Aumenta dell'importo indicato l'Energia fornita da ogni [gold]Chado[/gold] nella tua mano. Se non ne hai, spendi 1 Respirazione Chado per creare un Chado, poi aumenta la sua Energia dell'importo rimanente.",
+  "NINJA_SLAYER_CHADO_BREATHING.description": "Aggiungi [gold]Chado[/gold] alla tua mano. Ogni [gold]Chado[/gold] nella tua mano fornisce {Energy:energyIcons()} aggiuntiva.",
   "NINJA_SLAYER_POSITIVE_EFFECTS.title": "Effetti positivi",
-  "NINJA_SLAYER_POSITIVE_EFFECTS.description": "I seguenti effetti contano se il loro valore è positivo, una volta per tipo.\n[gold]Forza[/gold], [gold]Destrezza[/gold], [gold]Vigore[/gold], [gold]Karate[/gold]\n[gold]Focus[/gold], [gold]Artefatto[/gold], [gold]Buffer[/gold], [gold]Intangibilità[/gold]\n[gold]Spinascudo[/gold], [gold]Placcatura[/gold], [gold]Rigenerazione[/gold], [gold]Schivata[/gold]\n[gold]Vita di Naraku[/gold], [gold]Flessibilità[/gold], [gold]Elevazione[/gold], [gold]Mira[/gold]"
+  "NINJA_SLAYER_POSITIVE_EFFECTS.description": "[gold]Forza[/gold], [gold]Destrezza[/gold], [gold]Vigore[/gold], [gold]Karate[/gold]\n[gold]Focus[/gold], [gold]Artefatto[/gold], [gold]Buffer[/gold], [gold]Intangibilità[/gold]\n[gold]Spinascudo[/gold], [gold]Placcatura[/gold], [gold]Rigenerazione[/gold], [gold]Schivata[/gold]\n[gold]Vita di Naraku[/gold], [gold]Flessibilità[/gold], [gold]Elevazione[/gold], [gold]Mira[/gold]"
 }

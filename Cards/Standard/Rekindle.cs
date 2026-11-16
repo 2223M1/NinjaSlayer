@@ -16,7 +16,6 @@ public sealed class Rekindle : NinjaSlayerUncommonCard
         HoverTipFactory.FromCardWithCardHoverTips<BlackFlame>();
 
     public Rekindle() : base(nameof(Rekindle), 1, CardType.Skill, TargetType.Self) { }
-    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
     protected override IEnumerable<DynamicVar> CanonicalVars => [new NarakuLifeVar(2)];
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

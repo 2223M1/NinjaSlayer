@@ -36,7 +36,7 @@
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.description": "Na początku każdej walki dodaj 2 [gold]Chado[/gold] do [gold]ręki[/gold].\n[gold]Oddech Chado[/gold] 2.\n[gold]Zachowaj[/gold] swoje [gold]Chado[/gold] w pierwszej turze.",
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.flavor": "Odrętwienie ustępuje. Palce, dłonie i ramiona kolejno odzyskują swobodę.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.title": "Uwolniony Naraku",
-  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "Na początku twojej tury dodaj [gold]Czarny płomień[/gold] do [gold]ręki[/gold].",
+  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "Na początku walki zyskaj {NarakuLife:diff()} pkt. [gold]Życia Naraku[/gold].\nNa początku twojej tury dodaj [gold]Czarny płomień[/gold] do [gold]ręki[/gold].\nDo przetasowania musisz najpierw zagrywać Ataki, jeśli masz je w ręce.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.flavor": "Piec nienawiści nigdy nie wystygł. W głębi neuronów starzec otwiera oczy.",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.title": "Pakt origami",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.description": "Przez następne walki — [blue]{Combats}[/blue] — Yamoto Koki będzie walczyć u twego boku.",

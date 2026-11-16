@@ -3,7 +3,9 @@ using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Unlocks;
@@ -60,9 +62,11 @@ public partial class OrbContractRunner
         await VerifyOpeningChadoRetention();
         await VerifyStrongShurikenRetention();
         await VerifyGuardStanceAndCrossGuard();
+        await VerifyNovember16Balance();
         await VerifyBlackFlameTurnEnd();
         await VerifyNarakuForms();
         VerifyNarakuEventEligibility();
+        await VerifyNarakuMultiplayer();
         await VerifyNarakuSilenceRemoval();
     }
 
@@ -337,9 +341,10 @@ public partial class OrbContractRunner
 
     private static async Task VerifyNarakuSilenceRemoval()
     {
+        foreach (bool ninjaSlayer in new[] { true, false })
         foreach (string page in new[] { "INITIAL", "CALL_1", "CALL_2", "ACCEPT" })
         {
-            using var combat = new OrbCombat(ninjaSlayer: true);
+            using var combat = new OrbCombat(ninjaSlayer: ninjaSlayer);
             _ = RunState.CreateForTest([combat.Player]);
             var model = ModelDb.Event<NarakuEvent>().ToMutable();
             AccessTools.Property(typeof(EventModel), nameof(EventModel.Owner)).SetValue(model, combat.Player);
@@ -368,18 +373,77 @@ public partial class OrbContractRunner
         var player = MegaCrit.Sts2.Core.Entities.Players.Player.CreateForNewRun<NinjaSlayerCharacter>(UnlockState.all, 1);
         var run = RunState.CreateForTest([player]);
         var model = ModelDb.Event<NarakuEvent>();
-        Require(!model.IsAllowed(run), "The starter deck must not qualify for the Naraku event.");
-        Type[] qualifying = [typeof(FlameGuard), typeof(BS1260Kick), typeof(NarakusMight),
-            typeof(Macaco), typeof(Kindle), typeof(BlackFlameInferno),
-            typeof(NarakuForm), typeof(DevourFlame), typeof(Rekindle), typeof(OneMindOneBody)];
+        Require(model.IsAllowed(run), "The starter deck qualifies for Naraku without any themed cards.");
         foreach (CardModel canonical in ModelDb.CardPool<NinjaSlayerCardPool>().AllCards)
         {
             CardModel card = canonical.ToMutable();
             card.Owner = player;
             player.Deck.AddInternal(card, -1, silent: true);
-            Require(model.IsAllowed(run) == qualifying.Contains(card.GetType()), $"Incorrect Naraku event eligibility for {card.Id}.");
+            Require(model.IsAllowed(run), $"Naraku eligibility must not depend on owning {card.Id}.");
             player.Deck.RemoveInternal(card, silent: true);
         }
-        GD.Print("PASS Naraku event eligibility across the current card pool");
+        var other = MegaCrit.Sts2.Core.Entities.Players.Player.CreateForNewRun<MegaCrit.Sts2.Core.Models.Characters.Ironclad>(UnlockState.all, 2);
+        Require(!model.IsAllowed(RunState.CreateForTest([other])), "Naraku remains limited to Ninja Slayer.");
+        var duoNinja = MegaCrit.Sts2.Core.Entities.Players.Player.CreateForNewRun<NinjaSlayerCharacter>(UnlockState.all, 1);
+        var duoOther = MegaCrit.Sts2.Core.Entities.Players.Player.CreateForNewRun<MegaCrit.Sts2.Core.Models.Characters.Ironclad>(UnlockState.all, 2);
+        Require(model.IsAllowed(RunState.CreateForTest([duoNinja, duoOther])), "Mixed multiplayer parties with Ninja Slayer can encounter Naraku.");
+        Require(!model.IsShared, "Naraku uses independent native player choices, not shared voting.");
+        GD.Print("PASS Naraku event: starter and all card pools qualify, mixed multiplayer parties and independent choices enabled");
+    }
+
+    private static async Task VerifyNarakuMultiplayer()
+    {
+        using var combat = new OrbCombat(ninjaSlayer: true);
+        var other = MegaCrit.Sts2.Core.Entities.Players.Player.CreateForNewRun<MegaCrit.Sts2.Core.Models.Characters.Ironclad>(UnlockState.all, 2);
+        _ = RunState.CreateForTest([combat.Player, other]);
+        combat.State.AddPlayer(other);
+        other.ResetCombatState();
+        other.Creature.SetCurrentHpInternal(10);
+        var ninjaEvent = ModelDb.Event<NarakuEvent>().ToMutable();
+        var otherEvent = ModelDb.Event<NarakuEvent>().ToMutable();
+#if NINJASLAYER_CHANNEL_STABLE
+        await ninjaEvent.BeginEvent(combat.Player, false);
+        await otherEvent.BeginEvent(other, false);
+#else
+        await ninjaEvent.BeginEvent(combat.Player, null, false);
+        await otherEvent.BeginEvent(other, null, false);
+#endif
+        await otherEvent.CurrentOptions.Single(option => option.TextKey.EndsWith(".ACCEPT_NARAKU")).Chosen();
+        Require(otherEvent.IsFinished && !ninjaEvent.IsFinished
+            && other.GetRelic<NarakuUnleashedRelic>() is not null
+            && combat.Player.GetRelic<NarakuUnleashedRelic>() is null,
+            "A non-Ninja teammate can independently accept Naraku without completing or granting rewards to the Ninja's event.");
+        int hp = combat.Player.Creature.CurrentHp;
+        for (int call = 0; call < 3; call++)
+            await ninjaEvent.CurrentOptions.Single(option => option.TextKey.EndsWith(".CALL_NARAKU")).Chosen();
+        Require(combat.Player.Creature.CurrentHp == hp - 18 && other.Creature.CurrentHp == 10,
+            "Each player's call damage and event progression stay independent.");
+        await ninjaEvent.CurrentOptions.Single(option => option.TextKey.EndsWith(".ACCEPT_NARAKU")).Chosen();
+        var ninjaRelic = combat.Player.GetRelic<NarakuUnleashedRelic>()!;
+        var otherRelic = other.GetRelic<NarakuUnleashedRelic>()!;
+        await ninjaRelic.BeforeCombatStart();
+        await otherRelic.BeforeCombatStart();
+        await otherRelic.AfterPlayerTurnStart(Choice, other);
+        Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 20
+            && other.Creature.GetPowerAmount<NarakuLifePower>() == 20
+            && PileType.Hand.GetPile(other).Cards.OfType<BlackFlame>().Count() == 1
+            && NinjaSlayerFormState.GetPresentation(combat.Player.Creature).Kind == NinjaSlayerFormKind.FullyReleasedNaraku
+            && NinjaSlayerFormState.GetPresentation(other.Creature).Kind == NinjaSlayerFormKind.FullyReleasedNaraku
+            && NinjaSlayerCombatAudioSet.For(other.Creature).FastAttack == NinjaSlayerCombatAudioSet.Naraku.FastAttack,
+            "Both owners receive life, Black Flame, Naraku presentation and audio.");
+        AddCard<StrikeIronclad>(combat);
+        var ninjaSkill = AddCard<DefendIronclad>(combat);
+        var otherAttack = combat.State.CreateCard<StrikeIronclad>(other);
+        var otherSkill = combat.State.CreateCard<DefendIronclad>(other);
+        await CardPileCmd.Add(otherAttack, PileType.Hand);
+        await CardPileCmd.Add(otherSkill, PileType.Hand);
+        Require(!Hook.ShouldPlay(combat.State, ninjaSkill, out _, AutoPlayType.None)
+            && !Hook.ShouldPlay(combat.State, otherSkill, out _, AutoPlayType.None),
+            "Both characters receive their own attack-priority restriction.");
+        await Hook.AfterShuffle(combat.State, Choice, other);
+        Require(!Hook.ShouldPlay(combat.State, ninjaSkill, out _, AutoPlayType.None)
+            && Hook.ShouldPlay(combat.State, otherSkill, out _, AutoPlayType.None),
+            "Only the shuffling owner's attack-priority restriction ends.");
+        GD.Print("PASS Naraku mixed multiplayer: independent native event choices, call damage, rewards, full effects and Naraku appearance");
     }
 }

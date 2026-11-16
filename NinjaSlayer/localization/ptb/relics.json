@@ -36,7 +36,7 @@
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.description": "No início de cada combate, adicione 2 [gold]Chado[/gold] à sua [gold]Mão[/gold].\n[gold]Respiração Chado[/gold] 2.\n[gold]Mantenha[/gold] suas cartas [gold]Chado[/gold] no primeiro turno.",
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_MASTERY_RELIC.flavor": "A dormência recua. Dedos, palmas e braços recuperam a liberdade, um após o outro.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.title": "Naraku Liberto",
-  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "No início do seu turno, adicione uma [gold]Chama Negra[/gold] à sua [gold]Mão[/gold].",
+  "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.description": "No início do combate, receba {NarakuLife:diff()} de [gold]Vida de Naraku[/gold].\nNo início do seu turno, adicione uma [gold]Chama Negra[/gold] à sua [gold]Mão[/gold].\nAté reembaralhar, você deve jogar Ataques primeiro enquanto tiver Ataques na mão.",
   "NINJA_SLAYER_RELIC_NARAKU_UNLEASHED_RELIC.flavor": "A fornalha do ódio nunca esfriou. Nas profundezas dos neurônios, o velho abre os olhos.",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.title": "Pacto de Origami",
   "NINJA_SLAYER_RELIC_ORIGAMI_PACT_RELIC.description": "Nos próximos [blue]{Combats}[/blue] combates, Yamoto Koki lutará ao seu lado.",

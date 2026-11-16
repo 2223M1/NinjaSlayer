@@ -1,6 +1,6 @@
 {
   "NINJA_SLAYER_CHADO_BREATHING.title": "Pernapasan Chado",
-  "NINJA_SLAYER_CHADO_BREATHING.description": "Tambah Energi yang diberikan setiap [gold]Chado[/gold] di tanganmu sebesar jumlah yang ditentukan. Jika tidak ada, gunakan 1 Pernapasan Chado untuk membuat satu Chado, lalu tambah Energinya dengan jumlah yang tersisa.",
+  "NINJA_SLAYER_CHADO_BREATHING.description": "Tambahkan [gold]Chado[/gold] ke tanganmu. Setiap [gold]Chado[/gold] di tanganmu memberikan tambahan {Energy:energyIcons()}.",
   "NINJA_SLAYER_POSITIVE_EFFECTS.title": "Buff",
-  "NINJA_SLAYER_POSITIVE_EFFECTS.description": "Efek berikut dihitung saat nilainya positif, satu kali per jenis.\n[gold]Kekuatan[/gold], [gold]Ketangkasan[/gold], [gold]Bugar[/gold], [gold]Karate[/gold]\n[gold]Fokus[/gold], [gold]Artefak[/gold], [gold]Pengaman[/gold], [gold]Tembus[/gold]\n[gold]Duri[/gold], [gold]Lapisan[/gold], [gold]Regenerasi[/gold], [gold]Elakan[/gold]\n[gold]Nyawa Naraku[/gold], [gold]Peregangan[/gold], [gold]Melayang[/gold], [gold]Bidik[/gold]"
+  "NINJA_SLAYER_POSITIVE_EFFECTS.description": "[gold]Kekuatan[/gold], [gold]Ketangkasan[/gold], [gold]Bugar[/gold], [gold]Karate[/gold]\n[gold]Fokus[/gold], [gold]Artefak[/gold], [gold]Pengaman[/gold], [gold]Tembus[/gold]\n[gold]Duri[/gold], [gold]Lapisan[/gold], [gold]Regenerasi[/gold], [gold]Elakan[/gold]\n[gold]Nyawa Naraku[/gold], [gold]Peregangan[/gold], [gold]Melayang[/gold], [gold]Bidik[/gold]"
 }

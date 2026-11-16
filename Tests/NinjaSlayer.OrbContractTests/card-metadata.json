@@ -416,7 +416,7 @@
     "Portrait": "res://NinjaSlayer/images/cards/BladeSweep.png",
     "Vars": {
       "Stock": 2,
-      "Aim": 4
+      "Aim": 6
     }
   },
   {
@@ -434,7 +434,7 @@
     "Portrait": "res://NinjaSlayer/images/cards/BladeSweep.png",
     "Vars": {
       "Stock": 3,
-      "Aim": 6
+      "Aim": 8
     }
   },
   {
@@ -669,8 +669,8 @@
     ],
     "Portrait": "res://NinjaSlayer/images/cards/ChopStrike.png",
     "Vars": {
-      "Damage": 11,
-      "Karate": 2
+      "Damage": 9,
+      "Karate": 3
     }
   },
   {
@@ -689,8 +689,8 @@
     ],
     "Portrait": "res://NinjaSlayer/images/cards/ChopStrike.png",
     "Vars": {
-      "Damage": 13,
-      "Karate": 3
+      "Damage": 12,
+      "Karate": 4
     }
   },
   {
@@ -783,7 +783,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Composure.png",
     "Vars": {
-      "Block": 2
+      "StretchPower": 2
     }
   },
   {
@@ -800,7 +800,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Composure.png",
     "Vars": {
-      "Block": 2
+      "StretchPower": 2
     }
   },
   {
@@ -1080,7 +1080,7 @@
     "Portrait": "res://NinjaSlayer/images/cards/Flurry.png",
     "Vars": {
       "Damage": 4,
-      "Karate": 5,
+      "Karate": 4,
       "Repeat": 3
     }
   },
@@ -1101,7 +1101,7 @@
     "Portrait": "res://NinjaSlayer/images/cards/Flurry.png",
     "Vars": {
       "Damage": 5,
-      "Karate": 6,
+      "Karate": 5,
       "Repeat": 3
     }
   },
@@ -1574,7 +1574,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Jujutsu.png",
     "Vars": {
-      "Karate": 4,
+      "Karate": 5,
       "Energy": 1
     }
   },
@@ -2534,9 +2534,7 @@
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [
-      "Exhaust"
-    ],
+    "Keywords": [],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Rekindle.png",
     "Vars": {
@@ -2553,9 +2551,7 @@
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [
-      "Exhaust"
-    ],
+    "Keywords": [],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Rekindle.png",
     "Vars": {
@@ -2589,11 +2585,13 @@
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Retain"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Relentless.png",
     "Vars": {
-      "Cards": 2
+      "Cards": 1
     }
   },
   {
@@ -2644,9 +2642,7 @@
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [
-      "Exhaust"
-    ],
+    "Keywords": [],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/ShurikenStorm.png",
     "Vars": {}
@@ -2661,9 +2657,7 @@
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [
-      "Exhaust"
-    ],
+    "Keywords": [],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/ShurikenStorm.png",
     "Vars": {}

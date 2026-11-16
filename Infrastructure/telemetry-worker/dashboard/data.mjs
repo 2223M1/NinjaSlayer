@@ -92,6 +92,7 @@ export class RunHistorySamples {
         at, version: balance?.version ?? '未记录', reloads: history.num_reloads ?? null,
         ascension: history.ascension, win: p.is_victory, floor: rooms.length,
         players, playerCount: history.players.length, rooms, combats: metrics.combats,
+        participants: history.players.map(player => ({ net_id: player.net_id, character_id: player.character_id })),
         actFloors: history.map_point_history.map(act => act.length),
       };
       const previous = byRun.get(identity);

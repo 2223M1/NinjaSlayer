@@ -113,7 +113,13 @@ public partial class OrbContractRunner
             MapPointHistory = [[new MapPointHistoryEntry
             {
                 Rooms = [new MapPointRoomHistoryEntry { RoomType = RoomType.Monster, ModelId = new ModelId("ENCOUNTER", "TEST"), TurnsTaken = 3 }],
-                PlayerStats = [new PlayerMapPointHistoryEntry { PlayerId = first.NetId, CardChoices = [choice] },
+                PlayerStats = [new PlayerMapPointHistoryEntry { PlayerId = first.NetId, CardChoices = [choice],
+                    EventChoices = [
+                        new EventOptionHistoryEntry { Title = new MegaCrit.Sts2.Core.Localization.LocString("events",
+                            "NINJA_SLAYER_EVENT_NARAKU_EVENT.pages.INITIAL.options.CALL_NARAKU.title") },
+                        new EventOptionHistoryEntry { Title = new MegaCrit.Sts2.Core.Localization.LocString("events",
+                            "NINJA_SLAYER_EVENT_NARAKU_EVENT.pages.ACCEPT.options.ACCEPT_NARAKU.title") }
+                    ] },
                     new PlayerMapPointHistoryEntry { PlayerId = second.NetId }]
             }]]
         };
@@ -123,6 +129,10 @@ public partial class OrbContractRunner
         Require(payload["players"]![0]!["net_id"]!.GetValue<string>() == first.NetId.ToString(CultureInfo.InvariantCulture)
             && payload["map_point_history"]![0]![0]!["player_stats"]![1]!["player_id"]!.GetValue<string>() == second.NetId.ToString(CultureInfo.InvariantCulture),
             "UInt64 IDs lost precision or no longer join with native choice records.");
+        var eventChoices = payload["map_point_history"]![0]![0]!["player_stats"]![0]!["event_choices"]!.AsArray();
+        Require(eventChoices.Count == 2 && eventChoices[1]!["title"]!["table"]!.GetValue<string>() == "events"
+            && eventChoices[1]!["title"]!["key"]!.GetValue<string>() == "NINJA_SLAYER_EVENT_NARAKU_EVENT.pages.ACCEPT.options.ACCEPT_NARAKU.title",
+            "Existing telemetry must preserve ordered native event choices including Naraku's final option.");
         var envelope = new JsonArray(new JsonObject
         {
             ["event"] = "run_history.completed", ["timestamp"] = "2026-09-12T10:00:00Z",

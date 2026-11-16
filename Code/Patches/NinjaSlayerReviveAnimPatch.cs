@@ -24,7 +24,7 @@ public sealed class NinjaSlayerReviveAnimPatch : IPatchMethod
 #endif
         )
     {
-        if (__instance.Entity.Player?.Character is not INinjaSlayerCharacter || __instance.HasSpineAnimation)
+        if (!NinjaSlayerFormState.UsesNinjaSlayerVisuals(__instance.Entity) || __instance.HasSpineAnimation)
             return true;
 
         bool flewOut = DeathAnimation.HasFlightVisual(__instance.Entity);
