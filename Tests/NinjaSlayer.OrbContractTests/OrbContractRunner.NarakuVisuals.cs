@@ -52,8 +52,9 @@ public partial class OrbContractRunner
                 TestMode.IsOn = false;
                 try { rig = player.Creature.CreateVisuals() ?? throw new InvalidOperationException("Missing transformed rig."); }
                 finally { TestMode.IsOn = true; }
-                Require(rig.SceneFilePath == NinjaSlayerAssetProfile.VisualsPath,
-                    $"{character.Id}: native creature creation must use the transformed rig.");
+                Require(rig.GetNodeOrNull<Sprite2D>("%Visuals") is not null
+                    && rig.FindChild("NarakuVisualOverlay", true, false) is NarakuVisualOverlay,
+                    $"{character.Id}: native creature creation must use the transformed rig ({rig.SceneFilePath}).");
                 var actor = new AimContractCreature();
                 AccessTools.Property(typeof(NCreature), "Entity").SetValue(actor, player.Creature);
                 AccessTools.Property(typeof(NCreature), "Visuals").SetValue(actor, rig);
