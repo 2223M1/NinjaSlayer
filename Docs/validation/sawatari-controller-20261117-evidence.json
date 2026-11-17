@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-17",
+  "sourceRevision": "7da547f387c90fd71075d38e50bdc788baf6d076",
+  "baselineSourceRevision": "2c0f3a3b57b8f43528b7d5257e94226c160481b8",
+  "baselineProductSha256": "4e20f1a9536715fa69523ac0167bb29f95ce196d0a133cb886c8f37136b07117",
+  "baselineFailure": "Hiding choices must restore native combat navigation, UI and focus.",
+  "ritsuLibCompileVersion": "0.6.13",
+  "ritsuLibRuntimeVersion": "0.6.14",
+  "channels": [
+    {
+      "channel": "stable",
+      "gameApiVersion": "0.107.1",
+      "hostMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+      "productSha256": "32e4a39f9e61ed483b27ddfd06b9b387388f8afe5909299b341ffdfbcd8646cd",
+      "releaseBuild": "passed",
+      "controllerContract": "passed",
+      "patchContract": "passed",
+      "controllerErrors": 0,
+      "controllerWarnings": 0
+    },
+    {
+      "channel": "preview",
+      "gameApiVersion": "0.113.1",
+      "hostMvid": "9d417b39-1d40-4fc7-b993-28acdc29e151",
+      "productSha256": "20779f363aaf950c0a7858fd325374f16940dfd18e49a013018698c0bbd09893",
+      "releaseBuild": "passed",
+      "controllerContract": "passed",
+      "patchContract": "passed",
+      "controllerErrors": 0,
+      "controllerWarnings": 0
+    }
+  ],
+  "logs": [
+    {
+      "path": "build/validation-sawatari-controller-20261117/controller-baseline-stable.log",
+      "sha256": "77e96721b6870dc099f39485620eaecebf1ae955745dda719f6e09f06e5d78e1",
+      "bytes": 38880
+    },
+    {
+      "path": "build/validation-sawatari-controller-20261117/final-stable-build.log",
+      "sha256": "7bb59fc74815ffdbdb20bd419ba8fbf99bda61ccdebd4ff473ea6096de256005",
+      "bytes": 1086
+    },
+    {
+      "path": "build/validation-sawatari-controller-20261117/final-preview-build.log",
+      "sha256": "5e1a55ce42a239e3ef60c555e9e6b1bfdcef03b3d01765a210bf6dbb296a9615",
+      "bytes": 1087
+    },
+    {
+      "path": "build/validation-sawatari-controller-20261117/controller-final-stable.log",
+      "sha256": "a3d7eef19a688e9c0b29b938c54e9a5cc1a649484506b66216e66ad7887b6caa",
+      "bytes": 34433
+    },
+    {
+      "path": "build/validation-sawatari-controller-20261117/controller-final-preview.log",
+      "sha256": "4e913a7e1ee8513d66c3c26d18dc48aaea23e6eb680c5eaa9d428ace7f46849d",
+      "bytes": 34185
+    },
+    {
+      "path": "build/validation-sawatari-controller-20261117/patch-final-stable.log",
+      "sha256": "9864f3e3f37dd74ce904cd788833bb3e2e823a2246c7836d8250dad326bc47cb",
+      "bytes": 5331672
+    },
+    {
+      "path": "build/validation-sawatari-controller-20261117/patch-final-preview.log",
+      "sha256": "f1e3bbb2c2197ec066594e28c20b6a2d60176c2207365173cd4c8fec13649ea4",
+      "bytes": 5372622
+    },
+    {
+      "path": "build/validation-sawatari-controller-20261117/run.ps1",
+      "sha256": "3d585c2c85ee3ee7a823ab165f05f1c93e68cf16fe3f0c2f8c0bb7763bd51890",
+      "bytes": 2836
+    }
+  ],
+  "notRun": [
+    "Physical PS5/Xbox/third-party controllers and Steam Input",
+    "Full rendered game smoke: launcher requires elevation; current session is not elevated",
+    "Multiplayer transport"
+  ],
+  "publishedToWorkshop": false
+}

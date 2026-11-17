@@ -16,6 +16,7 @@ using MegaCrit.Sts2.Core.Nodes.Screens.Overlays;
 using MegaCrit.Sts2.Core.Nodes.Screens.ScreenContext;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Settings;
+using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Events;
 using STS2RitsuLib;
@@ -46,9 +47,36 @@ public partial class ControllerMapScreen : NMapScreen
     public override void _Notification(int what) { }
 }
 
+// Keep the real nested screen hierarchy; omit only resource setup/teardown.
+public partial class ControllerEventRoom : NEventRoom
+{
+    public override void _EnterTree() { }
+    public override void _Ready() { }
+    public override void _ExitTree() { }
+}
+
+public partial class ControllerCombatRoom : NCombatRoom
+{
+    public override void _EnterTree() { }
+    public override void _Ready() { }
+    public override void _ExitTree() { }
+}
+
+public partial class ControllerCombatUi : NCombatUi
+{
+    public override void _Ready() { }
+    public override void _ExitTree() { }
+    public override void _Input(InputEvent inputEvent) { }
+}
+
 public partial class OrbContractRunner
 {
     private static readonly List<int> ControllerChoices = [];
+    private static bool ControllerCombatUiEnabled;
+
+    // Observe the native room's enable/disable decision without resource widgets.
+    private static bool ObserveControllerCombatUiEnable() { ControllerCombatUiEnabled = true; return false; }
+    private static bool ObserveControllerCombatUiDisable() { ControllerCombatUiEnabled = false; return false; }
 
     private static bool CreateControllerOption(EventModel eventModel, EventOption option, int index,
         ref NEventOptionButton __result)
@@ -81,6 +109,10 @@ public partial class OrbContractRunner
             prefix: new HarmonyMethod(GetType(), nameof(SkipControllerVoteVisuals)));
         harmony.Patch(AccessTools.Method(typeof(NEventRoom), nameof(NEventRoom.OptionButtonClicked)),
             prefix: new HarmonyMethod(GetType(), nameof(CaptureControllerChoice)));
+        harmony.Patch(AccessTools.Method(typeof(NCombatUi), nameof(NCombatUi.Enable)),
+            prefix: new HarmonyMethod(GetType(), nameof(ObserveControllerCombatUiEnable)));
+        harmony.Patch(AccessTools.Method(typeof(NCombatUi), nameof(NCombatUi.Disable)),
+            prefix: new HarmonyMethod(GetType(), nameof(ObserveControllerCombatUiDisable)));
 
         var detached = new List<Node>();
         T Keep<T>(T node) where T : Node { detached.Add(node); return node; }
@@ -107,9 +139,9 @@ public partial class OrbContractRunner
                 enabled ? InputType.Controller : InputType.MouseAndKeyboard);
 #endif
         }
-        var eventRoom = Keep(new NEventRoom());
-        var combat = Keep(new NCombatRoom());
-        var combatUi = Keep(new NCombatUi());
+        var eventRoom = new ControllerEventRoom();
+        var combat = new ControllerCombatRoom();
+        var combatUi = new ControllerCombatUi();
         var hand = Keep(new NPlayerHand());
         var layout = new ControllerEventLayout();
         var handFocus = new Control { FocusMode = Control.FocusModeEnum.All };
@@ -131,19 +163,48 @@ public partial class OrbContractRunner
         AccessTools.Field(typeof(NRun), "_roomContainer").SetValue(run, Scene(eventRoom));
         AccessTools.Field(typeof(NEventRoom), "_eventContainer").SetValue(eventRoom, Scene(layout));
         AccessTools.Property(typeof(NCombatEventLayout), nameof(NCombatEventLayout.EmbeddedCombatRoom)).SetValue(layout, combat);
-        Property(combat, nameof(NCombatRoom.Ui), combatUi);
-        Property(combatUi, nameof(NCombatUi.Hand), hand);
+        AccessTools.Property(typeof(NCombatRoom), nameof(NCombatRoom.Ui)).SetValue(combat, combatUi);
+        AccessTools.Property(typeof(NCombatUi), nameof(NCombatUi.Hand)).SetValue(combatUi, hand);
         Property(hand, nameof(NPlayerHand.CardHolderContainer), handFocus);
+        eventRoom.AddChild(layout);
+        layout.AddChild(combat);
+        combat.AddChild(combatUi);
+        combatUi.AddChild(handFocus);
 
         object? oldGame = NGame.Instance;
+#if NINJASLAYER_CHANNEL_PREVIEW
+        // Preview's native option teardown unsubscribes from map votes even for
+        // non-proceed options. This fixture never starts map voting.
+        object? oldMapSync = RunManager.Instance.MapSelectionSynchronizer;
+        AccessTools.Property(typeof(RunManager), nameof(RunManager.MapSelectionSynchronizer)).SetValue(
+            RunManager.Instance, System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(
+                typeof(MegaCrit.Sts2.Core.Multiplayer.Game.MapSelectionSynchronizer)));
+#endif
         FastModeType oldSpeed = SaveManager.Instance.PrefsSave.FastMode;
         Action onContextChanged = AccessTools.Method(typeof(NControllerManager), "OnScreenContextChanged")
             .CreateDelegate<Action>(controller);
+        Action onEventContextChanged = AccessTools.Method(typeof(NEventRoom), "OnActiveScreenUpdated")
+            .CreateDelegate<Action>(eventRoom);
+        Action onCombatContextChanged = AccessTools.Method(typeof(NCombatRoom), "OnActiveScreenUpdated")
+            .CreateDelegate<Action>(combat);
         var uiType = typeof(TheMovingJungleEvent).Assembly.GetType("NinjaSlayer.Events.SawatariEventUi", true)!;
         void Show() => AccessTools.Method(uiType, "Show").Invoke(null, [false]);
         EventModel model = ModelDb.Event<TheMovingJungleEvent>().ToMutable();
+        Type sessionType = typeof(TheMovingJungleEvent).Assembly.GetType("NinjaSlayer.Code.Combat.SawatariEventSession", true)!;
+        object session = Activator.CreateInstance(sessionType,
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
+            null, [fixture.Combat.State, combat, new[] { (TheMovingJungleEvent)model }, fixture.Combat.Player], null)!;
+        async Task Hide()
+        {
+            AccessTools.Method(uiType, "Hide").Invoke(null, null);
+            // The real duel greeting separates hiding choices from revealing the hand.
+            await Frame(); await Frame();
+            AccessTools.Method(sessionType, "ExitDecisionState").Invoke(session, null);
+            await Frame(); await Frame();
+        }
         void Page(int count, bool legacy = false)
         {
+            combatUi.Hide();
             layout.ClearOptions();
             AccessTools.Property(typeof(EventModel), nameof(EventModel.Owner)).SetValue(model, fixture.Combat.Player);
             AccessTools.Field(typeof(NEventLayout), "_event").SetValue(layout, model);
@@ -173,10 +234,12 @@ public partial class OrbContractRunner
         {
             AccessTools.Property(typeof(NGame), nameof(NGame.Instance)).SetValue(null, game);
             SetController(true);
-            AddChild(handFocus); AddChild(layout);
+            AddChild(eventRoom);
             // Give the native controller callback a viewport without starting Steam input.
             AddChild(controller); controller.SetProcess(false); controller.SetProcessInput(false);
             ActiveScreenContext.Instance.Updated += onContextChanged;
+            ActiveScreenContext.Instance.Updated += onEventContextChanged;
+            ActiveScreenContext.Instance.Updated += onCombatContextChanged;
 
             SaveManager.Instance.PrefsSave.FastMode = FastModeType.Fast;
             layout.HideEventVisuals(); Page(2, legacy: true); await Ready();
@@ -189,13 +252,16 @@ public partial class OrbContractRunner
             foreach (FastModeType speed in Enum.GetValues<FastModeType>())
             foreach (int count in new[] { 2, 1 })
             {
-                layout.HideEventVisuals();
+                await Hide();
                 SaveManager.Instance.PrefsSave.FastMode = speed;
                 Page(count); await Ready();
                 var buttons = layout.OptionButtons.ToArray();
                 Require(ActiveScreenContext.Instance.GetCurrentScreen() == eventRoom
                     && layout.DefaultFocusedControl == buttons[0] && buttons[0].HasFocus(),
                     $"{speed}/{count}: event context and first option must receive controller focus.");
+                Require(!ControllerCombatUiEnabled
+                    && combat.FocusBehaviorRecursive == Control.FocusBehaviorRecursiveEnum.Disabled,
+                    "Event choices must disable the embedded combat's navigation and UI.");
                 ControllerChoices.Clear();
                 if (count == 2)
                 {
@@ -222,24 +288,27 @@ public partial class OrbContractRunner
                 SetController(true);
                 ActiveScreenContext.Instance.FocusOnDefaultControl();
                 Require(buttons[0].HasFocus(), "Returning to controller input must focus the event rather than combat.");
-                layout.HideEventVisuals();
-                Require(ActiveScreenContext.Instance.GetCurrentScreen() == combat && handFocus.HasFocus(),
-                    "Hiding choices must restore native combat focus.");
+                await Hide();
+                Require(ActiveScreenContext.Instance.GetCurrentScreen() == combat && handFocus.HasFocus()
+                    && ControllerCombatUiEnabled
+                    && combat.FocusBehaviorRecursive != Control.FocusBehaviorRecursiveEnum.Disabled,
+                    "Hiding choices must restore native combat navigation, UI and focus.");
                 GD.Print($"PASS Sawatari controller {speed}, {count} options: entrance, navigation, confirm, mouse/controller switching, combat return.");
             }
 
             SaveManager.Instance.PrefsSave.FastMode = FastModeType.Fast;
-            Page(2); layout.HideEventVisuals(); await Ready();
+            Page(2); await Hide(); await Ready();
             Require(handFocus.HasFocus() && ActiveScreenContext.Instance.GetCurrentScreen() == combat,
                 "An old entrance finishing after choices hide must not steal combat focus.");
             AccessTools.Property(typeof(NMapScreen), nameof(NMapScreen.IsOpen)).SetValue(map, true);
             Page(2); await Ready();
-            Require(ActiveScreenContext.Instance.GetCurrentScreen() == map && handFocus.HasFocus(),
+            Require(ActiveScreenContext.Instance.GetCurrentScreen() == map
+                && !layout.OptionButtons.Any(button => button.HasFocus()) && !handFocus.HasFocus(),
                 "An entrance completing under the map must not steal its screen context or focus.");
             AccessTools.Property(typeof(NMapScreen), nameof(NMapScreen.IsOpen)).SetValue(map, false);
             ActiveScreenContext.Instance.Update(); await Frame(); await Frame();
             Require(layout.OptionButtons.First().HasFocus(), "Closing the map must return to event choices.");
-            layout.HideEventVisuals();
+            await Hide();
             model = ModelDb.Event<FakeMerchant>().ToMutable();
             Page(1, legacy: true); await Ready();
             Require(layout.HasCombatStarted && ActiveScreenContext.Instance.GetCurrentScreen() == combat,
@@ -249,7 +318,13 @@ public partial class OrbContractRunner
         finally
         {
             ActiveScreenContext.Instance.Updated -= onContextChanged;
-            layout.Free(); handFocus.Free();
+            ActiveScreenContext.Instance.Updated -= onEventContextChanged;
+            ActiveScreenContext.Instance.Updated -= onCombatContextChanged;
+            eventRoom.Free();
+#if NINJASLAYER_CHANNEL_PREVIEW
+            AccessTools.Property(typeof(RunManager), nameof(RunManager.MapSelectionSynchronizer))
+                .SetValue(RunManager.Instance, oldMapSync);
+#endif
             RemoveChild(controller);
             AccessTools.Property(typeof(NGame), nameof(NGame.Instance)).SetValue(null, oldGame);
             SaveManager.Instance.PrefsSave.FastMode = oldSpeed;
