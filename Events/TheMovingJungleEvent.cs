@@ -13,6 +13,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Acts;
 using MegaCrit.Sts2.Core.Nodes.Events;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Nodes.Screens.ScreenContext;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.TestSupport;
@@ -274,8 +275,14 @@ internal static class SawatariEventUi
             ?? throw new MissingMethodException(typeof(NCombatEventLayout).FullName, "set_HasCombatStarted"))
         .CreateDelegate<Action<NCombatEventLayout, bool>>();
 
-    public static void Hide() =>
-        (NEventRoom.Instance?.Layout as NCombatEventLayout)?.HideEventVisuals();
+    public static void Hide()
+    {
+        if (NEventRoom.Instance?.Layout is not NCombatEventLayout layout) return;
+        layout.HideEventVisuals();
+        // Returning from a decision must also re-enable native combat navigation
+        // and controls; showing the combat UI alone leaves them disabled.
+        ActiveScreenContext.Instance.Update();
+    }
 
     public static void Show(bool isMultiplayer)
     {

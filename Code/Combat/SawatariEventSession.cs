@@ -12,6 +12,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Audio;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Nodes.Screens.ScreenContext;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Rewards;
 using MegaCrit.Sts2.Core.Runs;
@@ -452,6 +453,9 @@ internal sealed class SawatariEventSession
         try
         {
             _room.Ui.Show();
+            // The duel greeting can keep the hand hidden for several frames
+            // after the event options close. Restore focus when it is visible.
+            ActiveScreenContext.Instance.Update();
         }
         finally
         {
