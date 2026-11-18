@@ -75,9 +75,7 @@ public partial class OrbContractRunner
                 $"Stock throw waits: direct={_throwDirectWaits}, scaled={string.Join(',', ThrowGameplayWaits)}.");
             var card = combat.Card();
             var play = new CardPlay { Card = card,
-#if !NINJASLAYER_CHANNEL_STABLE
                 Player = combat.Player,
-#endif
                 Target = combat.Enemy, ResultPile = PileType.Discard,
                 Resources = new ResourceInfo { EnergySpent = 0, EnergyValue = 0, StarsSpent = 0, StarValue = 0 },
                 IsAutoPlay = false, PlayIndex = 0, PlayCount = 1 };

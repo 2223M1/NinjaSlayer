@@ -78,7 +78,7 @@ public sealed partial class BossDeathPresentationController : Node
                 "Boss death presentation started before its visual snapshot was prepared.");
         }
 
-        CreatureDeathInteractionAdapter.Disable(_boss);
+        _boss.DisableInteractionForDeath();
         foreach (NIntent intent in _boss.IntentContainer.GetChildren().OfType<NIntent>())
         {
             intent.SetFrozen(isFrozen: true);

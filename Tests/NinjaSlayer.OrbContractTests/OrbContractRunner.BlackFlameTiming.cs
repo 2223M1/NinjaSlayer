@@ -31,14 +31,10 @@ public partial class OrbContractRunner
         _turnEndSoundCard = card;
         try
         {
-#if NINJASLAYER_CHANNEL_STABLE
-            await card.OnTurnEndInHandWrapper(Choice);
-#else
             var enterPlay = (Task)AccessTools.Method(typeof(CombatManager), "AddTurnEndCardToPlayPileWithDelay")
                 .Invoke(CombatManager.Instance, [card, 0f])!;
             await (Task)AccessTools.Method(typeof(CombatManager), "ResolveTurnEndCardEffects")
                 .Invoke(CombatManager.Instance, [card, Choice, enterPlay])!;
-#endif
         }
         finally { _turnEndSoundCard = null; }
     }

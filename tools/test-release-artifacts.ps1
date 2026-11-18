@@ -81,8 +81,8 @@ function Invoke-ArtifactValidator([string]$AssemblyPath, [string]$ForbiddenPathR
         'validate-assembly',
         '--assembly', $AssemblyPath,
         '--channel', 'stable',
-        '--game-api-version', '0.107.1',
-        '--ritsulib-package-id', 'STS2.RitsuLib.Compat.0.107.1',
+        '--game-api-version', '0.111.1',
+        '--ritsulib-package-id', 'STS2.RitsuLib.Compat.0.111.0',
         '--ritsulib-version', '0.5.1',
         '--source-revision', $sourceRevision,
         '--forbidden-path-root', $ForbiddenPathRoot
@@ -230,8 +230,8 @@ $temporaryRoot = Join-Path ([IO.Path]::GetTempPath()) `
 try {
     [IO.Directory]::CreateDirectory($temporaryRoot) | Out-Null
     Invoke-ArtifactContract @('test-loader-contract')
-    if (-not (Test-NinjaSlayerSafeArchivePath 'lib/0.107.1/NinjaSlayer.dll') -or
-        (Test-NinjaSlayerSafeArchivePath 'lib\0.107.1\NinjaSlayer.dll') -or
+    if (-not (Test-NinjaSlayerSafeArchivePath 'lib/0.111.1/NinjaSlayer.dll') -or
+        (Test-NinjaSlayerSafeArchivePath 'lib\0.111.1\NinjaSlayer.dll') -or
         (Test-NinjaSlayerSafeArchivePath '../NinjaSlayer.dll')) {
         throw 'Release archive path validation accepted an unsafe path or rejected a safe path.'
     }
@@ -479,8 +479,8 @@ try {
   </PropertyGroup>
   <ItemGroup>
     <AssemblyMetadata Include="NinjaSlayerHostChannel" Value="stable" />
-    <AssemblyMetadata Include="NinjaSlayerGameApiVersion" Value="0.107.1" />
-    <AssemblyMetadata Include="NinjaSlayerRitsuLibPackageId" Value="STS2.RitsuLib.Compat.0.107.1" />
+    <AssemblyMetadata Include="NinjaSlayerGameApiVersion" Value="0.111.1" />
+    <AssemblyMetadata Include="NinjaSlayerRitsuLibPackageId" Value="STS2.RitsuLib.Compat.0.111.0" />
     <AssemblyMetadata Include="NinjaSlayerRitsuLibVersion" Value="0.5.1" />
     <AssemblyMetadata Include="NinjaSlayerSourceRevision" Value="0123456789abcdef0123456789abcdef01234567" />
   </ItemGroup>
@@ -502,8 +502,8 @@ try {
             'validate-assembly',
             '--assembly', $fixtureAssembly,
             '--channel', 'stable',
-            '--game-api-version', '0.107.1',
-            '--ritsulib-package-id', 'STS2.RitsuLib.Compat.0.107.1',
+            '--game-api-version', '0.111.1',
+            '--ritsulib-package-id', 'STS2.RitsuLib.Compat.0.111.0',
             '--ritsulib-version', '0.5.1',
             '--forbidden-path-root', $assemblyFixture)
     } 'source-revision'

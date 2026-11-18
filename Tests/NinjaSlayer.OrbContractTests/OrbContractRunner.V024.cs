@@ -61,9 +61,7 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<KaratePower>(Choice, combat.Player.Creature, 4, combat.Player.Creature, null);
             await CreatureCmd.Damage(Choice, new[] { combat.Enemy, second }, 8, ValueProp.Move,
                 combat.Player.Creature, AddCard<StrikeIronclad>(combat)
-#if !NINJASLAYER_CHANNEL_STABLE
                 , null
-#endif
             );
             Require(second.CurrentHp == 988 && combat.Player.Creature.GetPowerAmount<KaratePower>() == 3,
                 "A mixed lethal/live group wave shares four bonus damage and consumes just one stack.");

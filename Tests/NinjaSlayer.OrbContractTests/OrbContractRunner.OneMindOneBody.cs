@@ -182,18 +182,12 @@ public partial class OrbContractRunner
                 Require(new KarateHealthBarForecastSource().GetHealthBarForecastSegments(new(combat.Enemy))
                     .Sum(segment => segment.Amount) == 5, "Naraku-only Karate must appear in the health bar forecast.");
             var play = new CardPlay { Card = card,
-#if !NINJASLAYER_CHANNEL_STABLE
                 Player = combat.Player,
-#endif
                 Target = combat.Enemy, ResultPile = PileType.Discard,
                 Resources = new ResourceInfo { EnergySpent = 0, EnergyValue = 0, StarsSpent = 0, StarValue = 0 },
                 IsAutoPlay = false, PlayIndex = 0, PlayCount = 1 };
             var command = DamageCmd.Attack(6)
-#if NINJASLAYER_CHANNEL_STABLE
-                .FromCard(card)
-#else
                 .FromCard(card, play)
-#endif
                 .Targeting(combat.Enemy);
             var product = typeof(OneMindOneBody).Assembly;
             var create = AccessTools.Method(product.GetType("NinjaSlayer.Code.ExternalAnimations.FinisherAttackCommandAdapter", true)!, "CreateSpec");

@@ -60,9 +60,7 @@ internal static class NinjaSlayerAttackExecution
         if (command.Attacker?.Player?.Character is INinjaSlayerCharacter && command.ModelSource is CardModel card)
         {
             CardPlayResolutionScope.TryResolveCurrentPlay(card, out CardPlay? play);
-#if !NINJASLAYER_LEGACY_CARD_PLAY_LINKS
             play = command.CardPlay ?? play;
-#endif
             Commands.Value = new CommandFrame(command, play, target);
         }
         else

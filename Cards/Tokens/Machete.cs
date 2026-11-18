@@ -61,11 +61,7 @@ public sealed class Machete : NinjaSlayerStandaloneCardTemplate
         var receiver = cardPlay.Target?.Monster as ForestSawatariMonster;
         int returnHand = receiver is { ActThree: true, MacheteCount: < 2 } ? receiver.ChooseReturnHand() : -1;
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
-#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-            .FromCard(this)
-#else
             .FromCard(this, cardPlay)
-#endif
             .Targeting(cardPlay.Target!).WithNoAttackerAnim()
             .AfterAttackerAnim(() => PlayerMacheteVisuals.Throw(this, thrown, throwHand, cardPlay.Target!, returnHand))
             .WithHitFx(VfxCmd.slashPath, NinjaSlayerCombatVfx.MacheteHitSfx)

@@ -50,23 +50,17 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<NarakuLifePower>(Choice, owner, 3, owner, null);
             int hp = owner.CurrentHp;
             await CreatureCmd.Damage(Choice, [owner], 4, ValueProp.Unpowered, combat.Enemy, null
-#if !NINJASLAYER_CHANNEL_STABLE
                 , null
-#endif
             );
             Require(life.Amount == 11 && life.DisplayAmount == 11 && owner.CurrentHp == hp && changed == 2,
                 "Gain and absorption must update the same native displayed amount without hurting real HP.");
             await CreatureCmd.GainBlock(owner, 5, ValueProp.Unpowered, null);
             await CreatureCmd.Damage(Choice, [owner], 5, ValueProp.Move, combat.Enemy, null
-#if !NINJASLAYER_CHANNEL_STABLE
                 , null
-#endif
             );
             Require(life.DisplayAmount == 11 && changed == 2, "Full block must not change Naraku Life's counter.");
             await CreatureCmd.Damage(Choice, [owner], 13, ValueProp.Unpowered, combat.Enemy, null
-#if !NINJASLAYER_CHANNEL_STABLE
                 , null
-#endif
             );
             Require(life.DisplayAmount == 0 && !owner.HasPower<NarakuLifePower>() && owner.CurrentHp == hp - 2,
                 "Exhausted Naraku Life must remove its native icon and apply overflow once.");

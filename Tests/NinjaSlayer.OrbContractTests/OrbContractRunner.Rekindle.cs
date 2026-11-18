@@ -64,11 +64,7 @@ public partial class OrbContractRunner
                 && combat.Enemy.CurrentHp == 992
                 && PileType.Exhaust.GetPile(combat.Player).Cards.OfType<BlackFlame>().Count() == 2,
                 "Each turn-end flame must grant life before its self-damage, without a second reward for hitting the owner.");
-#if NINJASLAYER_CHANNEL_STABLE
-            await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [owner]);
-#else
             await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [owner]);
-#endif
             AddCard<BlackFlame>(combat);
             await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
             Require(!owner.HasPower<RekindlePower>() && !owner.HasPower<NarakuLifePower>(),

@@ -25,9 +25,7 @@ public sealed class DarkCounterPower : NinjaSlayerPowerTemplate
             decimal damage = IsMutable && Owner?.CombatState is { } combat
                 ? Hook.ModifyDamage(combat.RunState, combat, null, Owner, 0m,
                     ValueProp.Move, null,
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                     null,
-#endif
                     ModifyDamageHookType.All, CardPreviewMode.None, out _)
                 : 0m;
             description.Add("Damage", Math.Max(0, (int)damage));
@@ -93,9 +91,7 @@ public sealed class DarkCounterPower : NinjaSlayerPowerTemplate
             0m,
             ValueProp.Move,
             null,
-#if !NINJASLAYER_LEGACY_DAMAGE_API
             null,
-#endif
             ModifyDamageHookType.All,
             CardPreviewMode.Normal,
             out _);
@@ -139,9 +135,7 @@ public sealed class DarkCounterPower : NinjaSlayerPowerTemplate
                 ValueProp.Move,
                 Owner,
                 null
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                 , null
-#endif
             )).ToList();
             command.AddResultsInternal(results);
             CombatManager.Instance.History.CreatureAttacked(combatState, Owner, results);

@@ -6,9 +6,10 @@ from pathlib import Path
 import argparse,json,hashlib,shutil,re
 from scarf_geometry import resize_tail, EXTENSION
 P=Path(__file__).resolve().parents[2]
+stable_version=json.loads((P/'eng/compatibility.json').read_text(encoding='utf-8'))['channels']['stable']['gameApiVersion']
 parser=argparse.ArgumentParser()
 parser.add_argument('--production',type=Path,default=P.parent/'art-production/character-select-dual-poster-v1')
-parser.add_argument('--vanilla',type=Path,default=P.parent/'Slay the Spire 2/Slay the Spire 2 v0.107.1/scenes/screens/char_select/char_select_bg_ironclad.tscn')
+parser.add_argument('--vanilla',type=Path,default=P.parent/f'Slay the Spire 2/Slay the Spire 2 v{stable_version}/scenes/screens/char_select/char_select_bg_ironclad.tscn')
 a=parser.parse_args();B=a.production.resolve();V=a.vanilla.resolve()
 D=P/'NinjaSlayer/art/character_select';D.mkdir(parents=True,exist_ok=True)
 prefix='res://NinjaSlayer/art/character_select/'

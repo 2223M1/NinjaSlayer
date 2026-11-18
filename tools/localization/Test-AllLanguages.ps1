@@ -21,7 +21,7 @@ try {
     $translationInputs = @(Get-ChildItem -LiteralPath "$repository/NinjaSlayer/localization" -Recurse -File -Filter '*.json' |
         Sort-Object FullName | ForEach-Object { "$($_.FullName):$((Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash)" })
     # Import and export current resources, never modify a daily game or use a stale pack.
-    & dotnet build NinjaSlayer.csproj -c Debug -v:minimal "-p:Sts2DataDir=$HostRoot/preview" *> "$output/editor-build.log"
+    & dotnet build NinjaSlayer.csproj -c Debug -v:minimal "-p:Sts2DataDir=$HostRoot/$($compatibility.channels.preview.gameApiVersion)" *> "$output/editor-build.log"
     if ($LASTEXITCODE) { throw 'Editor build failed.' }
     & $Godot --headless --editor --path $repository --import *> "$output/import.log"
     if ($LASTEXITCODE) { throw 'Godot import failed.' }
@@ -44,7 +44,7 @@ try {
             New-Item -ItemType Directory -Path "$output/$channel" -Force | Out-Null
             & Tests/NinjaSlayer.OrbContractTests/Run-Contracts.ps1 -Channel $channel `
                 -NinjaSlayerAssemblyPath "$PublishedMod/lib/$version/NinjaSlayer.dll" `
-                -Sts2DataDir "$HostRoot/$channel" -HostPack "$GameRoot/SlayTheSpire2.pck" `
+                -Sts2DataDir "$HostRoot/$version" -HostPack "$GameRoot/SlayTheSpire2.pck" `
                 -ProductPack $pack -SourceRevision $release.sourceRevision `
                 -GodotPath $Godot -DotnetRoot 'C:\Program Files\dotnet' -LogPath "$output/$channel/contracts.log"
         }

@@ -62,9 +62,7 @@ internal static class FinisherAttackCommandAdapter
                     && evasion.CanEvade(target, command.DamageProps, actor)) continue;
             decimal perHit = Hook.ModifyDamage(target.Player.RunState, actor.CombatState, target, actor,
                 damage, command.DamageProps, null,
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                 null,
-#endif
                 ModifyDamageHookType.All, CardPreviewMode.None, out _);
             // A redirect may absorb any or all later hits. Do not predict its
             // deaths or overflow; the real final HP-loss callback owns that decision.
@@ -89,12 +87,8 @@ internal static class FinisherAttackCommandAdapter
             return false;
         }
 
-#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-        if (!CardPlayResolutionScope.TryResolveCurrentPlay(card, out CardPlay? cardPlay))
-#else
         CardPlay? cardPlay = command.CardPlay;
         if (cardPlay == null)
-#endif
         {
             return false;
         }

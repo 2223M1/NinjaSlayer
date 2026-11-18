@@ -82,7 +82,7 @@ public partial class OrbContractRunner
             Stock(0);
             Require(Velocity() == 0f && !visual.Visible && !labels.Visible, "Depleted stock retained spinning art.");
             Stock(1);
-            AccessTools.Method(typeof(ShurikenOrb), "ActivatePassiveFeedback").Invoke(model, null);
+            AccessTools.Method(typeof(ShurikenOrb), "ActivatePassive").Invoke(model, null);
             Require(Velocity() == 0f, "Gaining stock triggered launch inertia.");
             SaveManager.Instance.PrefsSave.FastMode = FastModeType.Instant;
             int tweens = GetTree().GetProcessedTweens().Count;

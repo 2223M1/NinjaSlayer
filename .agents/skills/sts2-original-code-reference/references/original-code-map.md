@@ -4,7 +4,7 @@
 
 - Read active versions from `eng/compatibility.json` at the repository root.
 - Source exports normally live at `../Slay the Spire 2/Slay the Spire 2 v<gameApiVersion>/src`.
-- Retain only the official stable release and the latest preview, currently 0.107.1 and 0.113.1. The intermediate 0.111.0 export was retired on 2026-11-13; dated reports that cite it remain historical evidence, not active source roots.
+- Retain only the official stable release and the latest preview, currently 0.111.1 and 0.113.1. The intermediate 0.111.0 export was retired on 2026-11-13; dated reports that cite it remain historical evidence, not active source roots.
 - Cards: `src\Core\Models\Cards`
 - Powers: `src\Core\Models\Powers`
 - Relics: `src\Core\Models\Relics`
@@ -23,8 +23,7 @@ An export for a different version is not evidence of current behavior. Must not 
 ## Current Host-Difference Examples
 
 - Prefer a compile-time branch inside the owning feature, as in `Code/Lifecycle/RapidCardPresentationContext.cs` and `Code/ExternalAnimations/ArchitectExecutionCinematic.cs`.
-- `Code/ExternalAnimations/CreatureDeathInteractionAdapter.cs` isolates the stable manual interaction shutdown from preview's public death-interaction API.
-- `Code/ExternalAnimations/FinisherAttackCommandAdapter.cs` isolates the stable card-play lookup from preview's `AttackCommand.CardPlay` API.
+- Both hosts expose `AttackCommand.CardPlay` and `NCreature.DisableInteractionForDeath()`.
 - These examples are feature boundaries, not precedent for a global host abstraction. Must not reintroduce the retired compatibility facade or adapter platform.
 
 ## Exact Query Templates

@@ -83,12 +83,8 @@ internal sealed partial class NativeStolenCardMotion : Node
             _sourceCenter = _scene.GetGlobalTransform().AffineInverse() * _target!.GlobalPosition;
             _driver.GlobalPosition = _card.GlobalPosition;
             Node2D targetBone = _driver.GetNode<Node2D>("Visuals/SpineBoneNode");
-#if NINJASLAYER_CHANNEL_STABLE
-            targetBone.Position = Vector2.Right * (_target.GlobalPosition.X - _driver.GlobalPosition.X);
-#else
             targetBone.GlobalPosition = new Vector2(_target.GlobalPosition.X + 900f * _driver.GlobalScale.X,
                 targetBone.GlobalPosition.Y);
-#endif
             Sample(1.1f);
             _sourceReference = (_driver.GlobalTransform.AffineInverse() * _marker.GlobalTransform).Origin;
             // Native theft deals damage after its trigger and fixed reveal wait.

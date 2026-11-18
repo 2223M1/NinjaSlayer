@@ -292,11 +292,7 @@ public partial class OrbContractRunner
 
             var context = new HookPlayerChoiceContext(combat.Player, 1,
                 MegaCrit.Sts2.Core.Entities.Multiplayer.GameActionType.CombatPlayPhaseOnly);
-#if NINJASLAYER_CHANNEL_STABLE
-            object[] args = [combat.Player, context];
-#else
             object[] args = [AccessTools.Field(typeof(CombatManager), "_turnState").GetValue(CombatManager.Instance)!, combat.Player, context];
-#endif
             await (Task)AccessTools.Method(typeof(CombatManager), "SetupPlayerTurn").Invoke(CombatManager.Instance, args)!;
             int removed = scenario is "nested" or "discard" ? 2 : 0;
             Require(PileType.Hand.GetPile(combat.Player).Cards.SequenceEqual(cards.Skip(removed).Take(5)),
@@ -349,11 +345,7 @@ public partial class OrbContractRunner
             await CardCmd.AutoPlay(Choice, second, null);
             Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 2,
                 "Rekindle must not grant Naraku Life for a subsequent Skill.");
-#if NINJASLAYER_CHANNEL_STABLE
-            await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
-#else
             await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
-#endif
             Require(!combat.Player.Creature.HasPower<RekindlePower>(), "Recovery must expire this turn.");
         }
         using (var combat = new OrbCombat())
@@ -409,23 +401,11 @@ public partial class OrbContractRunner
             var storm = AddCard<StormFist>(combat, pile, upgraded);
             int initial = upgraded ? 6 : 5;
             int growth = upgraded ? 3 : 2;
-#if NINJASLAYER_CHANNEL_STABLE
-            await Hook.AfterTurnEnd(combat.State, CombatSide.Enemy, [combat.Enemy]);
-#else
             await Hook.AfterSideTurnEnd(combat.State, CombatSide.Enemy, [combat.Enemy]);
-#endif
             Require(storm.DynamicVars.Damage.BaseValue == initial, "Enemy turn must not grow Storm Fist.");
-#if NINJASLAYER_CHANNEL_STABLE
-            await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
-#else
             await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
-#endif
             var copy = (StormFist)storm.MutableClone();
-#if NINJASLAYER_CHANNEL_STABLE
-            await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
-#else
             await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
-#endif
             Require(storm.DynamicVars.Damage.BaseValue == initial + 2 * growth
                 && copy.DynamicVars.Damage.BaseValue == initial + growth,
                 "Storm must grow in every combat pile and copies must own their accumulated damage.");
@@ -466,11 +446,7 @@ public partial class OrbContractRunner
         await CreatureCmd.Damage(Choice, combat.Enemy, 1, ValueProp.Unpowered, combat.Player.Creature);
         await CreatureCmd.Damage(Choice, combat.Player.Creature, 1, ValueProp.Unpowered, combat.Player.Creature);
         Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 5, "Independent unpowered damage and self damage must not grant stats.");
-#if NINJASLAYER_CHANNEL_STABLE
-        await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
-#else
         await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
-#endif
         Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 3 && combat.Player.Creature.GetPowerAmount<FocusPower>() == 2,
             "Onslaught must remove only temporary gains at turn end.");
         GD.Print("PASS Focus-enhanced token, blocked attack, stock damage source separation and temporary-stat cleanup");
@@ -509,11 +485,7 @@ public partial class OrbContractRunner
             Require(combat.Enemy.CurrentHp == 1000 - 3 * (upgraded ? 15 : 14) && untouched.CurrentHp == 1000
                 && owner.GetPowerAmount<KaratePower>() == (upgraded ? 5 : 4) && !owner.HasPower<VigorPower>()
                 && !owner.HasPower<EndurancePower>(), "Flurry must resolve three selected-target hits before granting Karate, with native Strength/Vigor and no delayed power.");
-#if NINJASLAYER_CHANNEL_STABLE
-            await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [owner]);
-#else
             await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [owner]);
-#endif
             Require(owner.GetPowerAmount<KaratePower>() == (upgraded ? 5 : 4), "Flurry must not grant a second turn-end reward.");
         }
         using (var combat = new OrbCombat())

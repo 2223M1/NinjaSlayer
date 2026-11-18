@@ -80,11 +80,7 @@ internal sealed partial class SmokeController
             tea.IncreaseEnergy(1);
             var storm = Card<ShurikenStorm>();
             var prep = Card<BladePrep>();
-#if NINJASLAYER_CHANNEL_STABLE
-            var abundance = Card<DefendNinjaSlayer>(); // Abundance is preview-only; this slot's reported result is injected below.
-#else
             var abundance = Card<Abundance>();
-#endif
             foreach (var card in new[] { tea, storm, Card<ReadTheEnemy>(), Card<Clumsy>(), prep,
                          Card<StrikeStrike>(true), Card<ShurikenCreation>(true), abundance })
                 await CardPileCmd.Add(card, PileType.Hand);

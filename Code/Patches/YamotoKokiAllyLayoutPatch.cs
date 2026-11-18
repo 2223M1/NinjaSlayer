@@ -6,6 +6,9 @@ using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+#if NINJASLAYER_CHANNEL_PREVIEW
+using MegaCrit.Sts2.Core.Models.Monsters;
+#endif
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
@@ -38,6 +41,9 @@ public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
         List<Creature> insertionOrder = creatureNodes[0].Entity.CombatState!.Creatures.ToList();
         creatureNodes = creatureNodes
             .Where(node => node.Entity.Monster is not OrigamiMissileMonster
+#if NINJASLAYER_CHANNEL_PREVIEW
+                && !(node.Entity.Monster is Wuppy && LocalContext.IsMe(node.Entity.PetOwner))
+#endif
                 && (!IsCompanion(node.Entity) || IsCompanionAnchor(node.Entity)))
             .OrderBy(node => LocalContext.IsMe(node.Entity) ? 0
                 : IsCompanionAnchor(node.Entity) ? 1 : node.Entity.IsPlayer ? 2 : 3)
@@ -51,6 +57,9 @@ public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
         int companions = creatureNodes.Count(node => IsCompanionAnchor(node.Entity));
         foreach (var (node, previousPosition) in __state)
             NinjaSlayerAllyLayoutMotion.Ensure(node).OnLayout(previousPosition, companions);
+#if NINJASLAYER_CHANNEL_PREVIEW
+        if (creatureNodes.Any(node => IsCompanion(node.Entity))) PositionLocalWuppy(creatureNodes);
+#endif
     }
 
     public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -74,7 +83,7 @@ public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
             throw new InvalidOperationException($"Expected two native layout grouping checks, found {replaced}.");
     }
 
-    private static bool IsCompanion(Creature creature) =>
+    internal static bool IsCompanion(Creature creature) =>
         creature.Monster is YamotoKokiMonster or ForestSawatariMonster or YukanoMonster;
 
     private static bool IsCompanionAnchor(Creature creature) =>
@@ -82,6 +91,16 @@ public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
         && !CompanionIntentLifecycle.HasRetired(creature);
 
     private static bool IsLayoutAnchor(Creature creature) => creature.IsPlayer || IsCompanionAnchor(creature);
+
+#if NINJASLAYER_CHANNEL_PREVIEW
+    private static void PositionLocalWuppy(List<NCreature> nodes)
+    {
+        var owner = nodes.FirstOrDefault(node => LocalContext.IsMe(node.Entity));
+        if (owner?.Entity.Pets.FirstOrDefault(p => p.Monster is Wuppy && p.IsAlive)?.GetCreatureNode() is not { } pet) return;
+        pet.Position = new Vector2(pet.Position.X, owner.Position.Y);
+        pet.PositionWuppy(isCombatStart: false);
+    }
+#endif
 
     internal static void Reflow(NCombatRoom room)
     {
@@ -93,9 +112,17 @@ public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
         // Sandpit's native creature-added hook already includes pets in its pull.
         // Rebuilding absolute player slots here would undo the encounter's position.
         if (allies.Any(node => NinjaSlayerAllyLayoutMotion.IsPulledBySandpit(node.Entity))) return;
+#if NINJASLAYER_CHANNEL_PREVIEW
+        // Also preserve the local pet on the reflow that removes the last companion.
+        bool noAnchors = !allies.Any(n => IsCompanionAnchor(n.Entity));
+        if (noAnchors) allies.RemoveAll(n => n.Entity.Monster is Wuppy && LocalContext.IsMe(n.Entity.PetOwner));
+#endif
         foreach (NCreature node in allies) node.Visuals.Modulate = Colors.White;
         NCombatRoom.PositionPlayersAndPets(allies,
             combat.Encounter?.GetCameraScaling() ?? room.SceneContainer.Scale.X, combat.Encounter?.FullyCenterPlayers ?? false);
+#if NINJASLAYER_CHANNEL_PREVIEW
+        if (noAnchors) PositionLocalWuppy(allies);
+#endif
         YamotoKokiAllyFacingController.Ensure(room).SyncNow();
         YamotoKokiOrigamiMissileOrbitController.Ensure(room).LayoutNow(snapNewMissiles: true);
     }
@@ -113,14 +140,22 @@ public sealed class YamotoKokiDynamicAllyLayoutPatch : IPatchMethod
         new(typeof(NCombatRoom), nameof(NCombatRoom.RemoveCreatureNode))
     ];
 
-    public static void Prefix(NCombatRoom __instance, out Dictionary<NCreature, Vector2> __state) =>
+    public static void Prefix(NCombatRoom __instance, object __0, out Dictionary<NCreature, Vector2>? __state)
+    {
+        var changed = __0 is NCreature node ? node.Entity : (Creature)__0;
+        __state = null;
+        if (changed.Side != CombatSide.Player || (!changed.IsPlayer && changed.PetOwner == null)) return;
+        if (!YamotoKokiAllyLayoutPatch.IsCompanion(changed)
+            && !__instance.CreatureNodes.Any(n => FriendlyCompanionTargeting.IsFriendlyCompanion(n.Entity))) return;
         __state = __instance.CreatureNodes
             .Where(node => FriendlyCompanionTargeting.IsFriendlyCompanion(node.Entity)
                 && NinjaSlayerAllyLayoutMotion.IsPulledBySandpit(node.Entity))
             .ToDictionary(node => node, node => node.Position);
+    }
 
-    public static void Postfix(NCombatRoom __instance, Dictionary<NCreature, Vector2> __state)
+    public static void Postfix(NCombatRoom __instance, Dictionary<NCreature, Vector2>? __state)
     {
+        if (__state == null) return;
         // AddCreature places all existing pets beside their owner. Preserve our
         // companions' established spacing before Sandpit's native added hook
         // applies the same pull to the player and their pets.

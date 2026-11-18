@@ -2,7 +2,7 @@
   "title": "忍者杀手 Ninja Slayer",
   "description": "[h1]Domo. Ninja Slayer desu.[/h1]\r\n\r\n[h2]Something wrong?[/h2]\r\nPress [b]F2[/b] in game to report bugs or send suggestions.\r\nWant to see what cards everyone is picking and where their runs end? [url=https://2223m1.github.io/NinjaSlayer/?lang=eng]Ninja Slayer Intel[/url]\r\n\r\nDiscord Community：https://discord.gg/eHuQqjrAyf\r\nPatreon：https://www.patreon.com/cw/bobbizerri\r\n\r\n[i]Unofficial fan-made Mod.[/i]",
   "visibility": "public",
-  "changeNote": "从容由每弃一张牌获得 2 点格挡改为获得 2 点拉伸。\n奈落解放新增战斗开始时获得 20 点奈落生命，保留每回合加入一张黑炎；第一次洗牌前（开局洗牌不计），手牌中有攻击牌时必须优先打出攻击牌。\n奈落事件移除指定牌组要求，含忍者杀手的队伍按普通第三层事件概率遇到；支持多人独立选择，其他角色也切换为奈落外观和音效。\n柔术获得的空手道由 3→4 层提高至 3→5 层。\nChop打击伤害由 11→13 点调整为 9→12 点，下回合获得的空手道由 2→3 层提高至 3→4 层。\n连打获得的空手道由 5→6 层调整为 4→5 层。\n转机由生成状态牌时触发抽牌改为生成任意牌时触发。\n交叉防御描述去除“非能力牌”，效果仍跳过能力牌；Chop受其影响后回到手牌。\n浴火移除消耗。\n飞刃席卷获得的瞄准由 4→6 点提高至 6→8 点。\n手里剑风暴移除消耗。\n攻势不息升级由回合末打出抽牌堆顶部的2张牌改为获得保留，回合末仍打出抽牌堆顶部的1张牌。\n删除手里剑的激发及瞄准说明，精简茶道呼吸和残心描述，茶道呼吸使用能量图标。\n卡面中的正面效果显示为黄色，侧栏只保留 16 种效果列表。\n更换谋定卡图。",
+  "changeNote": "支持正式版 0.111.1 和预览版 0.113.1，结束对 0.107.1 的支持。\n烈焰使敌人因黑炎额外失去的生命由 6 点调整为 4→6 点，升级不再获得固有。\n转机由生成任意牌时抽 1→2 张牌改为仅在你生成状态牌时触发。\n低空上勾拳的伤害由 8→10 点降至 6→8 点。\n动静相生的伤害由 7→11 点提高至 8→12 点。\n玛卡古生成的 2 张黑炎由加入手牌改为加入弃牌堆。\n燃火抽牌后生成的 1 张黑炎由加入抽牌堆改为加入弃牌堆。\n更换九张卡图：调息、从容、守势、守静、审势、嘶哈、大·受身、戒备、连打。\n修复了用户反馈中沢渡决斗手柄失灵的问题。\n暗·打的刀会随受击目标移动；瓦皮代挡时，黑暗忍者仍会回血，仅在玩家实际失去生命时偷牌。\n黑暗忍者突刺及转身时，身上已有的箭会随之移动。\n调整友军站位以保留瓦皮的原版位置；联机时可以用鼠标或手柄为队友的友军选择可用的援护牌和药水。",
   "tags": [
     "Characters",
     "English",

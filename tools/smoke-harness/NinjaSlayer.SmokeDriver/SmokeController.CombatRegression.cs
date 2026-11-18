@@ -187,16 +187,12 @@ internal sealed partial class SmokeController
             NPower Icon() => container.GetChildren().OfType<NPower>().Single(n => n.Model is NarakuLifePower);
             Require(Icon().IsVisibleInTree() && Icon().GetNode<Label>("%AmountLabel").Text == "12", "Naraku Life icon/count is missing");
             await CreatureCmd.Damage(choice, [owner], 5, ValueProp.Unpowered, owner, null
-#if !NINJASLAYER_CHANNEL_STABLE
                 , null
-#endif
             );
             await WaitFrames(3);
             Require(Icon().GetNode<Label>("%AmountLabel").Text == "7", "Naraku Life count did not follow absorption");
             await CreatureCmd.Damage(choice, [owner], 8, ValueProp.Unpowered, owner, null
-#if !NINJASLAYER_CHANNEL_STABLE
                 , null
-#endif
             );
             await WaitFrames(3);
             Require(!container.GetChildren().OfType<NPower>().Any(n => n.Model is NarakuLifePower), "Empty Naraku Life left an icon");

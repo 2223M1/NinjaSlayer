@@ -110,9 +110,7 @@ internal static class ShurikenCombat
                 | MegaCrit.Sts2.Core.ValueProps.ValueProp.Move,
             owner,
             source
-#if !NINJASLAYER_LEGACY_DAMAGE_API
             , null
-#endif
         ));
         if (results.Count > 0) aim.MarkFired();
         Code.Telemetry.NinjaSlayerCombatTelemetry.AttributeDamage(results, "shuriken");
@@ -132,11 +130,7 @@ internal static class ShurikenCombat
         DynamicVar damage)
     {
         var command = DamageCmd.Attack(damage.BaseValue)
-#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-            .FromCard(card)
-#else
             .FromCard(card, cardPlay)
-#endif
             .WithAttackerAnim("Shiv", 0.2f);
 
         return command

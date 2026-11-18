@@ -35,7 +35,6 @@ public partial class OrbContractRunner
         var observer = new Harmony("NinjaSlayer.OrbContracts.SawatariEndTurnObserver");
         observer.Patch(AccessTools.Method(typeof(SawatariTurnEndPatch), nameof(SawatariTurnEndPatch.Postfix)),
             postfix: new HarmonyMethod(GetType(), nameof(ObserveSawatariTurnEnd)));
-#if !NINJASLAYER_CHANNEL_STABLE
         // The headless fixture supplies the host's normal turn-start signals;
         // the native preview turn loop consumes the real networked end actions.
         object turn = AccessTools.Field(typeof(CombatManager), "_turnState").GetValue(manager)!;
@@ -47,7 +46,6 @@ public partial class OrbContractRunner
         }
         Task turnLoop = (Task)AccessTools.Method(typeof(CombatManager), "AwaitTurnEndAndSwitchSides")
             .Invoke(manager, [turn])!;
-#endif
         try
         {
             File.WriteAllText(Path.Combine(directory, role + ".turn-ready"), "ready");

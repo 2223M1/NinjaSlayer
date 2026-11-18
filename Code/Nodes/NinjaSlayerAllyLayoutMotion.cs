@@ -97,7 +97,13 @@ internal sealed partial class NinjaSlayerAllyLayoutMotion : Node
             _waitingForAction = false;
         }
         _elapsed = Math.Min(Duration, _elapsed + (float)delta);
-        _actor.Position = _start.Lerp(_destination, Mathf.SmoothStep(0f, 1f, _elapsed / Duration));
+        Vector2 next = _start.Lerp(_destination, Mathf.SmoothStep(0f, 1f, _elapsed / Duration));
+#if NINJASLAYER_CHANNEL_PREVIEW
+        if (MegaCrit.Sts2.Core.Context.LocalContext.IsMe(_actor.Entity)
+            && _actor.Entity.Pets.FirstOrDefault(p => p.Monster is MegaCrit.Sts2.Core.Models.Monsters.Wuppy && p.IsAlive)?.GetCreatureNode() is { } wuppy)
+            wuppy.Position += next - _actor.Position;
+#endif
+        _actor.Position = next;
         if (_elapsed >= Duration) _pending = false;
     }
 }

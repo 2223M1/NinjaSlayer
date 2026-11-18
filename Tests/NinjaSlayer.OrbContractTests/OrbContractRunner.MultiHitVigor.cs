@@ -118,9 +118,7 @@ public partial class OrbContractRunner
             var card = combat.State.CreateCard(canonical, combat.Player);
             if (upgraded) card.UpgradeInternal();
             var play = new CardPlay { Card = card,
-#if !NINJASLAYER_CHANNEL_STABLE
                 Player = combat.Player,
-#endif
                 Target = combat.Enemy, ResultPile = PileType.Discard,
                 Resources = new ResourceInfo { EnergySpent = 0, EnergyValue = 0, StarsSpent = 0, StarValue = 0 },
                 IsAutoPlay = false, PlayIndex = 0, PlayCount = 1 };
@@ -129,11 +127,7 @@ public partial class OrbContractRunner
             int hits = card is AntiAirBangBangFist ? 3 : card.DynamicVars.Repeat.IntValue;
             decimal raw = card.DynamicVars.Damage.BaseValue;
             var command = DamageCmd.Attack(raw).WithHitCount(hits)
-#if NINJASLAYER_CHANNEL_STABLE
-                .FromCard(card)
-#else
                 .FromCard(card, play)
-#endif
                 ;
             if (card is DragonRoundhouseKick) command.TargetingAllOpponents(combat.State);
             else if (card is AntiAirBangBangFist) command.TargetingRandomOpponents(combat.State);
@@ -165,18 +159,12 @@ public partial class OrbContractRunner
             AccessTools.Field(combat.State.GetType(), "<RunState>k__BackingField").SetValue(combat.State, run);
             var card = combat.State.CreateCard<PalmThrust>(combat.Player);
             var play = new CardPlay { Card = card,
-#if !NINJASLAYER_CHANNEL_STABLE
                 Player = combat.Player,
-#endif
                 Target = combat.Enemy, ResultPile = PileType.Discard,
                 Resources = new ResourceInfo { EnergySpent = 0, EnergyValue = 0, StarsSpent = 0, StarValue = 0 },
                 IsAutoPlay = false, PlayIndex = 0, PlayCount = 1 };
             var command = DamageCmd.Attack(15).WithHitCount(3)
-#if NINJASLAYER_CHANNEL_STABLE
-                .FromCard(card)
-#else
                 .FromCard(card, play)
-#endif
                 .Targeting(combat.Enemy);
             combat.Enemy.SetCurrentHpInternal(hp);
             await PowerCmd.Apply<HardenedShellPower>(Choice, combat.Enemy, 20, combat.Enemy, null);

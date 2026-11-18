@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
@@ -13,6 +14,7 @@ using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Models.Potions;
 using MegaCrit.Sts2.Core.Multiplayer.Game.PeerInput;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using MegaCrit.Sts2.Core.Nodes.Potions;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Rooms;
 using NinjaSlayer.Code.Combat;
@@ -25,7 +27,23 @@ internal static class FriendlyCompanionTargeting
 {
     private static AbstractModel? _selectedModel;
 
-    public static void Select(AbstractModel? model) => _selectedModel = model;
+    public static void Select(AbstractModel? model)
+    {
+#if NINJASLAYER_CHANNEL_PREVIEW
+        var previous = _selectedModel;
+#endif
+        _selectedModel = model;
+#if NINJASLAYER_CHANNEL_PREVIEW
+        if (ReferenceEquals(model, previous) || NCombatRoom.Instance is not { Mode: CombatRoomMode.ActiveCombat } room) return;
+        foreach (var node in room.CreatureNodes)
+        {
+            var pet = node.Entity;
+            if (!IsFriendlyCompanion(pet) || LocalContext.IsMe(pet.PetOwner)) continue;
+            if (SelectionAllows(previous, pet) != SelectionAllows(model, pet))
+                FriendlyCompanionRemoteSelectionPatch.Refresh(node, false);
+        }
+#endif
+    }
 
     public static bool IsFriendlyCompanion(Creature creature) =>
         creature.Side == CombatSide.Player
@@ -36,9 +54,7 @@ internal static class FriendlyCompanionTargeting
     public static bool Supports(CardModel card) =>
         card.TargetType == TargetType.AnyAlly
         && card is
-#if NINJASLAYER_CHANNEL_PREVIEW
             Blaze or Concoct or Fade or
-#endif
             Coordinate or DemonicShield or Intercept or Lift or Mimic;
 
     public static bool Supports(PotionModel potion) =>
@@ -51,14 +67,16 @@ internal static class FriendlyCompanionTargeting
     public static bool HasCompanion(ICombatState? combatState) =>
         combatState?.Creatures.Any(IsFriendlyCompanion) == true;
 
-    public static bool SelectionAllows(Creature creature)
+    public static bool SelectionAllows(Creature creature) => SelectionAllows(_selectedModel, creature);
+
+    private static bool SelectionAllows(AbstractModel? selected, Creature creature)
     {
         if (!IsFriendlyCompanion(creature))
         {
             return false;
         }
 
-        return _selectedModel switch
+        return selected switch
         {
             CardModel card => Supports(card)
                 && ReferenceEquals(ResolveCombatState(card), creature.CombatState),
@@ -84,7 +102,47 @@ internal static class FriendlyCompanionTargeting
 
     public static ICombatState? ResolveCombatState(CardModel card) =>
         card.CombatState ?? card.Owner.Creature.CombatState;
+
+    public static IReadOnlyList<Creature> ResolveControllerPotionAllies(ICombatState combatState, Creature owner)
+    {
+        var allies = combatState.GetTeammatesOf(owner);
+        if (_selectedModel is not PotionModel potion || potion.Owner.Creature != owner || !Supports(potion)) return allies;
+        return allies.Where(c => c.IsPlayer || IsFriendlyCompanion(c)
+            && NCombatRoom.Instance?.GetCreatureNode(c)?.IsInteractable == true).ToArray();
+    }
 }
+
+#if NINJASLAYER_CHANNEL_PREVIEW
+public sealed class FriendlyCompanionRemoteSelectionPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_remote_companion_selection";
+    public static string Description => "Allow a remote companion through the native pet filter only for a supported selection.";
+    public static bool IsCritical => true;
+    public static ModPatchTarget[] GetTargets() => [new(typeof(NCreature), "UpdateInteractability", [typeof(bool)])];
+    internal static readonly Action<NCreature, bool> Refresh = AccessTools.MethodDelegate<Action<NCreature, bool>>(
+        AccessTools.Method(typeof(NCreature), "UpdateInteractability", [typeof(bool)]));
+
+    public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+    {
+        var isPet = AccessTools.PropertyGetter(typeof(Creature), nameof(Creature.IsPet));
+        var applyPetFilter = AccessTools.Method(typeof(FriendlyCompanionRemoteSelectionPatch), nameof(ApplyPetFilter));
+        int count = 0;
+        foreach (var instruction in instructions)
+        {
+            if (instruction.Calls(isPet))
+            {
+                instruction.opcode = OpCodes.Call;
+                instruction.operand = applyPetFilter;
+                count++;
+            }
+            yield return instruction;
+        }
+        if (count != 1) throw new InvalidOperationException($"Expected one native pet interaction filter; found {count}.");
+    }
+
+    private static bool ApplyPetFilter(Creature creature) => creature.IsPet && !FriendlyCompanionTargeting.SelectionAllows(creature);
+}
+#endif
 
 public sealed class FriendlyCompanionInteractionPatch : IPatchMethod
 {
@@ -114,7 +172,7 @@ public sealed class FriendlyCompanionInteractionPatch : IPatchMethod
 #if NINJASLAYER_CHANNEL_STABLE
             __instance.SetCreatureIsInteractable(node.Entity, on: true);
 #else
-            node.SetIsInteractable(on: true, changeVisibilityImmediately: true);
+            FriendlyCompanionRemoteSelectionPatch.Refresh(node, true);
 #endif
             NCreatureStateDisplay stateDisplay =
                 node.GetNode<NCreatureStateDisplay>("%HealthBar");
@@ -298,48 +356,38 @@ public sealed class FriendlyCompanionCardAutoPlayPatch : IPatchMethod
     }
 }
 
-public sealed class FriendlyCompanionControllerCardTargetPatch : IPatchMethod
+public sealed class FriendlyCompanionControllerTargetPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_friendly_companion_controller_card_target";
-    public static string Description => "Include companions in controller navigation for safe ally cards.";
+    public static string Description => "Use eligible companion targets when navigating ally cards or potions with a controller.";
     public static bool IsCritical => true;
 
-    public static ModPatchTarget[] GetTargets()
+    public static ModPatchTarget[] GetTargets() =>
+        [TargetingStep(typeof(NControllerCardPlay), "SingleCreatureTargeting"), TargetingStep(typeof(NPotionHolder), "TargetNode")];
+
+    private static ModPatchTarget TargetingStep(Type owner, string name)
     {
-        MethodInfo method = AccessTools.Method(
-                typeof(NControllerCardPlay),
-                "SingleCreatureTargeting",
-                [typeof(TargetType)])
-            ?? throw new MissingMethodException(
-                typeof(NControllerCardPlay).FullName,
-                "SingleCreatureTargeting");
+        MethodInfo method = AccessTools.Method(owner, name, [typeof(TargetType)])
+            ?? throw new MissingMethodException(owner.FullName, name);
         Type stateMachine = method.GetCustomAttribute<AsyncStateMachineAttribute>()?.StateMachineType
-            ?? throw new MissingMethodException(
-                typeof(NControllerCardPlay).FullName,
-                "SingleCreatureTargeting state machine");
-        return [new(stateMachine, nameof(IAsyncStateMachine.MoveNext), Type.EmptyTypes)];
+            ?? throw new MissingMethodException(owner.FullName, name + " state machine");
+        return new(stateMachine, nameof(IAsyncStateMachine.MoveNext), Type.EmptyTypes);
     }
 
     public static IEnumerable<CodeInstruction> Transpiler(
-        IEnumerable<CodeInstruction> instructions)
+        IEnumerable<CodeInstruction> instructions, MethodBase __originalMethod)
     {
-        MethodInfo playerCreatures = AccessTools.PropertyGetter(
-                typeof(ICombatState),
-                nameof(ICombatState.PlayerCreatures))
-            ?? throw new MissingMethodException(
-                typeof(ICombatState).FullName,
-                nameof(ICombatState.PlayerCreatures));
-        MethodInfo replacement = AccessTools.Method(
-                typeof(FriendlyCompanionTargeting),
-                nameof(FriendlyCompanionTargeting.ResolveControllerAllies))
-            ?? throw new MissingMethodException(
-                typeof(FriendlyCompanionTargeting).FullName,
-                nameof(FriendlyCompanionTargeting.ResolveControllerAllies));
+        bool potion = __originalMethod.DeclaringType!.DeclaringType == typeof(NPotionHolder);
+        MethodInfo native = potion
+            ? AccessTools.Method(typeof(ICombatState), nameof(ICombatState.GetTeammatesOf), [typeof(Creature)])
+            : AccessTools.PropertyGetter(typeof(ICombatState), nameof(ICombatState.PlayerCreatures));
+        MethodInfo replacement = AccessTools.Method(typeof(FriendlyCompanionTargeting), potion
+            ? nameof(FriendlyCompanionTargeting.ResolveControllerPotionAllies) : nameof(FriendlyCompanionTargeting.ResolveControllerAllies));
         List<CodeInstruction> rewritten = instructions.ToList();
         int replacementCount = 0;
         foreach (CodeInstruction instruction in rewritten)
         {
-            if (!Equals(instruction.operand, playerCreatures))
+            if (!instruction.Calls(native))
             {
                 continue;
             }

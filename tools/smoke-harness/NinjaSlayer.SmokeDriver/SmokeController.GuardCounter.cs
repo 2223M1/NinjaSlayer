@@ -60,18 +60,10 @@ internal sealed partial class SmokeController
             await action.CompletionTask.WaitAsync(TimeSpan.FromSeconds(20));
             if (action.Exception != null) throw action.Exception;
             Require(player.Creature.Block == (upgraded ? 12 : 10), "Killing Intent must grant 10/12 Block.");
-#if NINJASLAYER_CHANNEL_STABLE
-            await Hook.AfterTurnEnd(combat, CombatSide.Player, [player.Creature]);
-#else
             await Hook.AfterSideTurnEnd(combat, CombatSide.Player, [player.Creature]);
-#endif
             await CreatureCmd.Damage(choice, player.Creature, 2, ValueProp.Move, targets[0]);
             foreach (var target in targets) SetIntent(target, false);
-#if NINJASLAYER_CHANNEL_STABLE
-            await Hook.AfterTurnEnd(combat, CombatSide.Enemy, targets);
-#else
             await Hook.AfterSideTurnEnd(combat, CombatSide.Enemy, targets);
-#endif
             Require(targets.All(target => target.CurrentHp == 1000) && player.Creature.HasPower<KillingIntentPower>()
                 && !player.PlayerCombatState!.AllCards.OfType<StraightKi>().Any(),
                 "Killing Intent must wait for its owner's next turn, without retaliating.");

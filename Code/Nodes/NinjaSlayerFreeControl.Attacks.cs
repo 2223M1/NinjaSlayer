@@ -312,9 +312,7 @@ internal sealed partial class NinjaSlayerFreeControl
                     || !ReferenceEquals(target.CombatState, controller.Actor.Entity.CombatState)) continue;
                 await CreatureCmd.Damage(context, [target], damage, ValueProp.Move | ValueProp.Unpowered,
                     controller.Actor.Entity, null
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                     , null
-#endif
                 );
             }
         }

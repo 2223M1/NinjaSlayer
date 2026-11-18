@@ -523,9 +523,7 @@ internal static class FinisherForecast
             amount,
             props,
             cardSource,
-#if !NINJASLAYER_LEGACY_DAMAGE_API
             cardPlay,
-#endif
             futureVulnerable ? ModifyDamageHookType.Additive | ModifyDamageHookType.Multiplicative : ModifyDamageHookType.All,
             CardPreviewMode.None,
             out _);
@@ -540,9 +538,7 @@ internal static class FinisherForecast
                 multiplier = debilitate.ModifyVulnerableMultiplier(target, multiplier, props, dealer, cardSource);
             modified = Hook.ModifyDamage(runState, owner.CombatState, target, dealer, modified * multiplier,
                 props, cardSource,
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                 cardPlay,
-#endif
                 ModifyDamageHookType.Cap, CardPreviewMode.None, out _);
         }
         modified *= postHookMultiplier;

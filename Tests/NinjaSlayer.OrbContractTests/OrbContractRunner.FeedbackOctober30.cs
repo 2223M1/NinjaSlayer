@@ -49,11 +49,7 @@ public partial class OrbContractRunner
             int maxHp = owner.MaxHp;
             await CreatureCmd.Heal(owner, 3);
             await CreatureCmd.Damage(Choice, owner, 0, ValueProp.Unpowered, combat.Enemy);
-#if NINJASLAYER_CHANNEL_STABLE
-            await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [owner]);
-#else
             await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [owner]);
-#endif
             Require(owner.CurrentHp == 43 && owner.MaxHp == maxHp && owner.GetPowerAmount<NarakuLifePower>() == 140,
                 "Temporary HP must stack above max HP, survive turn end, and remain separate from healing and real HP.");
             var direct = owner.LoseHpInternal(1, ValueProp.Unblockable | ValueProp.Unpowered);

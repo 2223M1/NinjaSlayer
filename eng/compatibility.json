@@ -24,23 +24,19 @@
   },
   "channels": {
     "stable": {
-      "gameApiVersion": "0.107.1",
-      "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+      "gameApiVersion": "0.111.1",
+      "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.111.0",
       "distributionChannel": "public",
       "runtimeAssemblies": [
         "Sentry.dll",
+        "Sentry.Godot.dll",
         "SmartFormat.dll",
         "SmartFormat.ZString.dll",
-        "Steamworks.NET.dll"
-      ],
-      "compileFeatures": [
-        "legacyCardPlayLinks",
-        "legacyCreaturePresentation",
-        "legacyDamageApi",
-        "legacyArchitectVictoryCompletion"
+        "Steamworks.NET.dll",
+        "System.IO.Hashing.dll"
       ],
       "hostContract": {
-        "moduleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb"
+        "moduleMvid": "a5742661-f95f-4ba1-8b21-18dedf86422b"
       }
     },
     "preview": {
@@ -55,7 +51,6 @@
         "Steamworks.NET.dll",
         "System.IO.Hashing.dll"
       ],
-      "compileFeatures": [],
       "hostContract": {
         "moduleMvid": "9d417b39-1d40-4fc7-b993-28acdc29e151"
       }

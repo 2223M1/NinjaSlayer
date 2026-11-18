@@ -39,11 +39,7 @@ internal static class DoomHurtPoseController
             return false;
         }
 
-#if NINJASLAYER_LEGACY_CREATURE_PRESENTATION
-        const float trackTime = 0.1f;
-#else
         float trackTime = creatureNode.Entity.Monster?.HurtAnimationTrackOffsetForDoom ?? 0.1f;
-#endif
         track.SetTrackTime(trackTime);
         track.SetTimeScale(0f);
         return true;

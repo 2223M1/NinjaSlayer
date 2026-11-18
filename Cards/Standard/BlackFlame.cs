@@ -87,9 +87,7 @@ public sealed class BlackFlame : NinjaSlayerStandaloneCardTemplate
                 DynamicVars.Damage.Props,
                 Owner.Creature,
                 this
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                 , null
-#endif
             );
         }
     }
@@ -137,9 +135,7 @@ public sealed class BlackFlame : NinjaSlayerStandaloneCardTemplate
         var results = await CreatureCmd.Damage(choiceContext, targets,
             baseDamage + player.Creature.GetPowerAmount<BlackFlameInfernoPower>(),
             ValueProp.Unblockable | ValueProp.Unpowered, player.Creature, source
-#if !NINJASLAYER_LEGACY_DAMAGE_API
             , null
-#endif
         );
         Code.Telemetry.NinjaSlayerCombatTelemetry.AttributeDamage(results, "black_flame");
     }

@@ -132,12 +132,8 @@ public partial class OrbContractRunner
         var controller = Keep(new NControllerManager());
         void SetController(bool enabled)
         {
-#if NINJASLAYER_CHANNEL_STABLE
-            Property(controller, nameof(NControllerManager.IsUsingController), enabled);
-#else
             Property(controller, nameof(NControllerManager.InputType),
                 enabled ? InputType.Controller : InputType.MouseAndKeyboard);
-#endif
         }
         var eventRoom = new ControllerEventRoom();
         var combat = new ControllerCombatRoom();

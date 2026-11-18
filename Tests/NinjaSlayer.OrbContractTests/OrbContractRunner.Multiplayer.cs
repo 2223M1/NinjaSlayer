@@ -53,20 +53,14 @@ public partial class OrbContractRunner
                 && File.Exists(Path.Combine(directory, $"client.finished-{name}")), $"both peers checked {name}");
         }
         ushort port = ushort.Parse(System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_PORT")!);
-#if !NINJASLAYER_CHANNEL_STABLE
         var version = new PeerVersionInfo
         {
             version = Metadata(typeof(ShurikenOrb).Assembly, "NinjaSlayerGameApiVersion"), idDatabaseHash = ModelIdSerializationCache.Hash,
             gameplayAffectingMods = ["NinjaSlayer"], otherMods = []
         };
-#endif
         if (role == "host")
         {
-#if NINJASLAYER_CHANNEL_STABLE
-            var host = new NetHostGameService();
-#else
             var host = new NetHostGameService(version);
-#endif
             var transport = new ENetHost(host);
             // Native ENetHost hardcodes 0.0.0.0; bind this test's socket to loopback only.
             var connection = new ENetConnection();
@@ -82,11 +76,7 @@ public partial class OrbContractRunner
         else
         {
             await WaitNetwork(() => System.IO.File.Exists(Path.Combine(directory, "listening")), "host startup");
-#if NINJASLAYER_CHANNEL_STABLE
-            var client = new NetClientGameService();
-#else
             var client = new NetClientGameService(version);
-#endif
             var transport = new ENetClient(client);
             client.Initialize(transport, PlatformType.None);
             _network = client;

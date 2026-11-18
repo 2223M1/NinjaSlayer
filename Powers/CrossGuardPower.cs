@@ -16,17 +16,6 @@ public sealed class CrossGuardPower : NinjaSlayerPowerTemplate
     public override PowerStackType StackType => PowerStackType.Counter;
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("OpeningGuardPower");
 
-#if NINJASLAYER_CHANNEL_STABLE
-    public override (PileType, CardPilePosition) ModifyCardPlayResultPileTypeAndPosition(
-        CardModel card, bool isAutoPlay, ResourceInfo resources, PileType pileType, CardPilePosition position)
-    {
-        return card.Owner.Creature == Owner && !card.IsDupe && card.Type != CardType.Power
-            ? (PileType.Hand, CardPilePosition.Top) : (pileType, position);
-    }
-
-    public override async Task AfterModifyingCardPlayResultPileOrPosition(
-        CardModel card, PileType pileType, CardPilePosition position)
-#else
     public override CardLocation ModifyCardPlayResultLocation(
         CardModel card, bool isAutoPlay, ResourceInfo resources, CardLocation cardLocation)
     {
@@ -40,7 +29,6 @@ public sealed class CrossGuardPower : NinjaSlayerPowerTemplate
     }
 
     public override async Task AfterModifyingCardPlayResultLocation(CardModel card, CardLocation cardLocation)
-#endif
     {
         Flash();
         await PowerCmd.Decrement(this);

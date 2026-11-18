@@ -193,9 +193,7 @@ public sealed partial class ForestSawatariMonster
             FinisherApproach.ReachImpact(Creature);
             if (connects) hitFx(target);
             results.AddRange(await CreatureCmd.Damage(choice, [target], damage, attack.DamageProps, Creature, null
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                 , null
-#endif
             ));
             return Creature.IsAlive && target.IsAlive;
         }

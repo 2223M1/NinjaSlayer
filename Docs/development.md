@@ -5,7 +5,7 @@
 <!-- compatibility:start -->
 | Channel | Game API | RitsuLib compile package | Distribution |
 |---|---|---|---|
-| `stable` | `0.107.1` | `STS2.RitsuLib.Compat.0.107.1 0.6.13` | `public` |
+| `stable` | `0.111.1` | `STS2.RitsuLib.Compat.0.111.0 0.6.13` | `public` |
 | `preview` | `0.113.1` | `STS2.RitsuLib 0.6.13` | `beta` |
 
 Only the official stable release and the latest preview are active, not the two highest version numbers. Retired intermediate previews are unsupported. Keep only these channels' source exports under `../Slay the Spire 2/Slay the Spire 2 v<gameApiVersion>/`. Runtime players receive the current RitsuLib Workshop build; `0.6.13` is the pinned, reproducible compile baseline and minimum manifest dependency. Protected builds use each channel's real game assemblies. No intermediate game host or RefLib approximation is a release target.
@@ -82,13 +82,13 @@ pwsh .\tools\release\Invoke-OneClickRelease.ps1 `
   -DryRun
 ```
 
-The paths are saved in the ignored `build/fast-release/settings.json`. Keep old stable host references outside the repository in a durable private directory such as `../.sts2build/hosts/stable-0.107.1`; never point this setting at `.codex_tmp` or commit game binaries. Later releases require one non-interactive command:
+The paths are saved in the ignored `build/fast-release/settings.json`. Keep the current stable host references outside the repository in a durable private directory such as `../.sts2build/hosts/stable-0.111.1`; never point this setting at `.codex_tmp` or commit game binaries. Later releases require one non-interactive command:
 
 ```powershell
 pwsh .\tools\release\Invoke-OneClickRelease.ps1 -Version 0.1.30 -Confirm
 ```
 
-The command requires `main` to match `origin/main`, permits only local `AGENTS.md` and `.agents/` changes, and requires the tracked `Workshop/change-note.md` to differ from the previous SemVer release. It runs the fast repository checks and builds both host packages. It keeps the two exact six-file host archives for diagnostics, then creates a third universal archive containing a loader, both implementations and their shared Box2D.NET dependency and license. The schema 2 loader selects the exact supported version from native `ReleaseInfoManager.Instance.SemVer` (0.107.1 stable or 0.113.0 preview), validates both variant markers and DLL hashes, and rejects missing, unknown or prerelease versions. Runtime MVIDs are diagnostic only; build reference MVID checks remain. The command installs the host-specific archive matching the active local game, creates and pushes the tag, creates the GitHub Release with all three archives, and uploads only the universal archive contents through the local Workshop uploader. Stable and preview build caches are retained between releases. `-Resume` reuses all three archives only when they remain bound to the same commit and compatibility manifest. `-DryRun` never changes the local game install, and `-SkipLocalInstall` explicitly disables the normal host-matched install.
+The command requires `main` to match `origin/main`, permits only local `AGENTS.md` and `.agents/` changes, and requires the tracked `Workshop/change-note.md` to differ from the previous SemVer release. It runs the fast repository checks and builds both host packages. It keeps the two exact six-file host archives for diagnostics, then creates a third universal archive containing a loader, both implementations and their shared Box2D.NET dependency and license. The schema 2 loader selects the exact supported version from native `ReleaseInfoManager.Instance.SemVer` (stable or preview as listed in the compatibility table), validates both variant markers and DLL hashes, and rejects missing, unknown or prerelease versions. Runtime MVIDs are diagnostic only; build reference MVID checks remain. The command installs the host-specific archive matching the active local game, creates and pushes the tag, creates the GitHub Release with all three archives, and uploads only the universal archive contents through the local Workshop uploader. Stable and preview build caches are retained between releases. `-Resume` reuses all three archives only when they remain bound to the same commit and compatibility manifest. `-DryRun` never changes the local game install, and `-SkipLocalInstall` explicitly disables the normal host-matched install.
 
 Routine releases deliberately do not wait for Contract, Smoke, protected environments, attestations, pull requests, or a self-hosted Actions runner. Those checks remain available as optional audits. The five-minute budget covers local preparation and normal uploads; unusually slow GitHub or Steam network transfer can still exceed it without corrupting the completed release.
 

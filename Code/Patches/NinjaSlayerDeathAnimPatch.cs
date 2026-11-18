@@ -105,7 +105,7 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
         NCreature creatureNode,
         bool shouldRemove)
     {
-        CreatureDeathInteractionAdapter.Disable(creatureNode);
+        creatureNode.DisableInteractionForDeath();
         foreach (NIntent intent in creatureNode.IntentContainer.GetChildren().OfType<NIntent>())
         {
             intent.SetFrozen(isFrozen: true);

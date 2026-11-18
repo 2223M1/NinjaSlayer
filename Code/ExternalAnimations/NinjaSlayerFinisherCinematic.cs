@@ -350,9 +350,7 @@ internal static class NinjaSlayerFinisherCinematic
                 props,
                 dealer,
                 cardSource
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                 , cardPlay
-#endif
             );
         }
         finally

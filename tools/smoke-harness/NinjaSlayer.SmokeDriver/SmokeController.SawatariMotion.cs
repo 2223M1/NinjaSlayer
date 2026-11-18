@@ -140,9 +140,7 @@ internal sealed partial class SmokeController
         {
             await Cmd.Wait(.12f);
             await CreatureCmd.Damage(choice, [model.Creature], 5m, ValueProp.Unpowered, player.Creature, null
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                 , null
-#endif
             );
         }
         await Task.WhenAll(Dual(), HurtDuringAttack());

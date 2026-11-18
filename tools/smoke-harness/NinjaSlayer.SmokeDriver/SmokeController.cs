@@ -1103,9 +1103,7 @@ internal sealed partial class SmokeController
                     ValueProp.Move,
                     attacker,
                     nonAttackSource
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                     , null
-#endif
                 );
                 await PowerCmd.Apply<WeakPower>(
                     new ThrowingPlayerChoiceContext(),
@@ -1737,11 +1735,7 @@ internal sealed partial class SmokeController
 
     private static Task RemoveSmokeBlock(Creature target)
     {
-#if NINJASLAYER_CHANNEL_STABLE
-        return CreatureCmd.LoseBlock(target, target.Block);
-#else
         return CreatureCmd.LoseBlock(new ThrowingPlayerChoiceContext(), target, target.Block, null);
-#endif
     }
 
     private async Task RunSafelyAsync()

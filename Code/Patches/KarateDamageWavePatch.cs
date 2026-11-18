@@ -35,9 +35,7 @@ public sealed class KarateDamageWavePatch : IPatchMethod
                 typeof(ValueProp),
                 typeof(Creature),
                 typeof(CardModel)
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                 , typeof(CardPlay)
-#endif
 #if NINJASLAYER_CHANNEL_PREVIEW
                 , typeof(MegaCrit.Sts2.Core.Hooks.ModifyDamageHookType)
 #endif

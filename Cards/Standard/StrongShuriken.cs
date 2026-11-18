@@ -64,9 +64,7 @@ public sealed class StrongShuriken : NinjaSlayerStandaloneCardTemplate
 
     public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props,
         Creature? dealer, CardModel? cardSource
-#if !NINJASLAYER_LEGACY_DAMAGE_API
         , CardPlay? cardPlay
-#endif
     )
     {
         if (cardSource != this || !props.IsPoweredAttack()) return 0;

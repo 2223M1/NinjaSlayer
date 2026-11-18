@@ -605,16 +605,12 @@ internal sealed partial class SmokeController
                     Vector2 left = Core(enemy), right = Core(ninja) + Vector2.Right * 500f;
                     var originalDirection = surrounded.Facing;
                     decimal damageBefore = surrounded.ModifyDamageMultiplicative(ninja.Entity, 10, ValueProp.Move, enemy.Entity, null
-#if !NINJASLAYER_CHANNEL_STABLE
                         , null
-#endif
                     );
                     await Sweep(left, left, .3);
                     Require(Shown() && surrounded.Facing == originalDirection, "Preview changed Surrounded direction.");
                     Require(damageBefore == surrounded.ModifyDamageMultiplicative(ninja.Entity, 10, ValueProp.Move, enemy.Entity, null
-#if !NINJASLAYER_CHANNEL_STABLE
                         , null
-#endif
                     ),
                         "Preview changed back-attack damage.");
                     Call(Pose, "EndDrag", drag, false);
@@ -754,9 +750,7 @@ internal sealed partial class SmokeController
                 NinjaSlayerCombatVfx.PlayDefectStrikeHitFx(Actor("sawatari"));
                 Require(Actor("sawatari").CurrentHp == 1, "Dark Strike must leave exactly one HP before the kick.");
                 await CreatureCmd.Damage(_choice, new[] { Actor("sawatari") }, 1m, ValueProp.Unpowered | ValueProp.Unblockable, dark, null
-#if !NINJASLAYER_CHANNEL_STABLE
                     , null
-#endif
                 );
                 Vector2 slot = _room.SceneContainer.GetGlobalTransformWithCanvas().AffineInverse()
                     * darkNode.Visuals.GetNode<Sprite2D>("%Visuals").GetGlobalTransformWithCanvas().Origin;
@@ -764,7 +758,7 @@ internal sealed partial class SmokeController
             };
             await Animation("DarkNinjaSpecialAttackPresentation", "PlayDarkStrike", dark,
                 new Creature[] { Actor("sawatari") }, (Func<Creature, bool>)(c => c.IsAlive), callback, finish, 1,
-                (Func<Creature, bool>)(c => c.Block < 14 && c.GetPower<EvasionPower>() == null));
+                (Func<Creature, (Creature, bool)>)(c => (c, c.Block < 14 && c.GetPower<EvasionPower>() == null)));
             _enemy = "dark";
             darkNode.Show();
             darkNode.IntentContainer.Show();
@@ -774,9 +768,7 @@ internal sealed partial class SmokeController
         private async Task<T> StabImpact<T>(Creature target)
         {
             await CreatureCmd.Damage(_choice, [target], 14m, ValueProp.Move, Actor("dark"), null
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                 , null
-#endif
             );
             return (T)Activator.CreateInstance(typeof(T), true, false, 0, true, true)!;
         }

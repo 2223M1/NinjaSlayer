@@ -170,7 +170,6 @@ internal sealed class FinisherShivTimingPatch : IPatchMethod
     }
 }
 
-#if !NINJASLAYER_LEGACY_DAMAGE_API
 internal sealed class FinisherNativeProjectilePatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_finisher_native_projectile";
@@ -199,4 +198,3 @@ internal sealed class FinisherNativeProjectilePatch : IPatchMethod
         __result.TreeExiting += () => __state.TrySetResult();
     }
 }
-#endif

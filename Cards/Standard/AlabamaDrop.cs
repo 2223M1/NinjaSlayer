@@ -39,11 +39,7 @@ public sealed class AlabamaDrop : NinjaSlayerRareCard
 
             resolved = true;
             await DamageCmd.Attack(DynamicVars.CalculatedDamage)
-#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-                .FromCard(this)
-#else
                 .FromCard(this, cardPlay)
-#endif
                 .WithNoAttackerAnim()
                 .Targeting(cardPlay.Target!).Execute(choiceContext);
         }

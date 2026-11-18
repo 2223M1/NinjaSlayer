@@ -666,7 +666,6 @@ const shurikenOrbVisualSource = readFileSync(
   'utf8',
 );
 if (!/GlowColorHex\s*=\s*"#FFB300"/.test(shurikenOrbVisualSource)
-    || !/\.Triggered\s*\+=\s*Pulse/.test(shurikenOrbVisualSource)
     || !/\.PassiveActivated\s*\+=\s*Pulse/.test(shurikenOrbVisualSource)
     || !/\.EvokeActivated\s*\+=\s*PulseAfterEvoke/.test(shurikenOrbVisualSource)
     || !/Duplicate\(\)[\s\S]*?TweenProperty\(pulse,\s*"scale"[\s\S]*?_sparks\.Restart\(\)/.test(shurikenOrbVisualSource)) {
