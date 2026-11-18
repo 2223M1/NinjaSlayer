@@ -1,0 +1,114 @@
+{
+  "version": "1.2.9",
+  "sourceRevision": "117b0de62acfcbeb3fa53450357f92d21ea6b567",
+  "verifiedAtUtc": "2026-11-18T10:49:37.563139+00:00",
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "bytes": 23552,
+      "sha256": "24023e89641f41e7637dbcb05b0609435fa4c4954250709acaee6f7a01253483"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "bytes": 362,
+      "sha256": "fc25638862982cafc3829722e4fb0ad2f48ad4208f0f40e035381757ac089374"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "bytes": 233050832,
+      "sha256": "371e6bb0066ba5569df70b33985c1481f1f023cfd6b64a4abb215c511252ba60"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 901,
+      "sha256": "a6c1a5b7bc19a3071d6d765523815637075cb3d765badfe948c2d8aff712c270"
+    },
+    {
+      "path": "lib/0.111.1/NinjaSlayer.dll",
+      "bytes": 2227200,
+      "sha256": "0df95d5ded7d944af468c084dc4d47ecf29cf760d56ab7ec4b64e8d0b1e11127"
+    },
+    {
+      "path": "lib/0.111.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "a7d5bb5528753fd8c219d195b98feb15217e83d68bf87e382acc85df8f2f245d"
+    },
+    {
+      "path": "lib/0.113.1/NinjaSlayer.dll",
+      "bytes": 2235392,
+      "sha256": "22e7d2f9311e18b0e3abddf005b5bae4eaf9200219118c2cc8992e65e4545e98"
+    },
+    {
+      "path": "lib/0.113.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "a718eb7d7d44ea1a3d6e6021e353968cdd132da5609500e07513de626b656e22"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "bytes": 522,
+      "sha256": "56ec2af78b6e001e4fba1199e49e1137dd592f041d541ac54085306bdd73b81e"
+    }
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "24023e89641f41e7637dbcb05b0609435fa4c4954250709acaee6f7a01253483",
+    "fc25638862982cafc3829722e4fb0ad2f48ad4208f0f40e035381757ac089374",
+    "371e6bb0066ba5569df70b33985c1481f1f023cfd6b64a4abb215c511252ba60",
+    "a6c1a5b7bc19a3071d6d765523815637075cb3d765badfe948c2d8aff712c270",
+    "0df95d5ded7d944af468c084dc4d47ecf29cf760d56ab7ec4b64e8d0b1e11127",
+    "a7d5bb5528753fd8c219d195b98feb15217e83d68bf87e382acc85df8f2f245d",
+    "22e7d2f9311e18b0e3abddf005b5bae4eaf9200219118c2cc8992e65e4545e98",
+    "a718eb7d7d44ea1a3d6e6021e353968cdd132da5609500e07513de626b656e22",
+    "56ec2af78b6e001e4fba1199e49e1137dd592f041d541ac54085306bdd73b81e"
+  ],
+  "validation": {
+    "supportedGameVersions": [
+      "0.111.1",
+      "0.113.1"
+    ],
+    "gameplayPasses": {
+      "stable": 179,
+      "preview": 184
+    },
+    "dualHostPatchInstallRollback": true,
+    "catalogFingerprint": "a2a70340758f1135b1e870b610273a3a2843510d570b42c48ce34007c8658bf3",
+    "illustrations": [
+      "REGULATE_BREATH",
+      "COMPOSURE",
+      "GUARD_STANCE",
+      "STILLNESS",
+      "ASSESS",
+      "HISS_AND_HUFF",
+      "GREAT_UKEMI",
+      "ON_GUARD",
+      "FLURRY"
+    ],
+    "packagedLanguages": 16,
+    "logicTestsPassed": 367,
+    "limits": "Headless tests on both exact hosts; no new physical controller or full graphical playthrough."
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "contentManifest": "3141138215043865286",
+    "updated": 1794998856,
+    "changeNoteId": "1794998856",
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "changeNote": "支持正式版 0.111.1 和预览版 0.113.1，结束对 0.107.1 的支持。\n烈焰使敌人因黑炎额外失去的生命由 6 点调整为 4→6 点，升级不再获得固有。\n转机由生成任意牌时抽 1→2 张牌改为仅在你生成状态牌时触发。\n低空上勾拳的伤害由 8→10 点降至 6→8 点。\n动静相生的伤害由 7→11 点提高至 8→12 点。\n玛卡古生成的 2 张黑炎由加入手牌改为加入弃牌堆。\n燃火抽牌后生成的 1 张黑炎由加入抽牌堆改为加入弃牌堆。\n更换九张卡图：调息、从容、守势、守静、审势、嘶哈、大·受身、戒备、连打。\n修复了用户反馈中沢渡决斗手柄失灵的问题。\n暗·打的刀会随受击目标移动；瓦皮代挡时，黑暗忍者仍会回血，仅在玩家实际失去生命时偷牌。\n黑暗忍者突刺及转身时，身上已有的箭会随之移动。\n调整友军站位以保留瓦皮的原版位置；联机时可以用鼠标或手柄为队友的友军选择可用的援护牌和药水。",
+    "unchangedLocalizedItemMetadata": true,
+    "localizedNotesVerified": 16,
+    "localizedNotesEvidence": "Docs/validation/workshop-1.2.9-notes.json"
+  },
+  "discordEvidence": "Docs/validation/discord-1.2.9-evidence.json"
+}
