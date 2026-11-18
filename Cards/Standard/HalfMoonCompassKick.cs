@@ -44,11 +44,7 @@ public sealed class HalfMoonCompassKick : NinjaSlayerUncommonCard
         await CardCmd.Exhaust(choiceContext, tea);
         if (tea.Pile?.Type != PileType.Exhaust) return;
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
-#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-            .FromCard(this)
-#else
             .FromCard(this, cardPlay)
-#endif
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .TargetingAllOpponents(CombatState!)
@@ -57,20 +53,12 @@ public sealed class HalfMoonCompassKick : NinjaSlayerUncommonCard
         DynamicVars.Damage.BaseValue *= 2;
     }
 
-#if NINJASLAYER_CHANNEL_STABLE
-    protected override PileType GetResultPileTypeForCardPlay()
-    {
-        PileType pile = base.GetResultPileTypeForCardPlay();
-        return pile == PileType.Discard ? PileType.Hand : pile;
-    }
-#else
     protected override CardLocation GetResultLocationForCardPlay()
     {
         CardLocation location = base.GetResultLocationForCardPlay();
         if (location.pileType == PileType.Discard) location.pileType = PileType.Hand;
         return location;
     }
-#endif
 
     public override Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side,
         IEnumerable<Creature> participants)

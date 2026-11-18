@@ -6,6 +6,9 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
+#if !NINJASLAYER_CHANNEL_STABLE
+using MegaCrit.Sts2.Core.Models.Powers;
+#endif
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
@@ -19,7 +22,10 @@ internal readonly record struct DarkStrikeImpactOutcome(
     bool FullyBlocked,
     int Healing,
     bool ShouldContinue,
-    bool HpLost = false);
+    bool HpLost = false)
+{
+    internal Creature? Receiver { get; init; }
+}
 
 internal static class DarkNinjaAttackExecution
 {
@@ -77,9 +83,9 @@ internal static class DarkNinjaAttackExecution
                     async target =>
                     {
                         // Native player death removes combat piles during the damage command.
-                        var player = target.Player ?? target.PetOwner;
-                        CardModel[] candidates = player == null ? []
-                            : CardPile.GetCards(player, PileType.Draw, PileType.Discard)
+                        var player = target.Player;
+                        if (player == null) return await execution.Deal(target);
+                        CardModel[] candidates = CardPile.GetCards(player, PileType.Draw, PileType.Discard)
                                 .Where(card => card.DeckVersion != null).ToArray();
                         var previous = monster.DarkStrikeDamageConfirmed;
                         bool stolen = false;
@@ -103,7 +109,7 @@ internal static class DarkNinjaAttackExecution
                             return outcome;
                         }
                         finally { monster.DarkStrikeDamageConfirmed = previous; }
-                    }, returnSide: returnSide, canPenetrate: execution.WillPenetrate);
+                    }, returnSide: returnSide, predictContact: execution.PredictContact);
             });
     }
 
@@ -202,18 +208,25 @@ internal static class DarkNinjaAttackExecution
             && (target.GetPower<EvasionPower>() is not { } evasion
             || !evasion.CanEvade(target, command.DamageProps, attacker));
 
-        internal bool WillPenetrate(Creature target)
+        internal (Creature Receiver, bool Penetrates) PredictContact(Creature target)
         {
-            if (!WillConnect(target)) return false;
+            if (!WillConnect(target)) return (target, false);
             decimal preview = Hook.ModifyDamage(combatState!.RunState, combatState, target, attacker,
                 damage, command.DamageProps, null,
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                 null,
-#endif
                 ModifyDamageHookType.All, CardPreviewMode.None, out _);
+            decimal incoming = decimal.Floor(preview);
             decimal block = command.DamageProps.HasFlag(ValueProp.Unblockable)
                 ? 0 : (target.PetOwner?.Creature ?? target).Block;
-            return decimal.Floor(preview) > block;
+#if !NINJASLAYER_CHANNEL_STABLE
+            // Wuppy receives powered attack damage before the owner's block. Only
+            // overflow can reach the player. The native command remains authoritative.
+            if (command.DamageProps.IsPoweredAttack() && incoming > 0
+                && target.Pets.FirstOrDefault(p => p.IsAlive && p.HasPower<WuppysLoyaltyPower>()) is { } wuppy
+                && incoming <= wuppy.CurrentHp + block)
+                return (wuppy, true);
+#endif
+            return (target, incoming > block);
         }
 
         internal async Task<DarkStrikeImpactOutcome> Deal(Creature target)
@@ -224,14 +237,13 @@ internal static class DarkNinjaAttackExecution
             }
 
             IReadOnlyList<DamageResult> results = await Deal([target]);
-            DamageResult[] targetResults = results
-                .Where(result => ReferenceEquals(result.Receiver, target))
-                .ToArray();
-            bool connected = targetResults.Length > 0;
+            DamageResult? directHit = results.FirstOrDefault(result => result.Receiver == target && result.UnblockedDamage > 0);
+            DamageResult? impact = directHit ?? results.FirstOrDefault(result => result.UnblockedDamage > 0)
+                ?? results.FirstOrDefault(result => result.Receiver == target);
 
             return new DarkStrikeImpactOutcome(
-                connected,
-                connected && targetResults.All(result => result.WasFullyBlocked),
+                impact != null,
+                impact?.WasFullyBlocked == true,
                 results
                     .Select(result => DarkNinjaCombatMath.ResolveDarkStrikeHealing(
                         result.BlockedDamage,
@@ -240,7 +252,7 @@ internal static class DarkNinjaAttackExecution
                     .DefaultIfEmpty(0)
                     .Max(),
                 CanContinue(),
-                targetResults.Any(result => result.UnblockedDamage > 0));
+                directHit != null) { Receiver = impact?.Receiver };
         }
 
         internal async Task<IReadOnlyList<DamageResult>> Deal(IEnumerable<Creature> targets)
@@ -258,9 +270,7 @@ internal static class DarkNinjaAttackExecution
                     command.DamageProps,
                     attacker,
                     null
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                     , null
-#endif
                 ))
                 .ToList();
             Results.AddRange(results);

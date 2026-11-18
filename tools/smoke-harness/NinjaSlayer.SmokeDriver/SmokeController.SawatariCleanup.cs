@@ -150,9 +150,7 @@ internal sealed partial class SmokeController
                 if (scenario.Kill == "area")
                 {
                     await CreatureCmd.Damage(choice, children, 999, ValueProp.Unpowered, player.Creature, null
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                         , null
-#endif
                     );
                 }
                 else

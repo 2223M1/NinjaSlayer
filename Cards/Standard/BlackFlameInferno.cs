@@ -10,7 +10,7 @@ namespace NinjaSlayer.Cards.Standard;
 
 public sealed class BlackFlameInferno : NinjaSlayerUncommonCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("EnemyHpLoss", 6)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("EnemyHpLoss", 4)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromCard<BlackFlame>()];
 
@@ -27,5 +27,5 @@ public sealed class BlackFlameInferno : NinjaSlayerUncommonCard
             this);
     }
 
-    protected override void OnUpgrade() => AddKeyword(CardKeyword.Innate);
+    protected override void OnUpgrade() => DynamicVars["EnemyHpLoss"].UpgradeValueBy(2);
 }

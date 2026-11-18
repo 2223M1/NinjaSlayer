@@ -30,11 +30,7 @@ public partial class OrbContractRunner
     }
 
     private static Task EndGuardSide(CombatState state, CombatSide side, params Creature[] participants) =>
-#if NINJASLAYER_CHANNEL_STABLE
-        Hook.AfterTurnEnd(state, side, participants);
-#else
         Hook.AfterSideTurnEnd(state, side, participants);
-#endif
 
     private static async Task VerifyV17()
     {

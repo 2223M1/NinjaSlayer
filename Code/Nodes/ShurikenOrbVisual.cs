@@ -48,12 +48,8 @@ public partial class ShurikenOrbVisual : Node2D
         _orb = (ShurikenOrb)_orbNode.Model!;
         _creatureNode = FindCreatureNode();
         _labelContainer = _orbNode.GetNode<Control>("%LabelContainer");
-#if NINJASLAYER_CHANNEL_STABLE
-        _orb.Triggered += Pulse;
-#else
         _orb.PassiveActivated += Pulse;
         _orb.EvokeActivated += PulseAfterEvoke;
-#endif
         RenderingServer.FramePreDraw += SyncNow;
         _subscribedToFramePreDraw = true;
         SyncNow();
@@ -91,12 +87,8 @@ public partial class ShurikenOrbVisual : Node2D
         {
             return;
         }
-#if NINJASLAYER_CHANNEL_STABLE
-        _orb.Triggered -= Pulse;
-#else
         _orb.PassiveActivated -= Pulse;
         _orb.EvokeActivated -= PulseAfterEvoke;
-#endif
         _orb = null;
     }
 
@@ -267,9 +259,7 @@ public partial class ShurikenOrbVisual : Node2D
         return point + body.Offset;
     }
 
-#if !NINJASLAYER_CHANNEL_STABLE
     private void PulseAfterEvoke(Creature[] _) => Pulse();
-#endif
 
     private void Pulse()
     {

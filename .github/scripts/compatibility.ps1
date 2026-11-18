@@ -52,7 +52,6 @@ function Read-NinjaSlayerCompatibility {
             [string]$channel.ritsuLibPackageId -notmatch '^STS2\.RitsuLib(?:\.Compat\.\d+\.\d+\.\d+)?$' -or
             [string]$channel.distributionChannel -notin @('public', 'beta') -or
             $null -eq $channel.runtimeAssemblies -or
-            $null -eq $channel.compileFeatures -or
             $null -eq $channel.hostContract) {
             throw "Compatibility channel '$channelName' is incomplete."
         }

@@ -12,6 +12,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.CardPools;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Nodes;
+using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -87,9 +88,7 @@ public sealed class BlackFlame : NinjaSlayerStandaloneCardTemplate
                 DynamicVars.Damage.Props,
                 Owner.Creature,
                 this
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                 , null
-#endif
             );
         }
     }
@@ -116,17 +115,16 @@ public sealed class BlackFlame : NinjaSlayerStandaloneCardTemplate
                 && MegaCrit.Sts2.Core.Nodes.Rooms.NCombatRoom.Instance?.Ui.Hand.GetCardHolder(flame) is NHandCardHolder holder)
                 holder.Flash();
             NinjaSlayerCombatVfx.PlayBurnStatusFeedback(targets);
-            await DamageEnemies(choiceContext, Owner, (int)flame.DynamicVars.Damage.BaseValue, flame, targets);
+            await DamageEnemies(choiceContext, Owner, (int)flame.DynamicVars.Damage.BaseValue, flame, targets, fromAttack: true);
         }
     }
 
     private Task DamageEnemies(PlayerChoiceContext choiceContext, List<Creature> enemies) =>
-        DamageEnemies(choiceContext, Owner, (int)DynamicVars.Damage.BaseValue, this, enemies);
+        DamageEnemies(choiceContext, Owner, (int)DynamicVars.Damage.BaseValue, this, enemies, fromAttack: false);
 
     internal static async Task DamageEnemies(PlayerChoiceContext choiceContext, Player player,
-        int baseDamage, CardModel? source, IReadOnlyList<Creature>? targets = null)
+        int baseDamage, CardModel? source, IReadOnlyList<Creature> targets, bool fromAttack)
     {
-        targets ??= player.Creature.CombatState!.HittableEnemies;
         if (targets.Count == 0) return;
         // Reward each flame activation once, including Naraku Form and turn-end flames.
         if (player.Creature.GetPower<RekindlePower>() is { } rekindle)
@@ -134,14 +132,17 @@ public sealed class BlackFlame : NinjaSlayerStandaloneCardTemplate
             await PowerCmd.Apply<NarakuLifePower>(choiceContext, player.Creature,
                 rekindle.Amount, player.Creature, source);
         }
-        var results = await CreatureCmd.Damage(choiceContext, targets,
-            baseDamage + player.Creature.GetPowerAmount<BlackFlameInfernoPower>(),
-            ValueProp.Unblockable | ValueProp.Unpowered, player.Creature, source
-#if !NINJASLAYER_LEGACY_DAMAGE_API
-            , null
-#endif
-        );
+        int amount = baseDamage + player.Creature.GetPowerAmount<BlackFlameInfernoPower>();
+        const ValueProp props = ValueProp.Unblockable | ValueProp.Unpowered;
+        // Karate and prior flames have already resolved. Only the actual lethal wave owns the pose.
+        await using var finisher = fromAttack
+            ? FinisherEligibilityService.CreateActionSession(player.Creature, new FinisherActionForecastDescriptor(
+                _ => amount, props, 1, FinisherTargeting.Fixed, CardSource: source, TriggersKarate: false, FixedTargets: targets))
+            : null;
+        finisher?.Begin();
+        var results = await CreatureCmd.Damage(choiceContext, targets, amount, props, player.Creature, source, null);
         Code.Telemetry.NinjaSlayerCombatTelemetry.AttributeDamage(results, "black_flame");
+        if (finisher != null) await finisher.CompleteAsync(playPose: true);
     }
 
     protected override void OnUpgrade() { }

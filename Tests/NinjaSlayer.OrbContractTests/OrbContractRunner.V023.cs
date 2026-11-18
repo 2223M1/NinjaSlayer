@@ -91,12 +91,8 @@ public partial class OrbContractRunner
             await PowerCmd.Remove<NarakuLifePower>(combat.Player.Creature);
             int hp = combat.Player.Creature.CurrentHp;
             var flame = AddCard<BlackFlame>(combat);
-#if NINJASLAYER_CHANNEL_STABLE
-            await flame.OnTurnEndInHandWrapper(Choice);
-#else
             await (Task)AccessTools.Method(typeof(CombatManager), "ResolveTurnEndCardEffects")
                 .Invoke(CombatManager.Instance, [flame, Choice, Task.CompletedTask])!;
-#endif
             Require(combat.Player.Creature.CurrentHp == hp - 4 && combat.Enemy.CurrentHp == 996
                 && flame.Pile?.Type == PileType.Exhaust, "Soul no longer prevents Black Flame self-damage.");
         }

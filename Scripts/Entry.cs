@@ -114,6 +114,9 @@ public class Entry
             requiredPatcher.RegisterPatch<SawatariWinCheckPatch>();
             requiredPatcher.RegisterPatch<SawatariTurnEndPatch>();
             requiredPatcher.RegisterPatch<FriendlyCompanionInteractionPatch>();
+#if NINJASLAYER_CHANNEL_PREVIEW
+            requiredPatcher.RegisterPatch<FriendlyCompanionRemoteSelectionPatch>();
+#endif
             requiredPatcher.RegisterPatch<FriendlyCompanionPersonalHivePatch>();
             requiredPatcher.RegisterPatch<FriendlyCompanionCardSelectedPatch>();
             requiredPatcher.RegisterPatch<FriendlyCompanionCardDeselectedPatch>();
@@ -122,7 +125,7 @@ public class Entry
             requiredPatcher.RegisterPatch<FriendlyCompanionTargetManagerPatch>();
             requiredPatcher.RegisterPatch<FriendlyCompanionCardCanPlayPatch>();
             requiredPatcher.RegisterPatch<FriendlyCompanionCardAutoPlayPatch>();
-            requiredPatcher.RegisterPatch<FriendlyCompanionControllerCardTargetPatch>();
+            requiredPatcher.RegisterPatch<FriendlyCompanionControllerTargetPatch>();
             requiredPatcher.RegisterPatch<FriendlyCompanionPotionThrowPatch>();
             requiredPatcher.RegisterPatch<FriendlyCompanionPotionTargetPatch>();
             requiredPatcher.RegisterPatch<SawatariDuelDeathAnimationPatch>();
@@ -160,9 +163,7 @@ public class Entry
             requiredPatcher.RegisterPatch<FinisherShivVisualPatch>();
             requiredPatcher.RegisterPatch<FinisherShivTimingPatch>();
             requiredPatcher.RegisterPatch<FinisherHeavyBluntSequencePatch>();
-#if !NINJASLAYER_LEGACY_DAMAGE_API
             requiredPatcher.RegisterPatch<FinisherNativeProjectilePatch>();
-#endif
             requiredPatcher.RegisterPatch<NinjaSlayerFinisherLethalDamagePatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerFinisherPrimaryDamagePatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerFinisherAfterCardPlayedPatch>();

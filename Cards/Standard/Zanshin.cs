@@ -12,11 +12,11 @@ public sealed class Zanshin : NinjaSlayerRareCard
 {
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [NinjaSlayerHoverTips.PositiveEffects];
 
-    public Zanshin() : base(nameof(Zanshin), 1, CardType.Power, TargetType.Self) { }
+    public Zanshin() : base(nameof(Zanshin), 0, CardType.Power, TargetType.Self) { }
     protected override IEnumerable<DynamicVar> CanonicalVars => [new CardsVar(1)];
 
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
         PowerCmd.Apply<ZanshinPower>(choiceContext, Owner.Creature, DynamicVars.Cards.BaseValue, Owner.Creature, this);
 
-    protected override void OnUpgrade() => DynamicVars.Cards.UpgradeValueBy(1);
+    protected override void OnUpgrade() => AddKeyword(CardKeyword.Innate);
 }

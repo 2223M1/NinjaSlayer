@@ -17,11 +17,7 @@ public sealed class PressTheAttack : NinjaSlayerUncommonCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         var attack = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
-#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-            .FromCard(this)
-#else
             .FromCard(this, cardPlay)
-#endif
             .WithHeavyBluntHitFx()
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!);

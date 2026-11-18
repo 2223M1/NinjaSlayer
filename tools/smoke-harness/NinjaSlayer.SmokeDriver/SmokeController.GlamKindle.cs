@@ -97,6 +97,7 @@ internal sealed partial class SmokeController
                 int expectedHand = shortPile && enchanted ? (upgraded ? 3 : 2) + 1 : plays * (upgraded ? 3 : 2);
                 Require(PileType.Hand.GetPile(caster).Cards.Count == expectedHand
                     && caster.PlayerCombatState!.AllCards.OfType<BlackFlame>().Count() == plays
+                    && PileType.Discard.GetPile(caster).Cards.OfType<BlackFlame>().Count() == (shortPile && enchanted ? 1 : plays)
                     && kindle.Pile?.Type == PileType.Discard && followup.Pile?.Type == PileType.Discard,
                     "Glam Kindle changed repeated draw, generation ownership or teammate action completion.");
                 await WaitFrames(90);

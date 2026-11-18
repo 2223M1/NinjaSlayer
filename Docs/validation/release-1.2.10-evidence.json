@@ -1,0 +1,101 @@
+{
+  "version": "1.2.10",
+  "sourceRevision": "61ce2804a37cac3e964cd8ee86ec9e1fc50c151e",
+  "verifiedAtUtc": "2026-11-18T15:38:29.540696+00:00",
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "bytes": 23552,
+      "sha256": "53508fdb700062f4a25d4e211740995d93d643e26606ceb77c857d7aa71e9e7b"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "bytes": 363,
+      "sha256": "da558759057b4411da42f9f5182aa4933901cb26981d45234afe9437c0d57b7f"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "bytes": 233050832,
+      "sha256": "371e6bb0066ba5569df70b33985c1481f1f023cfd6b64a4abb215c511252ba60"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 901,
+      "sha256": "b5eafa8469437d428cec278bf70ed4b59bb724443ecdfb18712b91842cab66a0"
+    },
+    {
+      "path": "lib/0.111.1/NinjaSlayer.dll",
+      "bytes": 2228224,
+      "sha256": "db6a2468567376fc201679a60f730ad70922af455d1606b6b4f82d76c8b3def6"
+    },
+    {
+      "path": "lib/0.111.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "a7d5bb5528753fd8c219d195b98feb15217e83d68bf87e382acc85df8f2f245d"
+    },
+    {
+      "path": "lib/0.113.1/NinjaSlayer.dll",
+      "bytes": 2235904,
+      "sha256": "be7205ec1e6b5c477ede760d9c6ce6897221f3457330e556c0b6967bb4a33652"
+    },
+    {
+      "path": "lib/0.113.1/compat-target.txt",
+      "bytes": 8,
+      "sha256": "a718eb7d7d44ea1a3d6e6021e353968cdd132da5609500e07513de626b656e22"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "bytes": 522,
+      "sha256": "5769e0ae0f70e0fd8880e970759d60ef1a240de5435e1cf0a1f80154719040c8"
+    }
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "53508fdb700062f4a25d4e211740995d93d643e26606ceb77c857d7aa71e9e7b",
+    "da558759057b4411da42f9f5182aa4933901cb26981d45234afe9437c0d57b7f",
+    "371e6bb0066ba5569df70b33985c1481f1f023cfd6b64a4abb215c511252ba60",
+    "b5eafa8469437d428cec278bf70ed4b59bb724443ecdfb18712b91842cab66a0",
+    "db6a2468567376fc201679a60f730ad70922af455d1606b6b4f82d76c8b3def6",
+    "a7d5bb5528753fd8c219d195b98feb15217e83d68bf87e382acc85df8f2f245d",
+    "be7205ec1e6b5c477ede760d9c6ce6897221f3457330e556c0b6967bb4a33652",
+    "a718eb7d7d44ea1a3d6e6021e353968cdd132da5609500e07513de626b656e22",
+    "5769e0ae0f70e0fd8880e970759d60ef1a240de5435e1cf0a1f80154719040c8"
+  ],
+  "validation": {
+    "supportedGameVersions": [
+      "0.111.1",
+      "0.113.1"
+    ],
+    "gameplayPasses": {
+      "stable": 180,
+      "preview": 185
+    },
+    "dualHostPatchInstallRollback": true,
+    "catalogFingerprint": "866b471fb48f4eb20327fa71f59af75e08a28287b68ecc509332933af3914031",
+    "logicTests": 367,
+    "zanshinAndFlamePose": true,
+    "evasionNativeENetPeers": 2,
+    "packagedLanguages": 16
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "contentManifest": "7231541697442752113",
+    "updated": 1795016293,
+    "changeNoteId": "1795016293",
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "changeNote": "残心由 1 费降至 0 费，触发时的抽牌数由 1→2 张改为固定 1 张，升级获得固有。\n修复了用户反馈中暗打触发回避不同步的问题。\n修复了用户反馈中黑炎清场漏播处决的问题。",
+    "unchangedLocalizedItemMetadata": true
+  }
+}

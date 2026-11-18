@@ -46,20 +46,14 @@ public partial class OrbContractRunner
         Run("CancelAndRestore", combat.Player.Creature);
         var card = combat.State.CreateCard<DragonRoundhouseKick>(combat.Player);
         var play = new CardPlay { Card = card,
-#if !NINJASLAYER_CHANNEL_STABLE
             Player = combat.Player,
-#endif
             Target = combat.Enemy, ResultPile = PileType.Discard,
             Resources = new ResourceInfo { EnergySpent = 0, EnergyValue = 0, StarsSpent = 0, StarValue = 0 },
             IsAutoPlay = false, PlayIndex = 0, PlayCount = 1 };
         object resolution = AccessTools.Method(scope, "BeginCard").Invoke(null, [card])!;
         AccessTools.Method(scope, "BeginPlay").Invoke(null, [play]);
         var command = DamageCmd.Attack(1)
-#if NINJASLAYER_CHANNEL_STABLE
-            .FromCard(card)
-#else
             .FromCard(card, play)
-#endif
             .Targeting(combat.Enemy);
         object commandLease = AccessTools.Method(execution, "Enter").Invoke(null, [command, combat.Enemy])!;
         object sequence = AccessTools.Method(execution, "EnterSequence").Invoke(null, [2])!;

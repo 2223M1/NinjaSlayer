@@ -807,13 +807,8 @@ internal sealed partial class SmokeController
         var types = AbstractModelSubtypes.All.ToList();
         foreach (Mod mod in ModManager.Mods.Where(mod => mod.state == ModLoadState.Loaded))
         {
-#if NINJASLAYER_CHANNEL_PREVIEW
             foreach (var assembly in mod.assemblies)
                 types.AddRange(ReflectionHelper.GetSubtypesFromAssembly(assembly, typeof(AbstractModel)));
-#else
-            if (mod.assembly != null)
-                types.AddRange(ReflectionHelper.GetSubtypesFromAssembly(mod.assembly, typeof(AbstractModel)));
-#endif
         }
         Require(types.Distinct().Count() == types.Count, "Host model-ID sorting input contains a repeated type.");
         Require(types.Select(ModelDb.GetId).Distinct().Count() == types.Count, "Host model-ID sorting input contains duplicate IDs.");

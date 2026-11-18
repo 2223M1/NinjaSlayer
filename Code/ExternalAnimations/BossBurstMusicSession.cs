@@ -14,11 +14,9 @@ internal static class BossBurstMusicSession
     private static readonly FieldInfo CurrentTrack =
         AccessTools.Field(typeof(NRunMusicController), "_currentTrack")
         ?? throw new MissingFieldException(typeof(NRunMusicController).FullName, "_currentTrack");
-#if NINJASLAYER_CHANNEL_PREVIEW
     private static readonly FieldInfo FailedTrack =
         AccessTools.Field(typeof(NRunMusicController), "_failedTrack")
         ?? throw new MissingFieldException(typeof(NRunMusicController).FullName, "_failedTrack");
-#endif
 
     public static bool Begin(NCombatRoom sceneRoom)
     {
@@ -132,9 +130,7 @@ internal static class BossBurstMusicSession
             CurrentTrack.SetValue(controller, null);
         }
 
-#if NINJASLAYER_CHANNEL_PREVIEW
         FailedTrack.SetValue(controller, null);
-#endif
         reason = selection.HasValue
             ? $"restored {selection.Value.Track} at Progress=0"
             : "the current Act has no background music";

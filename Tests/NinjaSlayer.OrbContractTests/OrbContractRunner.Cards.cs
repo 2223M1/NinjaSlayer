@@ -134,11 +134,7 @@ public partial class OrbContractRunner
                 combat.Player, 1, MegaCrit.Sts2.Core.Entities.Multiplayer.GameActionType.Combat);
             for (int turn = 0; turn < 2; turn++)
             {
-#if NINJASLAYER_CHANNEL_STABLE
-                object[] arguments = [combat.Player, context];
-#else
                 object[] arguments = [AccessTools.Field(typeof(CombatManager), "_turnState").GetValue(CombatManager.Instance)!, combat.Player, context];
-#endif
                 await (Task)AccessTools.Method(typeof(CombatManager), "FlushPlayerHand").Invoke(CombatManager.Instance, arguments)!;
                 Require(card.Pile?.Type == PileType.Hand && ordinary.Pile?.Type == PileType.Discard,
                     "Ninja Taunt stays in hand while Cross Guard is discarded by native end-turn hand flushes.");
@@ -192,11 +188,7 @@ public partial class OrbContractRunner
                 combat.Player, 1, MegaCrit.Sts2.Core.Entities.Multiplayer.GameActionType.Combat);
             for (int turn = 0; turn < 2; turn++)
             {
-#if NINJASLAYER_CHANNEL_STABLE
-                object[] arguments = [combat.Player, context];
-#else
                 object[] arguments = [AccessTools.Field(typeof(CombatManager), "_turnState").GetValue(CombatManager.Instance)!, combat.Player, context];
-#endif
                 await (Task)AccessTools.Method(typeof(CombatManager), "FlushPlayerHand")
                     .Invoke(CombatManager.Instance, arguments)!;
                 Require(card.Pile?.Type == PileType.Hand && ordinary.Pile?.Type == PileType.Discard,
@@ -294,12 +286,8 @@ public partial class OrbContractRunner
         var flames = new[] { AddCard<BlackFlame>(combat), AddCard<BlackFlame>(combat) };
         foreach (var flame in flames)
         {
-#if NINJASLAYER_CHANNEL_STABLE
-            await flame.OnTurnEndInHandWrapper(Choice);
-#else
             await (Task)AccessTools.Method(typeof(CombatManager), "ResolveTurnEndCardEffects")
                 .Invoke(CombatManager.Instance, [flame, Choice, Task.CompletedTask])!;
-#endif
         }
         Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 0
             && PileType.Exhaust.GetPile(combat.Player).Cards.Count == 2,
@@ -401,13 +389,8 @@ public partial class OrbContractRunner
         other.Creature.SetCurrentHpInternal(10);
         var ninjaEvent = ModelDb.Event<NarakuEvent>().ToMutable();
         var otherEvent = ModelDb.Event<NarakuEvent>().ToMutable();
-#if NINJASLAYER_CHANNEL_STABLE
-        await ninjaEvent.BeginEvent(combat.Player, false);
-        await otherEvent.BeginEvent(other, false);
-#else
         await ninjaEvent.BeginEvent(combat.Player, null, false);
         await otherEvent.BeginEvent(other, null, false);
-#endif
         await otherEvent.CurrentOptions.Single(option => option.TextKey.EndsWith(".ACCEPT_NARAKU")).Chosen();
         Require(otherEvent.IsFinished && !ninjaEvent.IsFinished
             && other.GetRelic<NarakuUnleashedRelic>() is not null

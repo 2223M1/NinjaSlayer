@@ -45,7 +45,7 @@ public partial class OrbContractRunner : Node
 {
     private static IDisposable UseCardSelector(ICardSelector selector, bool localOnly = false) =>
 #if NINJASLAYER_CHANNEL_STABLE
-        CardSelectCmd.UseSelector(selector);
+        CardSelectCmd.UseSelector(selector, localOnly);
 #else
         localOnly ? RunManager.Instance.CardSelectorStack.UseLocalSelector(selector)
             : MegaCrit.Sts2.Core.CardSelection.CardSelectorStack.SetTestSelector(selector);
@@ -105,7 +105,8 @@ public partial class OrbContractRunner : Node
             Require(typeof(Player).Assembly.ManifestModule.ModuleVersionId.ToString() ==
                 System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_HOST_MVID"), "Loaded host MVID differs from the requested host.");
             GD.Print($"Candidate {expected}: {productPath}; SHA256 {Convert.ToHexString(SHA256.HashData(productBytes))}; host MVID {typeof(Player).Assembly.ManifestModule.ModuleVersionId}");
-            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_GREETING_ONLY") != "1")
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_GREETING_ONLY") != "1"
+                && System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_EVASION_ONLY") != "1")
                 await VerifyUploadTransport();
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_UPLOADS") == "1")
             {
@@ -119,18 +120,12 @@ public partial class OrbContractRunner : Node
             {
                 path = "res://", manifest = new ModManifest { id = "NinjaSlayer" },
                 state = ModLoadState.Loaded,
-#if NINJASLAYER_CHANNEL_STABLE
-                assembly = product
-#else
                 assemblies = [product]
-#endif
             };
             ((List<Mod>)AccessTools.Field(typeof(ModManager), "_mods").GetValue(null)!).Add(productMod);
-#if !NINJASLAYER_CHANNEL_STABLE
             AssemblyInfo.Init();
             AssemblyInfo.ModMap![product] = productMod;
             AssemblyInfo.ModMap[GetType().Assembly] = new Mod { path = "res://", manifest = new ModManifest { id = "NinjaSlayer.OrbContracts" } };
-#endif
             _ = MegaCrit.Sts2.Core.Saves.SaveManager.Instance;
             string hostPack = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_HOST_PACK")
                 ?? throw new InvalidOperationException("Product gameplay contracts require the host resource pack for native selection prompts.");
@@ -192,16 +187,10 @@ public partial class OrbContractRunner : Node
             if (minion is not null)
             {
                 var minionMod = new Mod { path = "res://", manifest = new ModManifest { id = "MinionLib", affectsGameplay = true }, state = ModLoadState.Loaded,
-#if NINJASLAYER_CHANNEL_STABLE
-                    assembly = minion
-#else
                     assemblies = [minion]
-#endif
                 };
                 ((List<Mod>)AccessTools.Field(typeof(ModManager), "_mods").GetValue(null)!).Add(minionMod);
-#if !NINJASLAYER_CHANNEL_STABLE
                 AssemblyInfo.ModMap![minion] = minionMod;
-#endif
                 ModelDb.Inject(minion.GetType("MinionLib.Powers.MinionGuardianPower", true)!);
                 if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_MINION_FIRST") == "1")
                     new Harmony("MinionLib").CreateClassProcessor(minion.GetType("MinionLib.Powers.Patches.MinionGuardianOwnerDamageSuppressPatch", true)!).Patch();
@@ -223,13 +212,7 @@ public partial class OrbContractRunner : Node
                 SaveManager.Instance.InitSettingsDataForTest();
                 SaveManager.Instance.InitPrefsDataForTest();
                 MegaCrit.Sts2.Core.Localization.LocManager.Initialize();
-#if NINJASLAYER_CHANNEL_STABLE
-                // Only preview art is supplied; keep every stable model and validate
-                // its exact-version text without pretending to verify stable images.
-                NinjaSlayer.SmokeDriver.WebsiteCatalogExporter.Export(catalogDestination, exportImages: false, assemblyPath: productPath);
-#else
                 NinjaSlayer.SmokeDriver.WebsiteCatalogExporter.Export(catalogDestination, assemblyPath: productPath);
-#endif
                 GD.Print("NinjaSlayer orb product contracts passed.");
                 GetTree().Quit(0);
                 return;
@@ -278,9 +261,32 @@ public partial class OrbContractRunner : Node
             SaveManager.Instance.InitSettingsDataForTest();
             SaveManager.Instance.InitPrefsDataForTest();
             MegaCrit.Sts2.Core.Localization.LocManager.Initialize();
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_FLAME_AND_ZANSHIN") == "1")
+            {
+                await VerifyFlameFinisher();
+                await VerifyFlamePose();
+                await VerifyZanshin();
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_SAWATARI_CONTROLLER") == "1")
             {
                 await VerifySawatariController();
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_DARK_STRIKE_CONTACT") == "1")
+            {
+                await VerifyDarkStrikeContact();
+                await VerifyDarkStrikeTheft();
+                await VerifyTurningPointCardTypes();
+                await VerifyRelease113Cards();
+                VerifyNativeCompanionLayout();
+#if NINJASLAYER_CHANNEL_PREVIEW
+                await VerifyCompanionSelectionAndWuppy();
+#endif
                 GD.Print("NinjaSlayer orb product contracts passed.");
                 GetTree().Quit(0);
                 return;
@@ -445,6 +451,10 @@ public partial class OrbContractRunner : Node
                 GetTree().Quit(0);
                 return;
             }
+            if (_hasPresentationResources) await VerifyDarkStrikeContact();
+#if NINJASLAYER_CHANNEL_PREVIEW
+            await VerifyCompanionSelectionAndWuppy();
+#endif
             await VerifyDarkStrikeTheft();
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_DARK_STRIKE") == "1")
             {
@@ -860,17 +870,11 @@ public partial class OrbContractRunner : Node
                 RunManager.Instance, new MegaCrit.Sts2.Core.CardSelection.CardSelectorStack(this));
 #endif
             Enemy = AddEnemy();
-#if NINJASLAYER_CHANNEL_STABLE
-            AccessTools.Field(typeof(CombatManager), "_pendingLoss").SetValue(CombatManager.Instance, null);
-            AccessTools.Field(typeof(CombatManager), "_state").SetValue(CombatManager.Instance, State);
-            AccessTools.Property(typeof(CombatManager), nameof(CombatManager.IsInProgress)).SetValue(CombatManager.Instance, true);
-#else
             FieldInfo field = AccessTools.Field(typeof(CombatManager), "_turnState");
             object turn = Activator.CreateInstance(field.FieldType, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
                 null, [State], null)!;
             field.FieldType.GetProperty("IsInProgress")!.SetValue(turn, true);
             field.SetValue(CombatManager.Instance, turn);
-#endif
             PowerCmd.Apply<EvokeObserver>(Choice, Player.Creature, 1, Player.Creature, null).GetAwaiter().GetResult();
         }
 

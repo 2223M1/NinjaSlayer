@@ -32,11 +32,7 @@ internal static class BlackFlameHitTracker
             return [];
         }
 
-#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-        var playerSide = cardPlay.Card.Owner.Creature.Side;
-#else
         var playerSide = cardPlay.Player.Creature.Side;
-#endif
         return hitSet.Targets.SnapshotWhere(target =>
             !target.IsDead
             && target.Side != playerSide);

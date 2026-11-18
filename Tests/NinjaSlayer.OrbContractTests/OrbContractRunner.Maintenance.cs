@@ -81,11 +81,7 @@ public partial class OrbContractRunner
             Require(teas.Count(card => card.Pile?.Type == PileType.Exhaust) == Math.Min(teaCount, 1)
                 && drawTea.Pile?.Type == PileType.Draw && discardTea.Pile?.Type == PileType.Discard
                 && other.Pile?.Type == PileType.Hand, "Hiss and Huff exhausted the wrong cards.");
-#if NINJASLAYER_CHANNEL_STABLE
-            await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
-#else
             await Hook.BeforeSideTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
-#endif
             Require(combat.Player.Creature.CurrentHp == 30 + regen
                 && combat.Player.Creature.GetPowerAmount<RegenPower>() == Math.Max(0, regen - 1),
                 "Hiss and Huff must use native turn-end Regen healing and decrement.");
@@ -101,9 +97,7 @@ public partial class OrbContractRunner
         Type[] cards =
         [
             typeof(MegaCrit.Sts2.Core.Models.Cards.Coordinate), typeof(DemonicShield), typeof(Intercept), typeof(Lift), typeof(Mimic),
-#if NINJASLAYER_CHANNEL_PREVIEW
             typeof(Blaze), typeof(Concoct), typeof(Fade),
-#endif
         ];
         Type[] potions = [typeof(BlockPotion), typeof(DexterityPotion), typeof(FlexPotion), typeof(FyshOil),
             typeof(HeartOfIron), typeof(LiquidBronze), typeof(LuckyTonic), typeof(MazalethsGift),

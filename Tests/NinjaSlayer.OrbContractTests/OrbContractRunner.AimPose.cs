@@ -375,9 +375,7 @@ public partial class OrbContractRunner
                         "Form core lost affine transform tracking.");
                     var kick = combat.State.CreateCard<DragonRoundhouseKick>(combat.Player);
                     var play = new CardPlay { Card = kick,
-#if !NINJASLAYER_CHANNEL_STABLE
                         Player = combat.Player,
-#endif
                         Target = combat.Enemy, ResultPile = PileType.Discard,
                         Resources = new ResourceInfo { EnergySpent = 0, EnergyValue = 0, StarsSpent = 0, StarValue = 0 },
                         IsAutoPlay = false, PlayIndex = 0, PlayCount = 1 };

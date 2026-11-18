@@ -38,11 +38,7 @@ public partial class OrbContractRunner
             }));
             var context = new HookPlayerChoiceContext(combat.Player, 1,
                 MegaCrit.Sts2.Core.Entities.Multiplayer.GameActionType.CombatPlayPhaseOnly);
-#if NINJASLAYER_CHANNEL_STABLE
-            object[] args = [combat.Player, context];
-#else
             object[] args = [AccessTools.Field(typeof(CombatManager), "_turnState").GetValue(CombatManager.Instance)!, combat.Player, context];
-#endif
             await (Task)AccessTools.Method(typeof(CombatManager), "SetupPlayerTurn").Invoke(CombatManager.Instance, args)!;
             Require(choices == 2 && combat.Stock == 2
                 && combat.Player.Creature.GetPowerAmount<KaratePower>() == 5
@@ -64,34 +60,20 @@ public partial class OrbContractRunner
             var owner = combat.Player.Creature;
             await PowerCmd.Apply<ThornsPower>(Choice, owner, 2, owner, null);
             await CardCmd.AutoPlay(Choice, AddCard<NinjaCaltrops>(combat), null);
-#if NINJASLAYER_CHANNEL_STABLE
-            await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [owner]);
-#else
             await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [owner]);
-#endif
             Require(owner.GetPowerAmount<ThornsPower>() == 4, "NinjaCaltrops must survive the player's turn end.");
-#if NINJASLAYER_CHANNEL_STABLE
-            await Hook.AfterTurnEnd(combat.State, CombatSide.Enemy, [combat.Enemy]);
-#else
             await Hook.AfterSideTurnEnd(combat.State, CombatSide.Enemy, [combat.Enemy]);
-#endif
             await CardCmd.AutoPlay(Choice, AddCard<NinjaCaltrops>(combat, upgraded: true), null);
             for (int enemyTurn = 2; enemyTurn <= 4; enemyTurn++)
             {
                 int expected = 7;
                 int before = combat.Enemy.CurrentHp;
                 await CreatureCmd.Damage(Choice, new[] { owner }, 1, ValueProp.Move, combat.Enemy, null
-#if !NINJASLAYER_CHANNEL_STABLE
                     , null
-#endif
                 );
                 Require(before - combat.Enemy.CurrentHp == expected,
                     "Native Thorns must retain both NinjaCaltrops grants throughout combat.");
-#if NINJASLAYER_CHANNEL_STABLE
-                await Hook.AfterTurnEnd(combat.State, CombatSide.Enemy, [combat.Enemy]);
-#else
                 await Hook.AfterSideTurnEnd(combat.State, CombatSide.Enemy, [combat.Enemy]);
-#endif
                 Require(owner.GetPowerAmount<ThornsPower>() == 7,
                     "NinjaCaltrops and other Thorns remain after the third enemy turn.");
             }

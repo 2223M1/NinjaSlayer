@@ -34,7 +34,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
     private const float ExitSpeedPixelsPerSecond = 840f;
     private const float ExitMargin = 160f;
 
-    private TheArchitect _eventModel = null!;
     private Creature _owner = null!;
     private NCreature _ownerNode = null!;
     private NCreature _architectNode = null!;
@@ -76,7 +75,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
         var controller = new ArchitectExecutionCinematic
         {
             Name = ControllerName,
-            _eventModel = eventModel,
             _owner = owner,
             _ownerNode = ownerNode,
             _architectNode = architectNode,
@@ -234,9 +232,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
         var play = new CardPlay
         {
             Card = card,
-#if !NINJASLAYER_CHANNEL_STABLE
             Player = _owner.Player,
-#endif
             Target = _architectNode.Entity,
             ResultPile = PileType.None, Resources = new ResourceInfo
             { EnergySpent = 0, EnergyValue = 0, StarsSpent = 0, StarValue = 0 },
@@ -304,7 +300,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
     private async Task PlayArchitectDeath(CancellationToken cancelToken)
     {
         AlabamaDropAnimation.ReleaseVictimBeforeDeath(_architectNode);
-        CreatureDeathInteractionAdapter.Disable(_architectNode);
+        _architectNode.DisableInteractionForDeath();
         _architectNode.AnimHideIntent();
 #if NINJASLAYER_CHANNEL_STABLE
         _architectNode.AnimDisableUi();
@@ -451,17 +447,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
     private Task CompleteEventCore()
     {
         ArchitectVictoryCleanup.Mark(_owner);
-#if NINJASLAYER_LEGACY_ARCHITECT_VICTORY_COMPLETION
-        if (_owner.Player!.RunState.Players.Count > 1)
-        {
-            _room.SetWaitingForOtherPlayersOverlayVisible(visible: true);
-        }
-
-        RunManager.Instance.ActChangeSynchronizer.SetLocalPlayerReady();
-        return Task.CompletedTask;
-#else
         return RunManager.Instance.WinRun();
-#endif
     }
 
     private void HideArchitectVisual()

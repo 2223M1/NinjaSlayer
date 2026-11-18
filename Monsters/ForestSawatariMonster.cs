@@ -260,9 +260,7 @@ public sealed partial class ForestSawatariMonster : ModMonsterTemplate
                             command.DamageProps,
                             attacker,
                             null
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                             , null
-#endif
                         ));
                     }
                 });

@@ -98,9 +98,7 @@ public partial class OrbContractRunner
             if (state == "target-dead") f.Target.SetCurrentHpInternal(0);
             if (state == "lethal")
                 await CreatureCmd.Damage(Choice, dark, 999, ValueProp.Move, f.Target, null
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                     , null
-#endif
                 );
             else
                 await iai.AfterDamageReceived(Choice, dark, new DamageResult(dark, ValueProp.Move),

@@ -10,9 +10,11 @@ param(
     [Parameter(Mandatory)][string]$DotnetRoot,
     [Parameter(Mandatory)][string]$OutputDirectory,
     [ValidateRange(1024, 65535)][int]$Port = 19481,
-    [switch]$GreetingOnly
+    [switch]$GreetingOnly,
+    [switch]$EvasionOnly
 )
 $ErrorActionPreference = 'Stop'
+if ($GreetingOnly -and $EvasionOnly) { throw 'Choose at most one focused multiplayer suite.' }
 $repository = (Resolve-Path "$PSScriptRoot/../..").Path
 . "$repository/.github/scripts/compatibility.ps1"
 $manifest = Read-NinjaSlayerCompatibility -Path "$repository/eng/compatibility.json"
@@ -40,6 +42,7 @@ $environment = @{
     NINJASLAYER_MULTIPLAYER_DIRECTORY = $output
     NINJASLAYER_MULTIPLAYER_PORT = [string]$Port
     NINJASLAYER_MULTIPLAYER_GREETING_ONLY = $(if ($GreetingOnly) { '1' } else { '0' })
+    NINJASLAYER_MULTIPLAYER_EVASION_ONLY = $(if ($EvasionOnly) { '1' } else { '0' })
 }
 $processes = @()
 try {

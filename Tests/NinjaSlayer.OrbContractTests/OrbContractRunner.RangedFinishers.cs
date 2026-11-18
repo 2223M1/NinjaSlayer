@@ -124,8 +124,8 @@ public partial class OrbContractRunner
 #endif
                 typeof(decimal), typeof(ValueProp),
                 typeof(Creature), typeof(CardModel)
-#if !NINJASLAYER_CHANNEL_STABLE
                 , typeof(MegaCrit.Sts2.Core.Entities.Cards.CardPlay)
+#if NINJASLAYER_CHANNEL_PREVIEW
                 , typeof(MegaCrit.Sts2.Core.Hooks.ModifyDamageHookType)
 #endif
             ]);
@@ -201,11 +201,7 @@ public partial class OrbContractRunner
                     Require((scope != null) == ninja, "Native orb did not retain only its Ninja Slayer action scope.");
                 };
                 int Counter() =>
-#if NINJASLAYER_CHANNEL_STABLE
-                    run.Rng.CombatTargets.Counter;
-#else
                     run.Rng.CombatTargets.ToSerializable().counter;
-#endif
                 int rng = Counter();
                 decimal before = orb.PassiveVal;
                 await orb.Passive(Choice, null);

@@ -17,7 +17,7 @@
 
 ## Supported game versions and source retention
 
-- Maintain only the current official stable release and the latest preview in `eng/compatibility.json`; this means 0.107.1 and 0.113.1 as of 2026-11-15. Do not interpret this as the two highest version numbers. 0.111.0 is retired.
+- Maintain only the current official stable release and the latest preview in `eng/compatibility.json`; this means 0.111.1 and 0.113.1 as of 2026-11-18. Do not interpret this as the two highest version numbers. 0.111.0 is retired.
 - Keep their recovered reference projects together under `../Slay the Spire 2/Slay the Spire 2 v<gameApiVersion>/`. When a channel advances, retire its previous target, remove its redundant source export after the cleanup checks below, and retain compact recovery/validation evidence.
 - Do not retain compatibility branches or package variants solely for retired hosts. Shared tool runtimes and other mods' dependencies are outside this project's source-cleanup scope.
 

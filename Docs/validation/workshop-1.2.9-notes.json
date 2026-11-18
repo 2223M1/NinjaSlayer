@@ -1,0 +1,137 @@
+{
+  "version": "1.2.9",
+  "workshopItemId": "3776911445",
+  "entryId": "1794998856",
+  "previousEntryId": "1794834987",
+  "method": "Saved the 16 language fields of the same Steam edit form. Reloaded the page, reselected each language, matched the full text and checked for the missing-translation warning. Simplified Chinese was saved before replacing the English default.",
+  "verified": [
+    {
+      "language": "zhs",
+      "selected": "简体中文",
+      "sha256": "84a2077bf20b5f1981abab112015f2e7e0ac19495574e8424eb60de6ac33da6b",
+      "lines": 12,
+      "fallback": false,
+      "utc": "2026-11-18T10:58:16.8391600Z"
+    },
+    {
+      "language": "eng",
+      "selected": "英语",
+      "sha256": "c98fb5cd22f56a227e6dab4091b8eede775cf39bfb80542bad7412f58dd9211d",
+      "lines": 12,
+      "fallback": false,
+      "utc": "2026-11-18T10:59:58.8942527Z"
+    },
+    {
+      "language": "zht",
+      "selected": "繁体中文",
+      "sha256": "c70822e348e664d158ef480aff9975a532bbbbdbe03cb31cef9ff2b68d1a9401",
+      "lines": 12,
+      "fallback": false,
+      "utc": "2026-11-18T11:03:28.3576518Z"
+    },
+    {
+      "language": "jpn",
+      "selected": "日语",
+      "sha256": "e7387c6f579cb9e9ca84bb473d7a62dbeb979ff9f3df81fad03e42731a60f6f8",
+      "lines": 12,
+      "fallback": false,
+      "utc": "2026-11-18T11:04:53.3216903Z"
+    },
+    {
+      "language": "kor",
+      "selected": "韩语",
+      "sha256": "f1f5217a6c63e6cf4a69e22bd0b5d7676123ea1faad952c090527c7e5c49fc40",
+      "lines": 12,
+      "fallback": false,
+      "utc": "2026-11-18T11:04:57.1245410Z"
+    },
+    {
+      "language": "deu",
+      "selected": "德语",
+      "sha256": "4277ebc0d86a82929dda9e6ada8a23ff47236b909b896f43e07ce741f69527a2",
+      "lines": 12,
+      "fallback": false,
+      "utc": "2026-11-18T11:05:00.9410917Z"
+    },
+    {
+      "language": "fra",
+      "selected": "法语",
+      "sha256": "166c46a4c6cea181cc17e1de059dc984dd047318134b0afcc72df7fcbfa287e2",
+      "lines": 12,
+      "fallback": false,
+      "utc": "2026-11-18T11:05:04.7380938Z"
+    },
+    {
+      "language": "ita",
+      "selected": "意大利语",
+      "sha256": "38c21171a4bac1085ad588020ceef20dd9e8067cebd9f5b7f0a13b40154f581f",
+      "lines": 12,
+      "fallback": false,
+      "utc": "2026-11-18T11:05:08.5207108Z"
+    },
+    {
+      "language": "spa",
+      "selected": "西班牙语 - 西班牙",
+      "sha256": "f5640f90751c9bf2b1e465572e3da690491fc3c6914782d43d90dd54f71484f6",
+      "lines": 12,
+      "fallback": false,
+      "utc": "2026-11-18T11:05:12.3134302Z"
+    },
+    {
+      "language": "esp",
+      "selected": "西班牙语 - 拉丁美洲",
+      "sha256": "382a80f72b8dabcb993cf689c5804f5b27cc41c4c10a35bd92ca1d5503c32a71",
+      "lines": 12,
+      "fallback": false,
+      "utc": "2026-11-18T11:05:16.0907478Z"
+    },
+    {
+      "language": "ind",
+      "selected": "印度尼西亚语",
+      "sha256": "882938d97a71e50f325ba3f1813c2ce5e5e9c82f1eaf254f7ccd0a068faa8a84",
+      "lines": 12,
+      "fallback": false,
+      "utc": "2026-11-18T11:05:19.8667863Z"
+    },
+    {
+      "language": "pol",
+      "selected": "波兰语",
+      "sha256": "e9beb426b928259e22c5826108cf9ea6f723a45d0d6802d84ac6b7ee7d05972a",
+      "lines": 12,
+      "fallback": false,
+      "utc": "2026-11-18T11:05:23.6665794Z"
+    },
+    {
+      "language": "ptb",
+      "selected": "葡萄牙语 - 巴西",
+      "sha256": "6f2cca4e7696b0078683b793c4ff8c0c844c19a719cb362a060a65e3ea777e43",
+      "lines": 12,
+      "fallback": false,
+      "utc": "2026-11-18T11:05:27.4459329Z"
+    },
+    {
+      "language": "rus",
+      "selected": "俄语",
+      "sha256": "6af69986de40077fd62ece4be428681af9d29af111661db7942dd3e3a7aa0202",
+      "lines": 12,
+      "fallback": false,
+      "utc": "2026-11-18T11:05:31.2135414Z"
+    },
+    {
+      "language": "tha",
+      "selected": "泰语",
+      "sha256": "618f8170a5669e1f6076b40a0c278228516b78e0d985c600b1b82d5bbc43ca81",
+      "lines": 12,
+      "fallback": false,
+      "utc": "2026-11-18T11:05:35.0118338Z"
+    },
+    {
+      "language": "tur",
+      "selected": "土耳其语",
+      "sha256": "719e629ac52ace807a7db3be56b4823a731f1fbf45911ef96080e8654baf407a",
+      "lines": 12,
+      "fallback": false,
+      "utc": "2026-11-18T11:05:38.7956299Z"
+    }
+  ]
+}

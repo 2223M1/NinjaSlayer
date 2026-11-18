@@ -275,7 +275,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BlackFlameInferno.png",
     "Vars": {
-      "EnemyHpLoss": 6
+      "EnemyHpLoss": 4
     }
   },
   {
@@ -288,9 +288,7 @@
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [
-      "Innate"
-    ],
+    "Keywords": [],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BlackFlameInferno.png",
     "Vars": {
@@ -1768,7 +1766,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/LowUppercut.png",
     "Vars": {
-      "Damage": 8,
+      "Damage": 6,
       "VulnerablePower": 1,
       "WeakPower": 1
     }
@@ -1787,7 +1785,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/LowUppercut.png",
     "Vars": {
-      "Damage": 10,
+      "Damage": 8,
       "VulnerablePower": 2,
       "WeakPower": 2
     }
@@ -1933,7 +1931,7 @@
     "Portrait": "res://NinjaSlayer/images/cards/MotionAndStillness.png",
     "Vars": {
       "Breath": 1,
-      "Damage": 7
+      "Damage": 8
     }
   },
   {
@@ -1951,7 +1949,7 @@
     "Portrait": "res://NinjaSlayer/images/cards/MotionAndStillness.png",
     "Vars": {
       "Breath": 1,
-      "Damage": 11
+      "Damage": 12
     }
   },
   {
@@ -3287,7 +3285,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_ZANSHIN",
     "Upgraded": false,
-    "Cost": 1,
+    "Cost": 0,
     "X": false,
     "Type": "Power",
     "Rarity": "Rare",
@@ -3304,18 +3302,20 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_ZANSHIN",
     "Upgraded": true,
-    "Cost": 1,
+    "Cost": 0,
     "X": false,
     "Type": "Power",
     "Rarity": "Rare",
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Innate"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Zanshin.png",
     "Vars": {
-      "Cards": 2
+      "Cards": 1
     }
   },
   {

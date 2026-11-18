@@ -63,11 +63,7 @@ public partial class OrbContractRunner
                                 {
                                     if (sequence != null) AccessTools.Method(sequence.GetType(), "SetHit").Invoke(sequence, [step]);
                                     var attack = DamageCmd.Attack(1)
-#if NINJASLAYER_CHANNEL_STABLE
-                        .FromCard(card)
-#else
                                         .FromCard(card, null)
-#endif
                                         .Targeting(combat.Enemy)
                                         .WithHitCount(mode == 2 ? 1 : 3).WithAttackerAnim("Attack", threshold)
                                         .BeforeDamage(() => { hits.Add(_cadenceClock); return Task.CompletedTask; });

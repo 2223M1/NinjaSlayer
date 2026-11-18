@@ -34,9 +34,22 @@ public partial class OrbContractRunner
             for (int i = 0; i < 4; i++) AddCard<StrikeIronclad>(combat, PileType.Draw);
             await CardCmd.AutoPlay(Choice, AddCard<Kindle>(combat, upgraded: upgraded), null);
             Require(PileType.Hand.GetPile(combat.Player).Cards.OfType<StrikeIronclad>().Count() == (upgraded ? 3 : 2)
-                && PileType.Draw.GetPile(combat.Player).Cards.OfType<BlackFlame>().Count() == 1
-                && !PileType.Discard.GetPile(combat.Player).Cards.OfType<BlackFlame>().Any(),
-                "Kindle must draw two/three cards before adding exactly one Black Flame to draw.");
+                && PileType.Discard.GetPile(combat.Player).Cards.OfType<BlackFlame>().Count() == 1
+                && !PileType.Draw.GetPile(combat.Player).Cards.OfType<BlackFlame>().Any(),
+                "Kindle must draw two/three cards before adding exactly one Black Flame to discard.");
+        }
+        foreach (bool upgraded in new[] { false, true })
+        {
+            using var combat = new OrbCombat();
+            int draws = upgraded ? 3 : 2;
+            for (int i = 0; i < draws; i++) AddCard<DefendIronclad>(combat, PileType.Draw);
+            var kindle = AddCard<Kindle>(combat, upgraded: upgraded);
+            CardCmd.Enchant<MegaCrit.Sts2.Core.Models.Enchantments.Glam>(kindle, 1);
+            await CardCmd.AutoPlay(Choice, kindle, null);
+            var hand = PileType.Hand.GetPile(combat.Player).Cards;
+            Require(hand.OfType<DefendIronclad>().Count() == draws && hand.OfType<BlackFlame>().Count() == 1
+                && PileType.Discard.GetPile(combat.Player).Cards.OfType<BlackFlame>().Count() == 1,
+                "On replay with an empty draw pile, Kindle may redraw the first flame; the new flame stays in discard.");
         }
         using (var combat = new OrbCombat())
         {

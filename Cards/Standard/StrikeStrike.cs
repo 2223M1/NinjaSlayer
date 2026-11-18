@@ -38,11 +38,7 @@ public sealed class StrikeStrike : NinjaSlayerUncommonCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
-#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-            .FromCard(this)
-#else
             .FromCard(this, cardPlay)
-#endif
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)

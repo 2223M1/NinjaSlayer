@@ -205,9 +205,7 @@ public sealed partial class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
                 typeof(ValueProp),
                 typeof(Creature),
                 typeof(CardModel)
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                 , typeof(CardPlay)
-#endif
 #if NINJASLAYER_CHANNEL_PREVIEW
                 , typeof(MegaCrit.Sts2.Core.Hooks.ModifyDamageHookType)
 #endif
@@ -215,32 +213,11 @@ public sealed partial class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
     ];
 
 #pragma warning disable CA1707 // Harmony reserves double-underscore parameter names.
-#if NINJASLAYER_LEGACY_DAMAGE_API
-    public static bool Prefix(
-        PlayerChoiceContext choiceContext,
-        ref IEnumerable<Creature>? targets,
-        decimal amount,
-        ValueProp props,
-        Creature? dealer,
-        CardModel? cardSource,
-        ref Task<IEnumerable<DamageResult>> __result)
-    {
-        FinisherSession? session = FinisherSessionRegistry.GetActiveSession();
-        CardPlay? cardPlay = session != null
-            && session.Actor == dealer
-            && session.CardPlay?.Card == cardSource
-                ? session.CardPlay
-                : null;
-        return PrefixCore(
-            choiceContext,
-            ref targets,
-            amount,
-            props,
-            dealer,
-            cardSource,
-            cardPlay,
-            ref __result);
-    }
+#if NINJASLAYER_CHANNEL_STABLE
+    public static bool Prefix(PlayerChoiceContext choiceContext, ref IEnumerable<Creature>? targets,
+        decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay,
+        ref Task<IEnumerable<DamageResult>> __result) =>
+        PrefixCore(choiceContext, ref targets, amount, props, dealer, cardSource, cardPlay, ref __result);
 #else
     public static bool Prefix(
         PlayerChoiceContext choiceContext,
@@ -329,9 +306,7 @@ public sealed class NinjaSlayerIncomingDamageCapturePatch : IPatchMethod
                 typeof(ValueProp),
                 typeof(Creature),
                 typeof(CardModel)
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                 , typeof(CardPlay)
-#endif
 #if NINJASLAYER_CHANNEL_PREVIEW
                 , typeof(MegaCrit.Sts2.Core.Hooks.ModifyDamageHookType)
 #endif

@@ -35,17 +35,19 @@ public partial class OrbContractRunner
             var owner = combat.Player.Creature;
             var hand = PileType.Hand.GetPile(combat.Player);
             for (int i = 0; i < 6; i++) AddCard<DefendIronclad>(combat, PileType.Draw);
-            await CardCmd.AutoPlay(Choice, AddCard<Zanshin>(combat, upgraded: upgraded), null);
+            var card = AddCard<Zanshin>(combat, upgraded: upgraded);
+            Require(card.EnergyCost.GetWithModifiers(CostModifiers.Local) == 0, "Both versions of Zanshin must cost zero.");
+            Require(card.Keywords.Contains(CardKeyword.Innate) == upgraded, "Only upgraded Zanshin should be Innate.");
+            await CardCmd.AutoPlay(Choice, card, null);
             Require(hand.Cards.Count == 0, "Zanshin itself is not a counted combat buff.");
             PowerModel canonical = ModelDb.GetById<PowerModel>(ModelDb.GetId(type));
-            int draw = upgraded ? 2 : 1;
             await PowerCmd.Apply(Choice, canonical.ToMutable(), owner, 2, owner, null);
-            Require(hand.Cards.Count == draw, $"Zanshin must draw {draw} on first gaining {type.Name}.");
+            Require(hand.Cards.Count == 1, $"Zanshin must draw one on first gaining {type.Name}.");
             await PowerCmd.Apply(Choice, canonical.ToMutable(), owner, 1, owner, null);
-            Require(hand.Cards.Count == draw, $"Adding stacks of {type.Name} must not draw again.");
+            Require(hand.Cards.Count == 1, $"Adding stacks of {type.Name} must not draw again.");
             await PowerCmd.Remove(owner.GetPower(canonical.Id)!);
             await PowerCmd.Apply(Choice, canonical.ToMutable(), owner, 1, owner, null);
-            Require(hand.Cards.Count == 2 * draw, $"Reacquiring {type.Name} must draw again after it is gone.");
+            Require(hand.Cards.Count == 2, $"Reacquiring {type.Name} must draw again after it is gone.");
         }
 
         foreach (bool upgraded in new[] { false, true })
@@ -79,10 +81,10 @@ public partial class OrbContractRunner
             Require(owner.GetPowerAmount<KaratePower>() == 0 && hand.Cards.Count == 0,
                 "Spending the last Karate stack must not draw cards.");
             await PowerCmd.Apply<KaratePower>(Choice, owner, 1, owner, null);
-            Require(hand.Cards.Count == 3, "Base and upgraded Zanshin must draw three when spent Karate is regained.");
+            Require(hand.Cards.Count == 2, "Base and upgraded Zanshin together must draw two when spent Karate is regained.");
             await CardCmd.AutoPlay(Choice, combat.Card(), combat.Enemy);
             await PowerCmd.Apply<KaratePower>(Choice, owner, 1, owner, null);
-            Require(hand.Cards.Count == 6, "Karate can be fully consumed and regained repeatedly in the same combat.");
+            Require(hand.Cards.Count == 4, "Karate can be fully consumed and regained repeatedly in the same combat.");
             for (int i = 0; i < 3; i++) await CardCmd.AutoPlay(Choice, combat.Card(), combat.Enemy);
             combat.State.RoundNumber++;
             combat.Player.PlayerCombatState!.IncrementTurnNumber();

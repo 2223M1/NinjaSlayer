@@ -34,9 +34,7 @@ public sealed partial class BlackFlameDamagePatch : IPatchMethod
                 typeof(ValueProp),
                 typeof(Creature),
                 typeof(CardModel)
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                 , typeof(CardPlay)
-#endif
 #if NINJASLAYER_CHANNEL_PREVIEW
                 , typeof(MegaCrit.Sts2.Core.Hooks.ModifyDamageHookType)
 #endif
@@ -44,18 +42,11 @@ public sealed partial class BlackFlameDamagePatch : IPatchMethod
     ];
 
 #pragma warning disable CA1707 // Harmony reserves double-underscore parameter names.
-#if NINJASLAYER_LEGACY_DAMAGE_API
-    public static void Postfix(
-        CardModel? cardSource,
-        ref Task<IEnumerable<DamageResult>> __result) =>
-        TrackResults(cardSource, suppliedCardPlay: null, ref __result);
-#else
     public static void Postfix(
         CardModel? cardSource,
         CardPlay? cardPlay,
         ref Task<IEnumerable<DamageResult>> __result) =>
         TrackResults(cardSource, cardPlay, ref __result);
-#endif
 #pragma warning restore CA1707
 
     private static void TrackResults(

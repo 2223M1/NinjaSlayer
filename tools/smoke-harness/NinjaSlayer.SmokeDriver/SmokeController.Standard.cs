@@ -220,9 +220,7 @@ internal sealed partial class SmokeController
             ValueProp.Unblockable | ValueProp.Unpowered,
             target,
             null
-#if !NINJASLAYER_LEGACY_DAMAGE_API
             , null
-#endif
         );
         Require(player.Creature.CurrentHp == hpBeforeGreatUke, "Great Uke Buffer did not prevent the first hit.");
         await CreatureCmd.Damage(
@@ -232,9 +230,7 @@ internal sealed partial class SmokeController
             ValueProp.Unblockable | ValueProp.Unpowered,
             target,
             null
-#if !NINJASLAYER_LEGACY_DAMAGE_API
             , null
-#endif
         );
         Require(player.Creature.CurrentHp == hpBeforeGreatUke - 11, "Great Uke incorrectly prevented a second hit.");
         await CreatureCmd.Heal(player.Creature, 11);

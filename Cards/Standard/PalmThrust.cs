@@ -32,11 +32,7 @@ public sealed class PalmThrust : NinjaSlayerCommonCard
     {
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .WithHitCount(DynamicVars.Repeat.IntValue)
-#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-            .FromCard(this)
-#else
             .FromCard(this, cardPlay)
-#endif
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .TargetingRandomOpponents(CombatState!)

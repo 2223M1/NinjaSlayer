@@ -104,7 +104,7 @@ internal static class DarkNinjaSpecialAttackPresentation
         Func<Creature, Task<DarkStrikeImpactOutcome>> onImpact,
         Func<Node2D, Task>? contactContinuation = null,
         int returnSide = 1,
-        Func<Creature, bool>? canPenetrate = null)
+        Func<Creature, (Creature Receiver, bool Penetrates)>? predictContact = null)
     {
         // Native target order is shared by peers; canvas positions put the local
         // player first and must never decide damage or theft RNG consumption.
@@ -116,7 +116,7 @@ internal static class DarkNinjaSpecialAttackPresentation
 
         if (FinisherApproach.IsActive(attacker))
         {
-            await PlayDarkStrikeFallback(attacker, orderedTargets, canImpact, onImpact);
+            await PlayDarkStrikeFallback(attacker, orderedTargets, canImpact, onImpact, predictContact);
             return;
         }
 
@@ -127,7 +127,7 @@ internal static class DarkNinjaSpecialAttackPresentation
                 attacker,
                 orderedTargets,
                 canImpact,
-                onImpact);
+                onImpact, predictContact);
             return;
         }
 
@@ -151,34 +151,14 @@ internal static class DarkNinjaSpecialAttackPresentation
 
             DarkNinjaStabSegment segment = DarkNinjaCombatMath.GetDarkStrikeSegment(
                 presentationIndex++);
+            var (receiver, penetrates) = predictContact?.Invoke(target) ?? (target, false);
+            float contactTime = DarkNinjaCombatMath.SampleDarkStrikeVisualReference(segment, 1f);
             visual.PrepareTarget(
-                target,
+                receiver,
                 DarkNinjaCombatMath.SampleDarkStrikeVisualReference(
                     segment,
                     0f),
-                penetratesTarget: canPenetrate?.Invoke(target) == true);
-            (NCombatRoom Room, Vector2 Position, int FrontZ)? impactVfx = null;
-            Task<DarkStrikeImpactOutcome>? impactTask = null;
-            void TriggerImpactOnFinalMotionFrame()
-            {
-                if (impactTask != null || !canImpact(target))
-                {
-                    return;
-                }
-
-                float referenceSeconds = DarkNinjaCombatMath.SampleDarkStrikeVisualReference(
-                    segment,
-                    1f);
-                visual.ApplyReferencePose(
-                    target,
-                    referenceSeconds);
-                impactVfx = CaptureImpactVfx(target);
-                impactTask = DarkStrikeHurtPoseFreezeContext.Run(
-                    target,
-                    visual.FreezeTargetHurtPose,
-                    () => onImpact(target));
-            }
-
+                penetratesTarget: penetrates);
             await PlayTween(
                 visual.Owner,
                 segment.MotionSeconds,
@@ -187,12 +167,10 @@ internal static class DarkNinjaSpecialAttackPresentation
                     float referenceSeconds = DarkNinjaCombatMath.SampleDarkStrikeVisualReference(
                         segment,
                         progress);
-                    visual.ApplyReferencePose(target, referenceSeconds);
-                },
-                TriggerImpactOnFinalMotionFrame);
+                    visual.ApplyReferencePose(referenceSeconds);
+                });
 
-            TriggerImpactOnFinalMotionFrame();
-            if (impactTask == null)
+            if (!canImpact(target))
             {
                 if (!CanContinue(attacker))
                 {
@@ -203,11 +181,21 @@ internal static class DarkNinjaSpecialAttackPresentation
             }
 
             attemptedImpact = true;
-            DarkStrikeImpactOutcome outcome = await impactTask;
+            visual.ApplyReferencePose(contactTime);
+            visual.HoldContact();
+            StabVfx? impactVfx = CaptureImpactVfx(receiver);
+            // Keep damage in the monster move's execution context; Godot Tween callbacks do not inherit it.
+            DarkStrikeImpactOutcome outcome = await DarkStrikeHurtPoseFreezeContext.Run(
+                receiver, visual.FreezeTargetHurtPose, () => onImpact(target));
             highestHealing = Math.Max(highestHealing, outcome.Healing);
-            visual.SetPenetration(
-                outcome.Connected && !outcome.FullyBlocked,
-                DarkNinjaCombatMath.SampleDarkStrikeVisualReference(segment, 1f));
+            bool pierced = outcome.Connected && !outcome.FullyBlocked;
+            if (outcome.Receiver is { } actual && actual != receiver)
+            {
+                impactVfx = CaptureImpactVfx(actual);
+                visual.PrepareTarget(actual, contactTime, pierced);
+                visual.HoldContact();
+            }
+            visual.SetPenetration(pierced, contactTime);
 
             PlayImpactFeedback(
                 outcome,
@@ -258,7 +246,8 @@ internal static class DarkNinjaSpecialAttackPresentation
         Creature attacker,
         Creature[] targets,
         Func<Creature, bool> canImpact,
-        Func<Creature, Task<DarkStrikeImpactOutcome>> onImpact)
+        Func<Creature, Task<DarkStrikeImpactOutcome>> onImpact,
+        Func<Creature, (Creature Receiver, bool Penetrates)>? predictContact)
     {
         int highestHealing = 0;
         bool playedSuccessfulVoice = false;
@@ -286,10 +275,13 @@ internal static class DarkNinjaSpecialAttackPresentation
                 continue;
             }
 
-            (NCombatRoom Room, Vector2 Position, int FrontZ)? impactVfx = CaptureImpactVfx(target);
-            using var hurtHold = DarkStrikeHurtPoseFreezeLease.TryAcquire(target);
+            Creature receiver = NCombatRoom.Instance != null ? predictContact?.Invoke(target).Receiver ?? target : target;
+            var impactVfx = CaptureImpactVfx(receiver);
+            using var hurtHold = DarkStrikeHurtPoseFreezeLease.TryAcquire(receiver);
             DarkStrikeImpactOutcome outcome = await DarkStrikeHurtPoseFreezeContext.Run(
-                target, _ => hurtHold?.Capture() == true, () => onImpact(target));
+                receiver, _ => hurtHold?.Capture() == true, () => onImpact(target));
+            if (outcome.Receiver is { } actual && actual != receiver)
+                impactVfx = CaptureImpactVfx(actual);
             attemptedImpact = true;
             highestHealing = Math.Max(highestHealing, outcome.Healing);
             PlayImpactFeedback(
@@ -338,7 +330,13 @@ internal static class DarkNinjaSpecialAttackPresentation
         && combatState.IsLiveCombat()
         && !CombatManager.Instance.IsOverOrEnding;
 
-    private static (NCombatRoom Room, Vector2 Position, int FrontZ)? CaptureImpactVfx(Creature target)
+    private readonly record struct StabVfx(NCombatRoom Room, Node2D Point, Vector2 LastPosition, int FrontZ)
+    {
+        internal Vector2 Position => GodotObject.IsInstanceValid(Point) && Point.IsInsideTree()
+            ? Point.GlobalPosition : LastPosition;
+    }
+
+    private static StabVfx? CaptureImpactVfx(Creature target)
     {
         NCombatRoom? room = NCombatRoom.Instance;
         if (room == null || !GodotObject.IsInstanceValid(room))
@@ -358,12 +356,17 @@ internal static class DarkNinjaSpecialAttackPresentation
             foreach (Node child in node.GetChildren()) Visit(child);
         }
         Visit(body);
-        return (room, targetNode.VfxSpawnPosition, Math.Min(MaximumCanvasZIndex, frontZ + 1));
+        var point = ResolveStabPoint(targetNode.Visuals);
+        return new StabVfx(room, point, point.GlobalPosition, Math.Min(MaximumCanvasZIndex, frontZ + 1));
     }
+
+    // AimPose, stagger and native Wuppy height changes already move CenterPos.
+    private static Marker2D ResolveStabPoint(NCreatureVisuals visuals) =>
+        visuals.GetNodeOrNull<Marker2D>("ArrowPosition") ?? visuals.VfxSpawnPosition;
 
     private static void PlayImpactFeedback(
         DarkStrikeImpactOutcome outcome,
-        (NCombatRoom Room, Vector2 Position, int FrontZ)? impactVfx,
+        StabVfx? impactVfx,
         ref bool playedSuccessfulVoice,
         ref bool playedBlockedVoice)
     {
@@ -411,8 +414,7 @@ internal static class DarkNinjaSpecialAttackPresentation
     private static async Task PlayTween(
         Node owner,
         float duration,
-        Action<float> apply,
-        Action? onFinalFrame = null)
+        Action<float> apply)
     {
         if (!GodotObject.IsInstanceValid(owner) || !owner.IsInsideTree())
         {
@@ -422,11 +424,6 @@ internal static class DarkNinjaSpecialAttackPresentation
         Tween tween = owner.CreateTween();
         tween.TweenMethod(Callable.From(apply), 0f, 1f, duration)
             .SetTrans(Tween.TransitionType.Linear);
-        if (onFinalFrame != null)
-        {
-            tween.TweenCallback(Callable.From(onFinalFrame));
-        }
-
         await TweenPlayback.AwaitCompletion(tween, owner);
     }
 
@@ -538,6 +535,9 @@ internal static class DarkNinjaSpecialAttackPresentation
         private readonly Sprite2D _frontSword;
         private readonly Sprite2D _fullBody;
         private readonly DarkNinjaStolenCards? _stolenCards;
+#if NINJASLAYER_CHANNEL_PREVIEW
+        private readonly DarkStrikeImpaledArrow[] _arrows;
+#endif
         private EntangledSpinMotionBlur? _returnBlur;
         private VerticalAxisSpinProjection? _returnProjection;
         private readonly Vector2 _baselinePosition;
@@ -545,6 +545,7 @@ internal static class DarkNinjaSpecialAttackPresentation
         private readonly float _scaleY;
         private readonly List<(CanvasItem Item, int Z, bool Relative)> _raisedTargetLayers = [];
         private float _strikeDirection;
+        private DarkStrikeContactPoint? _contact;
         private DarkStrikeHurtPoseFreezeLease? _targetPoseFreeze;
         private bool _penetratesTarget;
         private int _disposed;
@@ -579,6 +580,9 @@ internal static class DarkNinjaSpecialAttackPresentation
             _frontSword = frontSword;
             _fullBody = fullBody;
             _stolenCards = DarkNinjaStolenCards.Get(attacker);
+#if NINJASLAYER_CHANNEL_PREVIEW
+            _arrows = DarkStrikeImpaledArrow.Capture(owner.Visuals, sourceBody);
+#endif
             _baselinePosition = baselinePosition;
             _scaleX = scaleX;
             _scaleY = scaleY;
@@ -593,6 +597,9 @@ internal static class DarkNinjaSpecialAttackPresentation
             }
             catch
             {
+#if NINJASLAYER_CHANNEL_PREVIEW
+                foreach (var arrow in _arrows) arrow.Dispose();
+#endif
                 if (GodotObject.IsInstanceValid(sourceBody))
                 {
                     _stolenCards?.ShowOn(sourceBody);
@@ -763,20 +770,24 @@ internal static class DarkNinjaSpecialAttackPresentation
                 }
 
                 NCreature? targetNode = Room.GetCreatureNode(target);
-                if (targetNode != null && GodotObject.IsInstanceValid(targetNode))
+                if (!GodotObject.IsInstanceValid(targetNode) || !targetNode!.IsInsideTree())
                 {
-                    Node2D targetBody = NinjaSlayerVisualRig.GetAirborneAnchor(targetNode.Visuals)
-                        ?? targetNode.Visuals.GetCurrentBody();
-                    if (GodotObject.IsInstanceValid(targetBody))
-                    {
-                        RaiseTargetLayers(targetBody);
-                    }
-                    _strikeDirection = target.Side == CombatSide.Enemy
-                        || NinjaSlayerFacingState.ResolveFacingLeft(targetNode) ? -1f : 1f;
+                    _root.Hide();
+                    return;
                 }
+                _contact = new DarkStrikeContactPoint();
+                ResolveStabPoint(targetNode.Visuals).AddChild(_contact);
+                Node2D targetBody = NinjaSlayerVisualRig.GetAirborneAnchor(targetNode.Visuals)
+                    ?? targetNode.Visuals.GetCurrentBody();
+                RaiseTargetLayers(targetBody);
+#if NINJASLAYER_CHANNEL_PREVIEW
+                foreach (var arrow in _arrows) arrow.ShowOn(_character, ResolveEffectiveZ(_character));
+#endif
+                _strikeDirection = target.Side == CombatSide.Enemy
+                    || NinjaSlayerFacingState.ResolveFacingLeft(targetNode) ? -1f : 1f;
 
                 _penetratesTarget = penetratesTarget;
-                ApplyReferencePose(target, referenceSeconds);
+                ApplyReferencePose(referenceSeconds);
                 _root.Visible = true;
             }
             finally
@@ -809,16 +820,22 @@ internal static class DarkNinjaSpecialAttackPresentation
             return _targetPoseFreeze?.Capture() == true;
         }
 
-        internal void ApplyReferencePose(Creature target, float referenceSeconds)
+        internal void HoldContact()
+        {
+            if (GodotObject.IsInstanceValid(_contact) && _contact!.IsInsideTree()) _contact.Hold(_root);
+        }
+
+        internal void ApplyReferencePose(float referenceSeconds)
         {
             if (Volatile.Read(ref _disposed) != 0
                 || !GodotObject.IsInstanceValid(_root)
-                || !GodotObject.IsInstanceValid(_sceneContainer))
+                || !GodotObject.IsInstanceValid(_sceneContainer)
+                || !GodotObject.IsInstanceValid(_contact) || !_contact!.IsInsideTree())
             {
                 return;
             }
 
-            Vector2 targetCanvasPosition = ResolveImpactCanvasPosition(target);
+            Vector2 targetCanvasPosition = _contact.GetGlobalTransformWithCanvas().Origin;
             Vector2 targetScenePosition = _sceneContainer.GetGlobalTransformWithCanvas()
                 .AffineInverse()
                 * targetCanvasPosition;
@@ -852,7 +869,11 @@ internal static class DarkNinjaSpecialAttackPresentation
                 _rearSword.Visible = false;
                 _frontSword.Visible = false;
                 _fullBody.Visible = true;
+                _root.Show();
                 _stolenCards?.ShowOn(_fullBody);
+#if NINJASLAYER_CHANNEL_PREVIEW
+                foreach (var arrow in _arrows) arrow.ShowOn(_fullBody, ResolveEffectiveZ(_fullBody));
+#endif
             }
             finally
             {
@@ -889,6 +910,8 @@ internal static class DarkNinjaSpecialAttackPresentation
 
         private void RestoreTargetLayer()
         {
+            if (GodotObject.IsInstanceValid(_contact)) _contact!.Release();
+            _contact = null;
             foreach (var (item, z, relative) in _raisedTargetLayers)
             {
                 if (!GodotObject.IsInstanceValid(item)) continue;
@@ -1002,6 +1025,9 @@ internal static class DarkNinjaSpecialAttackPresentation
 
             _returnBlur?.Stop();
             _returnProjection?.Restore();
+#if NINJASLAYER_CHANNEL_PREVIEW
+            foreach (var arrow in _arrows) arrow.Dispose();
+#endif
             if (GodotObject.IsInstanceValid(_sourceBody) && GodotObject.IsInstanceValid(_stolenCards))
                 _stolenCards!.ShowOn(_sourceBody);
             RestoreTargetLayer();
@@ -1026,24 +1052,6 @@ internal static class DarkNinjaSpecialAttackPresentation
             }
         }
 
-        private Vector2 ResolveImpactCanvasPosition(Creature target)
-        {
-            if (!GodotObject.IsInstanceValid(Room))
-            {
-                return _sceneContainer.GetGlobalTransformWithCanvas() * _root.Position;
-            }
-
-            NCreature? targetNode = Room.GetCreatureNode(target);
-            if (targetNode == null || !GodotObject.IsInstanceValid(targetNode))
-            {
-                return _sceneContainer.GetGlobalTransformWithCanvas() * _root.Position;
-            }
-
-            Marker2D marker = targetNode.Visuals.VfxSpawnPosition;
-            return GodotObject.IsInstanceValid(marker)
-                ? marker.GetGlobalTransformWithCanvas().Origin
-                : targetNode.Visuals.Bounds.GetGlobalRect().GetCenter();
-        }
     }
 
     private sealed class DarkStrikeHurtPoseFreezeLease : IDisposable

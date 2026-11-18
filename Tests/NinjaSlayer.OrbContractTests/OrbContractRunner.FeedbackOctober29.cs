@@ -40,7 +40,7 @@ public partial class OrbContractRunner
                 var other = combat.AddEnemy();
                 await CardCmd.AutoPlay(Choice, AddCard<LowUppercut>(combat, upgraded: upgraded), combat.Enemy);
                 int debuff = previous == "attack" ? (upgraded ? 2 : 1) : 0;
-                Require(combat.Enemy.CurrentHp == hp - (upgraded ? 10 : 8)
+                Require(combat.Enemy.CurrentHp == hp - (upgraded ? 8 : 6)
                     && combat.Enemy.GetPowerAmount<WeakPower>() == debuff
                     && combat.Enemy.GetPowerAmount<VulnerablePower>() == debuff
                     && !other.HasPower<WeakPower>() && !other.HasPower<VulnerablePower>(),

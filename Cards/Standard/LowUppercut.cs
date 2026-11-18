@@ -15,17 +15,13 @@ public sealed class LowUppercut : NinjaSlayerCommonCard
     private bool MeetsBonusCondition => NinjaSlayerCombatMetrics.PreviousFinishedCardWasAttack(Owner);
     protected override bool ShouldGlowGoldInternal => CombatState != null && MeetsBonusCondition;
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(8, ValueProp.Move), new PowerVar<WeakPower>(1), new PowerVar<VulnerablePower>(1)];
+        [new DamageVar(6, ValueProp.Move), new PowerVar<WeakPower>(1), new PowerVar<VulnerablePower>(1)];
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         bool applyDebuffs = MeetsBonusCondition;
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
-#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-            .FromCard(this)
-#else
             .FromCard(this, cardPlay)
-#endif
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)

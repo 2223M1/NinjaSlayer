@@ -196,9 +196,7 @@ public sealed class YukanoMonster : ModMonsterTemplate
                         command.DamageProps,
                         Creature,
                         null
-#if !NINJASLAYER_LEGACY_DAMAGE_API
                         , null
-#endif
                     ));
                 }
             }

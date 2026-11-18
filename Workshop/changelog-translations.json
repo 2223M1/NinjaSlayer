@@ -5000,6 +5000,334 @@
           "Önceden Planla'ın kart resmi değiştirildi."
         ]
       }
+    },
+    {
+      "version": "1.2.9",
+      "entryId": "1794998856",
+      "sourceRevision": "117b0de62acfcbeb3fa53450357f92d21ea6b567",
+      "sourceText": "支持正式版 0.111.1 和预览版 0.113.1，结束对 0.107.1 的支持。\n烈焰使敌人因黑炎额外失去的生命由 6 点调整为 4→6 点，升级不再获得固有。\n转机由生成任意牌时抽 1→2 张牌改为仅在你生成状态牌时触发。\n低空上勾拳的伤害由 8→10 点降至 6→8 点。\n动静相生的伤害由 7→11 点提高至 8→12 点。\n玛卡古生成的 2 张黑炎由加入手牌改为加入弃牌堆。\n燃火抽牌后生成的 1 张黑炎由加入抽牌堆改为加入弃牌堆。\n更换九张卡图：调息、从容、守势、守静、审势、嘶哈、大·受身、戒备、连打。\n修复了用户反馈中沢渡决斗手柄失灵的问题。\n暗·打的刀会随受击目标移动；瓦皮代挡时，黑暗忍者仍会回血，仅在玩家实际失去生命时偷牌。\n黑暗忍者突刺及转身时，身上已有的箭会随之移动。\n调整友军站位以保留瓦皮的原版位置；联机时可以用鼠标或手柄为队友的友军选择可用的援护牌和药水。",
+      "evidence": [
+        "Docs/validation/release-1.2.9-evidence.json",
+        "Website/content/versions/1.2.9/catalog.json"
+      ],
+      "notes": {
+        "zhs": [
+          "支持正式版 0.111.1 和预览版 0.113.1，结束对 0.107.1 的支持。",
+          "烈焰使敌人因黑炎额外失去的生命由 6 点调整为 4→6 点，升级不再获得固有。",
+          "转机由生成任意牌时抽 1→2 张牌改为仅在你生成状态牌时触发。",
+          "低空上勾拳的伤害由 8→10 点降至 6→8 点。",
+          "动静相生的伤害由 7→11 点提高至 8→12 点。",
+          "玛卡古生成的 2 张黑炎由加入手牌改为加入弃牌堆。",
+          "燃火抽牌后生成的 1 张黑炎由加入抽牌堆改为加入弃牌堆。",
+          "更换九张卡图：调息、从容、守势、守静、审势、嘶哈、大·受身、戒备、连打。",
+          "修复了用户反馈中沢渡决斗手柄失灵的问题。",
+          "暗·打的刀会随受击目标移动；瓦皮代挡时，黑暗忍者仍会回血，仅在玩家实际失去生命时偷牌。",
+          "黑暗忍者突刺及转身时，身上已有的箭会随之移动。",
+          "调整友军站位以保留瓦皮的原版位置；联机时可以用鼠标或手柄为队友的友军选择可用的援护牌和药水。"
+        ],
+        "eng": [
+          "Supports stable 0.111.1 and preview 0.113.1; support for 0.107.1 has ended.",
+          "Black Flame Inferno: extra HP lost to Black Flame changed from 6 to 4→6. Upgrading no longer grants Innate.",
+          "Turning Point: draw 1→2 cards only when you generate a Status, instead of any card.",
+          "Low Uppercut: damage reduced from 8→10 to 6→8.",
+          "Motion and Stillness: damage increased from 7→11 to 8→12.",
+          "Macaco: the 2 copies of Black Flame now go into your discard pile instead of your hand.",
+          "Kindle: after drawing, add 1 Black Flame to your discard pile instead of your draw pile.",
+          "New illustrations for nine cards: Regulate Breath, Composure, Guard Stance, Stillness, Assess, Hiss and Huff, Great Ukemi, On Guard, Flurry.",
+          "Fixed a reported issue where controller input stopped working when returning to the duel against Forest Sawatari.",
+          "The blade from Dark Strike follows its target. When Wuppy takes the hit, Dark Ninja still heals and only steals a card if the player loses HP.",
+          "Arrows already embedded in Dark Ninja now follow the lunge and turn.",
+          "Ally formation preserves Wuppy’s normal position. In multiplayer you can target a teammate’s ally with eligible support cards and potions using a mouse or controller."
+        ],
+        "jpn": [
+          "正式版 0.111.1 とプレビュー版 0.113.1 に対応し、0.107.1 のサポートを終了。",
+          "烈火：黒い炎で敵が追加で失うHPを6から4→6に変更。アップグレードしても天賦は付かなくなりました。",
+          "転機：カード生成時の1→2枚ドローは、自分が状態異常カードを生成した時のみ発動します。",
+          "低空アッパーカット：ダメージを8→10から6→8に減少。",
+          "動と静：ダメージを7→11から8→12に増加。",
+          "マカコ：生成する黒い炎2枚の行き先を手札から捨て札に変更。",
+          "火種：ドロー後に生成する黒い炎1枚の行き先を山札から捨て札に変更。",
+          "次の9枚のイラストを変更：調息、平静、守勢、静寂、形勢を見る、スゥーッ、ハァーッ、グレーター・ウケミ、警戒、連打。",
+          "フォレスト・サワタリとの決闘に戻るとコントローラー操作が効かなくなるとの報告を受け、修正しました。",
+          "ダーク・ウチの刀は刺さった相手に追従します。ワッピーが攻撃を肩代わりしてもダークニンジャは回復し、プレイヤーが実際にHPを失った場合のみカードを奪います。",
+          "ダークニンジャに刺さった矢が突進や振り向きに合わせて移動します。",
+          "味方の隊列を調整し、ワッピーが本来の位置を保つようにしました。マルチプレイでは、対象にできる援護カードやポーションをマウス・コントローラーで仲間の味方に使えます。"
+        ],
+        "kor": [
+          "정식 버전 0.111.1과 미리보기 버전 0.113.1을 지원하며, 0.107.1 지원을 종료합니다.",
+          "지옥같은 불꽃: 검은 불꽃으로 적이 추가로 잃는 체력이 6에서 4→6으로 변경됩니다. 강화해도 선천성을 얻지 않습니다.",
+          "전환점: 아무 카드나 생성할 때가 아니라 자신이 상태 카드를 생성할 때만 카드를 1→2장 뽑습니다.",
+          "저공 어퍼컷: 피해량이 8→10에서 6→8로 감소합니다.",
+          "동과 정: 피해량이 7→11에서 8→12로 증가합니다.",
+          "마카코: 생성한 검은 불꽃 2장이 손 대신 버린 카드 더미에 들어갑니다.",
+          "점화: 카드를 뽑은 뒤 생성하는 검은 불꽃 1장이 뽑을 카드 더미 대신 버린 카드 더미에 들어갑니다.",
+          "카드 9장의 일러스트를 교체했습니다: 호흡 조절, 침착, 수세, 정적, 판단, 스읍-. 후우-., 그레이트 낙법, 경계, 연타.",
+          "포레스트 사와타리와의 결투로 돌아갈 때 컨트롤러 입력이 멈춘다는 제보를 확인하고 수정했습니다.",
+          "암흑 타격의 칼이 맞은 대상을 따라갑니다. 워피가 대신 맞아도 다크 닌자는 회복하며, 플레이어가 실제로 체력을 잃을 때만 카드를 훔칩니다.",
+          "다크 닌자에게 이미 꽂힌 화살이 돌진과 방향 전환에 맞춰 움직입니다.",
+          "아군 대형에서 워피가 원래 위치를 유지합니다. 멀티플레이에서는 마우스나 컨트롤러로 팀원의 아군을 지정해 대상에게 사용 가능한 지원 카드와 물약을 쓸 수 있습니다."
+        ],
+        "zht": [
+          "支援正式版 0.111.1 與預覽版 0.113.1，停止支援 0.107.1。",
+          "烈焰使敵人因黑炎額外失去的生命由 6 點調整為 4→6 點，升級不再獲得固有。",
+          "轉機由生成任意牌時抽 1→2 張牌，改為只在你生成狀態牌時觸發。",
+          "低空上勾拳的傷害由 8→10 點降至 6→8 點。",
+          "動靜相生的傷害由 7→11 點提高至 8→12 點。",
+          "瑪卡古生成的 2 張黑炎改為放進棄牌堆，不再加入手牌。",
+          "燃火抽牌後生成的 1 張黑炎由加入抽牌堆改為加入棄牌堆。",
+          "更換九張卡圖：調息、從容、守勢、守靜、審勢、嘶哈、大·受身、戒備、連打。",
+          "修正玩家回報的問題：返回與沢渡 · 佛雷斯特的決鬥時，控制器會失去反應。",
+          "暗·打的刀會隨受擊目標移動；瓦皮代擋時，黑暗忍者仍會回血，只有玩家實際失去生命時才會偷牌。",
+          "黑暗忍者突刺與轉身時，身上已有的箭會隨之移動。",
+          "調整友軍站位以保留瓦皮的原版位置；連線時可用滑鼠或控制器，對隊友的友軍使用適用的援護牌及藥水。"
+        ],
+        "deu": [
+          "Unterstützt die stabile Version 0.111.1 und die Vorschau 0.113.1. Die Unterstützung für 0.107.1 endet.",
+          "Schwarzes Flammeninferno: Der zusätzliche LP-Verlust durch Schwarze Flamme ändert sich von 6 auf 4→6. Die Aufwertung verleiht nicht mehr Angeboren.",
+          "Wendepunkt: Ziehe 1→2 Karten nur noch, wenn du eine Statuskarte erzeugst, statt bei jeder erzeugten Karte.",
+          "Tiefer Aufwärtshaken: Schaden von 8→10 auf 6→8 gesenkt.",
+          "Bewegung und Ruhe: Schaden von 7→11 auf 8→12 erhöht.",
+          "Macaco: Die 2 erzeugten Exemplare von Schwarze Flamme kommen auf den Ablagestapel statt auf die Hand.",
+          "Entfachen: Nach dem Ziehen kommt 1 Exemplar von Schwarze Flamme auf den Ablagestapel statt auf den Nachziehstapel.",
+          "Neue Illustrationen für neun Karten: Atemkontrolle, Gelassenheit, Abwehrhaltung, Stille, Lage prüfen, Zischen und Schnaufen, Großes Ukemi, Auf der Hut, Schlagfolge.",
+          "Ein gemeldetes Problem wurde behoben, durch das der Controller bei der Rückkehr zum Duell mit Forest Sawatari nicht mehr reagierte.",
+          "Die Klinge von Dunkler Schlag folgt dem getroffenen Ziel. Fängt Wuppi den Treffer ab, heilt sich Dark Ninja weiterhin, stiehlt aber nur dann eine Karte, wenn der Spieler LP verliert.",
+          "Pfeile, die bereits in Dark Ninja stecken, bewegen sich beim Vorstoß und beim Wenden mit.",
+          "In der Formation behält Wuppi die gewohnte Position. Im Mehrspieler lassen sich passende Unterstützungskarten und Tränke mit Maus oder Controller auf Verbündete eines Mitspielers anwenden."
+        ],
+        "fra": [
+          "Prise en charge de la version stable 0.111.1 et de la version de test 0.113.1. Fin de la prise en charge de la 0.107.1.",
+          "Brasier de flammes noires : la perte de PV supplémentaire infligée par Flamme noire passe de 6 à 4→6. L’amélioration ne confère plus Inné.",
+          "Tournant : vous piochez 1→2 cartes uniquement lorsque vous créez une carte Statut, et non plus à chaque carte créée.",
+          "Uppercut bas : dégâts réduits de 8→10 à 6→8.",
+          "Mouvement et quiétude : dégâts augmentés de 7→11 à 8→12.",
+          "Macaco : les 2 exemplaires de Flamme noire créés vont dans votre défausse au lieu de votre main.",
+          "Attiser : après la pioche, l’exemplaire de Flamme noire créé va dans votre défausse au lieu de votre pioche.",
+          "Nouvelles illustrations pour neuf cartes : Souffle maîtrisé, Sang-froid, Posture défensive, Sérénité, Évaluer, Siffler et souffler, Grand Ukemi, Sur ses gardes, Rafale de coups.",
+          "Correction d’un problème signalé : la manette ne répondait plus au retour dans le duel contre Forest Sawatari.",
+          "La lame de Frappe sombre suit la cible touchée. Lorsque Woupi intercepte le coup, Dark Ninja se soigne toujours et ne vole une carte que si le joueur perd des PV.",
+          "Les flèches déjà plantées dans Dark Ninja suivent ses fentes et ses demi-tours.",
+          "La formation des alliés conserve la position habituelle de Woupi. En multijoueur, les cartes de soutien et les potions compatibles peuvent cibler un allié d’un coéquipier à la souris ou à la manette."
+        ],
+        "esp": [
+          "Compatible con la versión estable 0.111.1 y la de prueba 0.113.1. Finaliza la compatibilidad con 0.107.1.",
+          "Infierno de llama negra: la pérdida adicional de PV que causa Llama negra cambia de 6 a 4→6. La mejora ya no otorga Innata.",
+          "Punto de inflexión: roba 1→2 cartas solo cuando generes una carta de Estado, en lugar de al generar cualquier carta.",
+          "Gancho bajo: el daño baja de 8→10 a 6→8.",
+          "Movimiento y quietud: el daño sube de 7→11 a 8→12.",
+          "Macaco: las 2 copias de Llama negra que se generan van a la pila de descarte en lugar de a tu mano.",
+          "Avivar: después de robar, la copia de Llama negra va a la pila de descarte en lugar de a la pila de robo.",
+          "Nuevas ilustraciones para nueve cartas: Respiración controlada, Compostura, Postura defensiva, Quietud, Evaluar, Silbar y resoplar, Gran Ukemi, En guardia, Ráfaga de golpes.",
+          "Se corrigió un problema reportado que impedía usar el control al regresar al duelo contra Forest Sawatari.",
+          "La hoja de Golpe oscuro sigue al objetivo alcanzado. Si Camakrilito recibe el golpe, Dark Ninja se cura de todos modos y solo roba una carta si el jugador pierde PV.",
+          "Las flechas clavadas en Dark Ninja lo acompañan durante las estocadas y los giros.",
+          "La formación conserva la posición habitual de Camakrilito. En multijugador, puedes usar el mouse o el control para aplicar cartas de apoyo y pociones válidas a los aliados de un compañero."
+        ],
+        "ita": [
+          "Compatibile con la versione stabile 0.111.1 e l’anteprima 0.113.1. Termina il supporto alla 0.107.1.",
+          "Inferno di fiamme nere: la perdita di PV aggiuntiva causata da Fiamma nera passa da 6 a 4→6. Il potenziamento non conferisce più Innata.",
+          "Svolta: peschi 1→2 carte solo quando generi una carta Stato, anziché quando generi una carta qualsiasi.",
+          "Montante basso: danno ridotto da 8→10 a 6→8.",
+          "Movimento e quiete: danno aumentato da 7→11 a 8→12.",
+          "Macaco: le 2 copie di Fiamma nera generate finiscono nella pila degli scarti anziché nella tua mano.",
+          "Attizzare: dopo la pescata, la copia di Fiamma nera finisce nella pila degli scarti anziché nel mazzo di pesca.",
+          "Nuove illustrazioni per nove carte: Controllo del respiro, Compostezza, Postura difensiva, Quiete, Valutare, Sibilo e soffio, Grande Ukemi, In guardia, Raffica di colpi.",
+          "Risolto un problema segnalato: il controller non rispondeva più tornando al duello contro Forest Sawatari.",
+          "La lama di Colpo oscuro segue il bersaglio colpito. Se Wuppy intercetta il colpo, Dark Ninja si cura comunque e ruba una carta solo se il giocatore perde PV.",
+          "Le frecce già conficcate in Dark Ninja ne seguono gli affondi e i cambi di direzione.",
+          "La formazione degli alleati mantiene Wuppy nella posizione abituale. In multigiocatore puoi usare mouse o controller per bersagliare gli alleati di un compagno con carte di supporto e pozioni adatte."
+        ],
+        "ind": [
+          "Mendukung versi stabil 0.111.1 dan pratinjau 0.113.1. Dukungan untuk 0.107.1 berakhir.",
+          "Kobaran Api Hitam: tambahan HP yang hilang akibat Api Hitam berubah dari 6 menjadi 4→6. Peningkatannya tidak lagi memberikan Bawaan.",
+          "Titik Balik: tarik 1→2 kartu hanya saat kamu membuat kartu Status, bukan setiap kali membuat kartu apa pun.",
+          "Uppercut Rendah: kerusakan turun dari 8→10 menjadi 6→8.",
+          "Gerak dan Diam: kerusakan naik dari 7→11 menjadi 8→12.",
+          "Macaco: 2 salinan Api Hitam yang dibuat masuk ke tumpukan buangan, bukan ke tanganmu.",
+          "Nyalakan: setelah menarik kartu, 1 salinan Api Hitam masuk ke tumpukan buangan, bukan ke tumpukan tarik.",
+          "Ilustrasi baru untuk sembilan kartu: Atur Napas, Ketenangan, Sikap Bertahan, Keheningan, Nilai Situasi, Desis dan Hembusan, Ukemi Agung, Waspada, Rentetan Pukulan.",
+          "Masalah yang dilaporkan pemain telah diperbaiki: kontroler tidak merespons saat kembali ke duel melawan Forest Sawatari.",
+          "Bilah Serangan Gelap mengikuti target yang terkena. Saat Wuppy menahan serangan, Dark Ninja tetap memulihkan HP dan hanya mencuri kartu jika pemain kehilangan HP.",
+          "Anak panah yang sudah menancap pada Dark Ninja mengikuti gerakannya saat menerjang dan berbalik.",
+          "Formasi sekutu mempertahankan posisi normal Wuppy. Dalam multipemain, gunakan mouse atau kontroler untuk menargetkan sekutu milik rekan dengan kartu bantuan atau ramuan yang sesuai."
+        ],
+        "spa": [
+          "Compatible con la versión estable 0.111.1 y la de prueba 0.113.1. Finaliza la compatibilidad con 0.107.1.",
+          "Infierno de llama negra: la pérdida adicional de PV que causa Llama negra cambia de 6 a 4→6. La mejora ya no otorga Innata.",
+          "Punto de inflexión: roba 1→2 cartas solo cuando generes una carta de Estado, en lugar de al generar cualquier carta.",
+          "Gancho bajo: el daño baja de 8→10 a 6→8.",
+          "Movimiento y quietud: el daño sube de 7→11 a 8→12.",
+          "Macaco: las 2 copias de Llama negra que se generan van a la pila de descarte en lugar de a tu mano.",
+          "Avivar: después de robar, la copia de Llama negra va a la pila de descarte en lugar de a la pila de robo.",
+          "Nuevas ilustraciones para nueve cartas: Respiración controlada, Compostura, Postura defensiva, Quietud, Evaluar, Silbar y resoplar, Gran Ukemi, En guardia, Ráfaga de golpes.",
+          "Se corrigió un problema notificado que impedía usar el mando al regresar al duelo contra Forest Sawatari.",
+          "La hoja de Golpe oscuro sigue al objetivo alcanzado. Si Wuppy recibe el golpe, Dark Ninja se cura de todos modos y solo roba una carta si el jugador pierde PV.",
+          "Las flechas clavadas en Dark Ninja lo acompañan durante las estocadas y los giros.",
+          "La formación conserva la posición habitual de Wuppy. En multijugador, puedes usar el ratón o el mando para aplicar cartas de apoyo y pociones válidas a los aliados de un compañero."
+        ],
+        "pol": [
+          "Obsługiwane wersje gry: stabilna 0.111.1 i testowa 0.113.1. Zakończono obsługę 0.107.1.",
+          "Piekło czarnych płomieni: dodatkowa utrata PŻ wywołana przez Czarny płomień zmienia się z 6 na 4→6. Ulepszenie nie daje już cechy Wrodzona.",
+          "Punkt zwrotny: dobierz 1→2 karty tylko wtedy, gdy tworzysz kartę Statusu, a nie dowolną kartę.",
+          "Niski podbródkowy: obrażenia zmniejszone z 8→10 do 6→8.",
+          "Ruch i bezruch: obrażenia zwiększone z 7→11 do 8→12.",
+          "Macaco: 2 wygenerowane kopie karty Czarny płomień trafiają na stos kart odrzuconych zamiast do ręki.",
+          "Rozpalenie: po dobraniu kart 1 kopia karty Czarny płomień trafia na stos kart odrzuconych zamiast na stos dobierania.",
+          "Nowe ilustracje dziewięciu kart: Regulacja oddechu, Opanowanie, Postawa obronna, Bezruch, Ocena, Syk i wydech, Wielkie Ukemi, Czujność, Seria ciosów.",
+          "Naprawiono zgłoszony problem z brakiem reakcji kontrolera po powrocie do pojedynku z przeciwnikiem Forest Sawatari.",
+          "Ostrze ataku Mroczny cios podąża za trafionym celem. Gdy cios przejmuje Wuppy, Dark Ninja nadal się leczy, ale kradnie kartę tylko wtedy, gdy gracz straci PŻ.",
+          "Strzały wbite w przeciwnika Dark Ninja poruszają się razem z nim podczas wypadu i obrotu.",
+          "Ustawienie sojuszników zachowuje zwykłą pozycję Wuppy. W grze wieloosobowej można używać odpowiednich kart wsparcia i mikstur na sojusznikach towarzysza, wskazując ich myszą lub kontrolerem."
+        ],
+        "ptb": [
+          "Compatível com a versão estável 0.111.1 e a prévia 0.113.1. O suporte à versão 0.107.1 foi encerrado.",
+          "Inferno de Chamas Negras: a perda adicional de PV causada por Chama Negra mudou de 6 para 4→6. A melhoria não concede mais Inata.",
+          "Ponto de virada: compre 1→2 cartas apenas quando você gerar uma carta de Status, em vez de qualquer carta.",
+          "Gancho baixo: dano reduzido de 8→10 para 6→8.",
+          "Movimento e Quietude: dano aumentado de 7→11 para 8→12.",
+          "Macaco: as 2 cópias de Chama Negra geradas vão para a pilha de descarte em vez da sua mão.",
+          "Atiçar: após a compra, 1 cópia de Chama Negra vai para a pilha de descarte em vez da pilha de compra.",
+          "Novas ilustrações para nove cartas: Regular a Respiração, Compostura, Postura Defensiva, Quietude, Avaliar, Sibilar e Soprar, Grande Ukemi, Em guarda, Sequência de golpes.",
+          "Corrigido um problema relatado em que o controle deixava de responder ao voltar para o duelo contra Forest Sawatari.",
+          "A lâmina de Golpe Sombrio acompanha o alvo atingido. Quando Guppi recebe o golpe, Dark Ninja ainda se cura e só rouba uma carta se o jogador perder PV.",
+          "As flechas já cravadas em Dark Ninja acompanham seus avanços e giros.",
+          "A formação dos aliados preserva a posição normal de Guppi. No multijogador, é possível usar o mouse ou o controle para aplicar cartas de suporte e poções válidas nos aliados de outro jogador."
+        ],
+        "rus": [
+          "Поддерживаются стабильная версия 0.111.1 и тестовая 0.113.1. Поддержка 0.107.1 прекращена.",
+          "Ад чёрного пламени: дополнительная потеря ОЗ от карты «Чёрное пламя» изменена с 6 на 4→6. Улучшение больше не даёт свойство «Врождённая».",
+          "Переломный момент: берите 1→2 карты только при создании карты статуса, а не любой карты.",
+          "Низкий апперкот: урон снижен с 8→10 до 6→8.",
+          "Движение и покой: урон повышен с 7→11 до 8→12.",
+          "Макако: 2 созданные копии карты «Чёрное пламя» отправляются в сброс вместо руки.",
+          "Разжечь: после добора 1 копия карты «Чёрное пламя» попадает в сброс вместо стопки добора.",
+          "Обновлены иллюстрации девяти карт: Ровное дыхание, Самообладание, Защитная стойка, Неподвижность, Оценить, Шипение и выдох, Великое Укэми, Настороже, Шквал ударов.",
+          "Исправлена ошибка, о которой сообщили игроки: контроллер переставал реагировать при возвращении к дуэли с противником «Форест Саватари».",
+          "Клинок приёма «Тёмный удар» следует за поражённой целью. Если удар принимает на себя Вопс, Дарк Ниндзя всё равно лечится, но крадёт карту только при фактической потере ОЗ игроком.",
+          "Стрелы, застрявшие в противнике «Дарк Ниндзя», следуют за ним при выпадах и разворотах.",
+          "Построение союзников сохраняет обычную позицию Вопс. В сетевой игре мышью или контроллером можно выбрать союзника другого игрока для подходящей карты поддержки или зелья."
+        ],
+        "tha": [
+          "รองรับเวอร์ชันเสถียร 0.111.1 และเวอร์ชันทดสอบ 0.113.1 ยุติการรองรับ 0.107.1",
+          "นรกเปลวไฟดำ: HP เพิ่มเติมที่ศัตรูเสียจาก เปลวไฟดำ เปลี่ยนจาก 6 เป็น 4→6 เมื่ออัปเกรดจะไม่ได้รับคุณสมบัติติดตัวแต่กำเนิดอีกต่อไป",
+          "จุดเปลี่ยน: จั่วการ์ด 1→2 ใบเฉพาะเมื่อคุณสร้างการ์ดสถานะ แทนที่จะทำงานกับการ์ดทุกประเภท",
+          "อัปเปอร์คัตต่ำ: ลดความเสียหายจาก 8→10 เป็น 6→8",
+          "เคลื่อนไหวและสงบนิ่ง: เพิ่มความเสียหายจาก 7→11 เป็น 8→12",
+          "มาคาโค: เปลวไฟดำ ทั้ง 2 ใบที่สร้างจะไปยังกองทิ้งแทนที่จะเข้ามือ",
+          "ก่อไฟ: หลังจั่วการ์ด เปลวไฟดำ ที่สร้างขึ้น 1 ใบจะไปยังกองทิ้งแทนกองจั่ว",
+          "เปลี่ยนภาพประกอบการ์ดเก้าใบ: ปรับลมหายใจ, สุขุม, ท่าป้องกัน, สงบนิ่ง, ประเมิน, สูดและผ่อน, อุเคมิใหญ่, ระวังตัว, โจมตีรัว",
+          "แก้ปัญหาที่ผู้เล่นรายงานว่าคอนโทรลเลอร์ไม่ตอบสนองเมื่อกลับเข้าสู่การดวลกับ ฟอเรสต์ ซาวาตาริ",
+          "ดาบจากท่า จู่โจมแห่งความมืด จะเคลื่อนตามเป้าหมายที่ถูกแทง เมื่อ Wuppy รับการโจมตีแทน ดาร์กนินจา ยังฟื้น HP แต่จะขโมยการ์ดก็ต่อเมื่อผู้เล่นเสีย HP จริงเท่านั้น",
+          "ลูกธนูที่ปักอยู่บนตัว ดาร์กนินจา จะเคลื่อนตามขณะพุ่งแทงและหันกลับ",
+          "ปรับตำแหน่งพันธมิตรให้ Wuppy อยู่ในตำแหน่งปกติ ในโหมดผู้เล่นหลายคน ใช้เมาส์หรือคอนโทรลเลอร์เลือกพันธมิตรของเพื่อนร่วมทีมเป็นเป้าหมายของการ์ดสนับสนุนหรือยาที่ใช้ได้"
+        ],
+        "tur": [
+          "Kararlı 0.111.1 ve önizleme 0.113.1 sürümleri destekleniyor. 0.107.1 desteği sona erdi.",
+          "Kara Alev Cehennemi: Kara Alev yüzünden düşmanın kaybettiği ek can 6 yerine 4→6. Yükseltme artık Doğuştan özelliği vermiyor.",
+          "Dönüm Noktası: artık herhangi bir kart ürettiğinde değil, yalnızca bir Durum kartı ürettiğinde 1→2 kart çek.",
+          "Alçak Aparkat: hasar 8→10 yerine 6→8.",
+          "Hareket ve Durgunluk: hasar 7→11 yerine 8→12.",
+          "Macaco: üretilen 2 adet Kara Alev eline değil, ıskarta destene eklenir.",
+          "Tutuştur: kart çektikten sonra üretilen 1 adet Kara Alev çekme destene değil, ıskarta destene eklenir.",
+          "Dokuz kartın çizimi yenilendi: Nefes Düzeni, Soğukkanlılık, Savunma Duruşu, Durgunluk, Değerlendir, Tıslama ve Soluma, Büyük Ukemi, Tetikte, Darbe Serisi.",
+          "Forest Sawatari ile düelloya dönüldüğünde kontrolcünün yanıt vermemesiyle ilgili bildirilen sorun giderildi.",
+          "Karanlık Vuruş saldırısının kılıcı vurduğu hedefi takip eder. Darbeyi Wuppy karşıladığında Dark Ninja yine iyileşir; yalnızca oyuncu gerçekten can kaybederse kart çalar.",
+          "Dark Ninja üzerine saplanmış oklar, ileri atıldığında veya döndüğünde onunla hareket eder.",
+          "Müttefiklerin dizilişi Wuppy için normal konumu korur. Çok oyunculu oyunda uygun destek kartları ve iksirler için takım arkadaşının müttefikini fare veya kontrolcüyle hedefleyebilirsin."
+        ]
+      }
+    },
+    {
+      "version": "1.2.10",
+      "entryId": "1795016293",
+      "sourceRevision": "61ce2804a37cac3e964cd8ee86ec9e1fc50c151e",
+      "sourceText": "残心由 1 费降至 0 费，触发时的抽牌数由 1→2 张改为固定 1 张，升级获得固有。\n修复了用户反馈中暗打触发回避不同步的问题。\n修复了用户反馈中黑炎清场漏播处决的问题。",
+      "evidence": [
+        "Docs/validation/release-1.2.10-evidence.json",
+        "Website/content/versions/1.2.10/catalog.json"
+      ],
+      "notes": {
+        "eng": [
+          "Zanshin now costs 0 instead of 1. It draws 1 card per trigger instead of 1→2. Upgrading it adds Innate.",
+          "Fixed a reported multiplayer desync when Evasion triggered against Dark Strike.",
+          "Fixed a reported issue where clearing the fight with Black Flame skipped the finisher animation."
+        ],
+        "zht": [
+          "殘心由 1 費降至 0 費，觸發時的抽牌數由 1→2 張改為固定 1 張，升級後獲得固有。",
+          "修正暗·打觸發迴避時可能導致多人遊戲不同步的問題。",
+          "修正以黑炎擊敗所有剩餘敵人時未播放處決動畫的問題。"
+        ],
+        "jpn": [
+          "ザンシンのコストを1から0に変更。発動時に引くカードは1→2枚から一律1枚になり、アップグレードで天賦が付くようになりました。",
+          "ダーク・ウチに対して回避が発動すると、マルチプレイで同期がずれることがある不具合を修正しました。",
+          "黒い炎で残りの敵をすべて倒した際、処刑演出が再生されない不具合を修正しました。"
+        ],
+        "kor": [
+          "잔심의 비용이 1에서 0으로 감소합니다. 발동할 때 뽑는 카드는 1→2장에서 1장으로 고정되며, 강화하면 선천성을 얻습니다.",
+          "암흑 타격에 회피가 발동하면 멀티플레이에서 동기화가 어긋날 수 있던 문제를 수정했습니다.",
+          "검은 불꽃으로 남은 적을 모두 처치했을 때 처형 연출이 재생되지 않던 문제를 수정했습니다."
+        ],
+        "deu": [
+          "Zanshin kostet jetzt 0 statt 1 Energie und zieht beim Auslösen immer 1 Karte statt 1→2. Beim Aufwerten erhält sie Angeboren.",
+          "Ein gemeldeter Synchronisationsfehler im Mehrspielermodus wurde behoben: Er konnte auftreten, wenn Dunkler Schlag Ausweichen auslöste.",
+          "Die Hinrichtungsanimation wird jetzt auch abgespielt, wenn Schwarze Flamme die letzten Gegner besiegt."
+        ],
+        "esp": [
+          "El costo de Zanshin baja de 1 a 0. Ahora robas 1 carta cada vez que se activa, en lugar de 1→2. Al mejorarla, obtiene Innatismo.",
+          "Se corrigió una desincronización en multijugador que podía ocurrir al activar evasión contra Golpe oscuro.",
+          "Se corrigió un error que omitía la animación de ejecución si Llama negra derrotaba a los últimos enemigos."
+        ],
+        "spa": [
+          "El coste de Zanshin baja de 1 a 0. Ahora robas 1 carta cada vez que se activa, en lugar de 1→2. Al mejorarla, obtiene Innata.",
+          "Se ha corregido una desincronización en multijugador que podía producirse al activar Evasión contra Golpe oscuro.",
+          "Se ha corregido un error por el que no se reproducía la animación de ejecución si Llama negra derrotaba a los últimos enemigos."
+        ],
+        "fra": [
+          "Le coût de Zanshin passe de 1 à 0. À chaque déclenchement, vous piochez désormais 1 carte au lieu de 1→2. L’amélioration ajoute le mot-clé Inné.",
+          "Correction d’une désynchronisation en multijoueur qui pouvait survenir lorsque l’Esquive se déclenchait contre Frappe sombre.",
+          "L’animation d’exécution se joue désormais lorsque Flamme noire élimine les derniers ennemis."
+        ],
+        "ind": [
+          "Biaya Zanshin turun dari 1 menjadi 0. Setiap kali efeknya terpicu, tarik 1 kartu, bukan lagi 1→2 kartu. Zanshin mendapat Bawaan saat ditingkatkan.",
+          "Memperbaiki masalah sinkronisasi dalam multipemain ketika Elakan terpicu oleh Serangan Gelap.",
+          "Memperbaiki animasi eksekusi yang tidak diputar saat Api Hitam mengalahkan semua musuh yang tersisa."
+        ],
+        "ita": [
+          "Il costo di Zanshin scende da 1 a 0. Ora peschi sempre 1 carta quando si attiva, invece di 1→2. Il potenziamento aggiunge Innatismo.",
+          "Risolto un problema di desincronizzazione in multigiocatore che poteva verificarsi quando Schivata si attivava contro Colpo oscuro.",
+          "Risolto un problema per cui l’animazione di esecuzione non partiva quando Fiamma nera sconfiggeva tutti i nemici rimasti."
+        ],
+        "pol": [
+          "Koszt karty Zanshin spada z 1 do 0. Przy każdej aktywacji dobierasz teraz 1 kartę zamiast 1→2. Po ulepszeniu karta zyskuje słowo kluczowe Startowa.",
+          "Naprawiono zgłoszony błąd synchronizacji w grze wieloosobowej, który mógł wystąpić, gdy Mroczny cios aktywował Unik.",
+          "Naprawiono pomijanie animacji egzekucji, gdy Czarny płomień pokonywał wszystkich pozostałych przeciwników."
+        ],
+        "ptb": [
+          "O custo de Zanshin foi reduzido de 1 para 0. Agora você compra 1 carta por ativação, em vez de 1→2. Ao ser aprimorada, a carta ganha Inata.",
+          "Corrigida uma falha de sincronização no multijogador que podia ocorrer quando Evasão era ativada contra Golpe Sombrio.",
+          "Corrigida uma falha que impedia a animação de execução quando Chama Negra derrotava todos os inimigos restantes."
+        ],
+        "rus": [
+          "Стоимость карты «Дзансин» снижена с 1 до 0. При срабатывании вы всегда берёте 1 карту вместо 1→2. Улучшение добавляет свойство «Начальная».",
+          "Исправлена рассинхронизация в сетевой игре, которая могла возникнуть, когда «Тёмный удар» вызывал «Уклонение».",
+          "Исправлена ошибка, из-за которой анимация казни не воспроизводилась, если «Чёрное пламя» добивало всех оставшихся врагов."
+        ],
+        "tha": [
+          "ซันชินใช้พลังงานลดลงจาก 1 เป็น 0 เมื่อเอฟเฟกต์ทำงานจะจั่วการ์ด 1 ใบเสมอ จากเดิม 1→2 ใบ เมื่ออัปเกรดจะได้รับ ติดตัว",
+          "แก้ปัญหาข้อมูลไม่ตรงกันในโหมดผู้เล่นหลายคนเมื่อจู่โจมแห่งความมืดทำให้หลบหลีกทำงาน",
+          "แก้ปัญหาที่แอนิเมชันประหารไม่เล่นเมื่อเปลวไฟดำกำจัดศัตรูที่เหลือจนหมด"
+        ],
+        "tur": [
+          "Zanshin’in maliyeti 1’den 0’a düştü. Her tetiklendiğinde artık 1→2 yerine her zaman 1 kart çekersin. Yükseltildiğinde Yerleşik kazanır.",
+          "Karanlık Vuruş, Kaçınma etkisini tetiklediğinde çok oyunculu oyunda oluşabilen eşzamanlama sorunu giderildi.",
+          "Kara Alev kalan tüm düşmanları yendiğinde infaz animasyonunun oynatılmaması düzeltildi."
+        ],
+        "zhs": [
+          "残心由 1 费降至 0 费，触发时的抽牌数由 1→2 张改为固定 1 张，升级获得固有。",
+          "修复了用户反馈中暗打触发回避不同步的问题。",
+          "修复了用户反馈中黑炎清场漏播处决的问题。"
+        ]
+      }
     }
   ]
 }

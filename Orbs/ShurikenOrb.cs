@@ -101,7 +101,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
             existing.StackCount += amount;
             Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_stock", player.Creature, amount);
             existing.RefreshVisuals();
-            existing.ActivatePassiveFeedback();
+            existing.ActivatePassive();
             await existing.AfterStockGained(choiceContext);
             return;
         }
@@ -113,7 +113,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
         {
             Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_stock", player.Creature, amount);
             orb.RefreshVisuals();
-            orb.ActivatePassiveFeedback();
+            orb.ActivatePassive();
             await orb.AfterStockGained(choiceContext);
         }
     }
@@ -283,7 +283,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
             targets,
             source,
             this,
-            () => ActivateEvokeFeedback(targets));
+            () => ActivateEvoke(targets.ToArray()));
         // OrbCmd dispatches this for external evokes; automatic stock shots own that dispatch.
         Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_evoked", Owner.Creature, 1);
         if (notifyEvokeHooks && Owner.Creature.CombatState is { } combatState)
@@ -306,23 +306,6 @@ public sealed class ShurikenOrb : ModOrbTemplate
         RemoveInternal();
     }
 
-    private void ActivatePassiveFeedback()
-    {
-#if NINJASLAYER_CHANNEL_STABLE
-        Trigger();
-#else
-        ActivatePassive();
-#endif
-    }
-
-    private void ActivateEvokeFeedback(IReadOnlyList<Creature> targets)
-    {
-#if NINJASLAYER_CHANNEL_STABLE
-        Trigger();
-#else
-        ActivateEvoke(targets.ToArray());
-#endif
-    }
 }
 
 internal sealed class ShurikenOrbState

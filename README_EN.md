@@ -5,7 +5,7 @@
   <p><a href="README.md">简体中文</a> | <strong>English</strong> | <a href="README_JA.md">日本語</a></p>
   <!-- compatibility-badges:start -->
   <p>
-    <img src="https://img.shields.io/badge/Slay%20the%20Spire%202-0.107.1%20%7C%200.113.1-B51F24" alt="Slay the Spire 2 0.107.1 and 0.113.1">
+    <img src="https://img.shields.io/badge/Slay%20the%20Spire%202-0.111.1%20%7C%200.113.1-B51F24" alt="Slay the Spire 2 0.111.1 and 0.113.1">
     <img src="https://img.shields.io/badge/RitsuLib-0.6.13-2D7D9A" alt="RitsuLib 0.6.13">
     <a href="https://github.com/2223M1/NinjaSlayer/releases/latest"><img src="https://img.shields.io/github/v/release/2223M1/NinjaSlayer?display_name=tag&amp;sort=semver" alt="GitHub Release"></a>
   </p>
@@ -44,7 +44,7 @@ The latest version is published on the Workshop. [GitHub Releases](https://githu
 ## Versions and languages
 
 <!-- compatibility:start -->
-- Game stable `0.107.1` and beta `0.113.1`.
+- Game stable `0.111.1` and beta `0.113.1`.
 - Requires RitsuLib `0.6.13` or later.
 - Text is available in Simplified Chinese, English and Japanese, following the game's language setting.
 - Tested on Windows. Real-device testing on macOS, Linux and Steam Deck is not yet complete.

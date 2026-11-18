@@ -33,11 +33,7 @@ public sealed class AntiAirBangBangFist : NinjaSlayerRareCard
         try
         {
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
-#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-            .FromCard(this)
-#else
             .FromCard(this, cardPlay)
-#endif
             .WithHitCount(hits)
             .WithHitFx(VfxCmd.flyingSlashPath)
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)

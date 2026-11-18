@@ -27,9 +27,7 @@ public sealed class ShurikenAimPower : NinjaSlayerPowerTemplate
 
     public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props,
         Creature? dealer, CardModel? cardSource
-#if !NINJASLAYER_LEGACY_DAMAGE_API
         , CardPlay? cardPlay
-#endif
     ) => target == Owner && props.IsPoweredAttack()
         && cardSource?.Tags.Contains(NinjaSlayerCardTags.Shuriken) == true ? Multiplier(Owner) : 1m;
 

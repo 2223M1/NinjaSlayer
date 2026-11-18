@@ -52,11 +52,7 @@ public partial class OrbContractRunner
         using (var combat = new OrbCombat(ninjaSlayer: true))
         {
             var philosophers = ModelDb.Event<ColorfulPhilosophers>().ToMutable();
-#if NINJASLAYER_CHANNEL_STABLE
-            await philosophers.BeginEvent(combat.Player, false);
-#else
             await philosophers.BeginEvent(combat.Player, null, false);
-#endif
             Require(philosophers.CurrentOptions.Count == 3 && philosophers.CurrentOptions.All(o => o.Description != null),
                 "Native Colorful Philosophers must offer three valid options for NinjaSlayer.");
         }

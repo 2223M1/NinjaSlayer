@@ -65,11 +65,7 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
             && NeedsIncrementalUpdate(state, out CombatMetricsSnapshot<Player> metrics))
         {
             EnsureTurn(metrics, state);
-#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-            Player player = cardPlay.Card.Owner;
-#else
             Player player = cardPlay.Player;
-#endif
             metrics.AddFinishedCard(
                 player,
                 cardPlay.Card.Type == CardType.Attack,
@@ -155,11 +151,7 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
         foreach (Player player in combatState.Players)
         {
             CardPlayFinishedEntry? previous = CombatManager.Instance.History.CardPlaysFinished
-#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-                .LastOrDefault(entry => entry.CardPlay.Card.Owner == player);
-#else
                 .LastOrDefault(entry => entry.CardPlay.Player == player);
-#endif
             if (previous is not null)
             {
                 snapshot.AddFinishedCard(
@@ -172,11 +164,7 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
         foreach (CardPlayFinishedEntry entry in CombatManager.Instance.History.CardPlaysFinished
                      .Where(entry => entry.HappenedThisTurn(combatState)))
         {
-#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-            Player player = entry.CardPlay.Card.Owner;
-#else
             Player player = entry.CardPlay.Player;
-#endif
             snapshot.AddFinishedCard(
                 player,
                 entry.CardPlay.Card.Type == CardType.Attack,

@@ -1,5 +1,6 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Context;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Multiplayer;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -14,7 +15,7 @@ public sealed class TurningPointPower : NinjaSlayerCounterPower
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(TurningPointPower));
     public override async Task AfterCardGeneratedForCombat(CardModel card, Player? creator)
     {
-        if (creator?.Creature != Owner) return;
+        if (card.Type != CardType.Status || creator?.Creature != Owner) return;
         Flash();
         // Drawing can shuffle into Stratagem or autoplay a card that asks for a
         // choice. Let the native hook action synchronize that choice on all peers.

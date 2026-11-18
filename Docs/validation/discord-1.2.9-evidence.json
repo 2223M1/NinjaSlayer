@@ -1,0 +1,44 @@
+{
+  "version": "1.2.9",
+  "channelUrl": "https://discord.com/channels/1555073106480070658/1555076253793525760",
+  "verifiedAtUtc": "2026-11-18T11:16:12.216307+00:00",
+  "sourceRevision": "117b0de62acfcbeb3fa53450357f92d21ea6b567",
+  "messages": [
+    {
+      "language": "zhs",
+      "messageId": "1572570668309159956",
+      "url": "https://discord.com/channels/1555073106480070658/1555076253793525760/1572570668309159956",
+      "text": "## Ninja Slayer 1.2.9 — 中文\nhttps://steamcommunity.com/sharedfiles/filedetails/?id=3776911445\n• 支持正式版 0.111.1 和预览版 0.113.1，结束对 0.107.1 的支持。\n• 烈焰使敌人因黑炎额外失去的生命由 6 点调整为 4→6 点，升级不再获得固有。\n• 转机由生成任意牌时抽 1→2 张牌改为仅在你生成状态牌时触发。\n• 低空上勾拳的伤害由 8→10 点降至 6→8 点。\n• 动静相生的伤害由 7→11 点提高至 8→12 点。\n• 玛卡古生成的 2 张黑炎由加入手牌改为加入弃牌堆。\n• 燃火抽牌后生成的 1 张黑炎由加入抽牌堆改为加入弃牌堆。\n• 更换九张卡图：调息、从容、守势、守静、审势、嘶哈、大·受身、戒备、连打。\n• 修复了用户反馈中沢渡决斗手柄失灵的问题。\n• 暗·打的刀会随受击目标移动；瓦皮代挡时，黑暗忍者仍会回血，仅在玩家实际失去生命时偷牌。\n• 黑暗忍者突刺及转身时，身上已有的箭会随之移动。\n• 调整友军站位以保留瓦皮的原版位置；联机时可以用鼠标或手柄为队友的友军选择可用的援护牌和药水。",
+      "sha256": "884338ca3f3140eae88fa489fbe28d9b28ba799f0ae9b030cdca431e89a5fae5",
+      "verifiedLineCount": 12,
+      "duplicateCount": 0
+    },
+    {
+      "language": "jpn",
+      "messageId": "1572570848554909758",
+      "url": "https://discord.com/channels/1555073106480070658/1555076253793525760/1572570848554909758",
+      "text": "## Ninja Slayer 1.2.9 — 日本語\nhttps://steamcommunity.com/sharedfiles/filedetails/?id=3776911445\n• 正式版 0.111.1 とプレビュー版 0.113.1 に対応し、0.107.1 のサポートを終了。\n• 烈火：黒い炎で敵が追加で失うHPを6から4→6に変更。アップグレードしても天賦は付かなくなりました。\n• 転機：カード生成時の1→2枚ドローは、自分が状態異常カードを生成した時のみ発動します。\n• 低空アッパーカット：ダメージを8→10から6→8に減少。\n• 動と静：ダメージを7→11から8→12に増加。\n• マカコ：生成する黒い炎2枚の行き先を手札から捨て札に変更。\n• 火種：ドロー後に生成する黒い炎1枚の行き先を山札から捨て札に変更。\n• 次の9枚のイラストを変更：調息、平静、守勢、静寂、形勢を見る、スゥーッ、ハァーッ、グレーター・ウケミ、警戒、連打。\n• フォレスト・サワタリとの決闘に戻るとコントローラー操作が効かなくなるとの報告を受け、修正しました。\n• ダーク・ウチの刀は刺さった相手に追従します。ワッピーが攻撃を肩代わりしてもダークニンジャは回復し、プレイヤーが実際にHPを失った場合のみカードを奪います。\n• ダークニンジャに刺さった矢が突進や振り向きに合わせて移動します。\n• 味方の隊列を調整し、ワッピーが本来の位置を保つようにしました。マルチプレイでは、対象にできる援護カードやポーションをマウス・コントローラーで仲間の味方に使えます。",
+      "sha256": "a6401b3c7a277cd8b3f8b2ec059c5521dda5f20ba3cb696b2a13f8ae9d54c6ec",
+      "verifiedLineCount": 12,
+      "duplicateCount": 0
+    },
+    {
+      "language": "kor",
+      "messageId": "1572570858025652264",
+      "url": "https://discord.com/channels/1555073106480070658/1555076253793525760/1572570858025652264",
+      "text": "## Ninja Slayer 1.2.9 — 한국어\nhttps://steamcommunity.com/sharedfiles/filedetails/?id=3776911445\n• 정식 버전 0.111.1과 미리보기 버전 0.113.1을 지원하며, 0.107.1 지원을 종료합니다.\n• 지옥같은 불꽃: 검은 불꽃으로 적이 추가로 잃는 체력이 6에서 4→6으로 변경됩니다. 강화해도 선천성을 얻지 않습니다.\n• 전환점: 아무 카드나 생성할 때가 아니라 자신이 상태 카드를 생성할 때만 카드를 1→2장 뽑습니다.\n• 저공 어퍼컷: 피해량이 8→10에서 6→8로 감소합니다.\n• 동과 정: 피해량이 7→11에서 8→12로 증가합니다.\n• 마카코: 생성한 검은 불꽃 2장이 손 대신 버린 카드 더미에 들어갑니다.\n• 점화: 카드를 뽑은 뒤 생성하는 검은 불꽃 1장이 뽑을 카드 더미 대신 버린 카드 더미에 들어갑니다.\n• 카드 9장의 일러스트를 교체했습니다: 호흡 조절, 침착, 수세, 정적, 판단, 스읍-. 후우-., 그레이트 낙법, 경계, 연타.\n• 포레스트 사와타리와의 결투로 돌아갈 때 컨트롤러 입력이 멈춘다는 제보를 확인하고 수정했습니다.\n• 암흑 타격의 칼이 맞은 대상을 따라갑니다. 워피가 대신 맞아도 다크 닌자는 회복하며, 플레이어가 실제로 체력을 잃을 때만 카드를 훔칩니다.\n• 다크 닌자에게 이미 꽂힌 화살이 돌진과 방향 전환에 맞춰 움직입니다.\n• 아군 대형에서 워피가 원래 위치를 유지합니다. 멀티플레이에서는 마우스나 컨트롤러로 팀원의 아군을 지정해 대상에게 사용 가능한 지원 카드와 물약을 쓸 수 있습니다.",
+      "sha256": "f5705103fcc5e39f2020c87e490840ef2f467a5c7ae627f79c1863c8f17b12b5",
+      "verifiedLineCount": 12,
+      "duplicateCount": 0
+    },
+    {
+      "language": "eng",
+      "messageId": "1572570866749931560",
+      "url": "https://discord.com/channels/1555073106480070658/1555076253793525760/1572570866749931560",
+      "text": "## Ninja Slayer 1.2.9 — English\nhttps://steamcommunity.com/sharedfiles/filedetails/?id=3776911445\n• Supports stable 0.111.1 and preview 0.113.1; support for 0.107.1 has ended.\n• Black Flame Inferno: extra HP lost to Black Flame changed from 6 to 4→6. Upgrading no longer grants Innate.\n• Turning Point: draw 1→2 cards only when you generate a Status, instead of any card.\n• Low Uppercut: damage reduced from 8→10 to 6→8.\n• Motion and Stillness: damage increased from 7→11 to 8→12.\n• Macaco: the 2 copies of Black Flame now go into your discard pile instead of your hand.\n• Kindle: after drawing, add 1 Black Flame to your discard pile instead of your draw pile.\n• New illustrations for nine cards: Regulate Breath, Composure, Guard Stance, Stillness, Assess, Hiss and Huff, Great Ukemi, On Guard, Flurry.\n• Fixed a reported issue where controller input stopped working when returning to the duel against Forest Sawatari.\n• The blade from Dark Strike follows its target. When Wuppy takes the hit, Dark Ninja still heals and only steals a card if the player loses HP.\n• Arrows already embedded in Dark Ninja now follow the lunge and turn.\n• Ally formation preserves Wuppy’s normal position. In multiplayer you can target a teammate’s ally with eligible support cards and potions using a mouse or controller.",
+      "sha256": "dbc57785761d184127685c2141acd9011f298d3b796731e3feb285846dde6406",
+      "verifiedLineCount": 12,
+      "duplicateCount": 0
+    }
+  ]
+}
