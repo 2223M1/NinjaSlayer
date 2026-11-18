@@ -159,24 +159,6 @@ internal static class DarkNinjaSpecialAttackPresentation
                     segment,
                     0f),
                 penetratesTarget: penetrates);
-            StabVfx? impactVfx = null;
-            Task<DarkStrikeImpactOutcome>? impactTask = null;
-            void TriggerImpactOnFinalMotionFrame()
-            {
-                if (impactTask != null || !canImpact(target))
-                {
-                    return;
-                }
-
-                visual.ApplyReferencePose(contactTime);
-                visual.HoldContact();
-                impactVfx = CaptureImpactVfx(receiver);
-                impactTask = DarkStrikeHurtPoseFreezeContext.Run(
-                    receiver,
-                    visual.FreezeTargetHurtPose,
-                    () => onImpact(target));
-            }
-
             await PlayTween(
                 visual.Owner,
                 segment.MotionSeconds,
@@ -186,11 +168,9 @@ internal static class DarkNinjaSpecialAttackPresentation
                         segment,
                         progress);
                     visual.ApplyReferencePose(referenceSeconds);
-                },
-                TriggerImpactOnFinalMotionFrame);
+                });
 
-            TriggerImpactOnFinalMotionFrame();
-            if (impactTask == null)
+            if (!canImpact(target))
             {
                 if (!CanContinue(attacker))
                 {
@@ -201,7 +181,12 @@ internal static class DarkNinjaSpecialAttackPresentation
             }
 
             attemptedImpact = true;
-            DarkStrikeImpactOutcome outcome = await impactTask;
+            visual.ApplyReferencePose(contactTime);
+            visual.HoldContact();
+            StabVfx? impactVfx = CaptureImpactVfx(receiver);
+            // Keep damage in the monster move's execution context; Godot Tween callbacks do not inherit it.
+            DarkStrikeImpactOutcome outcome = await DarkStrikeHurtPoseFreezeContext.Run(
+                receiver, visual.FreezeTargetHurtPose, () => onImpact(target));
             highestHealing = Math.Max(highestHealing, outcome.Healing);
             bool pierced = outcome.Connected && !outcome.FullyBlocked;
             if (outcome.Receiver is { } actual && actual != receiver)
@@ -429,8 +414,7 @@ internal static class DarkNinjaSpecialAttackPresentation
     private static async Task PlayTween(
         Node owner,
         float duration,
-        Action<float> apply,
-        Action? onFinalFrame = null)
+        Action<float> apply)
     {
         if (!GodotObject.IsInstanceValid(owner) || !owner.IsInsideTree())
         {
@@ -440,11 +424,6 @@ internal static class DarkNinjaSpecialAttackPresentation
         Tween tween = owner.CreateTween();
         tween.TweenMethod(Callable.From(apply), 0f, 1f, duration)
             .SetTrans(Tween.TransitionType.Linear);
-        if (onFinalFrame != null)
-        {
-            tween.TweenCallback(Callable.From(onFinalFrame));
-        }
-
         await TweenPlayback.AwaitCompletion(tween, owner);
     }
 

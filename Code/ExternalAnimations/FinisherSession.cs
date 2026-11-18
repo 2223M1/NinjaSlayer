@@ -33,6 +33,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private readonly NCreature _actorNode;
     private readonly NCreature _focusNode;
     private readonly FinisherDamageLedger _ledger;
+    private readonly CardModel? _actionDamageSource;
     private readonly HashSet<Creature> _committedDeaths =
         new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<NCreature, DeathKickVisual> _deathKickVisuals = [];
@@ -138,6 +139,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         _lastFrameMsec = Time.GetTicksMsec();
         CardPlay = request.CardPlay;
         RequiresAfterCardPlayed = request.RequiresAfterCardPlayed;
+        _actionDamageSource = request.ActionDamageSource;
         ResolvedHits = Math.Max(1, request.ResolvedHits);
         _primaryDamageCalls = request.ObservedPrimaryHits;
         _ranged?.Attach(this);
@@ -453,7 +455,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             ? cardSource == sessionCardPlay.Card && cardPlay == sessionCardPlay
             : _ranged != null
                 ? ReferenceEquals(FinisherRangedAction.For(dealer), _ranged)
-                : cardSource == null;
+                : cardSource == _actionDamageSource;
         if (!primary)
         {
             return;

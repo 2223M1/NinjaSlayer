@@ -1,4 +1,8 @@
 using System.Text.Json;
+using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
+using MegaCrit.Sts2.Core.Nodes.Rooms;
+using STS2RitsuLib;
+using STS2RitsuLib.Patching.Core;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
@@ -37,6 +41,63 @@ public partial class OrbContractRunner
     private INetGameService? _network;
 
     public override void _Process(double delta) => _network?.Update();
+
+    private sealed record EvasionMoveResult(int AtImpact, int Hp, int Block, int Layers, int Weak,
+        int AllyHp, int AllyWeak, Dictionary<string, int> Rng);
+
+    private async Task<EvasionMoveResult> EvasionMoveTranscript(bool animated)
+    {
+        using var fight = new DarkStrikeFixture(multiplayer: true);
+        var dodger = fight.Target;
+        var ally = fight.Other!.Creature;
+        var attacker = fight.Monster.Creature;
+        var patcher = RitsuLibFramework.CreatePatcher("NinjaSlayer.EvasionPeers", "Product");
+        foreach (string name in new[] { "EvasionMoveScopePatch", "EvasionPowerApplyPatch", "EvasionPowerModifyAmountPatch" })
+            typeof(ModPatcherExtensions).GetMethod("RegisterPatch")!.MakeGenericMethod(
+                typeof(EvasionPower).Assembly.GetType("NinjaSlayer.Code.Patches." + name, true)!).Invoke(null, [patcher]);
+        Require(patcher.PatchAll(), "Evasion move hooks failed to install.");
+        FreeInputContractRoom? room = null;
+        try
+        {
+            // Both players attack the same evading enemy. Neither hit should deal damage.
+            await PowerCmd.Apply<EvasionPower>(Choice, attacker, 2, attacker, null);
+            foreach (var player in fight.Run.Players)
+            {
+                var card = fight.Combat.State.CreateCard<StrikeIronclad>(player);
+                await CardCmd.AutoPlay(Choice, card, attacker);
+            }
+            Require(attacker.CurrentHp == 500 && !attacker.HasPower<EvasionPower>(), "Enemy evasion did not consume once per attack.");
+            await PowerCmd.Apply<EvasionPower>(Choice, dodger, 1, dodger, null);
+            await CreatureCmd.GainBlock(dodger, 4, ValueProp.Unpowered, null);
+            if (animated)
+            {
+                room = new FreeInputContractRoom();
+                var scene = new Control();
+                room.AddChild(scene);
+                var effects = new Control();
+                room.AddChild(effects);
+                AccessTools.Property(typeof(NCombatRoom), "SceneContainer").SetValue(room, scene);
+                AccessTools.Property(typeof(NCombatRoom), "CombatVfxContainer").SetValue(room, effects);
+                AddChild(room);
+                AddStabActor(room, scene, attacker, new(800, 400));
+                AddStabActor(room, scene, dodger, new(250, 400));
+                _hurtRoom = room;
+            }
+            int atImpact = -1;
+            await new MoveState("STAB_AND_FOLLOWUP", async _ =>
+            {
+                await DarkStrike(fight.Monster, dodger);
+                atImpact = dodger.GetPowerAmount<EvasionPower>();
+                _hurtRoom = null;
+                await CreatureCmd.Damage(Choice, new[] { dodger, ally }, 10, ValueProp.Move, attacker);
+                await PowerCmd.Apply<WeakPower>(Choice, new[] { dodger, ally }, 1, attacker, null);
+            }).PerformMove([dodger, ally]);
+            return new(atImpact, dodger.CurrentHp, dodger.Block, dodger.GetPowerAmount<EvasionPower>(),
+                dodger.GetPowerAmount<WeakPower>(), ally.CurrentHp, ally.GetPowerAmount<WeakPower>(),
+                fight.Run.Rng.ToSerializable().Rngs.ToDictionary(pair => pair.Key.ToString(), pair => pair.Value.counter));
+        }
+        finally { _hurtRoom = null; room?.Free(); patcher.UnpatchAll(); }
+    }
 
     private async Task VerifyMultiplayer(string role)
     {
@@ -84,6 +145,21 @@ public partial class OrbContractRunner
             await WaitNetwork(() => client.IsConnected, "host handshake");
         }
 
+        if (System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_EVASION_ONLY") == "1")
+        {
+            MegaCrit.Sts2.Core.Context.LocalContext.NetId = _network.NetId;
+            string path = Path.Combine(directory, $"{role}.evasion.json");
+            var state = await EvasionMoveTranscript(animated: role == "client");
+            string evasion = JsonSerializer.Serialize(state);
+            GD.Print("Evasion transcript: " + evasion);
+            File.WriteAllText(path, evasion);
+            await FinishFixture("evasion");
+            Require(File.ReadAllText(Path.Combine(directory, "host.evasion.json")) ==
+                File.ReadAllText(Path.Combine(directory, "client.evasion.json")), "Evasion diverged: " + evasion);
+            Require(state is { AtImpact: 1, Hp: 500, Block: 4, Layers: 0, Weak: 0, AllyHp: 490, AllyWeak: 1 },
+                "Incorrect move outcome: " + evasion);
+            return;
+        }
         if (System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_GREETING_ONLY") == "1")
         {
             await VerifyGreetingBarrier(role, directory);

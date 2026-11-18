@@ -27,6 +27,25 @@ public partial class OrbContractRunner
             return (T)Activator.CreateInstance(typeof(T), true, false, 0, true, true)!;
         });
 
+    private static Node2D AddStabActor(NCombatRoom room, Control scene, Creature entity, Vector2 pos)
+    {
+        var actor = new AimContractCreature { Position = pos };
+        var visuals = new AimContractVisuals();
+        var rig = new Node2D { Name = "AirborneAnchor" };
+        var pose = new Node2D { Name = "AimPose" };
+        var body = new Sprite2D { Name = "Visuals", Scale = new(.4f, .4f) };
+        var center = new Marker2D { Position = new(0, -80), Name = "CenterPos" };
+        visuals.AddChild(center); visuals.AddChild(rig); rig.AddChild(pose); pose.AddChild(body);
+        body.Owner = visuals; body.UniqueNameInOwner = true;
+        AccessTools.Field(typeof(NCreatureVisuals), "_body").SetValue(visuals, body);
+        AccessTools.Property(typeof(NCreatureVisuals), "VfxSpawnPosition").SetValue(visuals, center);
+        AccessTools.Property(typeof(NCreature), "Entity").SetValue(actor, entity);
+        AccessTools.Property(typeof(NCreature), "Visuals").SetValue(actor, visuals);
+        actor.AddChild(visuals); scene.AddChild(actor);
+        ((List<NCreature>)AccessTools.Field(typeof(NCombatRoom), "_creatureNodes").GetValue(room)!).Add(actor);
+        return rig;
+    }
+
     private async Task VerifyDarkStrikeContact()
     {
         Type presentation = typeof(ShurikenOrb).Assembly.GetType(
@@ -89,27 +108,9 @@ public partial class OrbContractRunner
         var flashes = new List<Vector2>();
         effects.ChildEnteredTree += node => { if (node is Node2D vfx) flashes.Add(vfx.GlobalPosition); };
         AddChild(room);
-        Node2D AddActor(Creature entity, Vector2 pos)
-        {
-            var actor = new AimContractCreature { Position = pos };
-            var visuals = new AimContractVisuals();
-            var rig = new Node2D { Name = "AirborneAnchor" };
-            var pose = new Node2D { Name = "AimPose" };
-            var body = new Sprite2D { Name = "Visuals", Scale = new(.4f, .4f) };
-            var center = new Marker2D { Position = new(0, -80), Name = "CenterPos" };
-            visuals.AddChild(center); visuals.AddChild(rig); rig.AddChild(pose); pose.AddChild(body);
-            body.Owner = visuals; body.UniqueNameInOwner = true;
-            AccessTools.Field(typeof(NCreatureVisuals), "_body").SetValue(visuals, body);
-            AccessTools.Property(typeof(NCreatureVisuals), "VfxSpawnPosition").SetValue(visuals, center);
-            AccessTools.Property(typeof(NCreature), "Entity").SetValue(actor, entity);
-            AccessTools.Property(typeof(NCreature), "Visuals").SetValue(actor, visuals);
-            actor.AddChild(visuals); scene.AddChild(actor);
-            ((List<NCreature>)AccessTools.Field(typeof(NCombatRoom), "_creatureNodes").GetValue(room)!).Add(actor);
-            return rig;
-        }
         try
         {
-            AddActor(f.Monster.Creature, new(800, 400));
+            AddStabActor(room, scene, f.Monster.Creature, new(800, 400));
 #if NINJASLAYER_CHANNEL_PREVIEW
             var darkVisuals = room.GetCreatureNode(f.Monster.Creature)!.Visuals;
             var home = darkVisuals.Body;
@@ -135,10 +136,10 @@ public partial class OrbContractRunner
                     && lodged.Rear.GetParent() == darkVisuals, "Native lodged arrow lost contact, depth or ownership.");
             }
 #endif
-            var rig = AddActor(f.Target, new(250, 400));
+            var rig = AddStabActor(room, scene, f.Target, new(250, 400));
             var center = rig.GetParent().GetNode<Marker2D>("CenterPos");
             var second = f.Other!.Creature;
-            var secondRig = AddActor(second, new(460, 400));
+            var secondRig = AddStabActor(room, scene, second, new(460, 400));
             var arrow = new Marker2D { Name = "ArrowPosition", Position = new(32, -56) };
             secondRig.GetParent().AddChild(arrow);
             rig.Position = new(14, -24);

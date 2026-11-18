@@ -1,5 +1,6 @@
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -31,4 +32,7 @@ internal sealed record FinisherSessionRequest(
     IReadOnlySet<ulong>? VfxBaselineChildIds = null,
     FinisherRangedAction? RangedAction = null,
     int ObservedPrimaryHits = 0,
-    bool ContinuousPlayerApproach = false);
+    bool ContinuousPlayerApproach = false)
+{
+    public CardModel? ActionDamageSource { get; init; }
+}

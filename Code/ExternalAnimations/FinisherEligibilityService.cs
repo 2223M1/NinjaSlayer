@@ -165,7 +165,7 @@ internal static class FinisherEligibilityService
                     CardPlay: null,
                     RequiresAfterCardPlayed: false,
                     ResolvedHits: forecast.ResolvedHits,
-                    RangedAction: FinisherRangedAction.For(owner)),
+                    RangedAction: FinisherRangedAction.For(owner)) { ActionDamageSource = descriptor.CardSource },
                 combatState,
                 room,
                 out FinisherSession? session))

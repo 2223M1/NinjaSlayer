@@ -105,7 +105,8 @@ public partial class OrbContractRunner : Node
             Require(typeof(Player).Assembly.ManifestModule.ModuleVersionId.ToString() ==
                 System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_HOST_MVID"), "Loaded host MVID differs from the requested host.");
             GD.Print($"Candidate {expected}: {productPath}; SHA256 {Convert.ToHexString(SHA256.HashData(productBytes))}; host MVID {typeof(Player).Assembly.ManifestModule.ModuleVersionId}");
-            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_GREETING_ONLY") != "1")
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_GREETING_ONLY") != "1"
+                && System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_EVASION_ONLY") != "1")
                 await VerifyUploadTransport();
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_UPLOADS") == "1")
             {
@@ -260,6 +261,15 @@ public partial class OrbContractRunner : Node
             SaveManager.Instance.InitSettingsDataForTest();
             SaveManager.Instance.InitPrefsDataForTest();
             MegaCrit.Sts2.Core.Localization.LocManager.Initialize();
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_FLAME_AND_ZANSHIN") == "1")
+            {
+                await VerifyFlameFinisher();
+                await VerifyFlamePose();
+                await VerifyZanshin();
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_SAWATARI_CONTROLLER") == "1")
             {
                 await VerifySawatariController();

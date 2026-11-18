@@ -37,7 +37,7 @@ public sealed class NarakuFormPower : NinjaSlayerCounterPower
             Flash();
             NinjaSlayerCombatVfx.PlayBurnStatusFeedback(targets);
             await BlackFlame.DamageEnemies(choiceContext, Owner.Player!,
-                NinjaSlayerCardRules.BlackFlameDamage, null, targets);
+                NinjaSlayerCardRules.BlackFlameDamage, null, targets, fromAttack: true);
         }
     }
 }

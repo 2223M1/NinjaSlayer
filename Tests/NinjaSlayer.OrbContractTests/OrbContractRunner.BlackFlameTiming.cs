@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Combat.History.Entries;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.ValueProps;
@@ -16,6 +17,48 @@ public partial class OrbContractRunner
 {
     private static readonly List<string> BurnSounds = [];
     private static CardModel? _turnEndSoundCard;
+    private static readonly List<string> FlameFinishes = [];
+
+    private static void ObserveFlameForecast(Creature owner, object descriptor)
+    {
+        Type forecast = typeof(BlackFlame).Assembly.GetType("NinjaSlayer.Code.ExternalAnimations.FinisherForecast", true)!;
+        FlameFinishes.Add(AccessTools.Method(forecast, "EvaluateAction").Invoke(null,
+            [owner, owner.CombatState!.HittableEnemies, descriptor, null])!.ToString()!);
+    }
+
+    private static async Task VerifyFlameFinisher()
+    {
+        var observer = new Harmony("NinjaSlayer.Contracts.FlameFinisher");
+        var eligibility = typeof(BlackFlame).Assembly.GetType("NinjaSlayer.Code.ExternalAnimations.FinisherEligibilityService", true)!;
+        observer.Patch(AccessTools.Method(eligibility, "CreateActionSession"),
+            prefix: new HarmonyMethod(typeof(OrbContractRunner), nameof(ObserveFlameForecast)));
+        try
+        {
+            foreach (int count in new[] { 1, 2 })
+            foreach (int form in new[] { 0, 1, 2 })
+            foreach (int spareHp in new[] { 0, 1 })
+            {
+                using var combat = new OrbCombat(ninjaSlayer: true);
+                combat.CreateRun("flame-karate-finisher");
+                Creature[] enemies = count == 1 ? [combat.Enemy] : [combat.Enemy, combat.AddEnemy()];
+                var owner = combat.Player.Creature;
+                foreach (Creature enemy in enemies) enemy.SetCurrentHpInternal(8 + spareHp);
+                // Strike + Karate leave the first enemy at the same HP as the untouched second enemy.
+                combat.Enemy.SetCurrentHpInternal(17 + spareHp);
+                await PowerCmd.Apply<KaratePower>(Choice, owner, 3, owner, null);
+                if (form > 0) await PowerCmd.Apply<NarakuFormPower>(Choice, owner, form, owner, null);
+                for (int i = form; i < 2; i++) AddCard<BlackFlame>(combat);
+                FlameFinishes.Clear();
+                await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
+                Require(enemies.All(e => e.CurrentHp == spareHp) && owner.GetPowerAmount<KaratePower>() == 2,
+                    "Flame/karate finishing changed damage or spent Karate twice.");
+                Require(FlameFinishes.SequenceEqual(new[] { "NotGuaranteed", spareHp == 0 ? "Guaranteed" : "NotGuaranteed" }),
+                    $"Wrong clear forecast: enemies={count}, form={form}, spare HP={spareHp}: [{string.Join(", ", FlameFinishes)}].");
+            }
+        }
+        finally { observer.UnpatchAll(observer.Id); FlameFinishes.Clear(); }
+        GD.Print("PASS Black Flame finisher: real attack + Karate + two flames, hand/form, single/group clear and one-HP survivors.");
+    }
 
     private static void RecordBlackFlameSound(string sfx)
     {
@@ -41,6 +84,7 @@ public partial class OrbContractRunner
 
     private static async Task VerifyBlackFlameTiming()
     {
+        await VerifyFlameFinisher();
         foreach (bool upgraded in new[] { false, true })
         foreach (int held in new[] { 0, 1, 2 })
         {
