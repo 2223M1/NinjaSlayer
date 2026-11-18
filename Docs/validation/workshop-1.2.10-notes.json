@@ -1,0 +1,136 @@
+{
+  "version": "1.2.10",
+  "item": "3776911445",
+  "entry": "1795016293",
+  "previousEntry": "1794998856",
+  "savedAndReloaded": {
+    "zhs": {
+      "language": "zhs",
+      "selected": "简体中文",
+      "sha256": "53f3d6be91f71037ad1590f2def0c751c9be12077c4e504d5802943ea941ef7d",
+      "lines": 3,
+      "fallback": false,
+      "utc": "2026-11-18T15:41:24.4197250Z"
+    },
+    "eng": {
+      "language": "eng",
+      "selected": "英语",
+      "sha256": "903630ac76a1b278a6d12bb5316062e5bfb94acd49a23b022e32bf49698b30d7",
+      "lines": 3,
+      "fallback": false,
+      "utc": "2026-11-18T15:41:27.8303411Z"
+    },
+    "zht": {
+      "language": "zht",
+      "selected": "繁体中文",
+      "sha256": "cbf003c377e7bdbb090c0d522f71ea40c495b701746cb1e8b6d94f22d0c28430",
+      "lines": 3,
+      "fallback": false,
+      "utc": "2026-11-18T15:41:31.2409182Z"
+    },
+    "jpn": {
+      "language": "jpn",
+      "selected": "日语",
+      "sha256": "3cc427afa077a868fc09a46e6a11837261f48cbc36cf7ba93375466d739e3580",
+      "lines": 3,
+      "fallback": false,
+      "utc": "2026-11-18T15:41:34.6623713Z"
+    },
+    "kor": {
+      "language": "kor",
+      "selected": "韩语",
+      "sha256": "5b0bfb744538809aeeacc16d797c71c7d2aacd9f5e87492195712ed398fa0e8e",
+      "lines": 3,
+      "fallback": false,
+      "utc": "2026-11-18T15:41:38.0464014Z"
+    },
+    "deu": {
+      "language": "deu",
+      "selected": "德语",
+      "sha256": "3ca21ae61c67e20e12c5bdc433f8f4efed1c9d31b1968706b4b18b0795f3e9ed",
+      "lines": 3,
+      "fallback": false,
+      "utc": "2026-11-18T15:41:41.4375864Z"
+    },
+    "fra": {
+      "language": "fra",
+      "selected": "法语",
+      "sha256": "2c8ff32fc0969c7b2f84b24dbbf5672cac4d9479900094ef65730978f2285049",
+      "lines": 3,
+      "fallback": false,
+      "utc": "2026-11-18T15:41:44.8287455Z"
+    },
+    "ita": {
+      "language": "ita",
+      "selected": "意大利语",
+      "sha256": "c8f739889b2de64dbe4e57ac268f4bc338960c68bab3f5d564702fe9130dc829",
+      "lines": 3,
+      "fallback": false,
+      "utc": "2026-11-18T15:41:48.2159053Z"
+    },
+    "spa": {
+      "language": "spa",
+      "selected": "西班牙语 - 西班牙",
+      "sha256": "f92cb19d125a917f20d620f9a7072353107a97642743765b5734cad7e6b33d4b",
+      "lines": 3,
+      "fallback": false,
+      "utc": "2026-11-18T15:41:51.6167905Z"
+    },
+    "esp": {
+      "language": "esp",
+      "selected": "西班牙语 - 拉丁美洲",
+      "sha256": "867f7452b4ed1dcd4c7c4ae1f01724bd67d57e955c3c69fc7844963061ec37e6",
+      "lines": 3,
+      "fallback": false,
+      "utc": "2026-11-18T15:41:55.0373858Z"
+    },
+    "ind": {
+      "language": "ind",
+      "selected": "印度尼西亚语",
+      "sha256": "98ce5d4fde2cc081946f909471850f021a834626c405132aac37aa87605794d0",
+      "lines": 3,
+      "fallback": false,
+      "utc": "2026-11-18T15:41:58.4459328Z"
+    },
+    "pol": {
+      "language": "pol",
+      "selected": "波兰语",
+      "sha256": "ea5517dc467b227618f1b1738cc06ac1c94d163541ab16a3a8ebf4071416024f",
+      "lines": 3,
+      "fallback": false,
+      "utc": "2026-11-18T15:42:01.8686079Z"
+    },
+    "ptb": {
+      "language": "ptb",
+      "selected": "葡萄牙语 - 巴西",
+      "sha256": "b04509f4cd96c40d7ccba39d0b412f9318019ba0625be72e3096d8eb5031a761",
+      "lines": 3,
+      "fallback": false,
+      "utc": "2026-11-18T15:42:05.2682774Z"
+    },
+    "rus": {
+      "language": "rus",
+      "selected": "俄语",
+      "sha256": "f90957a0c112e5e7c2e7f45af2472249373f3e85c97899b89195fe9fb78d5fbf",
+      "lines": 3,
+      "fallback": false,
+      "utc": "2026-11-18T15:42:08.6515118Z"
+    },
+    "tha": {
+      "language": "tha",
+      "selected": "泰语",
+      "sha256": "1fda09be314ade1c4568725dcf409123f5e13774c12f3669d83bfd66c5743129",
+      "lines": 3,
+      "fallback": false,
+      "utc": "2026-11-18T15:42:12.0715042Z"
+    },
+    "tur": {
+      "language": "tur",
+      "selected": "土耳其语",
+      "sha256": "3843d0c1130d4e0e310da9b5341d591021e22262f09385169f5902ba3abc5fba",
+      "lines": 3,
+      "fallback": false,
+      "utc": "2026-11-18T15:42:15.4762581Z"
+    }
+  }
+}
