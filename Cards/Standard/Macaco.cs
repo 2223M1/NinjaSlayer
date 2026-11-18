@@ -27,8 +27,8 @@ public sealed class Macaco : NinjaSlayerRareCard
             DynamicVars[nameof(EvasionPower)].BaseValue,
             Owner.Creature,
             this);
-        await NinjaSlayerCardCmd.AddGeneratedCard<BlackFlame>(Owner, PileType.Hand);
-        await NinjaSlayerCardCmd.AddGeneratedCard<BlackFlame>(Owner, PileType.Hand);
+        await NinjaSlayerCardCmd.AddGeneratedCard<BlackFlame>(Owner, PileType.Discard);
+        await NinjaSlayerCardCmd.AddGeneratedCard<BlackFlame>(Owner, PileType.Discard);
     }
 
     protected override void OnUpgrade() => DynamicVars[nameof(EvasionPower)].UpgradeValueBy(1);

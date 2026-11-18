@@ -30,7 +30,7 @@ public sealed class MotionAndStillness : NinjaSlayerUncommonCard
         [NinjaSlayerHoverTips.ChadoBreathing, .. HoverTipFactory.FromCardWithCardHoverTips<Chado>()];
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(7, ValueProp.Move), new DynamicVar("Breath", 1)];
+        [new DamageVar(8, ValueProp.Move), new DynamicVar("Breath", 1)];
 
     public MotionAndStillness()
         : base(nameof(MotionAndStillness), 1, CardType.Attack, TargetType.AnyEnemy) { }

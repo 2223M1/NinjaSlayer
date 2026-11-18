@@ -81,6 +81,12 @@ public partial class OrbContractRunner
     {
         foreach (bool upgraded in new[] { false, true })
         {
+            using (var normal = new OrbCombat())
+            {
+                int hp = normal.Enemy.CurrentHp;
+                await CardCmd.AutoPlay(Choice, AddCard<MotionAndStillness>(normal, upgraded: upgraded), normal.Enemy);
+                Require(normal.Enemy.CurrentHp == hp - (upgraded ? 12 : 8), "Motion and Stillness damage must match its card face.");
+            }
             using var combat = new OrbCombat();
             var palm = AddCard<PalmThrust>(combat, upgraded: upgraded);
             var adjustment = AddCard<MotionAndStillness>(combat, upgraded: upgraded);
@@ -102,14 +108,14 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
             await PowerCmd.Apply<DexterityPower>(Choice, combat.Player.Creature, 2, combat.Player.Creature, null);
             Expect(palm, 9);
-            Expect(adjustment, upgraded ? 14 : 10);
+            Expect(adjustment, upgraded ? 15 : 11);
             Expect(judge, 6, block: true);
             Expect(storm, upgraded ? 9 : 8);
 
             await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, -5, combat.Player.Creature, null);
             await PowerCmd.Apply<DexterityPower>(Choice, combat.Player.Creature, -4, combat.Player.Creature, null);
             Expect(palm, 4);
-            Expect(adjustment, upgraded ? 9 : 5);
+            Expect(adjustment, upgraded ? 10 : 6);
             Expect(judge, 2, block: true);
             Expect(storm, upgraded ? 4 : 3);
 
@@ -117,9 +123,10 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<FrailPower>(Choice, combat.Player.Creature, 1, combat.Enemy, null);
             await PowerCmd.Apply<VulnerablePower>(Choice, combat.Enemy, 1, combat.Player.Creature, null);
             Expect(palm, 4);
-            Expect(adjustment, upgraded ? 10 : 5);
+            Expect(adjustment, upgraded ? 11 : 6);
             Expect(judge, 1, block: true);
             Expect(storm, upgraded ? 4 : 3);
+
         }
         GD.Print("PASS native card-number previews: positive/negative Strength and Dexterity, Weak, Vulnerable, Frail and upgrades");
     }

@@ -15,7 +15,7 @@ public sealed class LowUppercut : NinjaSlayerCommonCard
     private bool MeetsBonusCondition => NinjaSlayerCombatMetrics.PreviousFinishedCardWasAttack(Owner);
     protected override bool ShouldGlowGoldInternal => CombatState != null && MeetsBonusCondition;
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(8, ValueProp.Move), new PowerVar<WeakPower>(1), new PowerVar<VulnerablePower>(1)];
+        [new DamageVar(6, ValueProp.Move), new PowerVar<WeakPower>(1), new PowerVar<VulnerablePower>(1)];
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

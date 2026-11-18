@@ -59,27 +59,7 @@ public partial class OrbContractRunner
                 && combat.Player.Creature.Block == 5,
                 "Both Relentless versions play exactly one top card at turn end.");
         }
-        foreach (bool upgraded in new[] { false, true })
-        foreach (CardType type in new[] { CardType.Attack, CardType.Skill, CardType.Power, CardType.Status })
-        {
-            using var combat = new OrbCombat();
-            await CardCmd.AutoPlay(Choice, AddCard<TurningPoint>(combat, upgraded: upgraded), null);
-            var draws = Enumerable.Range(0, 3).Select(_ => AddCard<DefendIronclad>(combat, PileType.Draw)).ToArray();
-            CardModel generated = type switch
-            {
-                CardType.Attack => combat.State.CreateCard<StrikeIronclad>(combat.Player),
-                CardType.Skill => combat.State.CreateCard<DefendIronclad>(combat.Player),
-                CardType.Power => combat.State.CreateCard<Inflame>(combat.Player),
-                _ => combat.State.CreateCard<Wound>(combat.Player)
-            };
-            await CardPileCmd.AddGeneratedCardToCombat(generated, PileType.Discard, combat.Player);
-            Require(draws.Count(card => card.Pile?.Type == PileType.Hand) == (upgraded ? 2 : 1),
-                $"Generating {type} triggers Turning Point's 1/2 draws even outside hand.");
-            await CardPileCmd.Add(generated, PileType.Hand);
-            await CardPileCmd.AddGeneratedCardToCombat(combat.State.CreateCard<Wound>(combat.Player), PileType.Discard, null);
-            Require(draws.Count(card => card.Pile?.Type == PileType.Hand) == (upgraded ? 2 : 1),
-                "Moving an existing card and generation without an owner do not trigger Turning Point.");
-        }
+        await VerifyTurningPointCardTypes();
         RelicModel restoredNaraku;
         using (var combat = new OrbCombat())
         {
@@ -177,6 +157,33 @@ public partial class OrbContractRunner
                 && !Hook.ShouldPlay(combat.State, AddCard<DefendIronclad>(combat), out _, AutoPlayType.None),
                 "Reloading the run recreates attack priority and starting life without persisting the previous combat's shuffle state.");
         }
-        GD.Print("PASS November 16 balance: Cross Guard/Chop, delayed Chop Strike, Relentless, all generated card types and Naraku Unleashed life/attack priority/Stratagem shuffle semantics/initial shuffle excluded/first reshuffle/next combat/reload/turns/ownership.");
+        GD.Print("PASS November 16 balance: Cross Guard/Chop, delayed Chop Strike, Relentless, generated Status only and Naraku Unleashed life/attack priority/Stratagem shuffle semantics/initial shuffle excluded/first reshuffle/next combat/reload/turns/ownership.");
+    }
+
+    private static async Task VerifyTurningPointCardTypes()
+    {
+        foreach (bool upgraded in new[] { false, true })
+        foreach (CardType type in new[] { CardType.Attack, CardType.Skill, CardType.Power, CardType.Status })
+        {
+            using var combat = new OrbCombat();
+            await CardCmd.AutoPlay(Choice, AddCard<TurningPoint>(combat, upgraded: upgraded), null);
+            var draws = Enumerable.Range(0, 3).Select(_ => AddCard<DefendIronclad>(combat, PileType.Draw)).ToArray();
+            CardModel generated = type switch
+            {
+                CardType.Attack => combat.State.CreateCard<StrikeIronclad>(combat.Player),
+                CardType.Skill => combat.State.CreateCard<DefendIronclad>(combat.Player),
+                CardType.Power => combat.State.CreateCard<Inflame>(combat.Player),
+                _ => combat.State.CreateCard<Wound>(combat.Player)
+            };
+            await CardPileCmd.AddGeneratedCardToCombat(generated, PileType.Discard, combat.Player);
+            int expected = type == CardType.Status ? (upgraded ? 2 : 1) : 0;
+            Require(draws.Count(card => card.Pile?.Type == PileType.Hand) == expected,
+                $"Generating {type} must draw {expected} with Turning Point.");
+            await CardPileCmd.Add(generated, PileType.Hand);
+            await CardPileCmd.AddGeneratedCardToCombat(combat.State.CreateCard<Wound>(combat.Player), PileType.Discard, null);
+            Require(draws.Count(card => card.Pile?.Type == PileType.Hand) == expected,
+                "Moving an existing card and generation without an owner do not trigger Turning Point.");
+        }
+        GD.Print("PASS Turning Point base/upgrade: Status generation only, moves and ownerless generation excluded.");
     }
 }

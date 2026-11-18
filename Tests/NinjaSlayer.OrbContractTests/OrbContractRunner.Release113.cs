@@ -21,6 +21,9 @@ public partial class OrbContractRunner
         {
             using var combat = new OrbCombat(ninjaSlayer: true);
             await CardCmd.AutoPlay(Choice, AddCard<Macaco>(combat, upgraded: upgraded), null);
+            Require(PileType.Discard.GetPile(combat.Player).Cards.OfType<BlackFlame>().Count() == 2
+                && !PileType.Hand.GetPile(combat.Player).Cards.OfType<BlackFlame>().Any(),
+                "Macaco must generate both Black Flames in the discard pile.");
             var owner = combat.Player.Creature;
             int hp = owner.CurrentHp;
             await CreatureCmd.GainBlock(owner, 4, MegaCrit.Sts2.Core.ValueProps.ValueProp.Unpowered, null);
@@ -88,8 +91,8 @@ public partial class OrbContractRunner
             Require(PileType.Hand.GetPile(combat.Player).Cards.Count == 1,
                 "Other/null creators and existing Status movement must not draw.");
             await NinjaSlayerCardCmd.AddGeneratedCard<DefendIronclad>(combat.Player, PileType.Discard);
-            Require(PileType.Hand.GetPile(combat.Player).Cards.Count == 2,
-                "Generating an owned non-Status card must also draw.");
+            Require(PileType.Hand.GetPile(combat.Player).Cards.Count == 1,
+                "Generating an owned non-Status card must not draw.");
             while (PileType.Hand.GetPile(combat.Player).Cards.Count < CardPile.MaxCardsInHand) AddCard<DefendIronclad>(combat);
             int drawCount = PileType.Draw.GetPile(combat.Player).Cards.Count;
             await NinjaSlayerCardCmd.AddGeneratedCard<Wound>(combat.Player, PileType.Hand);
