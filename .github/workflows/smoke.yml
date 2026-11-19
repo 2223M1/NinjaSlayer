@@ -240,7 +240,7 @@ jobs:
 
       - name: Upload successful text-only attestation
         if: success()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: game-smoke-${{ inputs.mode }}-${{ steps.candidate.outputs.bundle_version }}-${{ steps.candidate.outputs.sha }}
           path: |
@@ -251,7 +251,7 @@ jobs:
 
       - name: Upload sanitized failure evidence
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: game-smoke-failure-${{ inputs.mode }}-${{ steps.candidate.outputs.bundle_version }}-${{ steps.candidate.outputs.sha }}
           path: ${{ runner.temp }}/smoke-result
