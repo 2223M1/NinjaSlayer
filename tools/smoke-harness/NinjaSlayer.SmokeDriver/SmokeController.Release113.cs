@@ -140,8 +140,13 @@ internal sealed partial class SmokeController
                 await CardPileCmd.Add(resilience, PileType.Hand);
                 await Play(resilience);
                 int before = PileType.Hand.GetPile(player).Cards.Count;
-                await CardPileCmd.AddGeneratedCardToCombat(Card<Wound>(), PileType.Discard, player);
-                Require(PileType.Hand.GetPile(player).Cards.Count == before + (upgraded ? 2 : 1), "Rendered generation draw differs.");
+                var wound = Card<Wound>();
+                await CardPileCmd.AddGeneratedCardToCombat(wound, PileType.Discard, player);
+                Require(PileType.Hand.GetPile(player).Cards.Count == before, "Generating Wound must not trigger Turning Point.");
+                await CardPileCmd.Add(wound, PileType.Draw, CardPilePosition.Top);
+                await CardPileCmd.Draw(choice, 1, player);
+                Require(wound.Pile?.Type == PileType.Hand && PileType.Hand.GetPile(player).Cards.Count == before + 1 + (upgraded ? 2 : 1),
+                    "Drawing Wound must trigger Turning Point's bonus draw.");
                 _checkpoints.Write("release113.cards." + speed + "." + upgraded);
             }
             foreach (var enemy in combat.Enemies.Where(enemy => enemy.IsAlive).ToArray())

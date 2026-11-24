@@ -450,12 +450,12 @@ public partial class OrbContractRunner
                 RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(kick, null));
             await WaitNetwork(() => completed > before, "native Half-Moon selection");
             Require(tea.Pile?.Type == PileType.Exhaust && spare.Pile?.Type == PileType.Hand
-                && kick.Pile?.Type == PileType.Hand && kick.DynamicVars.Damage.BaseValue == 20,
-                "Half-Moon must synchronize exactly one selected tea, damage doubling and return on both peers.");
+                && kick.Pile?.Type == PileType.Discard && kick.DynamicVars.Damage.BaseValue == 10 && kick.DynamicVars.Repeat.IntValue == 2,
+                "Half-Moon must synchronize the selected tea, discard and next hit count on both peers.");
             await FinishFixture(fixture);
         }
         Require(localSelections == 4, "Half-Moon may prompt only its local owner.");
-        GD.Print("PASS synchronized Half-Moon exact-one tea selection, doubling and return for both players");
+        GD.Print("PASS synchronized Half-Moon tea selection, discard and hit count for both players");
         selectCombatPile = true;
         foreach (Player player in run.Players)
         {
@@ -464,7 +464,9 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<TurningPointPower>(Choice, player.Creature, 1, player.Creature, null);
             await PowerCmd.Apply<StratagemPower>(Choice, player.Creature, 1, player.Creature, null);
             for (int i = 0; i < 3; i++) await CardPileCmd.Add(combat.State.CreateCard<DefendIronclad>(player), PileType.Discard);
-            var card = combat.State.CreateCard<NarakusMight>(player);
+            var status = combat.State.CreateCard<Wound>(player);
+            await CardPileCmd.Add(status, PileType.Draw);
+            var card = combat.State.CreateCard<ShrugItOff>(player);
             await CardPileCmd.Add(card, PileType.Hand);
             await PlayerCmd.SetEnergy(30, player);
             int before = completed;
@@ -473,16 +475,16 @@ public partial class OrbContractRunner
             await WaitNetwork(() => File.Exists(Path.Combine(directory, "host." + fixture))
                 && File.Exists(Path.Combine(directory, "client." + fixture)), "both TurningPoint fixtures");
             if (player.NetId == _network.NetId)
-                RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(card, combat.Enemy));
-            await WaitNetwork(() => completed >= before + 2, "TurningPoint draw and native Stratagem hook action");
-            Require(PileType.Hand.GetPile(player).Cards.Count == 3 && PileType.Hand.GetPile(player).Cards.OfType<BlackFlame>().Count() == 1,
-                "TurningPoint shuffle/selection lost a draw, duplicated status generation or left the action paused.");
+                RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(card, null));
+            await WaitNetwork(() => completed > before && card.Pile?.Type == PileType.Discard, "Turning Point draw and Stratagem choice");
+            Require(PileType.Hand.GetPile(player).Cards.Count == 3 && status.Pile?.Type == PileType.Hand,
+                "Turning Point must draw after the Wound and resolve Stratagem's shuffle choice.");
             await PowerCmd.Remove(player.Creature.GetPower<TurningPointPower>()!);
             await PowerCmd.Remove(player.Creature.GetPower<StratagemPower>()!);
             await FinishFixture(fixture);
         }
         Require(localSelections == 5, "TurningPoint's native selection must be made only by the owning peer.");
-        GD.Print("PASS synchronized TurningPoint status generation, empty-deck shuffle, Stratagem choice and both action queues.");
+        GD.Print("PASS synchronized Turning Point Status draw, empty-deck shuffle, Stratagem choice and both action queues.");
 #endif
         foreach (Player player in run.Players)
         {

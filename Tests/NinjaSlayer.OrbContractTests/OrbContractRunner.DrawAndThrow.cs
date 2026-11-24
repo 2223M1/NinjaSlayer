@@ -436,8 +436,8 @@ public partial class OrbContractRunner
             AddCard<StrikeIronclad>(combat, PileType.Draw);
             AddCard<StrikeIronclad>(combat, PileType.Draw);
             await CardPileCmd.Draw(Choice, 1, combat.Player);
-            Require(PileType.Hand.GetPile(combat.Player).Cards.Count == 1 && _drawFlipCalls == 1,
-                "Drawing an existing Status must not add TurningPoint draws or duplicate the native flip.");
+            Require(PileType.Hand.GetPile(combat.Player).Cards.Count == 3 && _drawFlipCalls == 1,
+                "Drawing a Status must add two Turning Point draws without duplicating the native flip.");
             await PowerCmd.Remove(combat.Player.Creature.GetPower<TurningPointPower>()!);
             ResetBatch();
             Type batches = product.GetType("NinjaSlayer.Code.Lifecycle.NinjaSlayerDrawAnimationBatch", true)!;

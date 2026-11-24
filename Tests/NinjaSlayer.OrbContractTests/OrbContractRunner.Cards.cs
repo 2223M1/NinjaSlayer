@@ -407,8 +407,8 @@ public partial class OrbContractRunner
         await ninjaRelic.BeforeCombatStart();
         await otherRelic.BeforeCombatStart();
         await otherRelic.AfterPlayerTurnStart(Choice, other);
-        Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 20
-            && other.Creature.GetPowerAmount<NarakuLifePower>() == 20
+        Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 30
+            && other.Creature.GetPowerAmount<NarakuLifePower>() == 30
             && PileType.Hand.GetPile(other).Cards.OfType<BlackFlame>().Count() == 1
             && NinjaSlayerFormState.GetPresentation(combat.Player.Creature).Kind == NinjaSlayerFormKind.FullyReleasedNaraku
             && NinjaSlayerFormState.GetPresentation(other.Creature).Kind == NinjaSlayerFormKind.FullyReleasedNaraku

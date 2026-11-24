@@ -78,8 +78,8 @@ public partial class OrbContractRunner
             await CardPileCmd.Add(otherAttack, PileType.Hand);
             await CardPileCmd.Add(otherSkill, PileType.Hand);
             await relic.BeforeCombatStart();
-            Require(owner.GetPowerAmount<NarakuLifePower>() == 20 && !teammate.Creature.HasPower<NarakuLifePower>(),
-                "Naraku Unleashed grants its owner exactly 20 life at combat start.");
+            Require(owner.GetPowerAmount<NarakuLifePower>() == 30 && !teammate.Creature.HasPower<NarakuLifePower>(),
+                "Naraku Unleashed grants its owner exactly 30 life at combat start.");
             var skill = AddCard<DefendIronclad>(combat);
             var power = AddCard<Inflame>(combat);
             PileType.Draw.GetPile(combat.Player).RandomizeOrderInternal(combat.Player,
@@ -112,7 +112,7 @@ public partial class OrbContractRunner
             Require(!PileType.Hand.GetPile(combat.Player).Cards.OfType<BlackFlame>().Any(), "Teammate turns do not create flames.");
             await relic.AfterPlayerTurnStart(Choice, combat.Player);
             await relic.AfterPlayerTurnStart(Choice, combat.Player);
-            Require(owner.GetPowerAmount<NarakuLifePower>() == 20
+            Require(owner.GetPowerAmount<NarakuLifePower>() == 30
                 && PileType.Hand.GetPile(combat.Player).Cards.OfType<BlackFlame>().Count() == 2,
                 "Each owner turn adds one Black Flame without granting the starting life again.");
             await CardPileCmd.Add(attack, PileType.Hand);
@@ -135,7 +135,7 @@ public partial class OrbContractRunner
             AddCard<DefendIronclad>(combat, PileType.Discard);
             await CardPileCmd.Shuffle(Choice, combat.Player);
             Require(Hook.ShouldPlay(combat.State, skill, out _, AutoPlayType.None)
-                && owner.GetPowerAmount<NarakuLifePower>() == 20
+                && owner.GetPowerAmount<NarakuLifePower>() == 30
                 && PileType.Hand.GetPile(combat.Player).Cards.OfType<BlackFlame>().Count() == 3,
                 "Later turns and shuffles keep priority ended while Black Flame generation continues.");
             restoredNaraku = RelicModel.FromSerializable(relic.ToSerializable());
@@ -153,11 +153,11 @@ public partial class OrbContractRunner
             combat.Player.AddRelicInternal(restoredNaraku);
             await restoredNaraku.BeforeCombatStart();
             AddCard<StrikeIronclad>(combat);
-            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 20
+            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 30
                 && !Hook.ShouldPlay(combat.State, AddCard<DefendIronclad>(combat), out _, AutoPlayType.None),
                 "Reloading the run recreates attack priority and starting life without persisting the previous combat's shuffle state.");
         }
-        GD.Print("PASS November 16 balance: Cross Guard/Chop, delayed Chop Strike, Relentless, generated Status only and Naraku Unleashed life/attack priority/Stratagem shuffle semantics/initial shuffle excluded/first reshuffle/next combat/reload/turns/ownership.");
+        GD.Print("PASS November 16 balance: Cross Guard/Chop, delayed Chop Strike, Relentless, drawn Status only and Naraku Unleashed life/attack priority/Stratagem shuffle semantics/initial shuffle excluded/first reshuffle/next combat/reload/turns/ownership.");
     }
 
     private static async Task VerifyTurningPointCardTypes()
@@ -175,15 +175,14 @@ public partial class OrbContractRunner
                 CardType.Power => combat.State.CreateCard<Inflame>(combat.Player),
                 _ => combat.State.CreateCard<Wound>(combat.Player)
             };
-            await CardPileCmd.AddGeneratedCardToCombat(generated, PileType.Discard, combat.Player);
+            await CardPileCmd.AddGeneratedCardToCombat(generated, PileType.Hand, combat.Player);
+            await CardPileCmd.Add(generated, PileType.Draw, CardPilePosition.Top);
+            Require(draws.All(card => card.Pile?.Type == PileType.Draw), "Generating and moving a card must not count as a draw.");
+            await CardPileCmd.Draw(Choice, 1, combat.Player, fromHandDraw: true);
             int expected = type == CardType.Status ? (upgraded ? 2 : 1) : 0;
             Require(draws.Count(card => card.Pile?.Type == PileType.Hand) == expected,
-                $"Generating {type} must draw {expected} with Turning Point.");
-            await CardPileCmd.Add(generated, PileType.Hand);
-            await CardPileCmd.AddGeneratedCardToCombat(combat.State.CreateCard<Wound>(combat.Player), PileType.Discard, null);
-            Require(draws.Count(card => card.Pile?.Type == PileType.Hand) == expected,
-                "Moving an existing card and generation without an owner do not trigger Turning Point.");
+                $"Drawing {type} must draw {expected} additional cards with Turning Point.");
         }
-        GD.Print("PASS Turning Point base/upgrade: Status generation only, moves and ownerless generation excluded.");
+        GD.Print("PASS Turning Point base/upgrade: Status drawn in the opening hand, other types/generation/moves excluded.");
     }
 }

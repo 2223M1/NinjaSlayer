@@ -22,7 +22,7 @@ public sealed class NarakuUnleashedRelic : NinjaSlayerRelicTemplate
 
     public override RelicRarity Rarity => RelicRarity.Ancient;
 
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new NarakuLifeVar(20)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new NarakuLifeVar(30)];
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromPower<NarakuLifePower>(),

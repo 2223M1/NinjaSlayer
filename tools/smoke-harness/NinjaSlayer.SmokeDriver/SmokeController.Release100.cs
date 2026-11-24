@@ -12,6 +12,7 @@ using MegaCrit.Sts2.Core.Map;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Events;
 using MegaCrit.Sts2.Core.Nodes;
+using MegaCrit.Sts2.Core.Nodes.Cards;
 using MegaCrit.Sts2.Core.Nodes.Events.Custom;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
@@ -134,6 +135,24 @@ internal sealed partial class SmokeController
                 await WaitFrames(120);
                 foreach (var card in cards.Take(selected))
                     AccessTools.Method(typeof(NSimpleCardSelectScreen), "OnCardClicked").Invoke(screen, [card]);
+                if (selected == 1)
+                {
+                    var grid = screen!.GetNode<NCardGrid>("%CardGrid");
+                    var click = AccessTools.Method(typeof(NSimpleCardSelectScreen), "OnCardClicked");
+                    float Width(CardModel card) =>
+                        ((ShaderMaterial)grid.GetCardNode(card)!.CardHighlight.Material).GetShaderParameter("width").AsSingle();
+                    ulong oldNode = grid.GetCardNode(cards[0])!.GetInstanceId();
+                    grid.OffsetRight -= 8f;
+                    await WaitUntilAsync(() => grid.GetCardNode(cards[0])!.GetInstanceId() != oldNode,
+                        "Resize did not rebuild the visible Scry cards.");
+                    await WaitUntilAsync(() => Width(cards[0]) > 0.06f, "Selected Scry card lost its outline after resize.");
+                    Require(cards.Skip(1).All(card => Width(card) == 0f), "An unselected copy acquired a Scry outline.");
+                    click.Invoke(screen, [cards[0]]);
+                    grid.OffsetRight += 8f;
+                    await WaitFrames(120);
+                    Require(cards.All(card => Width(card) == 0f), "Deselected Scry card regained its outline after resize.");
+                    click.Invoke(screen, [cards[0]]);
+                }
                 await MouseClickAtAsync(screen!.GetNode<NButton>("%Confirm").GetGlobalRect().GetCenter());
                 await scry;
                 await WaitFrames(120);

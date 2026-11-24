@@ -45,5 +45,9 @@ public sealed class SomersaultKick : NinjaSlayerCommonCard
         }
     }
 
-    protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(2);
+    protected override void OnUpgrade()
+    {
+        DynamicVars.Damage.UpgradeValueBy(1);
+        DynamicVars["Breath"].UpgradeValueBy(1);
+    }
 }
