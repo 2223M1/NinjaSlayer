@@ -44,6 +44,26 @@ public partial class OrbContractRunner
         await customGate;
         await ToSignal(GetTree().CreateTimer(.11), SceneTreeTimer.SignalName.Timeout);
         Run("CancelAndRestore", combat.Player.Creature);
+        var jump = combat.State.CreateCard<SpiralJump>(combat.Player);
+        var volleyPlay = new CardPlay { Card = jump, Player = combat.Player, Target = null, ResultPile = PileType.Discard,
+            Resources = new ResourceInfo { EnergySpent = 1, EnergyValue = 1, StarsSpent = 0, StarValue = 0 },
+            IsAutoPlay = false, PlayIndex = 0, PlayCount = 1 };
+        object jumpLease = AccessTools.Method(execution, "Enter").Invoke(null,
+            [DamageCmd.Attack(8).FromCard(jump, volleyPlay), null])!;
+        try
+        {
+            await Attack(90f, 0f, .5f);
+            Task returnHome = (Task)Run("ReturnAfterLethalVolley", combat.Player.Creature, jump)!;
+            Require(!returnHome.IsCompleted && Math.Abs(Travel().Length() - 90f) < .1f, "Lethal volley snapped at release.");
+            var tween = (Tween)AccessTools.Property(State().GetType(), "ActiveTween").GetValue(State())!;
+            tween.Pause(); tween.CustomStep(.25);
+            Require(Math.Abs(Travel().Length() - 45f) < .1f, "Lethal volley skipped the midpoint of the normal return.");
+            tween.CustomStep(.251);
+            await returnHome;
+            Require(Travel().Length() < .1f, "Lethal volley did not reach its original position.");
+            GD.Print("PASS Spiral Jump ranged recovery: 90px at release, 45px halfway, 0px before combat cleanup.");
+        }
+        finally { AccessTools.Method(jumpLease.GetType(), "RestoreCaller").Invoke(jumpLease, null); }
         var card = combat.State.CreateCard<DragonRoundhouseKick>(combat.Player);
         var play = new CardPlay { Card = card,
             Player = combat.Player,

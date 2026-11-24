@@ -52,21 +52,32 @@ internal static class CombatDodgeAnimation
         return completion;
     }
 
-    public static void NotifyImpact(Creature creature)
+    public static void NotifyImpact(Creature creature, bool evadedHit = false)
     {
-        if (!ActiveDodges.TryGetValue(creature, out DodgeState? state))
+        ActiveDodges.TryGetValue(creature, out DodgeState? state);
+        if (evadedHit && state is { ConfirmedEvade: true })
+        {
+            // The first confirmed hit used the anticipated dodge. Further hits add
+            // their own displacement while the preceding dodge finishes its return.
+            ActiveDodges.Remove(creature);
+            state = null;
+        }
+        if (state == null)
         {
             _ = Schedule(creature, 0f, 0f);
             state = ActiveDodges.GetValueOrDefault(creature);
         }
 
-        state?.NotifyImpact();
+        if (state != null)
+        {
+            state.ConfirmedEvade |= evadedHit;
+            state.NotifyImpact();
+        }
     }
 
     private static async Task Run(DodgeState state, float fastDelay, float standardDelay)
     {
         NCreature? node = null;
-        Vector2 baseline = default;
         try
         {
             await Cmd.CustomScaledWait(
@@ -78,19 +89,17 @@ internal static class CombatDodgeAnimation
                 return;
             }
 
-            baseline = node.Position;
             state.Node = node;
             state.Pose = NinjaSlayerAimPose.Get(state.Creature);
             if (state.Pose != null)
             {
                 state.Motion = state.Pose.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Offset, float.MaxValue);
                 if (state.Motion == null) return;
-                baseline = Vector2.Zero;
             }
             float direction = state.Creature.Side == CombatSide.Player ? -1f : 1f;
             if (!await TweenPosition(
                 state,
-                baseline + Vector2.Right * DodgeDistance * direction,
+                Vector2.Right * DodgeDistance * direction,
                 OutwardSeconds,
                 Tween.EaseType.Out,
                 Tween.TransitionType.Expo))
@@ -112,7 +121,7 @@ internal static class CombatDodgeAnimation
 
             await TweenPosition(
                 state,
-                baseline,
+                Vector2.Zero,
                 ReturnSeconds,
                 Tween.EaseType.In,
                 Tween.TransitionType.Cubic);
@@ -127,7 +136,7 @@ internal static class CombatDodgeAnimation
             }
             else if (node != null && GodotObject.IsInstanceValid(node))
             {
-                node.Position = baseline;
+                node.Position -= state.Offset;
             }
 
             if (ActiveDodges.TryGetValue(state.Creature, out DodgeState? active)
@@ -160,10 +169,11 @@ internal static class CombatDodgeAnimation
                 state.Motion.Offset = position;
                 state.Pose.SyncNow();
             }
-            else node.Position = position;
+            else node.Position += position - state.Offset;
+            state.Offset = position;
         }
         if (duration <= 0f) { Apply(target); return true; }
-        Vector2 from = state.Pose != null ? state.Motion!.Offset : node.Position;
+        Vector2 from = state.Offset;
         Tween tween = node.CreateTween();
         state.ActiveTween = tween;
         tween.TweenMethod(Callable.From<Vector2>(Apply), from, target, duration)
@@ -199,6 +209,8 @@ internal static class CombatDodgeAnimation
         public NinjaSlayerAimPose? Pose { get; set; }
         public NinjaSlayerAimPose.VisualMotion? Motion { get; set; }
         public int ImpactVersion { get; private set; }
+        public bool ConfirmedEvade { get; set; }
+        public Vector2 Offset { get; set; }
 
         public void NotifyImpact()
         {

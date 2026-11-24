@@ -5467,6 +5467,97 @@
           "Dönüm Noktası artık bir Durum kartı çektiğinde 1→2 kart çekmeni sağlıyor. Durum kartı oluşturmak etkiyi tetiklemiyor."
         ]
       }
+    },
+    {
+      "version": "1.2.12",
+      "entryId": "1795499044",
+      "sourceRevision": "98c8c42f68b49f1ec4bd6f1e1672c53e60d7bfab",
+      "sourceText": "修复了用户反馈中地狱龙卷连射过慢的问题。\n螺旋回转跳的手里剑触发处决后，角色现在会平滑返回原位。\n回避多段攻击时，每一击都会触发闪避位移，整段攻击仍只消耗 1 层回避。",
+      "evidence": [
+        "Docs/validation/workshop-1.2.12-submission.json"
+      ],
+      "notes": {
+        "zhs": [
+          "修复了用户反馈中地狱龙卷连射过慢的问题。",
+          "螺旋回转跳的手里剑触发处决后，角色现在会平滑返回原位。",
+          "回避多段攻击时，每一击都会触发闪避位移，整段攻击仍只消耗 1 层回避。"
+        ],
+        "eng": [
+          "Fixed Hell Tornado firing its shuriken too slowly.",
+          "When a shuriken from Spiral Jump triggers a finisher, the character now moves smoothly back into position.",
+          "Evasion now makes the character dodge each hit of a multi-hit attack. The whole attack still consumes only 1 stack."
+        ],
+        "jpn": [
+          "ヘルタツマキのスリケンの連射間隔が長すぎる問題を修正しました。",
+          "螺旋回転跳躍のスリケンでトドメ演出が発生したとき、キャラクターが滑らかに元の位置へ戻るようになりました。",
+          "多段攻撃を回避すると、一撃ごとに身をかわすようになりました。攻撃全体で消費する回避はこれまでどおり1層です。"
+        ],
+        "kor": [
+          "헬 타츠마키의 슈리켄 연사 속도가 지나치게 느리던 문제를 수정했습니다.",
+          "나선 도약의 슈리켄으로 처형이 발동하면 캐릭터가 자연스럽게 원래 위치로 돌아갑니다.",
+          "이제 다단 공격을 회피할 때 타격마다 몸을 피합니다. 공격 전체에 소모되는 회피는 여전히 1중첩입니다."
+        ],
+        "zht": [
+          "修正地獄龍捲連射手裏劍過慢的問題。",
+          "螺旋迴轉跳的手裏劍觸發處決後，角色現在會平順地回到原位。",
+          "迴避多段攻擊時，角色會隨每一擊閃身移動；整次攻擊仍只消耗 1 層迴避。"
+        ],
+        "deu": [
+          "Ein Fehler wurde behoben, durch den Höllentornado seine Shuriken zu langsam abfeuerte.",
+          "Löst ein Shuriken von Spiralsprung einen Finisher aus, bewegt sich die Figur nun fließend zurück an ihre Ausgangsposition.",
+          "Beim Ausweichen weicht die Figur jedem Treffer eines Mehrfachangriffs einzeln aus. Der gesamte Angriff verbraucht weiterhin nur 1 Stapel Ausweichen."
+        ],
+        "fra": [
+          "Correction de la cadence de tir trop lente des shurikens de Tornade infernale.",
+          "Lorsqu’un shuriken de Saut en spirale déclenche une exécution, le personnage revient désormais en douceur à sa position initiale.",
+          "Avec Esquive, le personnage se déplace pour éviter chaque coup d’une attaque multiple. L’attaque entière ne consomme toujours qu’une charge d’Esquive."
+        ],
+        "ita": [
+          "Corretto il lancio troppo lento degli shuriken di Tornado infernale.",
+          "Quando uno shuriken di Salto a spirale innesca un’esecuzione, il personaggio torna alla posizione iniziale con un movimento fluido.",
+          "Con Schivata, il personaggio si sposta per evitare ogni colpo di un attacco multiplo. L’intero attacco consuma ancora una sola carica di Schivata."
+        ],
+        "spa": [
+          "Se corrigió la lentitud con la que Tornado infernal lanzaba sus shuriken.",
+          "Cuando un shuriken de Salto en espiral activa una ejecución, el personaje vuelve con fluidez a su posición inicial.",
+          "Con Evasión, el personaje se desplaza para esquivar cada golpe de un ataque múltiple. El ataque completo sigue consumiendo solo 1 carga de Evasión."
+        ],
+        "esp": [
+          "Se corrigió la baja velocidad de lanzamiento de los shuriken de Tornado infernal.",
+          "Si un shuriken de Salto en espiral activa una ejecución, el personaje regresa con fluidez a su posición inicial.",
+          "Con evasión, el personaje se mueve para esquivar cada golpe de un ataque múltiple. Todo el ataque sigue consumiendo solo 1 carga de evasión."
+        ],
+        "ptb": [
+          "Corrigida a lentidão com que Tornado Infernal lançava os shurikens.",
+          "Quando um shuriken de Salto Espiral ativa uma execução, o personagem volta suavemente à posição inicial.",
+          "Com Evasão, o personagem se desloca para esquivar de cada golpe de um ataque múltiplo. O ataque inteiro continua consumindo apenas 1 acúmulo de Evasão."
+        ],
+        "pol": [
+          "Naprawiono zbyt wolne wyrzucanie shurikenów przez Piekielne tornado.",
+          "Gdy shuriken z karty Spiralny skok uruchomi egzekucję, postać płynnie wraca na swoje miejsce.",
+          "Dzięki mocy Unik postać uchyla się teraz przed każdym ciosem ataku wielokrotnego. Cały atak nadal zużywa tylko 1 ładunek tej mocy."
+        ],
+        "rus": [
+          "Исправлена слишком медленная серия бросков сюрикенов у карты «Адское торнадо».",
+          "Если сюрикен карты «Спиральный прыжок» запускает добивание, персонаж теперь плавно возвращается на исходную позицию.",
+          "При уклонении от серии ударов персонаж теперь смещается при каждом ударе. На всю атаку по-прежнему тратится только 1 заряд эффекта «Уклонение»."
+        ],
+        "ind": [
+          "Memperbaiki jeda lemparan shuriken Tornado Neraka yang terlalu lama.",
+          "Saat shuriken dari Lompatan Spiral memicu eksekusi, karakter kini bergerak kembali ke posisi semula dengan mulus.",
+          "Dengan Elakan, karakter kini bergerak menghindari setiap pukulan dalam serangan beruntun. Seluruh serangan tetap hanya menghabiskan 1 lapis Elakan."
+        ],
+        "tha": [
+          "แก้ไขปัญหาที่ทอร์นาโดนรกยิงชุริเค็นต่อเนื่องช้าเกินไป",
+          "เมื่อชุริเค็นจากกระโดดเกลียวทำให้เกิดท่าปิดฉาก ตัวละครจะเคลื่อนกลับไปยังตำแหน่งเดิมอย่างนุ่มนวล",
+          "เมื่อใช้หลบหลีกกับการโจมตีหลายครั้ง ตัวละครจะขยับหลบทุกครั้งที่ถูกโจมตี โดยการโจมตีทั้งชุดยังคงใช้หลบหลีกเพียง 1 ชั้น"
+        ],
+        "tur": [
+          "Cehennem Kasırgası’nın şurikenleri çok yavaş fırlatması düzeltildi.",
+          "Sarmal Sıçrayış’ın bir şurikeni infazı tetiklediğinde karakter artık başlangıç konumuna akıcı bir hareketle dönüyor.",
+          "Kaçınma etkinken karakter, çok vuruşlu bir saldırının her vuruşunda ayrı bir kaçınma hareketi yapıyor. Saldırının tamamı yine yalnızca 1 Kaçınma yükü tüketiyor."
+        ]
+      }
     }
   ]
 }

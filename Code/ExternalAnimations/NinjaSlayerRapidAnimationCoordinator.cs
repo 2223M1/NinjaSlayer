@@ -146,7 +146,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
             Apply(1f);
             motion.Completed = true;
             motion.Tween = null;
-            if (state.GameplaySettled) StartReturn(creature, state);
+            if (state.GameplaySettled) _ = TaskHelper.RunSafely(StartReturn(creature, state));
         }
     }
 
@@ -179,7 +179,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
             return;
         }
 
-        StartReturn(creature, state);
+        _ = TaskHelper.RunSafely(StartReturn(creature, state));
     }
 
     internal static void BeginDamageRecovery(
@@ -291,10 +291,14 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         }
     }
 
-    private static void StartReturn(Creature creature, ActionState state)
+    internal static Task ReturnAfterLethalVolley(Creature creature, Cards.Standard.SpiralJump source) =>
+        States.TryGetValue(creature, out ActionState? state) && ReferenceEquals(state.LastPlay?.Card, source)
+            ? StartReturn(creature, state) : Task.CompletedTask;
+
+    private static Task StartReturn(Creature creature, ActionState state)
     {
         NinjaSlayerShadowController.Get(creature)?.BeginReturn(state.ReturnSeconds);
-        if (state.Motions.Any(motion => !motion.Completed)) return;
+        if (state.Motions.Any(motion => !motion.Completed)) return Task.CompletedTask;
         state.StopActiveTween();
         NinjaSlayerAimPose? pose = NinjaSlayerAimPose.Get(creature);
         pose?.BeginReturn();
@@ -305,7 +309,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         if (channels.Length == 0)
         {
             States.Remove(creature);
-            return;
+            return Task.CompletedTask;
         }
 
         float returnSeconds = state.ReturnSeconds;
@@ -317,7 +321,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
             RestoreChannels(channels);
             pose?.ApplyReturn(1f);
             States.Remove(creature);
-            return;
+            return Task.CompletedTask;
         }
 
         Tween tween = state.CreatureNode.CreateTween();
@@ -353,7 +357,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
                 1f,
                 returnSeconds)
             .SetTrans(Tween.TransitionType.Linear);
-        TaskHelper.RunSafely(CompleteReturn(creature, state, generation, tween));
+        return CompleteReturn(creature, state, generation, tween);
     }
 
     public static Vector2 ClaimExclusiveBaseline(Creature creature, NCreature creatureNode)
@@ -430,7 +434,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
             if (States.TryGetValue(creature, out ActionState? actionState)
                 && actionState.GameplaySettled)
             {
-                StartReturn(creature, actionState);
+                _ = TaskHelper.RunSafely(StartReturn(creature, actionState));
             }
         }
     }

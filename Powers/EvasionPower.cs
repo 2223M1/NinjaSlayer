@@ -31,7 +31,7 @@ public sealed class EvasionPower : NinjaSlayerPowerTemplate
             darkNinja.PlayEvasionInsultOnce();
         }
 
-        CombatDodgeAnimation.NotifyImpact(Owner);
+        CombatDodgeAnimation.NotifyImpact(Owner, evadedHit: true);
         Flash();
         if (consumeLayer) await PowerCmd.Decrement(this);
     }

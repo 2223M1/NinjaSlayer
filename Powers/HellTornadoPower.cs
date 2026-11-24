@@ -67,6 +67,8 @@ public sealed class HellTornadoPower : NinjaSlayerPowerTemplate
         Flash();
         if (ShurikenOrb.Find(player) is { } stock)
         {
+            // Turn-start effects run outside card pacing. Each throw already owns its flight delay.
+            using var pacing = CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.ComboDamage);
             await stock.FireConsumedVolley(choiceContext, 1, null);
         }
 
