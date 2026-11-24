@@ -5328,6 +5328,145 @@
           "修复了用户反馈中黑炎清场漏播处决的问题。"
         ]
       }
+    },
+    {
+      "version": "1.2.11",
+      "entryId": "1795484934",
+      "sourceRevision": "afa589ac7350c22eebd86ab1247740da92279b61",
+      "sourceText": "修复了用户反馈中预见选中框消失的问题。\n奈落解放在战斗开始时给予的奈落生命由 20 点提高至 30 点。\n啜饮现在立即茶道呼吸 1，并在接下来 1→2 个回合开始时茶道呼吸 1，替代原先的 3 回合持续效果。\n倒挂金钩踢+每击伤害由 9 降至 8，本回合丢弃过牌时的茶道呼吸由 2 提高至 3。\n半月圆规踢不再回手或在本回合伤害翻倍。每次打出后，这张牌在本场战斗中多命中一次，卡面显示当前命中次数。\n转机改为每当你抽到一张状态牌时，抽 1→2 张牌，生成状态牌不再触发。",
+      "evidence": [
+        "Docs/validation/workshop-1.2.11-submission.json"
+      ],
+      "notes": {
+        "zhs": [
+          "修复了用户反馈中预见选中框消失的问题。",
+          "奈落解放在战斗开始时给予的奈落生命由 20 点提高至 30 点。",
+          "啜饮现在立即茶道呼吸 1，并在接下来 1→2 个回合开始时茶道呼吸 1，替代原先的 3 回合持续效果。",
+          "倒挂金钩踢+每击伤害由 9 降至 8，本回合丢弃过牌时的茶道呼吸由 2 提高至 3。",
+          "半月圆规踢不再回手或在本回合伤害翻倍。每次打出后，这张牌在本场战斗中多命中一次，卡面显示当前命中次数。",
+          "转机改为每当你抽到一张状态牌时，抽 1→2 张牌，生成状态牌不再触发。"
+        ],
+        "eng": [
+          "Fixed a reported issue where selected cards could lose their outline during Scry.",
+          "Naraku Unleashed now grants 30 Naraku Life at the start of combat, up from 20.",
+          "Sip now gives Chado Breathing 1 immediately and at the start of your next 1→2 turns, replacing its previous 3-turn effect.",
+          "Somersault Kick+ now deals 8 damage per hit instead of 9. If you discarded a card this turn, its Chado Breathing increases from 2 to 3.",
+          "Half-Moon Compass Kick no longer returns to hand or doubles its damage for the turn. Each play adds one hit to this card for the rest of combat. Its current hit count is shown on the card.",
+          "Turning Point now draws 1→2 cards whenever you draw a Status card. Generating a Status no longer triggers it."
+        ],
+        "jpn": [
+          "占術で選んだカードの枠が消えることがある不具合を修正。",
+          "ナラク解放で戦闘開始時に得るナラク生命を20から30に増加。",
+          "ひと口は従来の3ターン継続に代わり、使用時と、その後1→2ターンの自分のターン開始時にチャドー呼吸1を行う。",
+          "サマーソルトキック+の1ヒットあたりのダメージを9から8に変更。このターンにカードを捨てていた場合のチャドー呼吸は2から3に増加。",
+          "メイアルーア・ジ・コンパッソは手札に戻らず、そのターンのダメージも倍増しなくなった。使うたびに、この戦闘中はこのカードの攻撃回数が1回増える。現在の回数はカードに表示される。",
+          "転機は状態異常カードを引くたびにカードを1→2枚引く。状態異常カードを生成しても発動しない。"
+        ],
+        "kor": [
+          "예지로 선택한 카드의 테두리가 사라지던 문제를 수정했습니다.",
+          "나라쿠 해방이 전투 시작 시 부여하는 나라쿠 생명이 20에서 30으로 증가했습니다.",
+          "한 모금은 기존 3턴 지속 효과 대신, 사용 즉시 차도 호흡 1을 얻고 다음 1→2턴 동안 내 턴 시작 시 차도 호흡 1을 얻습니다.",
+          "섬머솔트 킥+의 타격당 피해가 9에서 8로 줄고, 이번 턴에 카드를 버렸을 때의 차도 호흡은 2에서 3으로 늘었습니다.",
+          "메이아 루아 지 꼼빠수는 손으로 돌아오지 않으며 이번 턴 피해가 두 배가 되지도 않습니다. 사용할 때마다 이번 전투 동안 이 카드의 타격 횟수가 1회 증가합니다. 현재 타격 횟수는 카드에 표시됩니다.",
+          "전환점은 상태이상 카드를 뽑을 때마다 카드를 1→2장 뽑습니다. 상태이상 카드를 생성할 때는 발동하지 않습니다."
+        ],
+        "zht": [
+          "修正了玩家回報的預見選取框消失問題。",
+          "奈落解放在戰鬥開始時給予的奈落生命由 20 點提高至 30 點。",
+          "啜飲現在立即茶道呼吸 1，並在接下來 1→2 個回合開始時茶道呼吸 1，取代原先持續 3 回合的效果。",
+          "倒掛金鉤踢+每擊傷害由 9 降至 8，本回合丟棄過牌時的茶道呼吸由 2 提高至 3。",
+          "半月圓規踢不再回到手牌，也不再使本回合的傷害翻倍。每次打出後，這張牌在本場戰鬥中多命中一次，牌面顯示目前的命中次數。",
+          "轉機改為每當你抽到一張狀態牌時，抽 1→2 張牌；生成狀態牌不再觸發。"
+        ],
+        "deu": [
+          "Ein gemeldeter Fehler wurde behoben, durch den ausgewählte Karten bei Voraussicht ihre Umrandung verlieren konnten.",
+          "Naraku entfesselt gewährt zu Kampfbeginn jetzt 30 statt 20 Naraku-Leben.",
+          "Kleiner Schluck gewährt Chado-Atmung 1 sofort und zu Beginn der nächsten 1→2 eigenen Züge. Dies ersetzt den bisherigen Effekt über 3 Züge.",
+          "Salto-Tritt+ verursacht pro Treffer 8 statt 9 Schaden. Wenn du in diesem Zug eine Karte abgeworfen hast, steigt die Chado-Atmung von 2 auf 3.",
+          "Halbmond-Kompasstritt kehrt nicht mehr auf die Hand zurück und verdoppelt seinen Schaden nicht mehr für diesen Zug. Nach jedem Ausspielen trifft diese Karte für den Rest des Kampfes einmal zusätzlich. Die aktuelle Trefferzahl steht auf der Karte.",
+          "Wendepunkt: Ziehst du eine Statuskarte, ziehe 1→2 Karten. Das Erzeugen einer Statuskarte löst den Effekt nicht mehr aus."
+        ],
+        "fra": [
+          "Correction d’un problème signalé : le cadre des cartes sélectionnées pouvait disparaître pendant la Préscience.",
+          "Naraku déchaîné accorde désormais 30 points de Vie de Naraku au début du combat, contre 20 auparavant.",
+          "Petite gorgée applique Respiration Chado 1 immédiatement, puis au début de vos 1→2 prochains tours, à la place de son ancien effet de 3 tours.",
+          "Coup de pied salto+ inflige 8 dégâts par coup au lieu de 9. Si vous avez défaussé une carte ce tour-ci, la Respiration Chado passe de 2 à 3.",
+          "Coup de pied du compas en demi-lune ne revient plus en main et ne double plus ses dégâts pour le tour. Chaque utilisation lui ajoute une frappe pour le reste du combat. Le nombre de frappes est indiqué sur la carte.",
+          "Tournant : chaque fois que vous piochez une carte Statut, piochez 1→2 cartes. Créer une carte Statut ne déclenche plus cet effet."
+        ],
+        "spa": [
+          "Se corrigió un problema que hacía desaparecer el contorno de las cartas seleccionadas durante la Previsión.",
+          "Naraku desatado ahora otorga 30 de Vida de Naraku al comenzar el combate, en vez de 20.",
+          "Sorbo otorga Respiración Chado 1 de inmediato y al comienzo de tus próximos 1→2 turnos, en lugar del efecto anterior de 3 turnos.",
+          "Patada de voltereta+ inflige 8 de daño por golpe en vez de 9. Si has descartado una carta este turno, la Respiración Chado aumenta de 2 a 3.",
+          "Patada del compás de media luna ya no vuelve a la mano ni duplica su daño durante el turno. Cada vez que la juegas, esta carta gana un golpe adicional para el resto del combate. La carta muestra el número actual de golpes.",
+          "Punto de inflexión: cada vez que robas una carta de estado, roba 1→2 cartas. Generar una carta de estado ya no activa el efecto."
+        ],
+        "ita": [
+          "Risolto un problema segnalato: il contorno delle carte selezionate poteva scomparire durante la Preveggenza.",
+          "Naraku scatenato ora conferisce 30 Vita di Naraku all’inizio del combattimento, anziché 20.",
+          "Sorsata conferisce Respirazione Chado 1 subito e all’inizio dei tuoi prossimi 1→2 turni, al posto del precedente effetto di 3 turni.",
+          "Calcio in capriola+ infligge 8 danni per colpo anziché 9. Se hai scartato una carta in questo turno, la Respirazione Chado passa da 2 a 3.",
+          "Calcio del compasso a mezzaluna non torna più in mano e non raddoppia più i danni per il turno. Ogni volta che la giochi, questa carta ottiene un colpo in più per il resto del combattimento. Il numero di colpi è indicato sulla carta.",
+          "Svolta: ogni volta che peschi una carta Stato, pesca 1→2 carte. Creare una carta Stato non attiva più l’effetto."
+        ],
+        "ptb": [
+          "Corrigido um problema em que o contorno das cartas selecionadas podia desaparecer durante a Vidência.",
+          "Naraku Liberto agora concede 30 de Vida de Naraku no início do combate, em vez de 20.",
+          "Gole concede Respiração Chado 1 imediatamente e no início dos seus próximos 1→2 turnos, substituindo o efeito anterior de 3 turnos.",
+          "Chute Mortal+ causa 8 de dano por acerto em vez de 9. Se você descartou uma carta neste turno, a Respiração Chado passa de 2 para 3.",
+          "Meia-Lua de Compasso não volta mais para a mão nem dobra seu dano no turno. Cada vez que é jogada, esta carta ganha um acerto adicional até o fim do combate. A carta mostra o número atual de acertos.",
+          "Ponto de virada: sempre que comprar uma carta de Condição, compre 1→2 cartas. Gerar uma carta de Condição não ativa mais o efeito."
+        ],
+        "esp": [
+          "Se corrigió un problema que hacía desaparecer el contorno de las cartas seleccionadas durante la Previsión.",
+          "Naraku desatado ahora otorga 30 de vida de Naraku al comenzar el combate, en vez de 20.",
+          "Sorbo otorga Respiración Chado 1 de inmediato y al comienzo de tus próximos 1→2 turnos, en lugar del efecto anterior de 3 turnos.",
+          "Patada de voltereta+ inflige 8 de daño por golpe en vez de 9. Si has descartado una carta este turno, la Respiración Chado aumenta de 2 a 3.",
+          "Patada del compás de media luna ya no vuelve a la mano ni duplica su daño durante el turno. Cada vez que la juegas, esta carta gana un golpe adicional para el resto del combate. La carta muestra el número actual de golpes.",
+          "Punto de inflexión: cada vez que robas una carta de estado, roba 1→2 cartas. Generar una carta de estado ya no activa el efecto."
+        ],
+        "ind": [
+          "Memperbaiki masalah yang dilaporkan pemain: garis tepi kartu terpilih kadang menghilang saat Terawang.",
+          "Naraku Terlepas kini memberi 30 Nyawa Naraku di awal pertarungan, naik dari 20.",
+          "Seteguk kini memberi Pernapasan Chado 1 saat dimainkan dan pada awal 1→2 giliranmu berikutnya, menggantikan efek lama yang berlangsung selama 3 giliran.",
+          "Kerusakan per pukulan Tendangan Salto+ turun dari 9 menjadi 8. Jika kamu menyingkirkan kartu pada giliran ini, Pernapasan Chado naik dari 2 menjadi 3.",
+          "Tendangan Kompas Bulan Sabit tidak lagi kembali ke tangan atau menggandakan kerusakannya untuk giliran ini. Setiap kali dimainkan, kartu ini mendapat satu pukulan tambahan hingga akhir pertarungan. Jumlah pukulannya ditampilkan pada kartu.",
+          "Titik Balik kini membuatmu mengambil 1→2 kartu setiap kali kamu mengambil kartu Status. Menghasilkan kartu Status tidak lagi memicu efeknya."
+        ],
+        "pol": [
+          "Naprawiono zgłoszony błąd, przez który zaznaczone karty traciły obramowanie podczas korzystania z efektu Przewiduj.",
+          "Uwolniony Naraku daje teraz na początku walki 30 zamiast 20 pkt. Życia Naraku.",
+          "Łyk daje Oddech Chado 1 natychmiast i na początku następnych 1→2 twoich tur. Zastępuje to poprzedni efekt trwający 3 tury.",
+          "Kopnięcie z saltem+ zadaje 8 zamiast 9 pkt. obrażeń na trafienie. Jeśli w tej turze odrzucono kartę, Oddech Chado wzrasta z 2 do 3.",
+          "Półksiężycowy kompas nie wraca już do ręki ani nie podwaja obrażeń na tę turę. Każde zagranie dodaje tej karcie jedno trafienie do końca walki. Aktualną liczbę trafień widać na karcie.",
+          "Punkt zwrotny: za każdym razem, gdy dobierzesz kartę Stanu, dobierz 1→2 karty. Utworzenie karty Stanu nie uruchamia już efektu."
+        ],
+        "rus": [
+          "Исправлена ошибка, из-за которой во время Предвидения у выбранных карт могла исчезать рамка.",
+          "«Нараку на воле» в начале боя даёт 30 ед. Жизни Нараку вместо 20.",
+          "«Глоток» теперь даёт Дыхание Тядо 1 сразу и в начале следующих 1→2 ваших ходов вместо прежнего эффекта на 3 хода.",
+          "«Удар с сальто+» наносит 8 урона за удар вместо 9. Если вы сбросили карту в этом ходу, Дыхание Тядо увеличивается с 2 до 3.",
+          "«Удар полулунного компаса» больше не возвращается в руку и не удваивает урон на ход. С каждым розыгрышем карта до конца боя наносит на один удар больше. Текущее число ударов указано на карте.",
+          "«Переломный момент»: когда вы берёте карту Статуса, возьмите ещё 1→2 карты. Создание карты Статуса больше не вызывает этот эффект."
+        ],
+        "tha": [
+          "แก้ปัญหาที่ผู้เล่นแจ้งว่ากรอบของการ์ดที่เลือกอาจหายไปขณะพยากรณ์",
+          "ปลดปล่อยนาราคุมอบพลังชีวิตนาราคุเมื่อเริ่มการต่อสู้ 30 หน่วย จากเดิม 20 หน่วย",
+          "จิบให้การหายใจชาโด 1 ทันที และอีก 1 เมื่อเริ่มแต่ละเทิร์นของคุณใน 1→2 เทิร์นถัดไป แทนผลเดิมที่คงอยู่ 3 เทิร์น",
+          "เตะตีลังกา+ สร้างความเสียหายต่อครั้งลดจาก 9 เป็น 8 หากคุณทิ้งการ์ดในเทิร์นนี้ การหายใจชาโดเพิ่มจาก 2 เป็น 3",
+          "เตะวงเวียนจันทร์เสี้ยวไม่กลับขึ้นมือและไม่เพิ่มความเสียหายเป็นสองเท่าในเทิร์นนี้อีกต่อไป ทุกครั้งที่เล่น การ์ดใบนี้จะโจมตีเพิ่มอีก 1 ครั้งตลอดการต่อสู้ จำนวนครั้งที่โจมตีจะแสดงบนการ์ด",
+          "จุดเปลี่ยนทำให้คุณจั่วการ์ด 1→2 ใบทุกครั้งที่จั่วการ์ดสถานะ การสร้างการ์ดสถานะจะไม่ทำให้เกิดผลนี้อีกต่อไป"
+        ],
+        "tur": [
+          "Öngörü sırasında seçilen kartların çerçevesinin kaybolmasına neden olan hata düzeltildi.",
+          "Serbest Naraku artık savaşın başında 20 yerine 30 Naraku Canı veriyor.",
+          "Yudum artık eski 3 turluk etkisi yerine oynandığında ve sonraki 1→2 turunun başında Chado Nefesi 1 veriyor.",
+          "Takla Tekmesi+ artık vuruş başına 9 yerine 8 hasar veriyor. Bu tur bir kart attıysan Chado Nefesi 2’den 3’e çıkıyor.",
+          "Yarımay Pusula Tekmesi artık ele dönmüyor ve hasarını o tur için ikiye katlamıyor. Her oynandığında bu kart savaşın geri kalanı için bir vuruş kazanıyor. Güncel vuruş sayısı kartta gösteriliyor.",
+          "Dönüm Noktası artık bir Durum kartı çektiğinde 1→2 kart çekmeni sağlıyor. Durum kartı oluşturmak etkiyi tetiklemiyor."
+        ]
+      }
     }
   ]
 }
