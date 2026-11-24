@@ -1,0 +1,64 @@
+{
+  "version": "1.2.12",
+  "sourceRevision": "98c8c42f68b49f1ec4bd6f1e1672c53e60d7bfab",
+  "entryId": "1795499044",
+  "itemId": "3776911445",
+  "uploadedManifest": "8280367665917051311",
+  "websiteCatalogSha256": "a35ed6605558e31909d42991ad15ae1f2f64dfccce54ee5e5494fc94aefaafb0",
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "c2fa512f3e08dd8547ee796b788c6ff35b2cd17263dd0dd1a3982481b02fadff",
+    "7a75989dd0c6b0614b56bc001794ae3ba51271be8708e120d97d4ac492d88d70",
+    "d772f041785d3c3cb3ef7b222c269486ec5b1213d0be271d9b9a46a9372404d3",
+    "97be2e745a783797c6f807483d10a1ffbbcb906021f78eefb8aff25795166104",
+    "f893c989ecfc416fa53562587cb62072a40a1e314a3e871712367e69165e44ed",
+    "a7d5bb5528753fd8c219d195b98feb15217e83d68bf87e382acc85df8f2f245d",
+    "bdab80155f81fc564502bf2048cd4b6b0bd1bfe6a877227af2254bd4e8b80bbc",
+    "a718eb7d7d44ea1a3d6e6021e353968cdd132da5609500e07513de626b656e22",
+    "e1b5d15ecb1e0c94224b091ac4ba2dc876279ac43232d894b76938df121ee491"
+  ],
+  "files": {
+    "Box2D.NET.dll": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "LICENSE.Box2D.NET.txt": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "ninjaslayer-variants.manifest": "c2fa512f3e08dd8547ee796b788c6ff35b2cd17263dd0dd1a3982481b02fadff",
+    "NinjaSlayer.dll": "7a75989dd0c6b0614b56bc001794ae3ba51271be8708e120d97d4ac492d88d70",
+    "NinjaSlayer.json": "d772f041785d3c3cb3ef7b222c269486ec5b1213d0be271d9b9a46a9372404d3",
+    "NinjaSlayer.pck": "97be2e745a783797c6f807483d10a1ffbbcb906021f78eefb8aff25795166104",
+    "SHA256SUMS": "f893c989ecfc416fa53562587cb62072a40a1e314a3e871712367e69165e44ed",
+    "lib/0.111.1/compat-target.txt": "a7d5bb5528753fd8c219d195b98feb15217e83d68bf87e382acc85df8f2f245d",
+    "lib/0.111.1/NinjaSlayer.dll": "bdab80155f81fc564502bf2048cd4b6b0bd1bfe6a877227af2254bd4e8b80bbc",
+    "lib/0.113.1/compat-target.txt": "a718eb7d7d44ea1a3d6e6021e353968cdd132da5609500e07513de626b656e22",
+    "lib/0.113.1/NinjaSlayer.dll": "e1b5d15ecb1e0c94224b091ac4ba2dc876279ac43232d894b76938df121ee491"
+  },
+  "gameplayChecks": {
+    "stable": 182,
+    "preview": 187
+  },
+  "editorReloadVerified": {
+    "zhs": "7c13b4a680a91261309620d38df298463bd53c67a5eb659d680979a4ca163e88",
+    "eng": "45014f5da75640daeba8fc9294bd9f7cfaa3c78ce2894cde56fc84c57ba01ad4",
+    "jpn": "66cfd8d3afde0954aff21b434cde53d97b39dd10dee6a16b0e7977bb4eecf1c6",
+    "kor": "0b59794526aa15b02a1dd9c7545c125b40a8c0032d96ee5655adeaae8c5e6fd6",
+    "zht": "7b8bee0e0ac598391e2d391be9187dbeb1efdab52c7d8b0f8845bdd0774679dd",
+    "deu": "b269dd031e70510c12b8cb97343816e4c5583c6060d58e4182c7244f6b5492b5",
+    "fra": "21d0e7c27d1eda618e9917d76104d7f26d82ebf0c6bf9577e4bad2097b5ed5d7",
+    "ita": "2a7db6750a8f593495483c54ba1b6bbd61f8390dc2d16bb0d7602a4e07bdca80",
+    "spa": "d7dd74b2952b8a5cf612c93d3145434a2b71ea8f5001178960d95870ba518dc1",
+    "esp": "ac28b4fa031c951021e6b5944ae591a01a5dfbd9dfe1f4c1e73dd1932517f570",
+    "ptb": "bf246d631233b1096849d929dd60ef82e0ad6a104e8e5c7155b0499649b06fd6",
+    "pol": "3bc83e4f931f2ecbb578f0d4e9429c5c740f2db6ba6bc7dd155e82eb286f46ba",
+    "rus": "65889803a5b8e512df8d27749530f90ca125734b7fe16ab375c2b099e1fab0d6",
+    "ind": "b1ba268596b8110e8f29bba6aaa520964e2e0cce2d25fccbb6340b4429f47584",
+    "tha": "512f5b4c7dfa8cc2785951e0a103dfaf9f39409745565aa55cdd6b1702d59eae",
+    "tur": "e147f28413647ac8656421caeddeed295726996396db7c927cb0892b13b17f1f"
+  },
+  "lastDownloadVersion": "1.2.10",
+  "workshop": {
+    "itemId": "3776911445",
+    "remoteChangeNoteVerified": true,
+    "remotePackageVerified": false
+  },
+  "discord": "Skipped at owner request",
+  "statusAtSubmission": "Steam 作者页：此次提交正在等待版务人员批准。"
+}
