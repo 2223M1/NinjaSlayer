@@ -88,15 +88,29 @@ public partial class OrbContractRunner
             Tween outbound = ActiveTween();
             outbound.Pause(); outbound.CustomStep(.04);
             Require(Offset().Length() < 119.9f, "Dodge reached its 120px peak in half of the original 0.08s.");
+            void Evade() => AccessTools.Method(dodgeType, "NotifyImpact").Invoke(null, [combat.Player.Creature, true]);
+            Evade(); // Confirm the anticipated movement without starting it twice.
+            Require(ReferenceEquals(state, states[combat.Player.Creature]), "First hit doubled the predicted dodge.");
+            Vector2 firstPosition = center.GlobalPosition;
+            Evade();
+            object secondState = states[combat.Player.Creature]!;
+            Require(!ReferenceEquals(state, secondState) && center.GlobalPosition.DistanceTo(firstPosition) < .1f,
+                "The second evade was merged or snapped back before it moved.");
+            var secondOut = (Tween)AccessTools.Property(secondState.GetType(), "ActiveTween").GetValue(secondState)!;
+            secondOut.Pause(); secondOut.CustomStep(.081);
+            Require(Math.Abs(firstPosition.X - center.GlobalPosition.X - 120f) < .1f && actor.Position.IsEqualApprox(root),
+                "Second evade did not travel 120px from the in-flight position.");
             outbound.CustomStep(.041);
             for (int frame = 0; ReferenceEquals(outbound, ActiveTween()) && frame < 90; frame++)
                 await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             Tween returning = ActiveTween();
             Require(!ReferenceEquals(returning, outbound), "Dodge did not begin its return.");
             returning.Pause(); returning.CustomStep(.07);
-            Require(Offset().Length() > 1f, "Dodge returned in 0.07s instead of the original 0.14s.");
+            Require(((Vector2)AccessTools.Property(state.GetType(), "Offset").GetValue(state)!).Length() > 1f,
+                "Dodge returned in 0.07s instead of the original 0.14s.");
             returning.CustomStep(.071);
             await dodge;
+            await (Task)AccessTools.Property(secondState.GetType(), "Completion").GetValue(secondState)!;
             Require(actor.Position.IsEqualApprox(root) && center.GlobalPosition.DistanceTo(baseline) < .1f,
                 "Dodge failed to restore the visual pose without moving the UI.");
         }

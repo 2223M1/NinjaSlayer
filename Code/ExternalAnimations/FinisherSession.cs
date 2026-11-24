@@ -793,6 +793,11 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             }
         }
 
+        // The ranged session owns the projectile. The opening melee lunge still belongs
+        // to the card, whose normal settlement runs only after this session completes.
+        if (_ranged?.Source is Cards.Standard.SpiralJump jump)
+            await NinjaSlayerRapidAnimationCoordinator.ReturnAfterLethalVolley(Actor, jump);
+
         bool useDeathContinuation = true;
         if (await KillDeferredDeathsOnce(toKill, useDeathContinuation))
         {
