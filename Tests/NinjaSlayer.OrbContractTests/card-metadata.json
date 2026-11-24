@@ -1367,7 +1367,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/HalfMoonCompassKick.png",
     "Vars": {
-      "Damage": 10
+      "Damage": 10,
+      "Repeat": 1
     }
   },
   {
@@ -1384,7 +1385,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/HalfMoonCompassKick.png",
     "Vars": {
-      "Damage": 13
+      "Damage": 13,
+      "Repeat": 1
     }
   },
   {
@@ -2673,7 +2675,9 @@
     "Keywords": [],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Sip.png",
-    "Vars": {}
+    "Vars": {
+      "Turns": 1
+    }
   },
   {
     "Id": "CARD.NINJA_SLAYER_CARD_SIP",
@@ -2688,7 +2692,9 @@
     "Keywords": [],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Sip.png",
-    "Vars": {}
+    "Vars": {
+      "Turns": 2
+    }
   },
   {
     "Id": "CARD.NINJA_SLAYER_CARD_SOMERSAULT_KICK",
@@ -2723,8 +2729,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/SomersaultKick.png",
     "Vars": {
-      "Breath": 2,
-      "Damage": 9,
+      "Breath": 3,
+      "Damage": 8,
       "Repeat": 2
     }
   },

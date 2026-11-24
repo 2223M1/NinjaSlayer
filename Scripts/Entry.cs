@@ -152,6 +152,7 @@ public class Entry
             requiredPatcher.RegisterPatch<OrobasSeaGlassCharacterPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerFakeMerchantScalePatch>();
             requiredPatcher.RegisterPatch<ScryConfirmLayoutPatch>();
+            requiredPatcher.RegisterPatch<ScryGridHighlightPatch>();
             requiredPatcher.RegisterPatch<CardPlayResolutionBeforePatch>();
             requiredPatcher.RegisterPatch<CardPlayResolutionAfterPatch>();
             requiredPatcher.RegisterPatch<CardResolutionCleanupPatch>();

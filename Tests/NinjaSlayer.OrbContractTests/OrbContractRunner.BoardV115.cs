@@ -65,10 +65,11 @@ public partial class OrbContractRunner
             var directStatus = AddCard<Wound>(combat, PileType.Draw);
             var bonus = AddCard<DefendIronclad>(combat, PileType.Draw);
             var directSecond = AddCard<StrikeIronclad>(combat, PileType.Draw);
+            var fourth = AddCard<StrikeIronclad>(combat, PileType.Draw);
             await CardCmd.AutoPlay(Choice, AddCard<Adapt>(combat), null);
-            Require(new CardModel[] { directStatus, directSecond, bonus }.All(card =>
+            Require(new CardModel[] { directStatus, directSecond, bonus, fourth }.All(card =>
                     card.Pile?.Type == PileType.Hand && !card.Keywords.Contains(CardKeyword.Sly)),
-                "Drawing an existing Status does not trigger TurningPoint or grant Sly through Adapt.");
+                "Adapt draws three plus one for the drawn Wound; none gain Sly.");
         }
         {
             using var combat = new OrbCombat();

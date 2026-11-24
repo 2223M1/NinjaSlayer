@@ -1,5 +1,6 @@
 using Godot;
 using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Combat.History.Entries;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -39,6 +40,7 @@ public partial class OrbContractRunner
         {
             using var combat = new OrbCombat();
             var kick = AddCard<HalfMoonCompassKick>(combat, upgraded: upgraded);
+            Creature second = combat.AddEnemy();
             bool Playable() => (bool)AccessTools.Property(typeof(HalfMoonCompassKick), "IsPlayable").GetValue(kick)!;
             Require(!Playable(), "Half-Moon must be unplayable without a Chado in hand.");
             var tea = AddCard<Chado>(combat);
@@ -46,22 +48,29 @@ public partial class OrbContractRunner
             Require(Playable(), "Hand Chado must enable Half-Moon.");
             await CardCmd.AutoPlay(Choice, kick, null);
             int damage = upgraded ? 13 : 10;
-            Require(tea.Pile?.Type == PileType.Exhaust && kick.Pile?.Type == PileType.Hand
-                && combat.Enemy.CurrentHp == 1000 - damage && kick.DynamicVars.Damage.BaseValue == 2 * damage,
-                "Half-Moon must exhaust one Chado, hit once, double itself and return.");
+            Require(tea.Pile?.Type == PileType.Exhaust && kick.Pile?.Type == PileType.Discard
+                && combat.Enemy.CurrentHp == 1000 - damage && second.CurrentHp == 1000 - damage && kick.DynamicVars.Repeat.IntValue == 2,
+                "Half-Moon must pay one Chado, hit each enemy once and go to discard with two hits ready.");
             var copy = (HalfMoonCompassKick)kick.MutableClone();
+            await CardPileCmd.Add(kick, PileType.Hand);
             AddCard<Chado>(combat);
             await CardCmd.AutoPlay(Choice, kick, null);
-            Require(combat.Enemy.CurrentHp == 1000 - 3 * damage && kick.DynamicVars.Damage.BaseValue == 4 * damage
-                && copy.DynamicVars.Damage.BaseValue == 2 * damage, "Half-Moon damage must belong to each copied entity.");
+            Require(combat.Enemy.CurrentHp == 1000 - 3 * damage && second.CurrentHp == 1000 - 3 * damage
+                && kick.DynamicVars.Repeat.IntValue == 3 && copy.DynamicVars.Repeat.IntValue == 2,
+                "Each copy must track its own hit count.");
             await kick.AfterSideTurnEnd(Choice, CombatSide.Player, [combat.Player.Creature]);
-            await copy.AfterSideTurnEnd(Choice, CombatSide.Player, [combat.Player.Creature]);
-            Require(kick.DynamicVars.Damage.BaseValue == damage && copy.DynamicVars.Damage.BaseValue == damage,
-                "Both original and copy must lose only their temporary damage on turn end.");
+            Require(kick.DynamicVars.Repeat.IntValue == 3 && AddCard<HalfMoonCompassKick>(combat).DynamicVars.Repeat.IntValue == 1,
+                "A turn boundary must preserve hits without changing fresh cards.");
+            if (upgraded) { copy.DowngradeInternal(); Require(copy.DynamicVars.Repeat.IntValue == 2, "Downgrading must preserve accumulated hits."); }
+            await CardPileCmd.Add(kick, PileType.Hand);
             AddCard<Chado>(combat);
             kick.ExhaustOnNextPlay = true;
             await CardCmd.AutoPlay(Choice, kick, null);
-            Require(kick.Pile?.Type == PileType.Exhaust, "Native Exhaust must take priority over Half-Moon return.");
+            var hits = CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>().Where(e => e.CardSource == kick).ToArray();
+            Require(kick.Pile?.Type == PileType.Exhaust && kick.DynamicVars.Repeat.IntValue == 4
+                && hits.Length == 12 && hits.All(h => h.Result.TotalDamage == damage)
+                && second.CurrentHp == 1000 - 6 * damage && combat.Enemy.CurrentHp == second.CurrentHp,
+                "Three plays must deal 1+2+3 separate hits per opponent and respect native Exhaust.");
         }
         foreach (bool upgraded in new[] { false, true })
         {
@@ -84,6 +93,6 @@ public partial class OrbContractRunner
             await CardCmd.AutoPlay(Choice, kick, null);
             Require(combat.Enemy.CurrentHp == 1000 && combat.Enemy.Block == 5, "Half-Moon bypassed native Block.");
         }
-        GD.Print("PASS v1.18: native Tornado X/Vigor/AOE, Half-Moon tea gating/copy/reset/exhaust, Naraku attack and fixed Grappling Hook.");
+        GD.Print("PASS v1.18: native Tornado X/Vigor/AOE, Half-Moon per-copy combat hits/discard/exhaust, Naraku attack and fixed Grappling Hook.");
     }
 }

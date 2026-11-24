@@ -2,7 +2,7 @@
   "title": "忍者杀手 Ninja Slayer",
   "description": "[h1]Domo. Ninja Slayer desu.[/h1]\r\n\r\n[h2]Something wrong?[/h2]\r\nPress [b]F2[/b] in game to report bugs or send suggestions.\r\nWant to see what cards everyone is picking and where their runs end? [url=https://2223m1.github.io/NinjaSlayer/?lang=eng]Ninja Slayer Intel[/url]\r\n\r\nDiscord Community：https://discord.gg/eHuQqjrAyf\r\nPatreon：https://www.patreon.com/cw/bobbizerri\r\n\r\n[i]Unofficial fan-made Mod.[/i]",
   "visibility": "public",
-  "changeNote": "残心由 1 费降至 0 费，触发时的抽牌数由 1→2 张改为固定 1 张，升级获得固有。\n修复了用户反馈中暗打触发回避不同步的问题。\n修复了用户反馈中黑炎清场漏播处决的问题。",
+  "changeNote": "修复了用户反馈中预见选中框消失的问题。\n奈落解放在战斗开始时给予的奈落生命由 20 点提高至 30 点。\n啜饮现在立即茶道呼吸 1，并在接下来 1→2 个回合开始时茶道呼吸 1，替代原先的 3 回合持续效果。\n倒挂金钩踢+每击伤害由 9 降至 8，本回合丢弃过牌时的茶道呼吸由 2 提高至 3。\n半月圆规踢不再回手或在本回合伤害翻倍。每次打出后，这张牌在本场战斗中多命中一次，卡面显示当前命中次数。\n转机改为每当你抽到一张状态牌时，抽 1→2 张牌，生成状态牌不再触发。",
   "tags": [
     "Characters",
     "English",

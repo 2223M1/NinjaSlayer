@@ -87,6 +87,17 @@ public partial class OrbContractRunner
                 await CardCmd.AutoPlay(Choice, AddCard<MotionAndStillness>(normal, upgraded: upgraded), normal.Enemy);
                 Require(normal.Enemy.CurrentHp == hp - (upgraded ? 12 : 8), "Motion and Stillness damage must match its card face.");
             }
+            using (var showcase = new OrbCombat())
+            {
+                var kick = AddCard<HalfMoonCompassKick>(showcase, upgraded: upgraded);
+                string HitCounter(PileType pile) => System.Text.RegularExpressions.Regex.Replace(
+                    kick.GetDescriptionForPile(pile), @"\[[^\]]*\]", "").Split('\n')[^1].Trim();
+                Require(HitCounter(PileType.Hand) is "(Hits 1 time)" or "（命中1次）", $"Half-Moon initial counter: {HitCounter(PileType.Hand)}");
+                AddCard<Chado>(showcase);
+                using var selection = UseCardSelector(new SelectCards(options => options.OfType<Chado>().Take(1)));
+                await CardCmd.AutoPlay(Choice, kick, null);
+                Require(HitCounter(PileType.Discard) is "(Hits 2 times)" or "（命中2次）", $"Half-Moon discard counter: {HitCounter(PileType.Discard)}");
+            }
             using var combat = new OrbCombat();
             var palm = AddCard<PalmThrust>(combat, upgraded: upgraded);
             var adjustment = AddCard<MotionAndStillness>(combat, upgraded: upgraded);
@@ -355,7 +366,7 @@ public partial class OrbContractRunner
             AddCard<DefendIronclad>(combat, PileType.Draw);
             await PowerCmd.Apply<TurningPointPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await CardPileCmd.Draw(Choice, 1, combat.Player);
-            Require(PileType.Hand.GetPile(combat.Player).Cards.Count == 1, "TurningPoint must not trigger when an existing Status is drawn.");
+            Require(PileType.Hand.GetPile(combat.Player).Cards.Count == 3, "Drawing Chado then Wound must chain two bonus draws and stop on Defend.");
         }
         GD.Print("PASS status autoplay/exhaust, recovery transformation, turn expiry and TurningPoint draw isolation");
     }
@@ -374,14 +385,20 @@ public partial class OrbContractRunner
                 && tea.Pile?.Type == PileType.Exhaust && gather.EnergyCost.GetWithModifiers(CostModifiers.Local) == 1,
                 "Gather Ki must multiply the selected Chado's accumulated energy by two/three without reducing its cost.");
         }
-        using (var combat = new OrbCombat())
+        foreach (bool upgraded in new[] { false, true })
         {
-            await CardCmd.AutoPlay(Choice, AddCard<Sip>(combat, upgraded: true), null);
-            Require(PileType.Hand.GetPile(combat.Player).Cards.OfType<Chado>().Single().DynamicVars.Energy.BaseValue == 1,
-                "Upgraded Sip Tea must breathe immediately.");
-            for (int turn = 0; turn < 4; turn++) await Hook.AfterPlayerTurnStart(combat.State, Choice, combat.Player);
-            Require(PileType.Hand.GetPile(combat.Player).Cards.OfType<Chado>().Single().DynamicVars.Energy.BaseValue == 4
-                && !combat.Player.Creature.HasPower<SipPower>(), "Sip Tea must expire after exactly three turn starts.");
+            using var combat = new OrbCombat();
+            int duration = upgraded ? 2 : 1;
+            await CardCmd.AutoPlay(Choice, AddCard<Sip>(combat, upgraded: upgraded), null);
+            var tea = PileType.Hand.GetPile(combat.Player).Cards.OfType<Chado>().Single();
+            Require(tea.DynamicVars.Energy.IntValue == 1, "Sip must breathe once immediately.");
+            for (int turn = 1; turn <= duration + 1; turn++)
+            {
+                await Hook.AfterPlayerTurnStart(combat.State, Choice, combat.Player);
+                Require(tea.DynamicVars.Energy.IntValue == 1 + Math.Min(turn, duration)
+                    && combat.Player.Creature.HasPower<SipPower>() == (turn < duration),
+                    "Sip must breathe once on each of the next 1/2 turn starts and then expire.");
+            }
         }
         using (var combat = new OrbCombat())
         {

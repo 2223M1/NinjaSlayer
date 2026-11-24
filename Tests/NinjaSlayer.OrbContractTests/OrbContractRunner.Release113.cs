@@ -68,13 +68,18 @@ public partial class OrbContractRunner
                          combat.State.CreateCard<BlackFlame>(combat.Player), combat.State.CreateCard<Wound>(combat.Player) })
             {
                 await CardPileCmd.AddGeneratedCardToCombat(status, destination, combat.Player);
+                Require(!PileType.Hand.GetPile(combat.Player).Cards.OfType<StrikeIronclad>().Any(),
+                    $"Generating a Status in {destination} must not trigger Turning Point.");
+                if (status.Pile?.Type == PileType.Draw) await CardPileCmd.Add(status, PileType.Discard);
+                await CardPileCmd.Add(status, PileType.Draw, CardPilePosition.Top);
+                await CardPileCmd.Draw(Choice, 1, combat.Player);
                 Require(PileType.Hand.GetPile(combat.Player).Cards.OfType<StrikeIronclad>().Count() == draw,
-                    $"TurningPoint must draw {draw} for one generated Status in {destination} (upgraded={upgraded}).");
+                    $"Stacked Turning Point must draw {draw} when {status.Id} is drawn (upgraded={upgraded}).");
                 foreach (var old in PileType.Hand.GetPile(combat.Player).Cards.ToArray())
                     await CardPileCmd.RemoveFromCombat(old);
             }
             Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 0,
-                "Devour Flame must not trigger from TurningPoint's generated-status draw.");
+                "Devour Flame must not trigger from Turning Point's draws.");
         }
         using (var combat = new OrbCombat())
         {
@@ -84,6 +89,12 @@ public partial class OrbContractRunner
             other.InitializeSeed("resilience-other");
             combat.State.AddPlayer(other);
             other.ResetCombatState();
+            var otherStatus = combat.State.CreateCard<Wound>(other);
+            await CardPileCmd.Add(otherStatus, PileType.Draw);
+            await CardPileCmd.Add(combat.State.CreateCard<DefendIronclad>(other), PileType.Draw, CardPilePosition.Bottom);
+            await CardPileCmd.Draw(Choice, 1, other);
+            Require(PileType.Hand.GetPile(other).Cards.SequenceEqual([otherStatus])
+                && !PileType.Hand.GetPile(combat.Player).Cards.Any(), "A teammate's Status draw must not trigger either hand.");
             foreach (Player? creator in new Player?[] { other, null })
                 await CardPileCmd.AddGeneratedCardToCombat(combat.State.CreateCard<Wound>(combat.Player), PileType.Discard, creator);
             var oldStatus = AddCard<Wound>(combat, PileType.Discard);
@@ -101,6 +112,6 @@ public partial class OrbContractRunner
                 "Full-hand generation retains native overflow and cannot overdraw.");
             other.PlayerCombatState!.AfterCombatEnd();
         }
-        GD.Print("PASS 1.0.13 cards: Spiral eight/twelve and one volley, Moonsault one/zero retained double volley, generated-status draw, stacking, creator isolation and full hand.");
+        GD.Print("PASS 1.0.13 cards: Spiral eight/twelve and one volley, Moonsault one/zero retained double volley, drawn Status, stacking, owner isolation and full hand.");
     }
 }

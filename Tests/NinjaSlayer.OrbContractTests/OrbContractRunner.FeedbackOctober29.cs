@@ -76,10 +76,12 @@ public partial class OrbContractRunner
             {
                 await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
                 await PowerCmd.Apply<VigorPower>(Choice, combat.Player.Creature, 7, combat.Player.Creature, null);
+                await CardCmd.Discard(Choice, combat.Card());
                 await CardCmd.AutoPlay(Choice, AddCard<SomersaultKick>(combat, upgraded: upgraded), combat.Enemy);
-                Require(combat.Enemy.CurrentHp == 1000 - 2 * ((upgraded ? 9 : 7) + 10)
-                    && !combat.Player.Creature.HasPower<VigorPower>(),
-                    "Somersault Kick must apply Strength and Vigor to both 7/9 hits and consume Vigor once.");
+                Require(combat.Enemy.CurrentHp == 1000 - 2 * ((upgraded ? 8 : 7) + 10)
+                    && !combat.Player.Creature.HasPower<VigorPower>()
+                    && PileType.Hand.GetPile(combat.Player).Cards.OfType<Chado>().Single().DynamicVars.Energy.IntValue == (upgraded ? 3 : 2),
+                    "Somersault Kick must deal two 7/8 hits with Strength and Vigor, then breathe 2/3 after a discard.");
             }
         }
         GD.Print("PASS October 29: Low Uppercut condition/target, owner-only ordinary/Ethereal exhaust, Somersault two-hit Vigor.");
